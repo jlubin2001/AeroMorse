@@ -43,6 +43,14 @@ try:
 except ImportError:
     _ESPNOW_IMPORTABLE = False
 
+try:
+    import audiopwmio
+    import synthio
+    _AUDIO_AVAILABLE = True
+except ImportError:
+    _AUDIO_AVAILABLE = False
+    print("WARNING: audio modules not available — speaker disabled")
+
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
@@ -70,6 +78,15 @@ POINTS_TO_AVERAGE = 8
 # Switch GPIO pins (only used when USE_SENSOR = False)
 DOT_PIN         = board.D5
 DASH_PIN        = board.D6
+
+# Audio (STEMMA Speaker #3885 → A0, 3V, GND  — or omit speaker entirely)
+AUDIO_PIN       = board.A0
+BEEP_DOT_FREQ   = 1200          # Hz — dot (sip) sidetone  — higher pitch
+BEEP_DASH_FREQ  =  800          # Hz — dash (puff) sidetone — lower pitch
+CONFIRM_FREQ    = 1050          # Hz — action-executed blip
+GROUP_FREQ      =  550          # Hz — group-change blip
+BEEP_CONFIRM_S  = 0.06          # duration of action confirm blip (seconds)
+BEEP_GROUP_S    = 0.14          # duration of group-change blip (seconds)
 
 # Mouse speeds  (raw mmove values × speed × MOUSE_SPEED_FACTOR = actual pixels)
 MOUSE_SPEED_NORMAL = 2
@@ -140,6 +157,61 @@ if USE_SENSOR:
     _baseline, _sip_threshold, _puff_threshold = _calibrate()
     print(f"Baseline: {_baseline:.3f}  sip<{_sip_threshold:.3f}  puff>{_puff_threshold:.3f}")
     _avg_pressure = RollingAverage(POINTS_TO_AVERAGE)
+
+# ── Audio setup ───────────────────────────────────────────────────────────────
+
+if _AUDIO_AVAILABLE:
+    _audio_out   = audiopwmio.PWMAudioOut(AUDIO_PIN)
+    _synth       = synthio.Synthesizer(sample_rate=22050)
+    _audio_out.play(_synth)
+    _dot_note     = synthio.Note(frequency=BEEP_DOT_FREQ)
+    _dash_note    = synthio.Note(frequency=BEEP_DASH_FREQ)
+    _confirm_note = synthio.Note(frequency=CONFIRM_FREQ)
+    _group_note   = synthio.Note(frequency=GROUP_FREQ)
+
+_beeping_morse     = False  # True while a DIT or DAH is held
+_active_morse_note = None   # which note is currently playing
+_notify_end        = 0.0    # monotonic time when the current blip should stop
+
+
+def _beep_start(state):
+    """Start sidetone on press — higher pitch for dot, lower for dash."""
+    global _beeping_morse, _active_morse_note
+    if _AUDIO_AVAILABLE and not _beeping_morse:
+        # DIT == 0, DAH == 1 — constants defined further down, resolved at call time
+        _active_morse_note = _dot_note if state == 0 else _dash_note
+        _synth.press(_active_morse_note)
+        _beeping_morse = True
+
+
+def _beep_stop():
+    """Stop sidetone when press releases."""
+    global _beeping_morse, _active_morse_note
+    if _AUDIO_AVAILABLE and _beeping_morse and _active_morse_note is not None:
+        _synth.release(_active_morse_note)
+        _active_morse_note = None
+        _beeping_morse = False
+
+
+def _beep_notify(duration=BEEP_CONFIRM_S, note=None):
+    """Short timed blip for action confirmation or group change."""
+    global _notify_end
+    if not _AUDIO_AVAILABLE:
+        return
+    if note is None:
+        note = _confirm_note
+    _synth.press(note)
+    _notify_end = time.monotonic() + duration
+
+
+def _audio_tick():
+    """Release the timed notification note once its duration has elapsed."""
+    global _notify_end
+    if _AUDIO_AVAILABLE and _notify_end and time.monotonic() >= _notify_end:
+        _synth.release(_confirm_note)
+        _synth.release(_group_note)
+        _notify_end = 0.0
+
 
 # ── ESP-NOW wireless display ───────────────────────────────────────────────────
 # Broadcasts TFT state to a QT Py ESP32-C3 + SSD1306 OLED running receiver.py.
@@ -451,12 +523,14 @@ def execute(action, pattern=""):
         _last_mouse_vec  = (0, 0, 0)
         print(f"{pattern}  COMBO")
         _exec_combo(action)
+        _beep_notify()
     elif isinstance(action, int):
         _last_action     = f"KEY {action}"
         _last_repeatable = action
         _last_mouse_vec  = (0, 0, 0)
         print(f"{pattern}  KEY {action}")
         _exec_keycode(action)
+        _beep_notify()
     elif isinstance(action, str):
         if _is_command(action):
             _last_action = action[:20]
@@ -470,6 +544,7 @@ def execute(action, pattern=""):
             _last_mouse_vec  = (0, 0, 0)
             print(f"{pattern}  \"{action}\"")
             _exec_text(action)
+            _beep_notify()
 
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
@@ -480,6 +555,7 @@ def cycle_group(direction):
     _last_repeatable = None     # reset repeat on group change — must mmove first
     _last_action     = f"-> group {active_group}"
     print(f"GROUP -> {active_group} ({_GROUP_NAMES[active_group]})")
+    _beep_notify(duration=BEEP_GROUP_S, note=_group_note if _AUDIO_AVAILABLE else None)
 
 # ── Display ────────────────────────────────────────────────────────────────────
 #
@@ -591,6 +667,9 @@ _DISPLAY_RATE = 0.1     # cap display refresh at 10 Hz
 while True:
     now = time.monotonic()
 
+    # ── Timed audio release ─────────────────────────────────────────────────
+    _audio_tick()
+
     # ── Read sensor / switches ──────────────────────────────────────────────
     if USE_SENSOR:
         raw = lps.pressure
@@ -614,14 +693,17 @@ while True:
         if _mouse_repeating:
             # Any new input cancels a mouse repeat
             _stop_mouse_repeat()
+            _beep_stop()
             new_state = IDLE
 
         elif _last_state == IDLE:
-            # IDLE → DIT/DAH: record when the press started
+            # IDLE → DIT/DAH: record when the press started, begin sidetone
             _press_start = now
+            _beep_start(new_state)
 
         elif new_state == IDLE:
-            # DIT/DAH → IDLE: commit the element (or trigger long-press)
+            # DIT/DAH → IDLE: stop sidetone, commit the element (or long-press)
+            _beep_stop()
             duration = now - _press_start
             if duration >= LONG_PRESS:
                 cycle_group(-1 if _last_state == DIT else +1)
