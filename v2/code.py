@@ -93,7 +93,8 @@ DASH_PIN        = board.D6
 
 # Audio
 AUDIO_PIN       = board.A0      # connects to STEMMA Speaker audio input
-BEEP_FREQ       = 800           # Hz — Morse sidetone
+BEEP_DOT_FREQ   = 1200          # Hz — dot (sip) sidetone  — higher pitch
+BEEP_DASH_FREQ  =  800          # Hz — dash (puff) sidetone — lower pitch
 CONFIRM_FREQ    = 1050          # Hz — action-executed blip
 GROUP_FREQ      = 550           # Hz — group-change blip
 BEEP_CONFIRM_S  = 0.06          # duration of action confirm blip (seconds)
@@ -171,27 +172,32 @@ if _AUDIO_AVAILABLE:
     _audio_out    = audiopwmio.PWMAudioOut(AUDIO_PIN)
     _synth        = synthio.Synthesizer(sample_rate=22050)
     _audio_out.play(_synth)
-    _morse_note   = synthio.Note(frequency=BEEP_FREQ)
+    _dot_note     = synthio.Note(frequency=BEEP_DOT_FREQ)
+    _dash_note    = synthio.Note(frequency=BEEP_DASH_FREQ)
     _confirm_note = synthio.Note(frequency=CONFIRM_FREQ)
     _group_note   = synthio.Note(frequency=GROUP_FREQ)
 
-_beeping_morse = False   # True while a DIT or DAH is held
-_notify_end    = 0.0     # monotonic time when the current blip should stop
+_beeping_morse      = False   # True while a DIT or DAH is held
+_active_morse_note  = None    # which note (_dot_note / _dash_note) is playing
+_notify_end         = 0.0     # monotonic time when the current blip should stop
 
 
-def _beep_start():
-    """Start continuous sidetone when a press begins."""
-    global _beeping_morse
+def _beep_start(state):
+    """Start sidetone when a press begins — higher pitch for dot, lower for dash."""
+    global _beeping_morse, _active_morse_note
     if _AUDIO_AVAILABLE and not _beeping_morse:
-        _synth.press(_morse_note)
+        # DIT == 0, DAH == 1 — constants defined further down, resolved at call time
+        _active_morse_note = _dot_note if state == 0 else _dash_note
+        _synth.press(_active_morse_note)
         _beeping_morse = True
 
 
 def _beep_stop():
     """Stop sidetone when press releases."""
-    global _beeping_morse
-    if _AUDIO_AVAILABLE and _beeping_morse:
-        _synth.release(_morse_note)
+    global _beeping_morse, _active_morse_note
+    if _AUDIO_AVAILABLE and _beeping_morse and _active_morse_note is not None:
+        _synth.release(_active_morse_note)
+        _active_morse_note = None
         _beeping_morse = False
 
 
@@ -692,7 +698,7 @@ while True:
         elif _last_state == IDLE:
             # IDLE → DIT/DAH: record when the press started, begin sidetone
             _press_start = now
-            _beep_start()
+            _beep_start(new_state)
 
         elif new_state == IDLE:
             # DIT/DAH → IDLE: stop sidetone, commit the element (or long-press)
