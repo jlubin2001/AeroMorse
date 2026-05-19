@@ -1296,7 +1296,8 @@ Mu Editor). Look for the configuration section near the top of the file.
 | `ACCEPT_DELAY` | `0.2` | Raise to `0.3` if patterns commit before you finish |
 | `LONG_PRESS` | `1.0` | Hold time in seconds to cycle groups. Raise if accidentally cycling |
 | `DISPLAY_ROTATION` | `180` | `0` = USB port on left; `180` = USB port on right |
-| `BEEP_FREQ` | `800` | Tone pitch in Hz for dot/dash beeps |
+| `BEEP_DOT_FREQ` | `1200` | Pitch in Hz for dot (sip) beeps — higher pitch |
+| `BEEP_DASH_FREQ` | `800` | Pitch in Hz for dash (puff) beeps — lower pitch |
 
 Save the file to the CIRCUITPY drive. The Feather reloads automatically within
 a few seconds.
