@@ -64,7 +64,7 @@ connected to a computer.
 
 These are pre-compiled `.mpy` files from the
 [Adafruit CircuitPython Bundle](https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases).
-Download the bundle matching your CircuitPython version (9.x) and copy the
+Download the bundle matching your CircuitPython version and copy the
 listed items from its `lib/` folder.
 
 | Library | Type | Purpose |
@@ -79,7 +79,7 @@ listed items from its `lib/` folder.
 
 ## Setup
 
-1. Install **CircuitPython 9.x** on the feather by following
+1. Install the **latest stable CircuitPython** on the feather by following
    [Adafruit's guide](https://learn.adafruit.com/esp32-s3-reverse-tft-feather).
 2. Copy the required libraries (listed above) into the `lib/` folder on CIRCUITPY.
 3. Copy `boot.py`, `code.py`, and `morse_map.py` to the root of CIRCUITPY.
