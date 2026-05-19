@@ -486,12 +486,32 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 
 ## Project Files
 
-| File | Location | Purpose |
-|------|----------|---------|
-| `code.py` | project root + CIRCUITPY root | Main firmware |
-| `morse_map.py` | project root + CIRCUITPY root | All code assignments |
-| `boot.py` | project root + CIRCUITPY root | USB HID enable (runs before code.py) |
-| `test_pressure.py` | project root | Diagnostic: prints live pressure readings for 30 s |
+### Device files (copy these to CIRCUITPY)
+
+| File | Purpose |
+|------|---------|
+| `code.py` | Main firmware — Morse state machine, USB HID, display, ESP-NOW sender |
+| `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
+| `boot.py` | Runs once at power-on; enables USB HID keyboard and mouse |
+| `receiver.py` | Wireless display mirror firmware (copy to the second #5691 receiver board) |
+| `receiver_boot.py` | boot.py for the receiver board — does not enable USB HID |
+
+### Documentation
+
+| File | Purpose |
+|------|---------|
+| `AEROMORSE_BUILD_GUIDE.md` | Full build guide covering hardware options, wiring, soldering, wireless display setup, library installation, troubleshooting, and parts lists |
+| `TOOLS_AND_GUIDES.md` | Reference for development tools: Mu editor, Thonny, PuTTY, CircuitPython installer |
+| `Morse Code Cheat Sheet.pdf` | Printable one-page reference card for all AeroMorse patterns |
+
+### Development tools (run on your PC, not on the device)
+
+| File | Purpose |
+|------|---------|
+| `aeromorse_visualizer.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |
+| `morse_map_analyzer.py` | Python 3 script that reads `morse_map.py` and reports duplicate codes, conflicts with the always-on Group 0 patterns, and unused code slots for lengths 2–7. Run with `python morse_map_analyzer.py`; output is saved to `morse_map_report.txt`. |
+| `morse_map_report.txt` | Latest output from `morse_map_analyzer.py` |
+| `test_pressure.py` | Diagnostic script — copy to CIRCUITPY, run via REPL; prints live pressure readings for 30 s to help set sip/puff thresholds |
 
 ---
 
