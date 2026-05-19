@@ -1465,4 +1465,4 @@ Save the file — the Feather reloads automatically.
 ---
 
 *AeroMorse is open-source. Project files at:*
-*https://github.com/jlubi333/sip-puff-morse-hid* ← update this URL if needed
+*https://github.com/jlubin2001/AeroMorse*
