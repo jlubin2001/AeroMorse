@@ -1,0 +1,28 @@
+# CircuitPython compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+# CircuitPython library cache
+lib/
+*.mpy
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor temp files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# CircuitPython device files that shouldn't be in the repo
+boot_out.txt

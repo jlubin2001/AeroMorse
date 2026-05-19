@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morse Code Cheat Sheet</title>
+<style>
+  @charset "utf-8";
+
+  /* Reset and base styles */
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 20px;
+    background: #e9ecef;
+    color: #333;
+  }
+
+  h2 {
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+
+  /* Morse Code Dot (Pure CSS Circle) */
+  dot {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    background-color: #7806ec;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+
+  /* Morse Code Dash (Pure CSS Rounded Rectangle) */
+  dash {
+    width: 16px;
+    height: 9px;
+    display: inline-block;
+    background-color: #009832;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  /* Keyboard */
+  keybd {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+    color: #000;
+    display: inline-block;
+    font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", "monospace";
+    line-height: 1.4em;
+    margin: 0; /* Removed margin so it sits perfectly flush against the right edge */
+    padding: 0.1em 0.6em;
+    text-shadow: 0 1px 0 #fff;
+    white-space: nowrap;
+    font-size: 1.2em;
+    font-weight: bold;
+    background: #f8f9fa;
+    text-align: right;
+  }
+
+  /* Page and Layout Styles */
+  .page {
+    background: white;
+    padding: 40px;
+    margin: 0 auto 30px;
+    max-width: 1000px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    display: none; /* Hidden until file is loaded */
+  }
+
+  .columns {
+    column-gap: 40px;
+    column-rule: 1px solid #eee;
+  }
+
+  .cols-3 { column-count: 3; }
+  .cols-2 { column-count: 2; }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    break-inside: avoid;
+    border-bottom: 1px dashed #f0f0f0;
+    padding-bottom: 6px;
+  }
+
+  .morse-seq {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .key-output {
+    flex-grow: 1;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-left: 10px; /* Provide some buffer space from the morse dots */
+  }
+
+  .unassigned {
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.85em;
+    text-align: right;
+  }
+
+  /* UI Controls */
+  .controls-container {
+    background: white;
+    padding: 20px;
+    margin: 0 auto 30px;
+    max-width: 1000px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .file-upload-wrapper {
+    margin-bottom: 15px;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .custom-file-upload {
+    display: inline-block;
+    padding: 12px 24px;
+    cursor: pointer;
+    background: #6c757d;
+    color: white;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background 0.2s;
+    margin-right: 10px;
+  }
+
+  .custom-file-upload:hover { background: #5a6268; }
+
+  button.print-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+    transition: background 0.2s;
+    display: none; /* Hidden until data is loaded */
+  }
+
+  button.print-btn:hover { background: #0056b3; }
+
+  #file-name-display {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  /* Print Specific Styles */
+  @media print {
+    body {
+      background: white;
+      margin: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .page {
+      box-shadow: none;
+      margin: 0;
+      padding: 10px 0;
+      max-width: 100%;
+      page-break-after: always;
+      border-radius: 0;
+      display: block !important; /* Ensure visible during print */
+    }
+    .controls-container { display: none; } /* Hide the uploader when printing */
+    .columns {
+      column-gap: 20px;
+    }
+    .cols-3 { column-count: 3 !important; }
+    .cols-2 { column-count: 2 !important; }
+    .item {
+      page-break-inside: avoid;
+    }
+  }
+
+  /* Responsive fallback */
+  @media screen and (max-width: 768px) {
+    .cols-3 { column-count: 2; }
+    .cols-2 { column-count: 1; }
+  }
+  @media screen and (max-width: 480px) {
+    .cols-3, .cols-2 { column-count: 1; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="controls-container no-print">
+    <h2>Morse Code Visualizer</h2>
+    <div class="file-upload-wrapper">
+      <label class="custom-file-upload">
+        <input type="file" id="file-input" accept=".py,.txt" />
+        📂 Select morse_map.py
+      </label>
+      <button class="print-btn" id="print-btn" onclick="window.print()">🖨️ Print Cheat Sheets</button>
+      <span id="file-name-display">No file chosen yet...</span>
+    </div>
+  </div>
+
+  <div id="pages-container"></div>
+
+  <script>
+    document.getElementById('file-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('file-name-display').textContent = `Loaded: ${file.name}`;
+      const reader = new FileReader();
+      reader.onload = function(e) { processMorseData(e.target.result); };
+      reader.readAsText(file);
+    });
+
+    // Format a single Keycode name (with Keycode. already stripped or not) into a readable label.
+    function formatKeyPart(part) {
+      part = part.trim().replace(/^Keycode\./, '');
+
+      const exactMap = {
+        'UP_ARROW':   '↑',  'DOWN_ARROW':  '↓',
+        'LEFT_ARROW': '←',  'RIGHT_ARROW': '→',
+        'ENTER':      '⏎',  'TAB':         '⇥',
+        'BACKSPACE':  '⌫',  'BACKSLASH':   '\\',
+        'LEFT_GUI':  'LEFT ⊞/⌘', 'RIGHT_GUI': 'RIGHT ⊞/⌘'
+      };
+      if (Object.prototype.hasOwnProperty.call(exactMap, part)) return exactMap[part];
+
+      part = part.replace(/RIGHT_CONTROL/g,  'RCTRL');
+      part = part.replace(/LEFT_CONTROL/g,   'LCTRL');
+      part = part.replace(/CONTROL/g,        'CTRL');
+      part = part.replace(/RIGHT_SHIFT/g,    'RShift');
+      part = part.replace(/LEFT_SHIFT/g,     'LShift');
+      part = part.replace(/SHIFT/g,          'Shift');
+      part = part.replace(/RIGHT_ALT/g,      'RALT');
+      part = part.replace(/LEFT_ALT/g,       'LALT');
+      part = part.replace(/ALT/g,            'Alt');
+      part = part.replace(/RIGHT_GUI/g,      'RIGHT ⊞/⌘');
+      part = part.replace(/LEFT_GUI/g,       'LEFT ⊞/⌘');
+      part = part.replace(/GUI/g,            '⊞/⌘');
+      part = part.replace(/KEYPAD_NUMLOCK/g,        'KP NumLk');
+      part = part.replace(/KEYPAD_FORWARD_SLASH/g,  'KP /');
+      part = part.replace(/KEYPAD_ENTER/g,          'KP ⏎');
+      part = part.replace(/KEYPAD_PERIOD/g,         'KP .');
+      part = part.replace(/KEYPAD_PLUS/g,           'KP +');
+      part = part.replace(/KEYPAD_MINUS/g,          'KP -');
+      part = part.replace(/KEYPAD_EQUALS/g,         'KP =');
+      part = part.replace(/KEYPAD_ASTERISK/g,       'KP *');
+      part = part.replace(/KEYPAD/g,                'KP');
+      part = part.replace(/PRINT_SCREEN/g,  'PrtScn');
+      part = part.replace(/ESCAPE/g,        'ESC');
+      part = part.replace(/DELETE/g,        'DEL');
+      part = part.replace(/CAPS_LOCK/g,     'CAPS');
+      part = part.replace(/INSERT/g,        'INS');
+      part = part.replace(/SCROLL_LOCK/g,   'ScrLk');
+      part = part.replace(/NUMLOCK/g,       'NumLk');
+      part = part.replace(/PAGE_UP/g,       'PgUp');
+      part = part.replace(/PAGE_DOWN/g,     'PgDn');
+      part = part.replace(/APPLICATION/g,   'Menu');
+      part = part.replace(/_/g, ' ');
+      return part.trim();
+    }
+
+    function processMorseData(dataStr) {
+      const container = document.getElementById('pages-container');
+      container.innerHTML = '';
+
+      const parsedGroups = { g0: [], g1: [], g2: [], g3: [] };
+      const groupNames = {
+        g0: "Group 0: System / Group Toggles",
+        g1: "Group 1: Keyboard",
+        g2: "Group 2: Mouse & Windows",
+        g3: "Group 3: Macros"
+      };
+
+      // Matches lines like: g1[4][0b1000]='b'   or   g2[2][0b11] = "mmove 0 -1 0"
+      const regex = /^(g[0-3])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
+
+      dataStr.split('\n').forEach(line => {
+        const match = line.match(regex);
+        if (!match) return;
+
+        const group  = match[1];
+        const length = parseInt(match[2], 10);
+        const binStr = match[3].replace('0b', '').padStart(length, '0');
+        const raw    = match[4].trim();
+
+        let key;
+
+        if (raw.startsWith("'") || raw.startsWith('"')) {
+          // ── Quoted string ────────────────────────────────────────────────
+          const q = raw[0];
+          let end = -1;
+          for (let i = 1; i < raw.length; i++) {
+            if (raw[i] === '\\') { i++; continue; }
+            if (raw[i] === q)    { end = i; break; }
+          }
+          key = end !== -1 ? raw.substring(1, end) : raw;
+          key = key.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+
+          // Mouse movement / click abbreviations
+          key = key.replace('mmove 0 -1 0',  'mmove up');
+          key = key.replace('mmove 0 1 0',   'mmove down');
+          key = key.replace('mmove 1 0 0',   'mmove right');
+          key = key.replace('mmove -1 0 0',  'mmove left');
+          key = key.replace('mmove 0 0 1',   'mwheel up');
+          key = key.replace('mmove 0 0 -1',  'mwheel down');
+          key = key.replace('mmove -1 -1 0', 'mmove up-left');
+          key = key.replace('mmove 1 -1 0',  'mmove up-right');
+          key = key.replace('mmove -1 1 0',  'mmove down-left');
+          key = key.replace('mmove 1 1 0',   'mmove down-right');
+          key = key.replace('mclick left 1',  'mclick left sgl');
+          key = key.replace('mclick right 1', 'mclick right sgl');
+          key = key.replace('mclick left 2',  'mclick left dbl');
+          key = key.replace('mclick right 2', 'mclick right dbl');
+          key = key.replace('mdrag left',     'drag left toggle');
+        } else {
+          // ── Unquoted: single Keycode or comma-separated tuple ────────────
+          const noComment = raw.split('#')[0].trim();
+          key = noComment.split(',').map(formatKeyPart).filter(p => p).join(' + ');
+        }
+
+        parsedGroups[group].push({ length, binStr, key });
+      });
+
+      // Sorting function
+      const sortKeys = (a, b) => {
+        const arrowOrder = { '←': 1, '↑': 2, '↓': 3, '→': 4 };
+        const getRank = str => {
+          if (str === '') return 6;
+          if (arrowOrder[str]) return 4;
+          if (str.length === 1 && /[a-zA-Z]/.test(str)) return 1;
+          if (str.length === 1 && /[0-9]/.test(str)) return 2;
+          if (str.length === 1) return 3;
+          return 5;
+        };
+        const ra = getRank(a.key), rb = getRank(b.key);
+        if (ra !== rb) return ra - rb;
+        if (ra === 4) return arrowOrder[a.key] - arrowOrder[b.key];
+        return a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: 'base' });
+      };
+
+      let pagesGenerated = false;
+
+      ['g0', 'g1', 'g2', 'g3'].forEach(groupKey => {
+        const groupItems = parsedGroups[groupKey];
+        if (groupItems.length === 0) return;
+
+        pagesGenerated = true;
+        groupItems.sort(sortKeys);
+
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        pageDiv.style.display = 'block';
+
+        const title = document.createElement('h2');
+        title.textContent = groupNames[groupKey];
+        pageDiv.appendChild(title);
+
+        const columnsDiv = document.createElement('div');
+        columnsDiv.className = 'columns';
+        columnsDiv.classList.add(groupKey === 'g1' ? 'cols-3' : 'cols-2');
+
+        groupItems.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'item';
+
+          const seqDiv = document.createElement('div');
+          seqDiv.className = 'morse-seq';
+          for (const char of item.binStr) {
+            seqDiv.appendChild(document.createElement(char === '0' ? 'dot' : 'dash'));
+          }
+
+          const keyDiv = document.createElement('div');
+          keyDiv.className = 'key-output';
+          if (item.key === '') {
+            keyDiv.classList.add('unassigned');
+            keyDiv.textContent = '[Unassigned]';
+          } else {
+            const keybd = document.createElement('keybd');
+            keybd.textContent = item.key;
+            keyDiv.appendChild(keybd);
+          }
+
+          itemDiv.appendChild(seqDiv);
+          itemDiv.appendChild(keyDiv);
+          columnsDiv.appendChild(itemDiv);
+        });
+
+        pageDiv.appendChild(columnsDiv);
+        container.appendChild(pageDiv);
+      });
+
+      if (pagesGenerated) {
+        document.getElementById('print-btn').style.display = 'inline-block';
+      }
+    }
+  </script>
+</body>
+</html>
