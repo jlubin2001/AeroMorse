@@ -750,6 +750,38 @@ Parts needed:
 
 ---
 
+#### Option B3 — #2915 TRRS Terminal Block (no breadboard, minimal soldering) ⭐ Recommended for #5691
+
+**Adafruit #2915 — $2.50**
+https://www.adafruit.com/product/2915
+
+A 3.5 mm TRRS jack with **built-in screw terminals** — no PCB, no soldering on the jack side at all. Strip a wire, insert it, tighten the screw with a small screwdriver. This is the best option for the #5691 Reverse TFT Feather because it avoids the breadboard entirely and does not require the #2926 Terminal Block FeatherWing (which is incompatible with the Reverse TFT Feather).
+
+| #2915 terminal | Feather pin | Function |
+|----------------|-------------|----------|
+| Tip | D5 | Dot switch |
+| Ring | D6 | Dash switch |
+| Sleeve | GND | Ground |
+| Ring 2 | — | Leave empty |
+
+**If your #5691 has header pins soldered** — use female-to-female jumper wires. One end screws into the #2915 terminal; the other end plugs directly onto the Feather pin. **Zero soldering.**
+
+**If your #5691 has no header pins** — solder the three wires directly to the D5, D6, and GND pads on the Feather. The jack side still needs no soldering. Only 3 solder joints total.
+
+Parts needed:
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | TRRS Jack Terminal Block | #2915 | https://www.adafruit.com/product/2915 |
+| 3 | Female-to-female jumper wires (if Feather has pins) | #266 | https://www.adafruit.com/product/266 |
+| — | *or* 3 short wires ~15 cm + soldering iron (if no header pins) | — | — |
+
+> **Note:** The #2915 accepts both mono and TRRS plugs. Most AT switches use
+> a 3.5 mm mono plug (tip + sleeve only), which connects the Tip and Sleeve
+> terminals when pressed — exactly what AeroMorse expects.
+
+---
+
 ## 6. Speaker Options
 
 The speaker gives audio feedback — a tone for every dot and dash, and a
@@ -878,6 +910,14 @@ several GND pins — any of them work).
 |-----|------|-----------|-----|
 | 1 | TRRS Jack Breakout Board | #5764 | https://www.adafruit.com/product/5764 |
 | 4 | Short wires ~8 cm | — | — |
+
+#### AT switch — #2915 TRRS Terminal Block (no breadboard) ⭐ Recommended for #5691
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | TRRS Jack Terminal Block | #2915 | https://www.adafruit.com/product/2915 |
+| 3 | Female-to-female jumper wires (if Feather has header pins) | #266 | https://www.adafruit.com/product/266 |
+| — | *or* 3 short wires ~15 cm + soldering iron (if no header pins) | — | — |
 
 ---
 
@@ -1123,6 +1163,29 @@ is there to avoid repeating it. Quick summary:
 3. Plug AT switches directly into the TRRS jack:
    - Dot switch: tip-to-sleeve connection = D5 goes low = dot
    - Dash switch: ring1-to-sleeve connection = D6 goes low = dash
+
+#### Option B3 — #2915 TRRS Terminal Block
+
+**If your #5691 has header pins (no soldering at all):**
+
+1. Cut 3 female-to-female jumper wires to a comfortable length (~15 cm).
+2. On the #2915, loosen the Tip, Ring, and Sleeve screws with a small
+   flathead screwdriver.
+3. Insert one wire end into each terminal and tighten the screw firmly.
+4. Plug the other (female) ends directly onto the Feather header pins:
+   - Tip wire → D5
+   - Ring wire → D6
+   - Sleeve wire → GND
+5. Plug AT switches into the #2915 jack.
+
+**If your #5691 has no header pins (3 solder joints):**
+
+1. Cut 3 short wires (~15 cm), strip both ends.
+2. Screw one end of each wire into the Tip, Ring, and Sleeve terminals on
+   the #2915.
+3. Solder the other ends directly to the D5, D6, and GND pads on the
+   Feather.
+4. Plug AT switches into the #2915 jack.
 
 ---
 
