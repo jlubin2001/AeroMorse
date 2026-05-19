@@ -386,8 +386,21 @@ Macro). No extra display hardware to buy or wire.
 |-----------|-------|
 | Identical display to the main board | Each board runs its own CircuitPython independently |
 | No extra display purchase or wiring | See library note above if versions differ |
-| Full colour with group indicator colours | Powered by any USB-C phone charger or power bank |
+| Full colour with group indicator colours | Can run from USB-C charger/power bank or LiPoly battery |
 | No new libraries needed | Does **not** act as a keyboard (has its own `boot.py`) |
+
+**Powering the receiver wirelessly — LiPoly battery options:**
+
+The #5691 has a built-in JST-PH battery connector and charges over USB-C. Plug in any of the batteries below and the receiver runs completely cable-free.
+
+| Adafruit # | Capacity | Est. runtime | Size / notes | Price | URL |
+|-----------|---------|-------------|-------------|-------|-----|
+| #3898 | 400 mAh | ~3–5 hrs | **Slim flat pack** — designed to sit flush against the back of a Feather; thinnest option | $6.95 | https://www.adafruit.com/product/3898 |
+| #1578 | 500 mAh | ~4–6 hrs | Small pouch, slightly thicker than #3898; good balance of size and runtime for half-day use | $7.95 | https://www.adafruit.com/product/1578 |
+| #258 | 1200 mAh | ~9–14 hrs | Full-day runtime; fits in a small case or pouch; recommended for all-day use | $9.95 | https://www.adafruit.com/product/258 |
+
+> Runtime estimates assume ~80–130 mA active draw (ESP32-S3 + TFT on + ESP-NOW receiving).
+> Recharging happens automatically when the USB-C cable is plugged back in — no separate charger needed.
 
 **Files needed on the second board:**
 
@@ -461,6 +474,7 @@ adafruit_display_text/
 | Code change | None | 1 line |
 | Libraries to add | None (reuse existing) | 2 files |
 | Availability | adafruit.com | Amazon / DigiKey |
+| Wireless power | ✓ LiPoly battery (#3898 / #1578 / #258) | ✗ No battery connector |
 
 ---
 
@@ -901,7 +915,15 @@ several GND pins — any of them work).
 | Qty | Item | Adafruit # | URL |
 |-----|------|-----------|-----|
 | 1 | ESP32-S3 Reverse TFT Feather | #5691 | https://www.adafruit.com/product/5691 |
-| 1 | USB-C cable + power bank or charger | — | Powers the display board |
+| 1 | USB-C cable + power bank or charger | — | Powers the display board (if not using a battery) |
+
+**Optional — run the receiver completely wireless (choose one battery):**
+
+| Qty | Item | Adafruit # | Est. runtime | URL |
+|-----|------|-----------|-------------|-----|
+| 1 | LiPoly Battery 400 mAh — slim flat pack | #3898 | ~3–5 hrs | https://www.adafruit.com/product/3898 |
+| — | *or* LiPoly Battery 500 mAh | #1578 | ~4–6 hrs | https://www.adafruit.com/product/1578 |
+| — | *or* LiPoly Battery 1200 mAh | #258 | ~9–14 hrs | https://www.adafruit.com/product/258 |
 
 #### Option W2 — XIAO ESP32C3 + OLED (budget)
 
