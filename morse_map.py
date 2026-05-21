@@ -108,17 +108,17 @@ g1[5][0b00110]='{'          # ..--.
 g1[6][0b110011]='<'         # --..--
 g1[6][0b001100]='>'         # ..--..
 g1[6][0b101111]='?'         # -.----
-g1[6][0b000011]='/'         # ....--
-g1[6][0b111100]='\\'        # ----..
+g1[6][0b000011]='/'         # ....--    (forward slash)
+g1[6][0b111100]='\\'        # ----..    (backslash)
 g1[6][0b000010]='|'         # ....-.
 g1[6][0b111101]='_'         # ----.-
-g1[6][0b000110]='\"'        # ...--.
-g1[6][0b001000]='\''        # ..-...
+g1[6][0b000110]='\"'        # ...--.    (double quote)
+g1[6][0b001000]='\''        # ..-...    (single quote)
 g1[6][0b110111]='`'         # --.---
 g1[6][0b111011]='~'         # ---.--
 
 # ── Function Keys ─────────────────────────────────────────────────────────────
-# 7-symbol patterns. The dot/dash boundary shifts one position per key:
+# 7-symbol patterns. Standand Numbers 1–0 lead with dashes. 1–2 trailed with dashes.
 #   F1  --.----   F6  ---....
 #   F2  --..---   F7  ----...
 #   F3  --...--   F8  -----..
@@ -126,35 +126,35 @@ g1[6][0b111011]='~'         # ---.--
 #   F5  --.....   F10 -------
 #                 F11 .------
 #                 F12 ..-----
-g1[7][0b1101111]=Keycode.F1   # --.----
-g1[7][0b1100111]=Keycode.F2   # --..---
-g1[7][0b1100011]=Keycode.F3   # --...--
-g1[7][0b1100001]=Keycode.F4   # --....-
-g1[7][0b1100000]=Keycode.F5   # --.....
-g1[7][0b1110000]=Keycode.F6   # ---....
-g1[7][0b1111000]=Keycode.F7   # ----...
-g1[7][0b1111100]=Keycode.F8   # -----..
-g1[7][0b1111110]=Keycode.F9   # ------.
-g1[7][0b1111111]=Keycode.F10  # -------
-g1[7][0b0111111]=Keycode.F11  # .------
-g1[7][0b0011111]=Keycode.F12  # ..-----
+g1[7][0b1101111]=Keycode.F1   # --.---- (--1)
+g1[7][0b1100111]=Keycode.F2   # --..--- (--2)
+g1[7][0b1100011]=Keycode.F3   # --...-- (--3)
+g1[7][0b1100001]=Keycode.F4   # --....- (--4)
+g1[7][0b1100000]=Keycode.F5   # --..... (--5)
+g1[7][0b1110000]=Keycode.F6   # ---.... (--6)
+g1[7][0b1111000]=Keycode.F7   # ----... (--7)
+g1[7][0b1111100]=Keycode.F8   # -----.. (--8)
+g1[7][0b1111110]=Keycode.F9   # ------. (--9)
+g1[7][0b1111111]=Keycode.F10  # ------- (--0)
+g1[7][0b0111111]=Keycode.F11  # .------ (1--)
+g1[7][0b0011111]=Keycode.F12  # ..----- (2--)
 
 # ── Non-printable keyboard keys ───────────────────────────────────────────────
 g1[5][0b01001]=Keycode.UP_ARROW      # .-..-    (au)
 g1[5][0b01100]=Keycode.DOWN_ARROW    # .--..    (ad)
 g1[6][0b010100]=Keycode.LEFT_ARROW   # .-.-..   (al)
 g1[5][0b01010]=Keycode.RIGHT_ARROW   # .-.-.    (ar)
-g1[7][0b0000000]=Keycode.HOME        # .......  (7 dots)
-g1[7][0b0001000]=Keycode.END         # ...-...
-g1[6][0b000001]=Keycode.PAGE_UP      # .....-
-g1[6][0b000100]=Keycode.PAGE_DOWN    # ...-..
+g1[7][0b0000000]=Keycode.HOME        # .......  (sh) (7 dots)
+g1[7][0b0001000]=Keycode.END         # ...-...  (sb)
+g1[6][0b000001]=Keycode.PAGE_UP      # .....-   (su)
+g1[6][0b000100]=Keycode.PAGE_DOWN    # ...-..   (sd)
 g1[4][0b0101]=Keycode.ENTER          # .-.-
-g1[6][0b110000]=Keycode.ESCAPE       # --....
-g1[6][0b101100]=Keycode.DELETE       # -.--..
-g1[5][0b10100]=Keycode.INSERT        # -.-..
+g1[6][0b110000]=Keycode.ESCAPE       # --....   (gs)
+g1[6][0b101100]=Keycode.DELETE       # -.--..   (kd)
+g1[5][0b10100]=Keycode.INSERT        # -.-..    (ku)
 g1[2][0b11]=Keycode.BACKSPACE        # --     (freed from M)
 g1[4][0b0011]=Keycode.SPACE          # ..--
-g1[7][0b1110010]=Keycode.TAB         # ---..-.
+g1[7][0b1110010]=Keycode.TAB         # ---..-.  (sf)
 g1[5][0b00100] = "repeat"            # ..-..    repeat
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
@@ -275,28 +275,28 @@ g3[4][0b1110]='phone'       # ---.  C (non-standard pattern)
 g3[1][0b0]='email'          # .     E
 
 # ── Placeholders — fill with user phrases; pattern = Group 1 letter ───────────
-g3[3][0b100]=''             # -..   D
-g3[4][0b0010]=''            # ..-.  F
-g3[3][0b110]=''             # --.   G
-g3[4][0b0000]=''            # ....  H
-g3[2][0b00]=''              # ..    I
-g3[4][0b0111]=''            # .---  J
-g3[3][0b101]=''             # -.-   K
-g3[4][0b0100]=''            # .-..  L
-g3[2][0b11]=''              # --    (backspace pattern)
-g3[2][0b10]=''              # -.    N
-g3[3][0b111]=''             # ---   O
-g3[4][0b0110]=''            # .--.  P
-g3[4][0b1101]=''            # --.-  Q
-g3[3][0b010]=''             # .-.   R
-g3[3][0b000]=''             # ...   S
-g3[1][0b1]=''               # -     T
-g3[3][0b001]=''             # ..-   U
-g3[4][0b0001]=''            # ...-  V
-g3[3][0b011]=''             # .--   W
-g3[4][0b1001]=''            # -..-  X
-g3[4][0b1011]=''            # -.--  Y
-g3[4][0b1100]=''            # --..  Z
+g3[3][0b100]='phrase'             # -..   D
+g3[4][0b0010]='phrase'            # ..-.  F
+g3[3][0b110]='phrase'             # --.   G
+g3[4][0b0000]='phrase'            # ....  H
+g3[2][0b00]='phrase'              # ..    I
+g3[4][0b0111]='phrase'            # .---  J
+g3[3][0b101]='phrase'             # -.-   K
+g3[4][0b0100]='phrase'            # .-..  L
+g3[4][0b1111]='phrase'            # ----  M
+g3[2][0b10]='phrase'              # -.    N
+g3[3][0b111]='phrase'             # ---   O
+g3[4][0b0110]='phrase'            # .--.  P
+g3[4][0b1101]='phrase'            # --.-  Q
+g3[3][0b010]='phrase'             # .-.   R
+g3[3][0b000]='phrase'             # ...   S
+g3[1][0b1]='phrase'               # -     T
+g3[3][0b001]='phrase'             # ..-   U
+g3[4][0b0001]='phrase'            # ...-  V
+g3[3][0b011]='phrase'             # .--   W
+g3[4][0b1001]='phrase'            # -..-  X
+g3[4][0b1011]='phrase'            # -.--  Y
+g3[4][0b1100]='phrase'            # --..  Z
 
 # ── Numbers (same patterns as Group 1) ───────────────────────────────────────
 g3[5][0b01111]='1'          # .----
