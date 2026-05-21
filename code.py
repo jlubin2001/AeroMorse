@@ -1,8 +1,14 @@
-# code.py — Sip-and-puff / two-switch Morse HID device
+# AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
-# Hardware
-#   Adafruit ESP32-S3 Reverse TFT Feather  https://www.adafruit.com/product/5691
-#   Adafruit LPS33HW pressure sensor       https://www.adafruit.com/product/4414
+# Hardware reference — see AEROMORSE_BUILD_GUIDE.md for all options:
+#   Feather board       — Build Guide §3  (default: #5691 Reverse TFT Feather)
+#   Display             — Build Guide §4  (built-in TFT on #5691, or external OLED)
+#   Wireless display    — Build Guide §4 "Wireless Display — ESP-NOW Remote Mirror"
+#   Input method        — Build Guide §5  (Option A sensor / Option B switches)
+#     Option A          — #4414 LPS33HW pressure sensor on STEMMA QT (sip-and-puff)
+#     Option B1/B2/B3   — TRRS / 3.5mm jacks for AT switches (B3 = #2915 terminal block)
+#   Speaker             — Build Guide §6  (S1 #3885 STEMMA / S2 piezo / S3 amp+speaker)
+#   Assembly steps      — Build Guide §8  (8A display, 8B sensor, 8C switches, 8D speaker)
 #
 # Input modes (select with USE_SENSOR below)
 #   SENSOR  — LPS33HW via STEMMA QT: sip lowers pressure (dot), puff raises it (dash)
@@ -60,14 +66,15 @@ from morse_map import groups
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-USE_SENSOR      = True          # False → use two digital switches instead
+USE_SENSOR      = True          # True  = Option A (LPS33HW #4414)  — Build Guide §5 Option A
+                                # False = Option B (AT switches)      — Build Guide §5 Option B
 
-# Pressure thresholds (hPa delta from zeroed baseline).
+# Pressure thresholds (hPa delta from zeroed baseline).      Build Guide §5 Option A, §10
 # Raise these if you get false triggers; lower them if light sips are missed.
 THRESH_SIP      = 5             # must sip this many hPa below baseline
 THRESH_PUFF     = 5             # must puff this many hPa above baseline
 
-# Timing (seconds)
+# Timing (seconds)                                            Build Guide §10
 ACCEPT_DELAY    = 0.2           # idle pause after last element before committing
 LONG_PRESS      = 1.0           # hold duration that cycles the active group
 
@@ -75,11 +82,15 @@ LONG_PRESS      = 1.0           # hold duration that cycles the active group
 # Increase to reduce bounce; decrease if fast elements are missed.
 POINTS_TO_AVERAGE = 8
 
-# Switch GPIO pins (only used when USE_SENSOR = False)
-DOT_PIN         = board.D5
-DASH_PIN        = board.D6
+# Switch GPIO pins (used when USE_SENSOR = False)            Build Guide §5 Option B, §8C
+# Wired via 3.5mm TRRS jack #1699 (B1/B2) or terminal block #2915 (B3).
+DOT_PIN         = board.D5      # → TIP of dot jack / dot terminal
+DASH_PIN        = board.D6      # → TIP of dash jack / dash terminal
 
-# Audio (STEMMA Speaker #3885 → A0, 3V, GND  — or omit speaker entirely)
+# Audio                                                       Build Guide §6, §8D
+# Option S1: Adafruit STEMMA Speaker #3885 wired White=A0, Red=3V, Black=GND.
+# Option S2: passive piezo across A0 and GND.
+# Option S3: small speaker via PAM8302 amp board on A0.
 AUDIO_PIN       = board.A0
 BEEP_DOT_FREQ   = 1200          # Hz — dot (sip) sidetone  — higher pitch
 BEEP_DASH_FREQ  =  800          # Hz — dash (puff) sidetone — lower pitch
@@ -95,7 +106,9 @@ MOUSE_SPEED_FAST   = 3
 MOUSE_SPEED_FACTOR = 2          # overall scale (matches AirTalker feel)
 MOUSE_REPEAT_DELAY = 0.040      # seconds between repeat ticks (40 ms)
 
-# Display
+# Display                                                    Build Guide §4, §8A
+# Built-in TFT on #5691 needs no wiring. For external OLED/TFT FeatherWings or
+# STEMMA QT OLEDs see Build Guide §4 tables.
 DISPLAY_ROTATION   = 0          # degrees — 0 = USB on left, 180 = USB on right
                                 # other valid values: 90, 270
 
@@ -216,6 +229,8 @@ def _audio_tick():
 # ── ESP-NOW wireless display ───────────────────────────────────────────────────
 # Broadcasts TFT state to a QT Py ESP32-C3 + SSD1306 OLED running receiver.py.
 # Entirely optional — if the espnow / wifi modules are absent nothing changes.
+# Wireless display hardware options — see Build Guide §4 "Wireless Display"
+# (any ESP32-family Feather/QT Py as receiver; optional battery #3898/#1578/#258).
 
 _ESPNOW_ENABLED = False
 if _ESPNOW_IMPORTABLE:
