@@ -471,6 +471,8 @@ def _exec_command(cmd):
         if _armed_mods:
             kbd.release_all()
             _armed_mods.clear()
+        _last_mouse_vec  = (0, 0, 0)    # clicks are not repeatable
+        _last_repeatable = None
 
     elif verb == 'mdrag':
         btn = Mouse.LEFT_BUTTON if parts[1] == 'left' else Mouse.RIGHT_BUTTON
@@ -480,6 +482,8 @@ def _exec_command(cmd):
         else:
             mouse.press(btn)
             _drag_active = True
+        _last_mouse_vec  = (0, 0, 0)    # drag toggle is not repeatable
+        _last_repeatable = None
 
     elif verb == 'repeat':
         # Toggle repeat: second 'repeat' stops it
