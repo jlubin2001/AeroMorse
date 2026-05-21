@@ -272,14 +272,19 @@ For a Darci user moving to AeroMorse, in order:
 
 ---
 
-## 12. Outstanding work / contributions welcome
+## 12. Code accuracy
 
-The `morse_map_darci.py` reconstruction is based on the published Darci
-manual (P/N 3001508). A few extension codes have multiple plausible
-patterns due to PDF dot-character rendering issues — these are marked
-with `⚠` comments in the file. If you have a working Darci device and
-can verify against its actual output, please open an issue on GitHub
-with corrections.
+All codes in `morse_map_darci.py` are transcribed directly from the
+Darci USB Owner's Manual (P/N 3001508, 6/13/02) — the Appendix
+"Morse/Plus Listing" tables for Standard Characters, Sticky Keys,
+Command Codes, Mouse Control Codes, Number Mode Codes, International
+Keyboard Keys, and Keyboard Extensions.
+
+The file has been verified by `morse_map_analyzer.py` to contain
+zero duplicate codes and zero conflicts with Group 0.
+
+If you spot a discrepancy against an actual Darci unit, please open
+an issue on GitHub.
 
 ---
 
