@@ -140,10 +140,10 @@ g1[7][0b0111111]=Keycode.F11  # .------
 g1[7][0b0011111]=Keycode.F12  # ..-----
 
 # ── Non-printable keyboard keys ───────────────────────────────────────────────
-g1[5][0b01001]=Keycode.UP_ARROW      # .-..-
-g1[5][0b01100]=Keycode.DOWN_ARROW    # .--..
-g1[6][0b010100]=Keycode.LEFT_ARROW   # .-.-..
-g1[5][0b01010]=Keycode.RIGHT_ARROW   # .-.-.
+g1[5][0b01001]=Keycode.UP_ARROW      # .-..-    (au)
+g1[5][0b01100]=Keycode.DOWN_ARROW    # .--..    (ad)
+g1[6][0b010100]=Keycode.LEFT_ARROW   # .-.-..   (al)
+g1[5][0b01010]=Keycode.RIGHT_ARROW   # .-.-.    (ar)
 g1[7][0b0000000]=Keycode.HOME        # .......  (7 dots)
 g1[7][0b0001000]=Keycode.END         # ...-...
 g1[6][0b000001]=Keycode.PAGE_UP      # .....-
@@ -155,6 +155,7 @@ g1[5][0b10100]=Keycode.INSERT        # -.-..
 g1[2][0b11]=Keycode.BACKSPACE        # --     (freed from M)
 g1[4][0b0011]=Keycode.SPACE          # ..--
 g1[7][0b1110010]=Keycode.TAB         # ---..-.
+g1[5][0b00100] = "repeat"            # ..-..    repeat
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
 # Sticky: press once to arm, next key fires with the modifier, then it releases.
@@ -237,10 +238,10 @@ g2[6][0b000011]=Keycode.KEYPAD_FORWARD_SLASH  # ....--
 g2[6][0b111100]=Keycode.APPLICATION        # ----..  context-menu key
 g2[7][0b1110001]=Keycode.KEYPAD_NUMLOCK    # ---...-
 g2[4][0b0101]=Keycode.KEYPAD_ENTER         # .-.-
-g2[5][0b01001]=Keycode.UP_ARROW            # .-..-
-g2[5][0b01100]=Keycode.DOWN_ARROW          # .--..
-g2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..
-g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.
+g2[5][0b01001]=Keycode.UP_ARROW            # .-..-      (au)
+g2[5][0b01100]=Keycode.DOWN_ARROW          # .--..      (ad)
+g2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..     (al)
+g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.      (ar)
 
 # ── Windows Shortcuts (tuples = all keys pressed simultaneously) ──────────────
 g2[6][0b110000]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --....  free mouse from VM
