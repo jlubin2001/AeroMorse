@@ -516,7 +516,7 @@ def _is_command(action):
 
 def execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
-    global _last_action, _last_repeatable, _last_mouse_vec
+    global _last_action, _last_repeatable, _last_mouse_vec, active_group
     if isinstance(action, tuple):
         _last_action     = "COMBO"
         _last_repeatable = action
@@ -545,6 +545,13 @@ def execute(action, pattern=""):
             print(f"{pattern}  \"{action}\"")
             _exec_text(action)
             _beep_notify()
+
+    # Auto-return to Group 1 (Keyboard) after any Group 3 (Macro) action fires.
+    # Skipped if the action itself already switched groups (active_group != 3).
+    if active_group == 3:
+        active_group     = 1
+        _last_repeatable = None
+        print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
 
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
