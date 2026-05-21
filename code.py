@@ -524,6 +524,10 @@ def execute(action, pattern=""):
         print(f"{pattern}  COMBO")
         _exec_combo(action)
         _beep_notify()
+        if active_group == 3:                               # auto-return after macro
+            active_group     = 1
+            _last_repeatable = None
+            print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
     elif isinstance(action, int):
         _last_action     = f"KEY {action}"
         _last_repeatable = action
@@ -531,13 +535,16 @@ def execute(action, pattern=""):
         print(f"{pattern}  KEY {action}")
         _exec_keycode(action)
         _beep_notify()
+        if active_group == 3:                               # auto-return after macro
+            active_group     = 1
+            _last_repeatable = None
+            print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
     elif isinstance(action, str):
         if _is_command(action):
             _last_action = action[:20]
             print(f"{pattern}  {action}")
             _exec_command(action)
-            # mmove updates _last_mouse_vec and clears _last_repeatable (see below)
-            # other commands leave repeat state unchanged
+            # commands (including "group 3") are NOT auto-returned — intentional
         else:
             _last_action     = f'"{action[:16]}"'
             _last_repeatable = action
@@ -545,13 +552,10 @@ def execute(action, pattern=""):
             print(f"{pattern}  \"{action}\"")
             _exec_text(action)
             _beep_notify()
-
-    # Auto-return to Group 1 (Keyboard) after any Group 3 (Macro) action fires.
-    # Skipped if the action itself already switched groups (active_group != 3).
-    if active_group == 3:
-        active_group     = 1
-        _last_repeatable = None
-        print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
+            if active_group == 3:                           # auto-return after macro
+                active_group     = 1
+                _last_repeatable = None
+                print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
 
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
