@@ -10,8 +10,15 @@ Analyzes morse_map.py for:
 import sys, os, re, types
 from datetime import date
 
-MORSE_MAP_PATH = os.path.join(os.path.dirname(__file__), 'morse_map.py')
-REPORT_PATH    = os.path.join(os.path.dirname(__file__), 'morse_map_report.txt')
+# When frozen by PyInstaller the script runs from a temp extraction folder;
+# morse_map.py and the report must be found relative to the .exe itself.
+if getattr(sys, 'frozen', False):
+    _BASE = os.path.dirname(os.path.abspath(sys.argv[0]))
+else:
+    _BASE = os.path.dirname(os.path.abspath(__file__))
+
+MORSE_MAP_PATH = os.path.join(_BASE, 'morse_map.py')
+REPORT_PATH    = os.path.join(_BASE, 'morse_map_report.txt')
 
 # ── Mock adafruit_hid so morse_map imports cleanly ───────────────────────────
 

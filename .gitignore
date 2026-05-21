@@ -26,3 +26,7 @@ Desktop.ini
 
 # CircuitPython device files that shouldn't be in the repo
 boot_out.txt
+
+# PyInstaller build artifacts
+build/
+*.spec
