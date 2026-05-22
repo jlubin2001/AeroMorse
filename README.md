@@ -8,6 +8,37 @@ keyboard and mouse — no drivers required on any operating system.
 
 ---
 
+## Replacing a Darci USB? Start here.
+
+AeroMorse is a modern, open-source alternative to the **WesTest Darci USB**
+Morse-code input device (now end-of-life, Windows-only, ~$1000+).
+
+If you are a current Darci user or know someone who is, AeroMorse provides:
+
+- ✅ **The same Morse codes you already know** — letters A–Z, numbers 0–9,
+  punctuation, F-keys, navigation, and modifiers can all use Darci's exact
+  code set via the included **`morse_map_darci.py`** drop-in code map.
+- ✅ **Modern OS support** — works on Windows 10/11, macOS, Linux, ChromeOS,
+  iPadOS, and Android. No Windows-only Mouse Keys dependency.
+- ✅ **Lower cost** — ~$50–$100 in off-the-shelf parts vs. ~$1000+ commercial
+  device.
+- ✅ **Built-in sip-and-puff** — no external interface required.
+- ✅ **Active development** — open source, customisable, and supported.
+- ✅ **Optional wireless caregiver display** — see the user's screen from
+  across the room (no equivalent on Darci).
+
+Read **[`AEROMORSE_VS_DARCI.md`](AEROMORSE_VS_DARCI.md)** for a full
+feature-by-feature comparison, an honest list of what AeroMorse cannot do
+(single-switch timed input, 3-switch end-of-character mode), and a migration
+checklist.
+
+To preserve Darci muscle memory, rename **`morse_map_darci.py`** to
+`morse_map.py` on the CIRCUITPY drive. All codes in that file are
+transcribed verbatim from the Darci USB Owner's Manual (P/N 3001508).
+
+---
+
+
 ## Hardware
 
 ### Required
@@ -492,6 +523,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 |------|---------|
 | `code.py` | Main firmware — Morse state machine, USB HID, display, ESP-NOW sender |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
+| `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on; enables USB HID keyboard and mouse |
 | `receiver.py` | Wireless display mirror firmware (copy to the second #5691 receiver board) |
 | `receiver_boot.py` | boot.py for the receiver board — does not enable USB HID |
@@ -501,6 +533,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | File | Purpose |
 |------|---------|
 | `AEROMORSE_BUILD_GUIDE.md` | Full build guide covering hardware options, wiring, soldering, wireless display setup, library installation, troubleshooting, and parts lists |
+| `CAREGIVER_SETUP_GUIDE.md` | Plain-English step-by-step assembly guide for a non-technical caregiver, using a specific recommended parts set |
+| `AEROMORSE_VS_DARCI.md` | Feature-by-feature comparison vs. the WesTest Darci USB, with migration guide for Darci users |
 | `TOOLS_AND_GUIDES.md` | Reference for development tools: Mu editor, Thonny, PuTTY, CircuitPython installer |
 | `Morse Code Cheat Sheet.pdf` | Printable one-page reference card for all AeroMorse patterns |
 
@@ -527,3 +561,10 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | Pattern commits before finished | `ACCEPT_DELAY` too short | Increase `ACCEPT_DELAY` |
 | Pattern shows `?` on display | Pattern not mapped in current group | Check `morse_map.py`; REPL shows the exact pattern received |
 | Calibration message at startup then hangs | Sensor not found on I²C | Check STEMMA QT cable connection |
+
+## Credits
+
+Inspired by AirTalker (https://github.com/ATMakersOrg/AirTalker). Thanks Bill!
+
+Vibe coded by Jim Lubin (https://makoa.org/jim) using Gemini Pro 3.1 & Claude Code Opus 4.7.
+Jim has been using morse code for computer access since 1989 when he became a ventilator dependent quadriplegic, paralyzed from the neck down and dependent on a ventilator to breathe. See his webpage at (https://makoa.org/jlubin/morsecode.htm).
