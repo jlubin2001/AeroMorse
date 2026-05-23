@@ -30,8 +30,7 @@ once before buying anything — your hardware choices affect each other.
 AeroMorse is an open-source CircuitPython project by Jim Lubin — a
 ventilator-dependent quadriplegic who has used Morse code for computer access
 since 1989 — that turns an Adafruit Feather microcontroller into a USB HID
-keyboard and mouse. Inspired by
-[AirTalker](https://github.com/ATMakersOrg/AirTalker), it connects via USB-C
+keyboard and mouse. Inspired by [AirTalker](https://github.com/ATMakersOrg/AirTalker), it connects via USB-C
 and appears to the host as a standard keyboard and mouse with no drivers
 required. Works on **Windows, macOS, Linux, iPadOS, Android, and ChromeOS**.
 
@@ -999,18 +998,19 @@ Windows, macOS, and Linux at no cost.
 **If your Feather already has header pins soldered:** No special tools needed —
 the pins press straight into the breadboard.
 
-**If your Feather has no header pins (bare holes):** You have three options:
+**If your Feather has no header pins (bare holes):** You have two options:
 
 | Option | What to do | Cost |
 |--------|-----------|------|
-| **Test hook clips** | Clip onto the copper pads on the back of the Feather — one clip per pin you need (only 3 for AT switch mode: D5, D6, GND). The male pin end goes into the breadboard. The Goupchn clips you found work for this. | Clips you already have |
 | **Get headers soldered** | Take the Feather and the included loose header strip to a local makerspace, library maker lab, or electronics repair shop — most will solder headers for free or a few dollars. This is the most reliable long-term solution. | Free–$5 |
 | **Order with headers pre-installed** | Adafruit sells some Feather boards with headers already soldered. When reordering, look for the listing that says "with headers" in the title. | Same price as bare board |
 
-For AT switch mode with test hook clips, you only ever need 3 clips (D5, D6, GND).
-The Feather sits on the table face-down; clip onto the copper ring around each
-pin hole on the back; the male pin end of each clip goes into the breadboard
-hole next to the jack leg it connects to. USB power still comes from the cable.
+> **Why not test hook clips?** Test hook clips (EZ-hook / Goupchn style)
+> need something cylindrical to hook around — a wire lead, header pin, or
+> IC leg. They cannot reliably grip a flat through-hole pad: there is
+> nothing protruding for the hook to bite, and the hook is too large to
+> engage inside the 0.7–1.0 mm through-hole. They will slide off with the
+> lightest tug. Use one of the two options above instead.
 
 ---
 
