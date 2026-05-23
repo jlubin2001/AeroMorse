@@ -123,11 +123,7 @@ exactly which features are included.
 | ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up (normal) |
 | ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount) |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
-| ESP32-S2 Feather w/ BME280 | [#5303](https://www.adafruit.com/product/5303) | ✓ | — | ✓ 2MB | ✓ | S2 chip (no BLE); BME280 sensor not used by AeroMorse |
 | Feather nRF52840 Express | [#4062](https://www.adafruit.com/product/4062) | ✓ | ✓ | — | — | Most mature BLE HID; no PSRAM |
-| Feather Sense (nRF52840) | [#4516](https://www.adafruit.com/product/4516) | ✓ | ✓ | — | — | nRF52840 + onboard sensors; no PSRAM |
-| Feather RP2040 | [#4884](https://www.adafruit.com/product/4884) | ✓ | — | — | — | No wireless; very capable USB HID |
-| Feather M4 Express (SAMD51) | [#3857](https://www.adafruit.com/product/3857) | ✓ | — | — | — | Fast; no wireless |
 
 ※ BLE HID bugs fixed in CircuitPython 10.x, but requires 8MB+ flash firmware
 build to include the BLE stack. Verify at circuitpython.org before relying on
@@ -144,7 +140,6 @@ STEMMA QT with no wiring change.
 | Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|---------|-------|------|-------|
 | Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✓ | ✓ | ✓ **8MB** | ✓ | **Only board with USB HID + BLE HID + PSRAM**; built-in LiPoly charging + battery monitor |
-| Metro RP2350 w/ PSRAM | [#6267](https://www.adafruit.com/product/6267) | ✓ | — | ✓ **8MB** | — | No wireless; 8MB PSRAM + reliable USB HID |
 
 > The Metro ESP32-S3 #5500 (16MB flash) has room for the full CircuitPython
 > firmware including BLE. It is the only board in this guide that combines
@@ -254,7 +249,6 @@ main 512 KB free for code. Any display size works.
 | Same but screen faces up | #5483 TFT Feather |
 | BLE HID + colour TFT or large display | #5500 Metro ESP32-S3 |
 | BLE HID + OLED only (no large display needed) | #4062 nRF52840 Feather |
-| No wireless needed, just USB HID | #4884 RP2040 Feather or #3857 M4 Feather |
 
 ---
 
@@ -572,9 +566,6 @@ more neatly.
 |---------|---|------|-----------|--------|-----|
 | 2.0" 320×240 IPS TFT EYESPI | [5800](https://www.adafruit.com/product/5800) | 2.0" | 320×240 colour | ST7789 | https://www.adafruit.com/product/5800 |
 | 1.3" 240×240 IPS TFT EYESPI | [5393](https://www.adafruit.com/product/5393) | 1.3" | 240×240 colour | ST7789 | https://www.adafruit.com/product/5393 |
-| 1.14" 240×135 IPS TFT EYESPI | [5394](https://www.adafruit.com/product/5394) | 1.14" | 240×135 colour | ST7789 | https://www.adafruit.com/product/5394 |
-| 1.54" 240×240 round IPS TFT EYESPI | [5610](https://www.adafruit.com/product/5610) | 1.54" round | 240×240 colour | GC9A01A | https://www.adafruit.com/product/5610 |
-| 1.5" 128×128 OLED EYESPI | [5398](https://www.adafruit.com/product/5398) | 1.5" | 128×128 colour OLED | SSD1351 | https://www.adafruit.com/product/5398 |
 
 **EYESPI cables** (between #5613 breakout and display):
 
@@ -610,8 +601,6 @@ with **no changes at all** — simply swap the physical display.
 **#938 (1.3")** is a direct plug-in upgrade — 35% larger, identical wiring and
 code. A better choice if you want a slightly bigger display without any of the
 complexity of a TFT.
-
----
 
 ---
 
