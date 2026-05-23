@@ -76,10 +76,10 @@ with a printed reference card while you learn.
 
 AeroMorse has modular hardware. You pick:
 
-1. **A Feather microcontroller board** (the brain)
-2. **A display** (what you see)
-3. **An input method** (sip-and-puff sensor or AT switches)
-4. **A speaker** (optional audio feedback)
+1. **A Feather microcontroller board** (the brain — required)
+2. **An input method** (sip-and-puff sensor or AT switches — required)
+3. **A display** (what you see — optional but recommended)
+4. **A speaker** (audio feedback — optional)
 
 Once you have chosen each, jump to the relevant wiring section in Step 8.
 
