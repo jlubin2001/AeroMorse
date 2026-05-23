@@ -1487,8 +1487,15 @@ CIRCUITPY/
     ├── adafruit_display_text/              (always — text labels on the screen)
     ├── neopixel.mpy                        (always — onboard NeoPixel)
     ├── adafruit_lps35hw.mpy                (only if using sip-and-puff sensor)
-    └── adafruit_displayio_ssd1306.mpy      (only if using an OLED display)
+    ├── adafruit_displayio_ssd1306.mpy      (only if using OLED #326 or #938)
+    ├── adafruit_hx8357.mpy                 (only if using TFT #3651, #5872, or #2050)
+    ├── adafruit_ili9341.mpy                (only if using TFT #3315, #1770, or #1743)
+    └── adafruit_st7789.mpy                 (only if using TFT #4311)
 ```
+
+> Built-in TFT boards (#5691 / #5483 / #5300) get nothing extra from the
+> per-display list — `board.DISPLAY` is initialised by the firmware, so
+> no driver `.mpy` is needed. They still need every "always" entry above.
 
 **Safely eject the CIRCUITPY drive** before unplugging. The Feather reboots and
 runs the code automatically.
