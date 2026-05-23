@@ -86,10 +86,6 @@ Once you have chosen each, jump to the relevant wiring section in Step 8.
 > **Recommended combination for most builders (USB HID, display included):**
 > ESP32-S3 Reverse TFT Feather #5691 · LPS33HW sensor #4414 · STEMMA Speaker #3885
 >
-> **If you want a separate, repositionable display without jumper wires:**
-> ESP32-S3 EYESPI Feather #5613 · 2.0" EYESPI TFT #5800 · EYESPI cable #5240
-> · LPS33HW sensor #4414 · STEMMA Speaker #3885
->
 > **If you need Bluetooth wireless HID:**
 > Metro ESP32-S3 #5500 · 1.3" OLED #938 · LPS33HW sensor #4414 · STEMMA Speaker #3885
 
@@ -124,7 +120,6 @@ exactly which features are included.
 | Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|---------|-------|------|-------|
 | ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✓ | ※ | ✓ 2MB | ✓ | **Recommended — see below** |
-| ESP32-S3 Feather w/ EYESPI Connector | [#5613](https://www.adafruit.com/product/5613) | ✓ | ※ | ✓ 2MB | ✓ | No built-in display; **18-pin EYESPI FPC connector** drives any EYESPI TFT with one flex cable |
 | ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up (normal) |
 | ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount) |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
@@ -195,34 +190,6 @@ https://www.adafruit.com/product/5483
 
 ---
 
-**If you want a separate display without messy wiring (EYESPI):**
-
-The **ESP32-S3 Feather with EYESPI Connector #5613** is a complete Feather
-board — you buy it **instead of** #5691, not in addition to it. It has the
-same ESP32-S3 brain as #5691 (USB HID, ESP-NOW, STEMMA QT, 2 MB PSRAM) but
-**no built-in display**. In place of the soldered-on TFT, it has an **18-pin
-EYESPI socket** built onto the board.
-
-The display you want is then a separate EYESPI-equipped board (e.g. the 2.0"
-#5800 — see §4 "EYESPI displays"). Both the Feather and the display have
-the same 18-pin EYESPI socket. A single flat flex cable plugs into both:
-
-```
-[ #5613 Feather ]──── EYESPI flex cable ────[ EYESPI display ]
-```
-
-No jumper wires, no soldering. The cable carries power, ground, and all SPI
-signals. EYESPI cables come in 50 mm, 100 mm, and 200 mm lengths so the
-display can be mounted close to the Feather or out on a separate arm.
-
-Choose this combination if you want the display physically separated from
-the Feather (e.g. on an arm at eye level, in a cleaner enclosure, or
-swappable between display sizes) without the soldering and jumper-wiring
-that the standalone-breakout path requires.
-https://www.adafruit.com/product/5613
-
----
-
 **If you want BLE HID + PSRAM + the most memory (Metro form factor):**
 
 The **Metro ESP32-S3 #5500** is the only board in this guide that combines all
@@ -285,7 +252,6 @@ main 512 KB free for code. Any display size works.
 |---------|--------|
 | Simplest build, colour TFT included, USB only | #5691 Reverse TFT Feather |
 | Same but screen faces up | #5483 TFT Feather |
-| Separate display, single flex cable, no jumper wires | **#5613 + EYESPI display** |
 | BLE HID + colour TFT or large display | #5500 Metro ESP32-S3 |
 | BLE HID + OLED only (no large display needed) | #4062 nRF52840 Feather |
 | No wireless needed, just USB HID | #4884 RP2040 Feather or #3857 M4 Feather |
@@ -303,7 +269,6 @@ fundamentally need headers.
 | Component / option | Works without headers? | What's needed |
 |---|---|---|
 | **#5691 built-in TFT display** | ✓ Plug-and-play | Display soldered to board — nothing to wire |
-| **#5613 + EYESPI display** | ✓ Plug-and-play | One flex cable, both ends plug-in |
 | **STEMMA QT OLED (#326, #938)** | ✓ Plug-and-play | STEMMA QT cable, no Feather wiring |
 | **STEMMA QT sensor (#4414 LPS33HW)** | ✓ Plug-and-play | STEMMA QT cable |
 | **FeatherWing displays (#3651, #5872, #3315)** | ✗ Not possible | The wing's holes can't grip bare pads — headers required |
@@ -328,7 +293,7 @@ for audio** (analog signal must come from A0) or **arbitrary switches**
 
 **Recommended fully-header-less build:**
 
-- Feather: **#5691** (built-in TFT — no wiring) or **#5613 + EYESPI** display
+- Feather: **#5691** (built-in TFT — no wiring)
 - Sensor: **#4414 LPS33HW** via STEMMA QT (or skip if using AT switches)
 - AT switches: **#2915 Terminal Block** + 3 wires soldered to D5/D6/GND pads
 - Speaker: 3 wires soldered to A0/3V/GND pads (or skip — display alone is fine)
@@ -421,25 +386,36 @@ tucked out of the way.
 
 ---
 
-### EYESPI displays (one flex cable, no jumper wires) — pair with #5613
+### EYESPI displays (advanced — SPI wiring via breakout adapter)
 
 EYESPI is Adafruit's standardised **18-pin FPC connector** for SPI displays.
-The **#5613 Feather** (see §3) and any EYESPI-equipped display each have an
-identical 18-pin EYESPI socket. A single flat flex cable plugs into both,
-carrying power, ground, MOSI, MISO, SCK, CS, DC, reset, and backlight — no
-breadboard, no jumper wires, no soldering.
+Several Adafruit TFT displays have an EYESPI socket, which makes cabling
+cleaner: instead of individual jumper wires for each SPI signal, a single
+flat flex cable connects the display to an **EYESPI Breakout Board**.
+
+> **#5613 — Adafruit EYESPI Breakout Board — 18 Pin FPC Connector — $1.95**
+> https://www.adafruit.com/product/5613
+>
+> This is a small passive adapter board. It has an 18-pin EYESPI FPC socket
+> on one side and through-hole pads (breadboard-friendly) on the other,
+> breaking out all 18 EYESPI signals to individual pins. **It is not a
+> microcontroller and cannot run code** — it is purely a wiring adapter.
+
+**How it works with a Feather:**
 
 ```
-[ #5613 Feather ]──── EYESPI flex cable ────[ EYESPI display ]
-       │
-       └── STEMMA QT port for sensor / OLED chain (separate)
+[ Any Feather ]──7 wires──[ #5613 breakout ]──EYESPI cable──[ EYESPI display ]
 ```
 
-This is the **easiest non-built-in display path** in this guide — simpler
-than the FeatherWing displays (which require header pins on the Feather)
-and dramatically simpler than the standalone breakout displays (no 5–7
-wires to track). The Feather and display are two separate boards joined by
-one cable.
+You still need to solder or jumper ~7 wires from the Feather's SPI pins
+(MOSI, SCK, CS, DC, RST, 3V, GND) to the #5613 breakout's through-hole
+pads. The breakout then sends those signals through the flat flex cable to
+the display. This is functionally the same amount of wiring as connecting
+any standalone SPI breakout display — the advantage is that the flex cable
+is then available for routing the display to a different physical location
+more neatly.
+
+**EYESPI-compatible displays:**
 
 | Display | # | Size | Resolution | Driver | URL |
 |---------|---|------|-----------|--------|-----|
@@ -449,8 +425,7 @@ one cable.
 | 1.54" 240×240 round IPS TFT EYESPI | [5610](https://www.adafruit.com/product/5610) | 1.54" round | 240×240 colour | GC9A01A | https://www.adafruit.com/product/5610 |
 | 1.5" 128×128 OLED EYESPI | [5398](https://www.adafruit.com/product/5398) | 1.5" | 128×128 colour OLED | SSD1351 | https://www.adafruit.com/product/5398 |
 
-**Also required: one EYESPI cable.** Adafruit sells them in several lengths so
-the display can be mounted where it is most visible:
+**EYESPI cables** (between #5613 breakout and display):
 
 | Cable | # | Length | URL |
 |-------|---|--------|-----|
@@ -458,15 +433,14 @@ the display can be mounted where it is most visible:
 | EYESPI Cable 100 mm | [5240](https://www.adafruit.com/product/5240) | 100 mm | https://www.adafruit.com/product/5240 |
 | EYESPI Cable 200 mm | [5241](https://www.adafruit.com/product/5241) | 200 mm | https://www.adafruit.com/product/5241 |
 
-**Recommended EYESPI display: #5800 (2.0" 320×240).** Largest of the EYESPI
-options, easy to read across a desk, and the ST7789 driver is the same one
-used by the built-in TFT on #5691 — minimal code changes.
+> **For most builders, a FeatherWing display or the built-in TFT on #5691
+> is a simpler choice.** The EYESPI path is useful if you specifically want
+> a certain display size/shape and a neat flex-cable run, and you are
+> comfortable soldering 7 wires to the #5613 breakout.
 
-> **Code file:** The EYESPI displays are not built-in displays — `board.DISPLAY`
-> is not auto-populated. You must initialise the display manually in `code.py`
-> using `displayio` and the appropriate driver library (e.g.
-> `adafruit_st7789`). This is the same one-time setup used by the standalone
-> breakout displays above; an example is provided in §10 "Configuration".
+> **Code:** EYESPI displays are not auto-initialised — `board.DISPLAY` is not
+> populated. You must initialise them in `code.py` with `displayio` and the
+> appropriate driver library (same as the standalone breakout displays above).
 
 ---
 
@@ -951,20 +925,6 @@ several GND pins — any of them work).
 |-----|------|-----------|-----|
 | 1 | STEMMA QT 4-pin cable 400 mm | #5385 | https://www.adafruit.com/product/5385 |
 
-**If you chose the #5613 EYESPI Feather**, pick ONE EYESPI display and ONE
-EYESPI cable:
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | 2.0" 320×240 IPS TFT EYESPI ⭐ recommended | #5800 | https://www.adafruit.com/product/5800 |
-| — | *or* 1.3" 240×240 IPS TFT EYESPI | #5393 | https://www.adafruit.com/product/5393 |
-| — | *or* 1.14" 240×135 IPS TFT EYESPI | #5394 | https://www.adafruit.com/product/5394 |
-| — | *or* 1.54" 240×240 round IPS TFT EYESPI | #5610 | https://www.adafruit.com/product/5610 |
-| — | *or* 1.5" 128×128 colour OLED EYESPI | #5398 | https://www.adafruit.com/product/5398 |
-| 1 | EYESPI Cable 100 mm (typical) | #5240 | https://www.adafruit.com/product/5240 |
-| — | *or* EYESPI Cable 50 mm (display close to Feather) | #5239 | https://www.adafruit.com/product/5239 |
-| — | *or* EYESPI Cable 200 mm (display on a separate arm) | #5241 | https://www.adafruit.com/product/5241 |
-
 ---
 
 ### Wireless display — choose ONE (optional, for remote viewing)
@@ -1127,31 +1087,6 @@ You need 5 short wires. Solder or use header connectors:
 
 > Pin labels vary slightly between breakout boards. Match by function name, not
 > physical position. Refer to the Adafruit product guide for your specific board.
-
-#### If you chose the #5613 EYESPI Feather + EYESPI display
-
-This is the simplest non-built-in path — no wires, no soldering.
-
-1. Locate the **18-pin EYESPI connector** on the Feather (#5613). It is the
-   small black ribbon-cable socket near the edge of the board.
-2. Flip up the small black tab on the connector — it pivots ~90° away from the
-   board to unlock the socket.
-3. Slide one end of the **EYESPI flex cable** into the socket with the gold
-   contacts facing **down** (toward the board). The cable goes in about
-   2 mm — stop when it sits naturally; do not force.
-4. Press the black tab back down flat to lock the cable in place.
-5. Repeat steps 2–4 on the **display board's** EYESPI connector with the other
-   end of the cable.
-6. **Check the cable orientation:** both ends must have the gold contacts
-   facing the same way relative to the board. If colours appear inverted or
-   the screen stays dark after power-on, the cable is in backwards on one end —
-   unlock, flip, relock.
-
-That is all — power, ground, and all SPI signals run through the single flex
-cable.
-
-> The EYESPI connector is fragile. Do not pull the cable while the tab is
-> locked, and do not flex the cable sharply at the connector.
 
 ---
 
@@ -1427,37 +1362,7 @@ adafruit_lps35hw.mpy
 | #5483 ESP32-S3 TFT Feather | `v1/` folder — uses built-in display |
 | #5691 ESP32-S3 Reverse TFT Feather | `v1/` folder — uses built-in display |
 | #5300 ESP32-S2 TFT Feather | `v1/` folder — uses built-in display |
-| #5613 ESP32-S3 EYESPI Feather + EYESPI display | `v2/` folder — see EYESPI init below |
 | All other boards | `v2/` folder — uses external display |
-
-**EYESPI display init (only for #5613 + EYESPI display):**
-
-The EYESPI displays are SPI displays — `board.DISPLAY` is not auto-populated.
-Near the top of `v2/code.py`, replace the existing OLED initialisation block
-with the snippet matching your EYESPI display's driver chip:
-
-```python
-# Example for #5800 (2.0" 320x240) and #5393 / #5394 — all ST7789
-import board, busio, displayio, fourwire
-from adafruit_st7789 import ST7789
-
-displayio.release_displays()
-spi = busio.SPI(board.SCK, MOSI=board.MOSI)
-bus = fourwire.FourWire(spi, command=board.D10, chip_select=board.D9,
-                        reset=board.D11)
-display = ST7789(bus, width=320, height=240, rowstart=0, colstart=0)
-```
-
-Drivers per display:
-
-| Display | Library file in `lib/` | Driver class |
-|---------|----------------------|--------------|
-| #5800, #5393, #5394 | `adafruit_st7789.mpy` | `ST7789` |
-| #5610 (round) | `adafruit_gc9a01a/` | `GC9A01A` |
-| #5398 (OLED) | `adafruit_ssd1351.mpy` | `SSD1351` |
-
-Add the matching driver library to `lib/` from the Adafruit CircuitPython
-Bundle (see §9.2).
 
 Copy these three files to the **root** of the CIRCUITPY drive (not inside any
 subfolder). Take `code.py` from the correct folder for your board (above), and
