@@ -279,6 +279,59 @@ main 512 KB free for code. Any display size works.
 
 ---
 
+### Building with no header pins — what works
+
+Many Feather boards ship as bare PCBs with no header pins soldered. If you
+don't want to solder headers (and your supplier didn't pre-install them),
+some build paths still work via STEMMA QT plug-and-play, some require
+soldering a few wires directly to the Feather's PCB pads, and some
+fundamentally need headers.
+
+| Component / option | Works without headers? | What's needed |
+|---|---|---|
+| **#5691 built-in TFT display** | ✓ Plug-and-play | Display soldered to board — nothing to wire |
+| **#5613 + EYESPI display** | ✓ Plug-and-play | One flex cable, both ends plug-in |
+| **STEMMA QT OLED (#326, #938)** | ✓ Plug-and-play | STEMMA QT cable, no Feather wiring |
+| **STEMMA QT sensor (#4414 LPS33HW)** | ✓ Plug-and-play | STEMMA QT cable |
+| **FeatherWing displays (#3651, #5872, #3315)** | ✗ Not possible | The wing's holes can't grip bare pads — headers required |
+| **Standalone TFT breakouts (#2050, #1770…)** | ⚠ Solder 5–7 wires | Solder display wires directly to Feather pads |
+| **AT switches — Option B1 breadboard** | ✗ Not possible | Feather must sit *in* the breadboard via headers |
+| **AT switches — Option B2 TRRS breakout** | ⚠ Solder 3 wires | Solder breakout output wires to D5/D6/GND pads |
+| **AT switches — Option B3 #2915 Terminal Block** | ⚠ Solder 3 wires | Solder terminal-block wires to D5/D6/GND pads |
+| **Speaker — #3885 STEMMA Speaker** | ⚠ Solder 3 wires | Cut JST PH plug off, solder to A0/3V/GND pads |
+| **Speaker — Piezo (#1740/#1739)** | ⚠ Solder 2 wires | Solder leads to A0/GND pads |
+| **Speaker — PAM8302 amp (#2130)** | ⚠ Solder 3 wires | Solder amp board to A0/3V/GND pads |
+
+**STEMMA QT does not solve every problem.** STEMMA QT carries I²C, 3 V, and
+GND only — that is enough for sensors and I²C displays (OLEDs), but **not
+for audio** (analog signal must come from A0) or **arbitrary switches**
+(digital inputs need GPIO pins).
+
+> An I²C GPIO expander board (AW9523 #4886, MCP23017 #5346, PCF8575 #5611)
+> *could* host AT switches via STEMMA QT, but you still need to wire jacks
+> to the expander's GPIO pads — and `code.py` would need a new library and
+> rewritten input routines. **More work, no benefit** vs. soldering three
+> wires directly to D5/D6/GND on the Feather.
+
+**Recommended fully-header-less build:**
+
+- Feather: **#5691** (built-in TFT — no wiring) or **#5613 + EYESPI** display
+- Sensor: **#4414 LPS33HW** via STEMMA QT (or skip if using AT switches)
+- AT switches: **#2915 Terminal Block** + 3 wires soldered to D5/D6/GND pads
+- Speaker: 3 wires soldered to A0/3V/GND pads (or skip — display alone is fine)
+
+Total soldering for the full build: **3–6 wires to Feather pads** (skip the
+sensor row if you use switches, skip both if you don't want a speaker).
+Each pad is ~1.5 mm — much easier to solder than the pin holes for headers.
+
+> **No soldering at all?** Skip the speaker and use the **#5691 + sensor
+> only** combination. The OLED/TFT shows every dot and dash visually. Cost:
+> a #5691 + #4414 + STEMMA QT cable, ~$30, zero solder joints. Add a
+> third-party 3.5 mm Y-splitter and your existing AT switches won't work
+> in this config — sensor mode is the no-solder path.
+
+---
+
 ## 4. Display Options
 
 All displays below are supported by CircuitPython's `displayio` system and work
