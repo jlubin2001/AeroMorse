@@ -1319,14 +1319,24 @@ displaying within one second of the main board powering on.
 4. On the **CIRCUITPY** drive, open (or create) the `lib` folder.
 5. Copy these items from the bundle's `lib` folder into CIRCUITPY's `lib` folder:
 
-**Always copy these (all builds):**
+**Always copy these — REQUIRED for every build (including the built-in TFT
+on #5691 / #5483 / #5300):**
 
 ```
 adafruit_hid/                 ← entire folder
 adafruit_bus_device/          ← entire folder
 adafruit_register/            ← entire folder
+adafruit_display_text/        ← entire folder  — needed for ALL builds
 neopixel.mpy
 ```
+
+> **Don't skip `adafruit_display_text/` if you have a built-in TFT.** Even
+> though `#5691 / #5483 / #5300` don't need a separate display *driver*
+> library (the display is already initialised via `board.DISPLAY`), every
+> build still uses `adafruit_display_text` to render the group name, Morse
+> buffer, last action, and status line. Missing this folder is the most
+> common installation mistake — `code.py` fails immediately at import with
+> `ImportError: no module named 'adafruit_display_text'`.
 
 **Copy these if using the sip-and-puff sensor:**
 
@@ -1334,14 +1344,15 @@ neopixel.mpy
 adafruit_lps35hw.mpy
 ```
 
-**Copy these for your chosen display:**
+**Copy ONE of these only if you have an external display:**
 
-| Display | Files to copy |
-|---------|--------------|
-| OLED #326 or #938 | `adafruit_displayio_ssd1306.mpy` and `adafruit_display_text/` |
-| TFT #3651, #5872, #2050 | `adafruit_hx8357.mpy` and `adafruit_display_text/` |
-| TFT #3315, #1770, #1743 | `adafruit_ili9341.mpy` and `adafruit_display_text/` |
-| TFT #4311 | `adafruit_st7789.mpy` and `adafruit_display_text/` |
+| Display | Additional driver file |
+|---------|------------------------|
+| OLED #326 or #938 | `adafruit_displayio_ssd1306.mpy` |
+| TFT #3651, #5872, #2050 | `adafruit_hx8357.mpy` |
+| TFT #3315, #1770, #1743 | `adafruit_ili9341.mpy` |
+| TFT #4311 | `adafruit_st7789.mpy` |
+| Built-in TFT (#5691 / #5483 / #5300) | *no extra driver — uses `board.DISPLAY`* |
 
 > You only need the items listed above — you do not need to copy the entire
 > bundle, which is very large.
@@ -1429,6 +1440,13 @@ tracebacks render in plain text rather than red.
 
 ### Step 9.4 — Copy the AeroMorse project files
 
+> **Filenames must be exact.** CircuitPython looks for `code.py`,
+> `boot.py`, and `morse_map.py` by *literal* name. If you copy a file as
+> `morse_map_darci.py` (or any other variant name) it will be ignored —
+> `code.py` does `from morse_map import groups`, and that import resolves
+> only to a file named `morse_map.py`. **Rename the file to `morse_map.py`
+> *before* or *after* copying** — see the Darci callout below.
+
 **Which `code.py` to use depends on your Feather board:**
 
 | Board | Copy `code.py` from |
@@ -1448,6 +1466,13 @@ code.py
 morse_map.py
 ```
 
+> **If you are a Darci USB user starting from `morse_map_darci.py`:**
+> Copy `morse_map_darci.py` to the CIRCUITPY drive, then **rename it to
+> `morse_map.py`** (right-click → Rename on Windows/Mac, or `mv` on
+> Linux). Do not leave both files on the drive — CircuitPython will only
+> load the one literally named `morse_map.py`, and a stale extra file
+> just wastes flash.
+
 The CIRCUITPY drive should now look like this:
 
 ```
@@ -1456,13 +1481,13 @@ CIRCUITPY/
 ├── code.py
 ├── morse_map.py
 └── lib/
-    ├── adafruit_hid/
-    ├── adafruit_bus_device/
-    ├── adafruit_register/
-    ├── adafruit_lps35hw.mpy       (sensor builds)
-    ├── adafruit_displayio_ssd1306.mpy  (OLED builds)
-    ├── adafruit_display_text/
-    └── neopixel.mpy
+    ├── adafruit_hid/                       (always — keyboard/mouse HID)
+    ├── adafruit_bus_device/                (always — required by sensor + display libs)
+    ├── adafruit_register/                  (always — required by sensor + display libs)
+    ├── adafruit_display_text/              (always — text labels on the screen)
+    ├── neopixel.mpy                        (always — onboard NeoPixel)
+    ├── adafruit_lps35hw.mpy                (only if using sip-and-puff sensor)
+    └── adafruit_displayio_ssd1306.mpy      (only if using an OLED display)
 ```
 
 **Safely eject the CIRCUITPY drive** before unplugging. The Feather reboots and
