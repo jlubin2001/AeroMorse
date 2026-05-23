@@ -197,15 +197,28 @@ https://www.adafruit.com/product/5483
 
 **If you want a separate display without messy wiring (EYESPI):**
 
-The **ESP32-S3 Feather with EYESPI Connector #5613** has the same ESP32-S3
-brain as #5691 (USB HID, ESP-NOW, STEMMA QT, 2 MB PSRAM) but with an **18-pin
-EYESPI FPC connector** instead of a built-in display. EYESPI replaces the 5–7
-jumper wires normally needed for an SPI TFT with a single flat flex cable —
-plug, plug, done. Choose this if you want the display physically separated
-from the Feather (e.g. on an arm at eye level, in a cleaner enclosure, or
+The **ESP32-S3 Feather with EYESPI Connector #5613** is a complete Feather
+board — you buy it **instead of** #5691, not in addition to it. It has the
+same ESP32-S3 brain as #5691 (USB HID, ESP-NOW, STEMMA QT, 2 MB PSRAM) but
+**no built-in display**. In place of the soldered-on TFT, it has an **18-pin
+EYESPI socket** built onto the board.
+
+The display you want is then a separate EYESPI-equipped board (e.g. the 2.0"
+#5800 — see §4 "EYESPI displays"). Both the Feather and the display have
+the same 18-pin EYESPI socket. A single flat flex cable plugs into both:
+
+```
+[ #5613 Feather ]──── EYESPI flex cable ────[ EYESPI display ]
+```
+
+No jumper wires, no soldering. The cable carries power, ground, and all SPI
+signals. EYESPI cables come in 50 mm, 100 mm, and 200 mm lengths so the
+display can be mounted close to the Feather or out on a separate arm.
+
+Choose this combination if you want the display physically separated from
+the Feather (e.g. on an arm at eye level, in a cleaner enclosure, or
 swappable between display sizes) without the soldering and jumper-wiring
-that the standalone-breakout path requires. See §4 "EYESPI displays" for
-compatible screens.
+that the standalone-breakout path requires.
 https://www.adafruit.com/product/5613
 
 ---
@@ -408,17 +421,25 @@ tucked out of the way.
 
 ---
 
-### EYESPI displays (one flex cable, no jumper wires) — paired with #5613
+### EYESPI displays (one flex cable, no jumper wires) — pair with #5613
 
 EYESPI is Adafruit's standardised **18-pin FPC connector** for SPI displays.
-Combined with the **ESP32-S3 Feather w/ EYESPI Connector #5613**, an entire
-SPI TFT — power, ground, MOSI, MISO, SCK, CS, DC, reset, backlight — runs
-through a single flat flex cable. No breadboard, no jumper wires, no soldering
-once both ends are plugged in.
+The **#5613 Feather** (see §3) and any EYESPI-equipped display each have an
+identical 18-pin EYESPI socket. A single flat flex cable plugs into both,
+carrying power, ground, MOSI, MISO, SCK, CS, DC, reset, and backlight — no
+breadboard, no jumper wires, no soldering.
+
+```
+[ #5613 Feather ]──── EYESPI flex cable ────[ EYESPI display ]
+       │
+       └── STEMMA QT port for sensor / OLED chain (separate)
+```
 
 This is the **easiest non-built-in display path** in this guide — simpler
-than the FeatherWing displays (no full-board stack required) and dramatically
-simpler than the standalone breakout displays (no 5–7 wires to track).
+than the FeatherWing displays (which require header pins on the Feather)
+and dramatically simpler than the standalone breakout displays (no 5–7
+wires to track). The Feather and display are two separate boards joined by
+one cable.
 
 | Display | # | Size | Resolution | Driver | URL |
 |---------|---|------|-----------|--------|-----|
