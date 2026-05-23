@@ -717,6 +717,12 @@ The speaker gives audio feedback — a tone for every dot and dash, and a
 different tone when a pattern fires. It is optional but strongly recommended:
 hearing the rhythm helps with timing.
 
+> **All speaker options connect to the same three Feather signals: A0
+> (audio), 3V (power — S1/S3 only), and GND.** If your Feather has header
+> pins they plug in via breadboard or jumper wires. If your Feather has bare
+> PCB pads, the speaker wires are soldered directly to those pads. See
+> §8D for the full wiring procedure including the no-headers path.
+
 ### Option S1 — STEMMA Speaker (easiest) ⭐ Recommended
 
 **Adafruit STEMMA Speaker #3885**
@@ -1149,29 +1155,90 @@ for the full step-by-step procedure with diagrams.
 
 ### Step 8D — Connect the speaker
 
-#### STEMMA Speaker #3885
+All three speaker options end at the same three Feather signals: **A0**
+(audio), **3V** (power, only for S1 and S3), and **GND**. How those three
+signals are connected depends entirely on whether your Feather has header
+pins.
 
-The cable is pre-attached to the speaker. Push the three male header pins into
-the breadboard rows that match the Feather pins, or use jumper wires:
+#### If your Feather has header pins (or sits in a breadboard)
 
-| Speaker cable pin | Feather pin |
+**STEMMA Speaker #3885** — the cable ends in three male header pins. Push
+them into the breadboard rows that line up with A0, 3V, and GND on the
+Feather. With a FeatherWing stack instead of a breadboard, use three short
+female-to-female jumper wires from the FeatherWing's bottom pins to the
+speaker cable.
+
+| Speaker cable wire | Feather pin |
 |-------------------|-------------|
-| GND | GND |
-| Audio | A0 |
-| VIN | 3V |
+| Black (GND) | GND |
+| White (Audio) | A0 |
+| Red (VIN) | 3V |
 
-If you are using a FeatherWing (no breadboard), use three short jumper wires
-from the header pins on the bottom of the FeatherWing stack to the speaker cable.
+**Passive piezo (#1740 / #1739)** — push the two bare wire ends into the
+breadboard rows for A0 and GND. Red/+ → A0, Black/− → GND. No resistor.
 
-#### Passive piezo buzzer (#1740 or #1739)
+**PAM8302 amplifier (#2130) + speaker** — same pin mapping as the STEMMA
+Speaker (A0, 3V, GND), but soldered to the amp's A+ / VIN / GND pads first.
+Speaker connects to the amp's two output terminals (polarity not critical).
 
-| Piezo lead | Feather pin |
-|-----------|-------------|
-| Red / + | A0 |
-| Black / − | GND |
+#### If your Feather has no header pins (bare PCB pads)
 
-No resistor needed. Push the bare wire ends into the breadboard rows that
-match A0 and GND on the Feather, or twist and tape directly to jumper wires.
+The male pins on the STEMMA Speaker cable have nothing to plug into. You
+have two practical paths — pick one. Both require a small soldering job
+**on the Feather**, but neither is harder than soldering header pins.
+
+**Path 1 — Solder the speaker wires directly to the Feather (recommended)**
+
+Cleanest, lowest profile, and the most permanent.
+
+1. Identify the **A0**, **3V**, and **GND** pads on the Feather (printed on
+   the underside).
+2. Cut the JST PH connector off the speaker end of the #3885 cable so you
+   have ~15 cm of three coloured wires. (For the piezo, the leads are
+   already bare; for the PAM8302, solder the wires to the amp first.)
+3. Strip ~3 mm of insulation from each free wire end.
+4. Tin each wire end and each Feather pad with a touch of solder.
+5. Press each tinned wire onto its matching pad and reflow with the iron:
+   - Black (GND) → GND pad
+   - White / Audio → A0 pad
+   - Red (VIN) → 3V pad   *(#3885 and PAM8302 only — piezo skips this)*
+6. Tug each wire gently to confirm it is fixed.
+
+> A 30 W iron, 0.5 mm solder, and a steady hand are plenty. The pads are
+> larger and more forgiving than header-pin holes.
+
+**Path 2 — Solder header pins to the Feather first**
+
+Use this path if you also want headers for the AT switch jumper wires, or
+to make the speaker removable later.
+
+1. Solder header pins onto the Feather's A0, 3V, and GND positions only —
+   you don't need a full row of pins, just the three the speaker needs.
+2. Then follow the "header pins" instructions above:
+   - #3885 STEMMA Speaker — male pins plug into a breadboard, or use three
+     female-to-female jumpers from the speaker cable to the Feather pins.
+   - Piezo — solder the bare leads to two female jumper wires (or solder
+     to short pin headers), then plug onto A0 and GND.
+   - PAM8302 — wire the amp board to A0 / 3V / GND via female jumpers.
+
+> A local makerspace, library maker lab, or electronics repair shop will
+> usually solder a few pins for free or a few dollars. See §8 "Before you
+> start" for more on getting headers done if you don't own an iron.
+
+**Path 3 — Skip the speaker entirely**
+
+The speaker is optional. The OLED / TFT display already shows every dot,
+dash, group, and last action — many users do not miss the audio at all.
+Set up the rest of the device first; add the speaker later if you decide
+you want it.
+
+#### Quick reference — all paths, all options
+
+| Feather has headers? | #3885 STEMMA Speaker | Piezo #1740/#1739 | PAM8302 + speaker |
+|---|---|---|---|
+| **Yes (breadboard)** | Push 3 male pins into breadboard rows for A0/3V/GND | Push 2 bare leads into A0 + GND rows | Wire amp to A0/3V/GND via breadboard |
+| **Yes (FeatherWing only)** | 3 F-F jumpers from FeatherWing pins to speaker cable | Solder leads to F-F jumper, plug onto A0+GND | Wire amp via F-F jumpers |
+| **No (bare pads)** | Cut connector off, solder 3 wires to A0/3V/GND pads | Solder 2 leads to A0+GND pads | Solder amp board to A0/3V/GND pads |
 
 ---
 
