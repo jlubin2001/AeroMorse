@@ -616,23 +616,10 @@ is a fast, connectionless wireless protocol built into every ESP32 chip — it
 requires no router, no pairing, no configuration. The second board just
 listens. Range is approximately 30 m indoors.
 
-**CircuitPython versions — each board is completely independent:**
-The two boards do not share code or libraries. ESP-NOW sends plain bytes over
-the air with no awareness of CircuitPython versions. Each board runs its own
-CircuitPython and its own `/lib` folder. You can have CP9 on the main board
-and CP10 on the receiver, or any combination — no steps are needed to make
-them work together. The only requirement is that each board runs **at least
-CP9** (earlier versions did not include the `espnow` module). There is no need
-to match versions, update one when you update the other, or do anything
-differently when the versions differ.
-
-> **If you copy the `/lib` folder from the main board to the receiver**, make
-> sure both boards are running the **same major version** (both CP9 or both
-> CP10) — `.mpy` library files compiled for CP9 will not load under CP10 and
-> vice versa. If the boards are on different major versions, download the
-> matching library bundle for each board separately from circuitpython.org
-> and copy the files individually. The receiver only needs one folder from
-> the bundle: `adafruit_display_text/`.
+> Each board runs **at least CircuitPython 9** (earlier versions did not
+> include the `espnow` module). Beyond that, the two boards are completely
+> independent — see §12 "Wireless display → CircuitPython versions on the
+> two boards" if you need the full compatibility details.
 
 ---
 
@@ -1563,81 +1550,141 @@ letter **U** (`..-`) should appear.
 
 ## 12. Troubleshooting
 
-**Display is blank or white**
-- Check that you are running the correct version of `code.py` for your display.
-  The v2 code expects the OLED #326 by default. If you have a TFT FeatherWing,
-  the display initialisation in `code.py` must be updated.
-- For the OLED: check both ends of both STEMMA QT cables are fully clicked in.
-- Try changing `device_address=0x3C` to `device_address=0x3D` if the OLED
-  stays blank.
+Grouped by hardware option, in the same order as §4 – §6 (Input → Display
+→ Speaker → Wireless display → Software / general).
 
-**No sound from the STEMMA Speaker**
-- Verify wiring: Audio → A0, VIN → 3V, GND → GND.
-- Open the serial console in Mu Editor. If you see
-  `WARNING: audio modules not available`, your CircuitPython build is missing
-  `audiopwmio` — download a standard build (not a minimal one) from
-  circuitpython.org/downloads.
+---
+
+### Input — sip-and-puff sensor (#4414)
+
+**"Calibrating" message hangs at startup**
+- The LPS33HW was not found. Check the STEMMA QT cable between the Feather
+  and the sensor — both connectors must click in firmly.
+- Confirm `adafruit_lps35hw.mpy` is in `/lib` on the CIRCUITPY drive.
+
+**False pressure triggers (random dots/dashes while not sipping or puffing)**
+- Raise `THRESH_SIP` and `THRESH_PUFF` to 8 or 10 in `code.py`.
+- Check the sip-and-puff tube is not kinked or pinched.
+
+---
+
+### Input — AT switches
 
 **AT switches not registering**
 - Confirm `USE_SENSOR = False` in `code.py`.
-- Test the switch with a multimeter in continuity mode: pressing the switch
-  should beep, confirming Tip connects to Sleeve.
-- Confirm D5 (dot) and D6 (dash) wires are connected to the correct jack pins.
+- Test the switch with a multimeter in continuity mode: pressing the
+  switch should beep, confirming Tip connects to Sleeve.
+- Confirm D5 (dot) and D6 (dash) wires are connected to the correct
+  jack pins.
 
-**False pressure triggers (random dots/dashes while not sipping or puffing)**
-- Raise `THRESH_SIP` and `THRESH_PUFF` to 8 or 10.
+---
 
-**"Calibrating" message hangs at startup**
-- The LPS33HW was not found. Check the STEMMA QT cable between the Feather and
-  the sensor — both connectors must click in firmly.
+### Input — timing
 
 **Pattern fires too early (cuts off long patterns)**
-- Raise `ACCEPT_DELAY` from `0.2` to `0.3` or `0.4`.
+- Raise `ACCEPT_DELAY` from `0.2` to `0.3` or `0.4` in `code.py`.
 
 **Groups cycle when you did not mean to**
 - Raise `LONG_PRESS` from `1.0` to `1.5` or `2.0` to require a longer hold.
 
+---
+
+### Display
+
+**Display is blank or white**
+- Check that you are running the correct version of `code.py` for your
+  display. The v2 code expects the OLED #326 by default. If you have a TFT
+  FeatherWing, the display initialisation in `code.py` must be updated.
+- For the OLED: check both ends of both STEMMA QT cables are fully
+  clicked in.
+- Try changing `device_address=0x3C` to `device_address=0x3D` if the OLED
+  stays blank — some OLEDs use the alternate address.
+
+---
+
+### Speaker
+
+**No sound from the STEMMA Speaker (or any speaker option)**
+- Verify wiring: Audio → A0, VIN → 3V, GND → GND.
+- Open the serial console in Thonny (§9.3). If you see
+  `WARNING: audio modules not available`, your CircuitPython build is
+  missing `audiopwmio` — download a standard build (not a minimal one)
+  from circuitpython.org/downloads.
+
+---
+
+### Wireless display (ESP-NOW)
+
 **Wireless display shows "No signal"**
 - Confirm both boards are powered and running CircuitPython 9.x or later.
-- Both boards must be on the same ESP-NOW channel. If neither is connected to
-  WiFi, both default to channel 1 automatically — no action needed.
+- Both boards must be on the same ESP-NOW channel. If neither is
+  connected to WiFi, both default to channel 1 automatically — no action
+  needed.
 - Check the serial console on the main board. It should print
   `ESP-NOW: wireless display active (broadcast)` at startup. If it prints
-  `ESP-NOW: disabled` the `espnow` module is not present — confirm the board
-  is an ESP32-S3 and running CircuitPython 9.x or later.
+  `ESP-NOW: disabled` the `espnow` module is not present — confirm the
+  board is an ESP32-S3 and running CircuitPython 9.x or later.
 - Range is approximately 30 m indoors. Move the boards closer to test.
 
 **Wireless display is frozen / not updating**
 - The receiver updates whenever a packet arrives (10× per second). If the
-  display updates briefly then freezes, the main board may have restarted.
-  Check the main board's serial console for errors.
+  display updates briefly then freezes, the main board may have
+  restarted. Check the main board's serial console for errors.
 
 **Main board serial console shows `ESP-NOW: init failed`**
-- The `wifi` module initialisation failed. Try power-cycling the main board.
-  Rarely, the WiFi radio needs a cold boot (unplug power completely rather
-  than pressing Reset).
+- The `wifi` module initialisation failed. Try power-cycling the main
+  board. Rarely, the WiFi radio needs a cold boot (unplug power
+  completely rather than pressing Reset).
 
 **Wireless display acts as a second keyboard on Windows**
-- The `receiver_boot.py` file was not copied as `boot.py` on the second board,
-  or the original `boot.py` (which enables USB HID) is still on the second board.
-  Replace `boot.py` on the second board with the contents of `receiver_boot.py`.
+- The `receiver_boot.py` file was not copied as `boot.py` on the second
+  board, or the original `boot.py` (which enables USB HID) is still on
+  the second board. Replace `boot.py` on the second board with the
+  contents of `receiver_boot.py`.
 
 **Option W2 OLED stays blank**
-- Check all four wires are connected to the correct pins on both the XIAO and
-  the OLED.
-- Try changing the I2C address in `receiver.py`: look for `device_address=0x3C`
-  and change it to `device_address=0x3D`. Some OLEDs use 0x3D.
-- Confirm `adafruit_displayio_ssd1306.mpy` and `adafruit_display_text/` are in
-  the `/lib` folder on the XIAO.
+- Check all four wires are connected to the correct pins on both the
+  XIAO and the OLED.
+- Try changing the I2C address in `receiver.py`: look for
+  `device_address=0x3C` and change it to `device_address=0x3D`.
+- Confirm `adafruit_displayio_ssd1306.mpy` and `adafruit_display_text/`
+  are in the `/lib` folder on the XIAO.
+
+**CircuitPython versions on the two boards**
+- ESP-NOW sends plain bytes with no awareness of CircuitPython versions.
+  Each board runs its own CircuitPython and its own `/lib` folder. You
+  can have CP9 on the main board and CP10 on the receiver, or any
+  combination — no steps are needed to make them work together. The only
+  requirement is that **each board runs at least CP9** (earlier versions
+  did not include the `espnow` module). There is no need to match
+  versions, update one when you update the other, or do anything
+  differently when the versions differ.
+- **However:** if you copy the `/lib` folder from the main board to the
+  receiver, both boards must be on the **same major version** (both CP9
+  or both CP10) — `.mpy` library files compiled for one major version
+  will not load under the other. If the boards are on different major
+  versions, download the matching library bundle for each board
+  separately from circuitpython.org and copy the files individually. The
+  receiver only needs one folder from the bundle:
+  `adafruit_display_text/`.
+
+---
+
+### Software / general
 
 **REPL shows `ImportError`**
-- A library file is missing from `lib/`. Re-read Step 9.2 and copy the missing
-  file from the CircuitPython bundle.
+- A library file is missing from `lib/`. Re-read §9.2 and copy the
+  missing file from the CircuitPython bundle. The most common one to
+  miss is `adafruit_display_text/` — see the callout in §9.2.
 
 **Nothing happens on the computer at all**
 - Unplug and replug the USB cable.
-- Confirm the cable is a data cable (a drive should appear when plugged in).
+- Confirm the cable is a data cable (a drive should appear when plugged
+  in).
 - Confirm `boot.py` is on the root of the CIRCUITPY drive.
+- Confirm `morse_map.py` is named **exactly** `morse_map.py` (not
+  `morse_map_darci.py` or similar) — `code.py` imports it by literal
+  name. See §9.4.
 
 ---
 
