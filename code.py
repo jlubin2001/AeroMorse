@@ -4,6 +4,7 @@
 #   Feather board       — Build Guide §3  (default: #5691 Reverse TFT Feather)
 #   Display             — Build Guide §5  (built-in TFT on #5691, or external OLED)
 #   Wireless display    — Build Guide §5 "Wireless Display — ESP-NOW Remote Mirror"
+#                         (toggle with USE_WIRELESS_DISPLAY below)
 #   Input method        — Build Guide §4  (Option A sensor / Option B switches)
 #     Option A          — #4414 LPS33HW pressure sensor on STEMMA QT (sip-and-puff)
 #     Option B1/B2/B3   — TRRS / 3.5mm jacks for AT switches (B3 = #2915 terminal block)
@@ -111,6 +112,16 @@ MOUSE_REPEAT_DELAY = 0.040      # seconds between repeat ticks (40 ms)
 # STEMMA QT OLEDs see Build Guide §5 tables.
 DISPLAY_ROTATION   = 0          # degrees — 0 = USB on left, 180 = USB on right
                                 # other valid values: 90, 270
+
+# Wireless display (ESP-NOW)                                  Build Guide §5 "Wireless Display"
+# True   = enable WiFi radio at boot and broadcast display state via ESP-NOW.
+#          Required for the optional 2nd-board mirror (Option W1 / W2).
+# False  = do NOT enable the radio. Saves ~80–100 mA, eliminates any RF
+#          emission. Use this for battery-powered builds or whenever you have
+#          no wireless display attached.
+# Has no effect on boards without an `espnow` module (RP2040, M4, nRF52840) —
+# the import already fails on those.
+USE_WIRELESS_DISPLAY = True
 
 # ── RollingAverage ─────────────────────────────────────────────────────────────
 
@@ -233,7 +244,9 @@ def _audio_tick():
 # (any ESP32-family Feather/QT Py as receiver; optional battery #3898/#1578/#258).
 
 _ESPNOW_ENABLED = False
-if _ESPNOW_IMPORTABLE:
+if not USE_WIRELESS_DISPLAY:
+    print("ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False")
+elif _ESPNOW_IMPORTABLE:
     try:
         _wifi_mod.radio.enabled = True
         _espnow_dev = _espnow_mod.ESPNow()
@@ -242,6 +255,8 @@ if _ESPNOW_IMPORTABLE:
         print("ESP-NOW: wireless display active (broadcast)")
     except Exception as _ex:
         print(f"ESP-NOW: init failed ({_ex})")
+else:
+    print("ESP-NOW: module not available on this board")
 
 def _espnow_send(group_str, buf_str, action_str, mods_str):
     """Broadcast four display fields over ESP-NOW.  Fire-and-forget."""

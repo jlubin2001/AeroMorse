@@ -1574,8 +1574,8 @@ under `/lib`.
 
 ## 10. Configuration
 
-Open `code.py` in any plain-text editor (Notepad, TextEdit, VS Code, or the
-Mu Editor). Look for the configuration section near the top of the file.
+Open `code.py` in Thonny (§9.3) or any plain-text editor (Notepad, TextEdit,
+VS Code). Look for the configuration section near the top of the file.
 
 ### Key settings
 
@@ -1586,7 +1586,8 @@ Mu Editor). Look for the configuration section near the top of the file.
 | `THRESH_PUFF` | `5` | Same as above but for puff/dash |
 | `ACCEPT_DELAY` | `0.2` | Raise to `0.3` if patterns commit before you finish |
 | `LONG_PRESS` | `1.0` | Hold time in seconds to cycle groups. Raise if accidentally cycling |
-| `DISPLAY_ROTATION` | `180` | `0` = USB port on left; `180` = USB port on right |
+| `DISPLAY_ROTATION` | `0` | `0` = USB port on left; `180` = USB port on right (`90` / `270` also valid) |
+| `USE_WIRELESS_DISPLAY` | `True` | `False` turns off the ESP-NOW broadcast and saves ~80–100 mA. Set to `False` if you have no Option W1 / W2 receiver attached |
 | `BEEP_DOT_FREQ` | `1200` | Pitch in Hz for dot (sip) beeps — higher pitch |
 | `BEEP_DASH_FREQ` | `800` | Pitch in Hz for dash (puff) beeps — lower pitch |
 
@@ -1697,10 +1698,13 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 **Wireless display shows "No signal"**
 - Confirm both boards are powered and running CircuitPython 9.x or later.
 - Check the serial console on the main board. It should print
-  `ESP-NOW: wireless display active (broadcast)` at startup. If it
-  prints `ESP-NOW: disabled` the `espnow` module is not present —
-  confirm the board is an ESP32-S3 and running CircuitPython 9.x or
-  later.
+  `ESP-NOW: wireless display active (broadcast)` at startup.
+  - `ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False` → flip the
+    `USE_WIRELESS_DISPLAY` flag back to `True` in `code.py` (§10).
+  - `ESP-NOW: module not available on this board` → the board is not
+    an ESP32 (e.g., RP2040, M4, nRF52840). Wireless display requires
+    an ESP32-family board.
+  - `ESP-NOW: init failed (...)` → see entry below.
 - Range is approximately 30 m indoors. Move the boards closer to test.
 - Channel mismatch: see "How the ESP-NOW channel is selected" below.
 
