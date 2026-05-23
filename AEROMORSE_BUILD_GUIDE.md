@@ -783,21 +783,27 @@ hearing the rhythm helps with timing.
 
 ### Option S1 — STEMMA Speaker (easiest) ⭐ Recommended
 
-**Adafruit STEMMA Speaker #3885**
+**Adafruit STEMMA Speaker #3885** — $5.95
 https://www.adafruit.com/product/3885
 
-- 1.2 W built-in amplifier, 8 Ω driver, JST PH 3-pin connector
-- Comes with a 200 mm cable that plugs in directly — no soldering
-- Powered from the Feather's 3.3 V or 5 V pin
+- 1 W built-in amplifier, 8 Ω driver, 3-pin JST PH 2 mm socket
+- Powered from 3 – 5 V (the Feather's 3V or USB pin both work)
 - Loud enough to hear across a quiet room
 
-Wiring (cable already attached):
+> **Cable is sold separately.** Order **Adafruit #4046 — JST PH 2 mm 3-Pin
+> Socket to Color-Coded Cable, 200 mm — $0.95** along with the speaker.
+> https://www.adafruit.com/product/4046
+> One end is the JST PH socket that plugs into the speaker board; the other
+> end is three tinned, color-coded wires that go to the Feather. Without
+> this cable, #3885 is just a bare board with a socket on it.
 
-| Speaker cable pin | Feather pin |
+Wiring (#4046 cable to Feather):
+
+| Wire (color) | Feather pin |
 |-------------------|-------------|
-| GND | GND |
-| Audio | A0 |
-| VIN | 3V (or 5V) |
+| Black (GND) | GND |
+| White (Audio / signal) | A0 |
+| Red (VIN) | 3V (or USB / 5V) |
 
 ---
 
@@ -973,7 +979,7 @@ several GND pins — any of them work).
 | Qty | Item | Adafruit # | URL |
 |-----|------|-----------|-----|
 | 1 | STEMMA Speaker | #3885 | https://www.adafruit.com/product/3885 |
-| — | *or* STEMMA JST PH 3-pin cable (if speaker came without) | #3893 | https://www.adafruit.com/product/3893 |
+| 1 | JST PH 3-pin Socket to Color-Coded Cable, 200 mm (required with #3885) | #4046 | https://www.adafruit.com/product/4046 |
 | — | *or* Small Enclosed Piezo with Leads (passive) | #1740 | https://www.adafruit.com/product/1740 |
 | — | *or* Large Enclosed Piezo with Leads (passive, louder) | #1739 | https://www.adafruit.com/product/1739 |
 | — | *or* PAM8302 Amplifier + small 8 Ω speaker | #2130 | https://www.adafruit.com/product/2130 |
@@ -1181,16 +1187,17 @@ pins.
 
 #### If your Feather has header pins (or sits in a breadboard)
 
-**STEMMA Speaker #3885** — the cable ends in three male header pins. Push
-them into the breadboard rows that line up with A0, 3V, and GND on the
-Feather. With a FeatherWing stack instead of a breadboard, use three short
-female-to-female jumper wires from the FeatherWing's bottom pins to the
-speaker cable.
+**STEMMA Speaker #3885 + #4046 cable** — the #4046 cable ends in three
+tinned bare wires (black / white / red). The tinned tips are stiff enough
+to push directly into a breadboard, but for the most reliable contact,
+either (a) solder a short pin or male header onto each wire tip, or
+(b) crimp/solder each wire into a female jumper that slides onto the
+Feather's header pin. Match black → GND, white → A0, red → 3V.
 
-| Speaker cable wire | Feather pin |
+| #4046 cable wire | Feather pin |
 |-------------------|-------------|
 | Black (GND) | GND |
-| White (Audio) | A0 |
+| White (Audio / signal) | A0 |
 | Red (VIN) | 3V |
 
 **Passive piezo (#1740 / #1739)** — push the two bare wire ends into the
@@ -1202,9 +1209,10 @@ Speaker connects to the amp's two output terminals (polarity not critical).
 
 #### If your Feather has no header pins (bare PCB pads)
 
-The male pins on the STEMMA Speaker cable have nothing to plug into. You
-have two practical paths — pick one. Both require a small soldering job
-**on the Feather**, but neither is harder than soldering header pins.
+The tinned ends of the #4046 cable have nothing to plug into on a header-
+less Feather. You have two practical paths — pick one. Both require a
+small soldering job **on the Feather**, but neither is harder than
+soldering header pins.
 
 **Path 1 — Solder the speaker wires directly to the Feather (recommended)**
 
@@ -1212,11 +1220,13 @@ Cleanest, lowest profile, and the most permanent.
 
 1. Identify the **A0**, **3V**, and **GND** pads on the Feather (printed on
    the underside).
-2. Cut the JST PH connector off the speaker end of the #3885 cable so you
-   have ~15 cm of three coloured wires. (For the piezo, the leads are
-   already bare; for the PAM8302, solder the wires to the amp first.)
-3. Strip ~3 mm of insulation from each free wire end.
-4. Tin each wire end and each Feather pad with a touch of solder.
+2. Plug the #4046 cable's JST PH socket end into the #3885 speaker. The
+   other end of #4046 already has three tinned bare wires — no cutting
+   needed. (For the piezo, the leads are already bare; for the PAM8302,
+   solder the wires to the amp's A+ / VIN / GND pads first.)
+3. Trim each tinned wire to ~15 cm if longer than you need, and re-tin
+   the cut ends with a touch of solder.
+4. Tin each Feather pad with a touch of solder.
 5. Press each tinned wire onto its matching pad and reflow with the iron:
    - Black (GND) → GND pad
    - White / Audio → A0 pad
@@ -1253,11 +1263,11 @@ you want it.
 
 #### Quick reference — all paths, all options
 
-| Feather has headers? | #3885 STEMMA Speaker | Piezo #1740/#1739 | PAM8302 + speaker |
+| Feather has headers? | #3885 + #4046 cable | Piezo #1740/#1739 | PAM8302 + speaker |
 |---|---|---|---|
-| **Yes (breadboard)** | Push 3 male pins into breadboard rows for A0/3V/GND | Push 2 bare leads into A0 + GND rows | Wire amp to A0/3V/GND via breadboard |
-| **Yes (FeatherWing only)** | 3 F-F jumpers from FeatherWing pins to speaker cable | Solder leads to F-F jumper, plug onto A0+GND | Wire amp via F-F jumpers |
-| **No (bare pads)** | Cut connector off, solder 3 wires to A0/3V/GND pads | Solder 2 leads to A0+GND pads | Solder amp board to A0/3V/GND pads |
+| **Yes (breadboard)** | Tin/cap 3 wire ends, push into breadboard rows for A0/3V/GND | Push 2 bare leads into A0 + GND rows | Wire amp to A0/3V/GND via breadboard |
+| **Yes (FeatherWing only)** | Crimp/solder F-F jumpers to #4046 wire ends, plug onto Feather pins | Solder leads to F-F jumper, plug onto A0+GND | Wire amp via F-F jumpers |
+| **No (bare pads)** | Solder #4046 tinned wires directly to A0/3V/GND pads | Solder 2 leads to A0+GND pads | Solder amp board to A0/3V/GND pads |
 
 ---
 
