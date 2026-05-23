@@ -621,165 +621,18 @@ two switches (dot + dash) are strongly recommended for practical use.
 
 **Two wiring options for the TRRS jack:**
 
-#### Option B1 — Solderless breadboard (no soldering at all)
+#### Option B1 — Solderless breadboard
 
-**Parts — exactly what to buy:**
+A no-soldering build using a half-size breadboard, a single TRRS jack (#1699),
+and three jumper wires. Lowest-cost path and reversible, but bulky and best
+suited to bench testing rather than long-term use.
 
-| Qty | Item | URL | Notes |
-|-----|------|-----|-------|
-| 1 | Half-Size Breadboard | https://www.adafruit.com/product/64 | The Amazon Goupchn board you found works identically |
-| 1 | Breadboard-Friendly 3.5 mm Stereo Jack | https://www.adafruit.com/product/1699 | **1 jack only** — the stereo jack handles both switches |
-| 1 pack | Male-to-male jumper wires | https://www.adafruit.com/product/153 | Yes, these are exactly right — you will use 3 of them |
+**Detailed step-by-step breadboard instructions are in
+[Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
+at the end of this guide.**
 
----
-
-**Understanding the breadboard:**
-
-A breadboard is a plastic block full of small holes. Metal clips inside connect
-certain holes together so you can make circuits by pushing wires into holes
-instead of soldering.
-
-```
-   ← column numbers →
-    1  2  3  4  5  6  7  8  9 ...
-a  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
-b  [ ][ ][ ][ ][ ][ ][ ][ ][ ]   ← holes a–e in the SAME column
-c  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      are all connected to each other
-d  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      (5 holes share one clip inside)
-e  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
-   ─────────────────────────── ← CENTER GAP (nothing crosses here)
-f  [ ][ ][ ][ ][ ][ ][ ][ ][ ]   ← holes f–j in the SAME column
-g  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      are connected to each other
-h  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      (separate from the a–e group)
-i  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
-j  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
-```
-
-**Key rule:** Holes sharing the same column number AND same side (a–e, or f–j)
-are connected. Push a wire into column 5 row c and a pin into column 5 row e —
-they are now electrically connected without any other wire needed.
-
-The center gap is a physical break — nothing crosses it automatically. That is
-where the Feather board will sit, bridging the two sides.
-
----
-
-**Step 1 — Place the Feather in the breadboard:**
-
-The Feather is a long narrow board with a row of pins along each long edge.
-Press it firmly into the breadboard so it sits across the center gap like a
-bridge. One row of pins will be in the **e** row, the other in the **f** row.
-
-```
-        USB-C port
-           ↑
-  ┌────────────────────┐
-  │                    │
-e ●  ●  ●  ●  ●  ●  ●  ●   ← left-edge pins press into row e
-  ════ FEATHER BOARD ══════
-f ●  ●  ●  ●  ●  ●  ●  ●   ← right-edge pins press into row f
-  │                    │
-  └────────────────────┘
-```
-
-The board should sit level and firm. Every pin in row e now has 4 open holes
-(a, b, c, d in the same column) you can use to connect to it. Same for row f.
-
-**Finding pin D5, D6, and GND on the Feather:**
-Pin names are printed on the *underside* of the Feather board. Before pressing
-it into the breadboard, flip it over and look. You will see small text next to
-each pad. On the #5691, D5 and D6 are on the right-side column of pins; GND
-appears on both sides. Make a small note of which column numbers they land in
-once the board is inserted.
-
-> **Tip:** Photograph the underside before inserting so you can refer back to
-> the pin names while looking at the top.
-
----
-
-**Step 2 — Place the 3.5 mm stereo jack (#1699):**
-
-The jack has 4 short metal legs underneath it. Press it into an empty area of
-the breadboard, several columns away from the Feather so there is room to work.
-Each leg goes into a different row.
-
-```
-  jack  ┌──────┐
-        │ [  ] │  ← socket hole (where the switch plug goes)
-        └──┬┬┬┬┘
-    legs:  TI RI SL (4th leg — not used)
-           P  N  EE
-           │  G  VE
-```
-
-The three legs you will use are labelled on the jack's product page:
-- **TIP** — dot switch (switch 1)
-- **RING** — dash switch (switch 2)
-- **SLEEVE** — ground (common return for both switches)
-
-Because each leg is in its own row, you have 4 open holes in that row to
-connect to.
-
----
-
-**Step 3 — Connect with jumper wires:**
-
-The jumper wires from Adafruit #153 have a male pin on each end that pushes
-into a breadboard hole. You are going to connect three pairs of holes:
-
-| From (jack side) | To (Feather side) |
-|-----------------|------------------|
-| Any open hole in the TIP leg's row | Any open hole in D5's column, row a–d |
-| Any open hole in the RING leg's row | Any open hole in D6's column, row a–d |
-| Any open hole in the SLEEVE leg's row | Any open hole in GND's column, row a–d |
-
-Push one end of a jumper wire into the jack's TIP row, and the other end into
-D5's column. The wire can be any length — just pick one short enough to lie
-flat without flopping around. Repeat for RING→D6 and SLEEVE→GND.
-
-```
-Example layout (column numbers illustrative):
-
-col:  5   6   7  ...  18  19  20
-a    [ ] [ ] [ ]      [ ] [ ] [ ]
-b    [ ] [ ] [ ]      [ ] [ ] [ ]
-c    [J] [J] [J]      [ ] [ ] [ ]   ← jack legs in cols 5, 6, 7 at row c
-d    [─────────────────────] [ ]   ← jumper wires run across
-e    [D5][D6][GN]     [ ] [ ] [ ]  ← Feather pins in same cols at row e
-     ════════════ GAP ════════════
-f    [D5][D6][GN]     [ ] [ ] [ ]  ← (Feather right-edge, mirror of above)
-```
-
-The exact column numbers do not matter — what matters is:
-- The jack leg and the Feather pin you want to connect are at **opposite ends
-  of the same jumper wire**
-- No two wires accidentally share a hole
-
----
-
-**Step 4 — Connect your AT switches:**
-
-You need **one Y-splitter** (3.5 mm mono-to-stereo) to plug two standard AT
-switches into the single stereo jack:
-
-- Switch 1 (dot) → plugs into the **Tip** side of the splitter
-- Switch 2 (dash) → plugs into the **Ring** side of the splitter
-
-If you only have one switch, plug it directly into the jack — it will be your
-dot (.) switch and you can use it in single-switch scanning mode.
-
----
-
-**Summary — parts for Option B1:**
-
-| # | Item | Qty |
-|---|------|-----|
-| Adafruit #64 | Half-Size Breadboard (or the Amazon Goupchn) | 1 |
-| Adafruit #1699 | 3.5 mm Stereo Jack | 1 |
-| Adafruit #153 | Male-to-male jumper wire pack | 1 pack (use 3 wires) |
-| Any store | 3.5 mm mono Y-splitter | 1 (if using 2 switches) |
-
-No soldering iron. No solder. No stripped wires. All connections are push-in.
+For most builders Option B3 (#2915 Terminal Block) is simpler and tidier — try
+that first.
 
 #### Option B2 — Soldered TRRS breakout (compact, durable)
 
@@ -1250,18 +1103,8 @@ If you are using the sip-and-puff sensor instead, skip this step.
 
 #### Option B1 — Breadboard
 
-Follow the detailed step-by-step instructions in **Section 5, Option B1**
-(including the breadboard diagram and pin-finding tips). The full procedure
-is there to avoid repeating it. Quick summary:
-
-1. Photograph the underside of the Feather to record which column each pin
-   lands in before inserting it.
-2. Press the Feather across the breadboard centre gap, pins into rows e and f.
-3. Press the stereo jack (#1699) into an empty area several columns away.
-4. Run one jumper wire from the TIP leg's row to D5's column.
-5. Run one jumper wire from the RING leg's row to D6's column.
-6. Run one jumper wire from the SLEEVE leg's row to any GND column.
-7. Plug a 3.5 mm Y-splitter into the jack, dot switch to Tip, dash to Ring.
+See [Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
+for the full step-by-step procedure with diagrams.
 
 #### Option B2 — TRRS breakout (soldered)
 
@@ -1692,6 +1535,152 @@ g3[3][0b010]  = 'Best regards,'   # .-.   same pattern as letter R
 ```
 
 Save the file — the Feather reloads automatically.
+
+---
+
+## Appendix D — Breadboard Wiring Walkthrough
+
+Detailed step-by-step instructions for **§5 Option B1 — Solderless breadboard**.
+Skip this appendix if you chose Option B2 (TRRS breakout) or Option B3 (#2915
+Terminal Block).
+
+### Parts — exactly what to buy
+
+| Qty | Item | URL | Notes |
+|-----|------|-----|-------|
+| 1 | Half-Size Breadboard | https://www.adafruit.com/product/64 | Any equivalent generic breadboard also works |
+| 1 | Breadboard-Friendly 3.5 mm Stereo Jack | https://www.adafruit.com/product/1699 | **1 jack only** — the stereo jack handles both switches |
+| 1 pack | Male-to-male jumper wires | https://www.adafruit.com/product/153 | You will use 3 of them |
+| 1 | 3.5 mm mono Y-splitter | any store | Needed only if you use 2 switches |
+
+No soldering iron. No solder. No stripped wires. All connections are push-in.
+
+### Understanding the breadboard
+
+A breadboard is a plastic block full of small holes. Metal clips inside connect
+certain holes together so you can make circuits by pushing wires into holes
+instead of soldering.
+
+```
+   ← column numbers →
+    1  2  3  4  5  6  7  8  9 ...
+a  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
+b  [ ][ ][ ][ ][ ][ ][ ][ ][ ]   ← holes a–e in the SAME column
+c  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      are all connected to each other
+d  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      (5 holes share one clip inside)
+e  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
+   ─────────────────────────── ← CENTER GAP (nothing crosses here)
+f  [ ][ ][ ][ ][ ][ ][ ][ ][ ]   ← holes f–j in the SAME column
+g  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      are connected to each other
+h  [ ][ ][ ][ ][ ][ ][ ][ ][ ]      (separate from the a–e group)
+i  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
+j  [ ][ ][ ][ ][ ][ ][ ][ ][ ]
+```
+
+**Key rule:** Holes sharing the same column number AND same side (a–e, or f–j)
+are connected. Push a wire into column 5 row c and a pin into column 5 row e —
+they are now electrically connected without any other wire needed.
+
+The center gap is a physical break — nothing crosses it automatically. That is
+where the Feather board will sit, bridging the two sides.
+
+### Step 1 — Place the Feather in the breadboard
+
+The Feather is a long narrow board with a row of pins along each long edge.
+Press it firmly into the breadboard so it sits across the center gap like a
+bridge. One row of pins will be in the **e** row, the other in the **f** row.
+
+```
+        USB-C port
+           ↑
+  ┌────────────────────┐
+  │                    │
+e ●  ●  ●  ●  ●  ●  ●  ●   ← left-edge pins press into row e
+  ════ FEATHER BOARD ══════
+f ●  ●  ●  ●  ●  ●  ●  ●   ← right-edge pins press into row f
+  │                    │
+  └────────────────────┘
+```
+
+The board should sit level and firm. Every pin in row e now has 4 open holes
+(a, b, c, d in the same column) you can use to connect to it. Same for row f.
+
+**Finding pin D5, D6, and GND on the Feather:**
+Pin names are printed on the *underside* of the Feather board. Before pressing
+it into the breadboard, flip it over and look. You will see small text next to
+each pad. On the #5691, D5 and D6 are on the right-side column of pins; GND
+appears on both sides. Make a small note of which column numbers they land in
+once the board is inserted.
+
+> **Tip:** Photograph the underside before inserting so you can refer back to
+> the pin names while looking at the top.
+
+### Step 2 — Place the 3.5 mm stereo jack (#1699)
+
+The jack has 4 short metal legs underneath it. Press it into an empty area of
+the breadboard, several columns away from the Feather so there is room to work.
+Each leg goes into a different row.
+
+```
+  jack  ┌──────┐
+        │ [  ] │  ← socket hole (where the switch plug goes)
+        └──┬┬┬┬┘
+    legs:  TI RI SL (4th leg — not used)
+           P  N  EE
+           │  G  VE
+```
+
+The three legs you will use are labelled on the jack's product page:
+- **TIP** — dot switch (switch 1)
+- **RING** — dash switch (switch 2)
+- **SLEEVE** — ground (common return for both switches)
+
+Because each leg is in its own row, you have 4 open holes in that row to
+connect to.
+
+### Step 3 — Connect with jumper wires
+
+The jumper wires from Adafruit #153 have a male pin on each end that pushes
+into a breadboard hole. You are going to connect three pairs of holes:
+
+| From (jack side) | To (Feather side) |
+|-----------------|------------------|
+| Any open hole in the TIP leg's row | Any open hole in D5's column, row a–d |
+| Any open hole in the RING leg's row | Any open hole in D6's column, row a–d |
+| Any open hole in the SLEEVE leg's row | Any open hole in GND's column, row a–d |
+
+Push one end of a jumper wire into the jack's TIP row, and the other end into
+D5's column. The wire can be any length — just pick one short enough to lie
+flat without flopping around. Repeat for RING→D6 and SLEEVE→GND.
+
+```
+Example layout (column numbers illustrative):
+
+col:  5   6   7  ...  18  19  20
+a    [ ] [ ] [ ]      [ ] [ ] [ ]
+b    [ ] [ ] [ ]      [ ] [ ] [ ]
+c    [J] [J] [J]      [ ] [ ] [ ]   ← jack legs in cols 5, 6, 7 at row c
+d    [─────────────────────] [ ]   ← jumper wires run across
+e    [D5][D6][GN]     [ ] [ ] [ ]  ← Feather pins in same cols at row e
+     ════════════ GAP ════════════
+f    [D5][D6][GN]     [ ] [ ] [ ]  ← (Feather right-edge, mirror of above)
+```
+
+The exact column numbers do not matter — what matters is:
+- The jack leg and the Feather pin you want to connect are at **opposite ends
+  of the same jumper wire**
+- No two wires accidentally share a hole
+
+### Step 4 — Connect your AT switches
+
+You need **one Y-splitter** (3.5 mm mono-to-stereo) to plug two standard AT
+switches into the single stereo jack:
+
+- Switch 1 (dot) → plugs into the **Tip** side of the splitter
+- Switch 2 (dash) → plugs into the **Ring** side of the splitter
+
+If you only have one switch, plug it directly into the jack — it will be your
+dot (.) switch.
 
 ---
 
