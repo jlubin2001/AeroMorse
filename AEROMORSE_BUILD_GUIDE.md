@@ -27,21 +27,35 @@ once before buying anything — your hardware choices affect each other.
 
 ## 1. What AeroMorse Does
 
-AeroMorse lets you type text and control a mouse cursor using **Morse code** entered
-through one of two input methods:
+AeroMorse is an open-source CircuitPython project by Jim Lubin — a
+ventilator-dependent quadriplegic who has used Morse code for computer access
+since 1989 — that turns an Adafruit Feather microcontroller into a USB HID
+keyboard and mouse. Inspired by
+[AirTalker](https://github.com/ATMakersOrg/AirTalker), it connects via USB-C
+and appears to the host as a standard keyboard and mouse with no drivers
+required. Works on **Windows, macOS, Linux, iPadOS, Android, and ChromeOS**.
 
-- **Sip-and-puff** — breathe into a short tube; a sip = dot, a puff = dash
-- **Accessibility (AT) switches** — press a button switch; one switch = dot,
-  a second switch = dash
+Input is by **sip-and-puff** (LPS33HW pressure sensor) or **two standard AT
+switches**. A short sip (or switch 1) is a dot; a short puff (or switch 2) is
+a dash. A small OLED display shows the active group, the Morse pattern as it
+builds, and the last action. An optional speaker beeps for every dot and dash.
 
-The device connects to any computer, tablet, or phone via a standard USB-C cable
-and appears as a **keyboard and mouse** — no drivers, no software to install on
-the host device. It works on Windows, macOS, Linux, iPadOS, Android, and
-ChromeOS.
+Four groups organize all functions:
 
-A small display shows the current mode, the Morse pattern as you build it, and
-the last action taken. An optional speaker beeps with every dot and dash so you
-can hear the rhythm.
+- **Group 0** — always-available emergency group-switch patterns
+- **Group 1** — keyboard: letters, numbers, punctuation, function keys,
+  navigation, sticky modifiers
+- **Group 2** — mouse movement, clicks, drag, repeat, and Windows shortcuts
+- **Group 3** — user-defined macro text strings
+
+Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
+mirrors the main screen on a second board up to ~30 m away — useful when the
+sensor is mounted behind the user.
+
+Existing **Darci USB** users can drop in `morse_map_darci.py` to use their
+familiar code set. All Morse assignments are fully customizable in
+`morse_map.py`. Parts cost approximately **$50–$100** in off-the-shelf
+components.
 
 ### Morse code basics
 
