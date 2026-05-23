@@ -12,9 +12,9 @@ once before buying anything — your hardware choices affect each other.
 1. [What AeroMorse Does](#1-what-aeromorse-does)
 2. [How This Guide Works](#2-how-this-guide-works)
 3. [Compatible Feather Boards](#3-compatible-feather-boards)
-4. [Display Options](#4-display-options)
+4. [Input Method Options](#4-input-method-options)
+5. [Display Options](#5-display-options)
    - [Wireless Display — ESP-NOW Remote Mirror](#wireless-display--esp-now-remote-mirror)
-5. [Input Method Options](#5-input-method-options)
 6. [Speaker Options](#6-speaker-options)
 7. [Complete Parts Lists](#7-complete-parts-lists)
 8. [Step-by-Step Assembly](#8-step-by-step-assembly)
@@ -173,7 +173,7 @@ STEMMA QT with no wiring change.
 - Has a **STEMMA QT** port — the LPS33HW pressure sensor plugs straight in with
   no soldering
 - **WiFi + ESP-NOW** built in — supports the wireless remote display option
-  (Section 4) without any extra hardware on the main board
+  (Section 5) without any extra hardware on the main board
 - USB HID works out of the box — appears as keyboard and mouse to any computer
 - CircuitPython support is excellent and actively maintained
 - Available from Adafruit:
@@ -199,7 +199,7 @@ USB cable. BLE HID on the ESP32-S3 was unreliable in earlier CircuitPython
 versions but is fully fixed in CircuitPython 10.x (current stable: 10.2.0).
 
 The #5500 has no built-in display — connect the STEMMA QT OLED or a standalone
-TFT breakout. The ESP-NOW wireless display (Section 4) works on it identically
+TFT breakout. The ESP-NOW wireless display (Section 5) works on it identically
 to the Feather boards.
 https://www.adafruit.com/product/5500
 
@@ -310,7 +310,148 @@ Each pad is ~1.5 mm — much easier to solder than the pin holes for headers.
 
 ---
 
-## 4. Display Options
+## 4. Input Method Options
+
+### Option A — Sip-and-Puff (LPS33HW pressure sensor)
+
+A small barometric pressure sensor detects the tiny pressure change when you
+breathe into or out of a short plastic tube. No hand movement required.
+
+**Sensor:** Adafruit LPS33HW Water-Resistant Pressure Sensor — STEMMA QT
+https://www.adafruit.com/product/4414
+
+> **Adafruit learn guide — LPS33 sip-and-puff with CircuitPython:**
+> https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff
+> Recommended reading before your first use. Covers sensor calibration,
+> threshold tuning, and breath technique.
+
+**Tube options:**
+
+| Option | ID | OD | Material | Source |
+|--------|----|----|----------|--------|
+| Adafruit Silicone Tubing #3659 | 2.5 mm | 4.7 mm | Food-safe silicone | https://www.adafruit.com/product/3659 |
+| Aquarium airline tubing | 4.8 mm (3/16") | 7.9 mm (5/16") | PVC or silicone | Pet store / hardware store |
+| Medical sip-and-puff tubing | 4.8 mm (3/16") | 7.9 mm (5/16") | Medical PVC | Medical supply |
+
+**Adafruit #3659** is the easiest option — sold on the same site as the sensor,
+food-safe silicone, fits snugly over the sensor's pressure port. Order at least
+30 cm (12 inches); 1 m gives you plenty to cut to length and retry.
+
+**Aquarium airline tubing** is the budget alternative, available at any pet
+store for ~$3–5 per metre. The larger outer diameter grips the sensor port
+slightly differently — wrap a thin layer of silicone tape around the port nipple
+first if the fit feels loose.
+
+Cut to a comfortable length — most users prefer 20–40 cm (8–16 inches).
+
+> The tube pushes over the small nipple on the LPS33HW breakout board. No
+> adhesive is needed; friction holds it securely during normal use.
+
+---
+
+### Option B — Accessibility (AT) Switches via TRRS Jack
+
+Standard assistive technology switches with a **3.5 mm mono plug** connect to
+the Feather through a TRRS jack breakout. Pressing the dot switch = dot;
+pressing the dash switch = dash.
+
+Any AT switch compatible with Ablenet, Inclusive Technology, Specs Switches, or
+similar systems will work. One switch (dot only) is enough to navigate slowly;
+two switches (dot + dash) are strongly recommended for practical use.
+
+**Two wiring options for the TRRS jack:**
+
+#### Option B1 — Solderless breadboard
+
+A no-soldering build using a half-size breadboard, a single TRRS jack (#1699),
+and three jumper wires. Lowest-cost path and reversible, but bulky and best
+suited to bench testing rather than long-term use.
+
+**Detailed step-by-step breadboard instructions are in
+[Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
+at the end of this guide.**
+
+For most builders Option B3 (#2915 Terminal Block) is simpler and tidier — try
+that first.
+
+#### Option B2 — Soldered TRRS breakout (compact, durable)
+
+Solders four short wires to an Adafruit TRRS Jack Breakout board.
+
+> **Can I use clips instead of soldering on the #5764?**
+>
+> | Clip type | On the #5764 | On the Feather | Verdict |
+> |-----------|-------------|----------------|---------|
+> | IC hooks (dual hook-to-hook) | Flat pads — hooks slip off | Flat pads or header pins | ✗ Not reliable |
+> | Alligator clip to female jumper | TRRS jack **legs** (round metal, grippable) — **not** flat pads | Female slides onto Feather header pin directly | ✓ Works if jack legs protrude and Feather has header pins |
+> | Alligator clip to female jumper | Flat pads only (no protruding legs) | Any | ✗ Not reliable |
+>
+> **How to check:** Look at the bottom of the #5764. If the TRRS jack's metal
+> legs stick out 1–2 mm below the PCB, alligator clips can grip them. Clip
+> one jaw onto each leg — T, R1, S — and plug the female end directly onto
+> the matching Feather header pin. No male-to-male cable needed if the Feather
+> has soldered header pins.
+>
+> Secure the wires with a cable tie or tape so they cannot be tugged loose
+> during use.
+>
+> **If the Feather has no header pins** the chain becomes alligator→female→
+> male-to-male→alligator→Feather pad, which adds two extra connection points
+> and is too unreliable for daily use.
+>
+> **For guaranteed no-solder reliability** use **Option B1** with two #1699
+> jacks — each switch gets its own dedicated jack, no clips, no Y-splitter.
+
+Parts needed:
+- Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
+- 4 short wires ~8 cm (different colours help)
+- Soldering iron + solder
+
+| TRRS pad | Feather pin | Wire colour suggestion |
+|----------|-------------|----------------------|
+| T (Tip) | D5 | Red |
+| R1 (Ring 1) | D6 | Blue |
+| S (Sleeve) | GND | Black |
+| R2 | Not used | — |
+
+> **Both switch options work with the same `code.py`** — set `USE_SENSOR = False`
+> in the configuration section.
+
+---
+
+#### Option B3 — #2915 TRRS Terminal Block (no breadboard, minimal soldering) ⭐ Recommended for #5691
+
+**Adafruit #2915 — $2.50**
+https://www.adafruit.com/product/2915
+
+A 3.5 mm TRRS jack with **built-in screw terminals** — no PCB, no soldering on the jack side at all. Strip a wire, insert it, tighten the screw with a small screwdriver. This is the best option for the #5691 Reverse TFT Feather because it avoids the breadboard entirely and does not require the #2926 Terminal Block FeatherWing (which is incompatible with the Reverse TFT Feather).
+
+| #2915 terminal | Feather pin | Function |
+|----------------|-------------|----------|
+| Tip | D5 | Dot switch |
+| Ring | D6 | Dash switch |
+| Sleeve | GND | Ground |
+| Ring 2 | — | Leave empty |
+
+**If your #5691 has header pins soldered** — use female-to-female jumper wires. One end screws into the #2915 terminal; the other end plugs directly onto the Feather pin. **Zero soldering.**
+
+**If your #5691 has no header pins** — solder the three wires directly to the D5, D6, and GND pads on the Feather. The jack side still needs no soldering. Only 3 solder joints total.
+
+Parts needed:
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | TRRS Jack Terminal Block | #2915 | https://www.adafruit.com/product/2915 |
+| 3 | Female-to-female jumper wires (if Feather has pins) | #266 | https://www.adafruit.com/product/266 |
+| — | *or* 3 short wires ~15 cm + soldering iron (if no header pins) | — | — |
+
+> **Note:** The #2915 accepts both mono and TRRS plugs. Most AT switches use
+> a 3.5 mm mono plug (tip + sleeve only), which connects the Tip and Sleeve
+> terminals when pressed — exactly what AeroMorse expects.
+
+---
+
+## 5. Display Options
 
 All displays below are supported by CircuitPython's `displayio` system and work
 with AeroMorse. The code must be updated to match the display driver you choose.
@@ -625,147 +766,6 @@ adafruit_display_text/
 > **Note:** Adding a larger TFT display requires updating the display
 > initialisation section at the top of `code.py`. Ask for help with this step if
 > needed.
-
----
-
-## 5. Input Method Options
-
-### Option A — Sip-and-Puff (LPS33HW pressure sensor)
-
-A small barometric pressure sensor detects the tiny pressure change when you
-breathe into or out of a short plastic tube. No hand movement required.
-
-**Sensor:** Adafruit LPS33HW Water-Resistant Pressure Sensor — STEMMA QT
-https://www.adafruit.com/product/4414
-
-> **Adafruit learn guide — LPS33 sip-and-puff with CircuitPython:**
-> https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff
-> Recommended reading before your first use. Covers sensor calibration,
-> threshold tuning, and breath technique.
-
-**Tube options:**
-
-| Option | ID | OD | Material | Source |
-|--------|----|----|----------|--------|
-| Adafruit Silicone Tubing #3659 | 2.5 mm | 4.7 mm | Food-safe silicone | https://www.adafruit.com/product/3659 |
-| Aquarium airline tubing | 4.8 mm (3/16") | 7.9 mm (5/16") | PVC or silicone | Pet store / hardware store |
-| Medical sip-and-puff tubing | 4.8 mm (3/16") | 7.9 mm (5/16") | Medical PVC | Medical supply |
-
-**Adafruit #3659** is the easiest option — sold on the same site as the sensor,
-food-safe silicone, fits snugly over the sensor's pressure port. Order at least
-30 cm (12 inches); 1 m gives you plenty to cut to length and retry.
-
-**Aquarium airline tubing** is the budget alternative, available at any pet
-store for ~$3–5 per metre. The larger outer diameter grips the sensor port
-slightly differently — wrap a thin layer of silicone tape around the port nipple
-first if the fit feels loose.
-
-Cut to a comfortable length — most users prefer 20–40 cm (8–16 inches).
-
-> The tube pushes over the small nipple on the LPS33HW breakout board. No
-> adhesive is needed; friction holds it securely during normal use.
-
----
-
-### Option B — Accessibility (AT) Switches via TRRS Jack
-
-Standard assistive technology switches with a **3.5 mm mono plug** connect to
-the Feather through a TRRS jack breakout. Pressing the dot switch = dot;
-pressing the dash switch = dash.
-
-Any AT switch compatible with Ablenet, Inclusive Technology, Specs Switches, or
-similar systems will work. One switch (dot only) is enough to navigate slowly;
-two switches (dot + dash) are strongly recommended for practical use.
-
-**Two wiring options for the TRRS jack:**
-
-#### Option B1 — Solderless breadboard
-
-A no-soldering build using a half-size breadboard, a single TRRS jack (#1699),
-and three jumper wires. Lowest-cost path and reversible, but bulky and best
-suited to bench testing rather than long-term use.
-
-**Detailed step-by-step breadboard instructions are in
-[Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
-at the end of this guide.**
-
-For most builders Option B3 (#2915 Terminal Block) is simpler and tidier — try
-that first.
-
-#### Option B2 — Soldered TRRS breakout (compact, durable)
-
-Solders four short wires to an Adafruit TRRS Jack Breakout board.
-
-> **Can I use clips instead of soldering on the #5764?**
->
-> | Clip type | On the #5764 | On the Feather | Verdict |
-> |-----------|-------------|----------------|---------|
-> | IC hooks (dual hook-to-hook) | Flat pads — hooks slip off | Flat pads or header pins | ✗ Not reliable |
-> | Alligator clip to female jumper | TRRS jack **legs** (round metal, grippable) — **not** flat pads | Female slides onto Feather header pin directly | ✓ Works if jack legs protrude and Feather has header pins |
-> | Alligator clip to female jumper | Flat pads only (no protruding legs) | Any | ✗ Not reliable |
->
-> **How to check:** Look at the bottom of the #5764. If the TRRS jack's metal
-> legs stick out 1–2 mm below the PCB, alligator clips can grip them. Clip
-> one jaw onto each leg — T, R1, S — and plug the female end directly onto
-> the matching Feather header pin. No male-to-male cable needed if the Feather
-> has soldered header pins.
->
-> Secure the wires with a cable tie or tape so they cannot be tugged loose
-> during use.
->
-> **If the Feather has no header pins** the chain becomes alligator→female→
-> male-to-male→alligator→Feather pad, which adds two extra connection points
-> and is too unreliable for daily use.
->
-> **For guaranteed no-solder reliability** use **Option B1** with two #1699
-> jacks — each switch gets its own dedicated jack, no clips, no Y-splitter.
-
-Parts needed:
-- Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
-- 4 short wires ~8 cm (different colours help)
-- Soldering iron + solder
-
-| TRRS pad | Feather pin | Wire colour suggestion |
-|----------|-------------|----------------------|
-| T (Tip) | D5 | Red |
-| R1 (Ring 1) | D6 | Blue |
-| S (Sleeve) | GND | Black |
-| R2 | Not used | — |
-
-> **Both switch options work with the same `code.py`** — set `USE_SENSOR = False`
-> in the configuration section.
-
----
-
-#### Option B3 — #2915 TRRS Terminal Block (no breadboard, minimal soldering) ⭐ Recommended for #5691
-
-**Adafruit #2915 — $2.50**
-https://www.adafruit.com/product/2915
-
-A 3.5 mm TRRS jack with **built-in screw terminals** — no PCB, no soldering on the jack side at all. Strip a wire, insert it, tighten the screw with a small screwdriver. This is the best option for the #5691 Reverse TFT Feather because it avoids the breadboard entirely and does not require the #2926 Terminal Block FeatherWing (which is incompatible with the Reverse TFT Feather).
-
-| #2915 terminal | Feather pin | Function |
-|----------------|-------------|----------|
-| Tip | D5 | Dot switch |
-| Ring | D6 | Dash switch |
-| Sleeve | GND | Ground |
-| Ring 2 | — | Leave empty |
-
-**If your #5691 has header pins soldered** — use female-to-female jumper wires. One end screws into the #2915 terminal; the other end plugs directly onto the Feather pin. **Zero soldering.**
-
-**If your #5691 has no header pins** — solder the three wires directly to the D5, D6, and GND pads on the Feather. The jack side still needs no soldering. Only 3 solder joints total.
-
-Parts needed:
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | TRRS Jack Terminal Block | #2915 | https://www.adafruit.com/product/2915 |
-| 3 | Female-to-female jumper wires (if Feather has pins) | #266 | https://www.adafruit.com/product/266 |
-| — | *or* 3 short wires ~15 cm + soldering iron (if no header pins) | — | — |
-
-> **Note:** The #2915 accepts both mono and TRRS plugs. Most AT switches use
-> a 3.5 mm mono plug (tip + sleeve only), which connects the Tip and Sleeve
-> terminals when pressed — exactly what AeroMorse expects.
 
 ---
 
@@ -1281,7 +1281,7 @@ No hardware assembly needed. Simply:
 
 1. Flash the latest stable CircuitPython onto the second Feather (same procedure
    as Step 9.1 below).
-2. Copy the files listed under **Option W1** in Section 4 (receiver.py → code.py,
+2. Copy the files listed under **Option W1** in Section 5 (receiver.py → code.py,
    receiver_boot.py → boot.py, morse_map.py, and your /lib folder).
 3. Power the second board from any USB-C phone charger or USB power bank.
 
@@ -1301,9 +1301,9 @@ displaying within one second of the main board powering on.
 
 2. Flash the latest stable CircuitPython onto the XIAO (see circuitpython.org/downloads,
    search "XIAO ESP32C3").
-3. Make the one-line code change described in Section 4 (Option W2).
+3. Make the one-line code change described in Section 5 (Option W2).
 4. Copy `receiver.py` as `code.py`, `receiver_boot.py` as `boot.py`, and the
-   two library files listed in Section 4 into `/lib`.
+   two library files listed in Section 5 into `/lib`.
 5. Power the XIAO from any USB-C power source.
 
 ---
@@ -1606,7 +1606,7 @@ Save the file — the Feather reloads automatically.
 
 ## Appendix D — Breadboard Wiring Walkthrough
 
-Detailed step-by-step instructions for **§5 Option B1 — Solderless breadboard**.
+Detailed step-by-step instructions for **§4 Option B1 — Solderless breadboard**.
 Skip this appendix if you chose Option B2 (TRRS breakout) or Option B3 (#2915
 Terminal Block).
 

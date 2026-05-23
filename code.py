@@ -2,9 +2,9 @@
 #
 # Hardware reference — see AEROMORSE_BUILD_GUIDE.md for all options:
 #   Feather board       — Build Guide §3  (default: #5691 Reverse TFT Feather)
-#   Display             — Build Guide §4  (built-in TFT on #5691, or external OLED)
-#   Wireless display    — Build Guide §4 "Wireless Display — ESP-NOW Remote Mirror"
-#   Input method        — Build Guide §5  (Option A sensor / Option B switches)
+#   Display             — Build Guide §5  (built-in TFT on #5691, or external OLED)
+#   Wireless display    — Build Guide §5 "Wireless Display — ESP-NOW Remote Mirror"
+#   Input method        — Build Guide §4  (Option A sensor / Option B switches)
 #     Option A          — #4414 LPS33HW pressure sensor on STEMMA QT (sip-and-puff)
 #     Option B1/B2/B3   — TRRS / 3.5mm jacks for AT switches (B3 = #2915 terminal block)
 #   Speaker             — Build Guide §6  (S1 #3885 STEMMA / S2 piezo / S3 amp+speaker)
@@ -66,10 +66,10 @@ from morse_map import groups
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-USE_SENSOR      = True          # True  = Option A (LPS33HW #4414)  — Build Guide §5 Option A
-                                # False = Option B (AT switches)      — Build Guide §5 Option B
+USE_SENSOR      = True          # True  = Option A (LPS33HW #4414)  — Build Guide §4 Option A
+                                # False = Option B (AT switches)      — Build Guide §4 Option B
 
-# Pressure thresholds (hPa delta from zeroed baseline).      Build Guide §5 Option A, §10
+# Pressure thresholds (hPa delta from zeroed baseline).      Build Guide §4 Option A, §10
 # Raise these if you get false triggers; lower them if light sips are missed.
 THRESH_SIP      = 5             # must sip this many hPa below baseline
 THRESH_PUFF     = 5             # must puff this many hPa above baseline
@@ -82,7 +82,7 @@ LONG_PRESS      = 1.0           # hold duration that cycles the active group
 # Increase to reduce bounce; decrease if fast elements are missed.
 POINTS_TO_AVERAGE = 8
 
-# Switch GPIO pins (used when USE_SENSOR = False)            Build Guide §5 Option B, §8C
+# Switch GPIO pins (used when USE_SENSOR = False)            Build Guide §4 Option B, §8C
 # Wired via 3.5mm TRRS jack #1699 (B1/B2) or terminal block #2915 (B3).
 DOT_PIN         = board.D5      # → TIP of dot jack / dot terminal
 DASH_PIN        = board.D6      # → TIP of dash jack / dash terminal
@@ -106,9 +106,9 @@ MOUSE_SPEED_FAST   = 3
 MOUSE_SPEED_FACTOR = 2          # overall scale (matches AirTalker feel)
 MOUSE_REPEAT_DELAY = 0.040      # seconds between repeat ticks (40 ms)
 
-# Display                                                    Build Guide §4, §8A
+# Display                                                    Build Guide §5, §8A
 # Built-in TFT on #5691 needs no wiring. For external OLED/TFT FeatherWings or
-# STEMMA QT OLEDs see Build Guide §4 tables.
+# STEMMA QT OLEDs see Build Guide §5 tables.
 DISPLAY_ROTATION   = 0          # degrees — 0 = USB on left, 180 = USB on right
                                 # other valid values: 90, 270
 
@@ -229,7 +229,7 @@ def _audio_tick():
 # ── ESP-NOW wireless display ───────────────────────────────────────────────────
 # Broadcasts TFT state to a QT Py ESP32-C3 + SSD1306 OLED running receiver.py.
 # Entirely optional — if the espnow / wifi modules are absent nothing changes.
-# Wireless display hardware options — see Build Guide §4 "Wireless Display"
+# Wireless display hardware options — see Build Guide §5 "Wireless Display"
 # (any ESP32-family Feather/QT Py as receiver; optional battery #3898/#1578/#258).
 
 _ESPNOW_ENABLED = False
