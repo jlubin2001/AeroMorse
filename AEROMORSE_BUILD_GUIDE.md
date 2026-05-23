@@ -1696,14 +1696,64 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 
 **Wireless display shows "No signal"**
 - Confirm both boards are powered and running CircuitPython 9.x or later.
-- Both boards must be on the same ESP-NOW channel. If neither is
-  connected to WiFi, both default to channel 1 automatically — no action
-  needed.
 - Check the serial console on the main board. It should print
-  `ESP-NOW: wireless display active (broadcast)` at startup. If it prints
-  `ESP-NOW: disabled` the `espnow` module is not present — confirm the
-  board is an ESP32-S3 and running CircuitPython 9.x or later.
+  `ESP-NOW: wireless display active (broadcast)` at startup. If it
+  prints `ESP-NOW: disabled` the `espnow` module is not present —
+  confirm the board is an ESP32-S3 and running CircuitPython 9.x or
+  later.
 - Range is approximately 30 m indoors. Move the boards closer to test.
+- Channel mismatch: see "How the ESP-NOW channel is selected" below.
+
+**How the ESP-NOW channel is selected**
+
+AeroMorse does **not** set an ESP-NOW channel explicitly. Both boards
+run the equivalent of:
+
+```python
+wifi.radio.enabled = True              # turn on the radio
+espnow.ESPNow()                        # open ESP-NOW on it
+# main board only:
+peers.append(Peer(mac=b'\xff'*6))      # broadcast peer, channel default
+```
+
+ESP-NOW always operates on whatever channel the WiFi radio is currently
+tuned to. When the radio is enabled but **not** joined to a network,
+both ESP32 chips sit on **channel 1** — the firmware default. That is
+why no configuration is needed in the typical AeroMorse build: both the
+main board and the receiver come up on channel 1 and find each other
+automatically.
+
+**Things that move the channel away from 1:**
+- One board joins a WiFi network (`wifi.radio.connect(...)` in your own
+  code). The radio retunes to that network's channel and ESP-NOW
+  follows. If the other board didn't also connect to the same network,
+  they lose sync.
+- A captive-portal or provisioning library that calls `connect()`
+  silently.
+- Manually setting `Peer(mac=..., channel=N)` on the main board while
+  the receiver is still on channel 1.
+
+**To force a specific channel** (only needed if the default isn't
+working — e.g., heavy WiFi interference on channel 1):
+1. On the **main board**, edit the `Peer(...)` line in `code.py`:
+   ```python
+   _espnow_dev.peers.append(
+       _espnow_mod.Peer(mac=b'\xff\xff\xff\xff\xff\xff', channel=6)
+   )
+   ```
+2. On the **receiver**, add this line in `receiver.py` *after*
+   `wifi.radio.enabled = True`:
+   ```python
+   wifi.radio.start_station()           # if not already in station mode
+   # the radio is now on whatever channel ESP-NOW will use; no further
+   # channel command is needed because the receiver listens on the
+   # radio's current channel.
+   ```
+   In practice the receiver picks up the sender's channel as soon as
+   the first broadcast arrives, so explicit station-mode setup is
+   usually unnecessary — but force it if signal is intermittent.
+3. Both boards must use the **same** channel number. Valid 2.4 GHz
+   channels are 1 – 13 (1, 6, 11 are the non-overlapping ones).
 
 **Wireless display is frozen / not updating**
 - The receiver updates whenever a packet arrives (10× per second). If the
