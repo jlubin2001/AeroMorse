@@ -354,7 +354,7 @@ All three are functionally identical for AeroMorse.
 
 ---
 
-### FeatherWing displays (plug directly on Feather — easiest)
+### FeatherWing displays (plug directly on Feather — easiest, requires headers)
 
 | Display | # | Size | Resolution | Interface | URL |
 |---------|---|------|-----------|-----------|-----|
@@ -362,12 +362,22 @@ All three are functionally identical for AeroMorse.
 | 3.5" TFT Capacitive Touch | [5872](https://www.adafruit.com/product/5872) | 3.5" | 480×320 colour | SPI | https://www.adafruit.com/product/5872 |
 | 2.4" TFT Resistive Touch | [3315](https://www.adafruit.com/product/3315) | 2.4" | 320×240 colour | SPI | https://www.adafruit.com/product/3315 |
 
+> **Header pins required on the Feather.** A FeatherWing has two rows of
+> female header sockets on its underside that slide down onto the male pins
+> on top of the Feather. If your Feather shipped as a bare PCB with empty
+> pin holes, those holes must be filled with soldered male headers before a
+> FeatherWing can be used — there is nothing for the wing to grip otherwise.
+> Adafruit's standard Feather header kit (#2886) is the right part, or order
+> a Feather variant that ships with headers pre-installed. If you cannot or
+> would rather not solder, choose a STEMMA QT OLED (#326 / #938) or the
+> built-in TFT on #5691 instead — both are plug-and-play with no headers.
+
 > FeatherWings have a touchscreen controller that uses I²C. You will not use
 > touch input with AeroMorse — the display portion works via SPI independently
 > and will not conflict with the pressure sensor.
 
 **Recommended for table mounting: #3651** — largest FeatherWing, bright colour,
-plugs straight on with no wiring.
+plugs straight on (once headers are in place) with no additional wiring.
 
 ---
 
