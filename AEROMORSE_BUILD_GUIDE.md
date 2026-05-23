@@ -976,22 +976,8 @@ several GND pins — any of them work).
 
 ### Tools
 
-#### Software tools (always needed — free)
-
-| Tool | Purpose | Download |
-|------|---------|---------|
-| **Thonny** | Edit `code.py`, view serial output, REPL | https://thonny.org |
-| **Any text editor** | Edit `code.py` and `morse_map.py` | Notepad (Windows), TextEdit (Mac) |
-
-**Thonny** is the recommended editor for CircuitPython beginners. It shows the
-serial console (error messages and `print()` output) in the same window as the
-code editor, has a built-in file manager for the CIRCUITPY drive, and runs on
-Windows, macOS, and Linux at no cost.
-
-> Mu Editor was previously recommended by Adafruit but has announced
-> end-of-life in 2026. Thonny is the current recommended alternative.
-
----
+> **Software tools (Thonny etc.) are covered in §9.3 "Install Thonny" — they
+> belong with the software-install steps, not the parts list.**
 
 #### Hardware tools — solderless build (Option B1 breadboard)
 
@@ -1362,7 +1348,86 @@ adafruit_lps35hw.mpy
 
 ---
 
-### Step 9.3 — Copy the AeroMorse project files
+### Step 9.3 — Install Thonny and watch the serial console
+
+Before copying the AeroMorse project files in §9.4, install **Thonny** —
+a free, beginner-friendly code editor that doubles as a serial console.
+The serial console is how the Feather reports errors when it tries to
+load `code.py`, the libraries, or `morse_map.py`. **Without watching the
+console, a problem in §9.4 looks like "nothing happens" instead of a
+specific error message you can act on.**
+
+#### Step 9.3.1 — Download and install Thonny
+
+1. Go to **https://thonny.org** and click the download button for your
+   operating system (Windows, macOS, or Linux).
+2. Run the installer. No special options are needed — accept defaults.
+3. Launch Thonny after installation completes.
+
+> Mu Editor was previously recommended by Adafruit but has announced
+> end-of-life in 2026. Thonny is the current recommended alternative.
+
+#### Step 9.3.2 — Confirm the Feather is plugged in
+
+The Feather should still be connected from §9.1 / §9.2. The **CIRCUITPY**
+drive must be visible in File Explorer (Windows) or Finder (Mac). If it
+isn't, unplug and replug the USB-C cable.
+
+#### Step 9.3.3 — Point Thonny at CircuitPython
+
+1. In Thonny, click **Run → Configure interpreter…**
+   (or click the interpreter name shown at the bottom-right of the
+   Thonny window).
+2. In the top dropdown, select **CircuitPython (generic)**.
+3. In the **Port** dropdown, select the port your Feather is on:
+   - **Windows:** a COM port, e.g. `COM3` or `COM7` — try each if unsure
+   - **macOS:** something like `/dev/cu.usbmodem14101`
+   - **Linux:** something like `/dev/ttyACM0`
+4. Click **OK**.
+5. The bottom **Shell** panel should now show `>>>` — this is the REPL
+   prompt, confirming Thonny is talking to the Feather.
+
+> **Can't find the right port?**
+> Windows: open Device Manager → Ports (COM & LPT) — the Feather appears
+> as "USB Serial Device" or "CircuitPython CDC Control".
+> Mac: open Terminal and type `ls /dev/cu.*` — look for `usbmodem`.
+
+#### Step 9.3.4 — Leave the Shell panel visible
+
+The Shell panel at the bottom of the Thonny window will display
+everything `code.py` prints (errors, calibration messages, debug output).
+Keep this panel visible while you complete §9.4. If a file copy fails,
+or a library is missing, the Shell will print an exact error message
+naming the file and line number — much easier to act on than guessing.
+
+A healthy startup after §9.4 looks like this in the Shell:
+
+```
+Calibrating — do not sip or puff ...
+Baseline: 1013.241  sip<1008.241  puff>1018.241
+```
+
+If you see a red `Traceback (most recent call last):` line instead, the
+last line of the traceback names the problem (e.g.
+`ImportError: no module named 'adafruit_lps35hw'` — means that library
+file is missing from `/lib`; re-do §9.2). Note: in some Thonny versions
+tracebacks render in plain text rather than red.
+
+#### Useful Thonny shortcuts
+
+| Action | Shortcut |
+|--------|---------|
+| Save file (and trigger Feather restart) | Ctrl+S / Cmd+S |
+| Stop running program / go to REPL | Ctrl+C (in Shell) |
+| Restart program from REPL | Ctrl+D (in Shell) |
+| Open file from CIRCUITPY drive | File → Open → CircuitPython device |
+
+> Further Thonny details (REPL examples, alternative editors like VS
+> Code) are in `TOOLS_AND_GUIDES.md`.
+
+---
+
+### Step 9.4 — Copy the AeroMorse project files
 
 **Which `code.py` to use depends on your Feather board:**
 
