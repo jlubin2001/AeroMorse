@@ -652,16 +652,10 @@ The #5691 has a built-in JST-PH battery connector and charges over USB-C. Plug i
 > Runtime estimates assume ~80–130 mA active draw (ESP32-S3 + TFT on + ESP-NOW receiving).
 > Recharging happens automatically when the USB-C cable is plugged back in — no separate charger needed.
 
-**Files needed on the second board:**
-
-| File on your computer | Copy to second board as |
-|----------------------|------------------------|
-| `receiver.py` | `code.py` |
-| `receiver_boot.py` | `boot.py` |
-| `adafruit_display_text/` from the matching CP bundle | `/lib/adafruit_display_text/` |
-
-> `receiver_boot.py` deliberately does **not** enable USB HID. This prevents
-> Windows from seeing the second board as a second keyboard or mouse.
+**Files needed on the second board:** See **§9.4.1 Option W1** for the
+complete file tree and step-by-step setup. In short: `receiver.py` →
+`code.py`, `receiver_boot.py` → `boot.py`, and one library folder
+(`adafruit_display_text/`) under `/lib`. No HID library, no Morse map.
 
 ---
 
@@ -701,12 +695,10 @@ import busio
 i2c = busio.I2C(board.SCL, board.SDA)
 ```
 
-**Libraries needed on the XIAO's `/lib` folder** (not needed for Option W1):
-
-```
-adafruit_displayio_ssd1306.mpy
-adafruit_display_text/
-```
+**Libraries needed on the XIAO's `/lib` folder:** See **§9.4.1 Option W2**
+for the complete file tree. In short:
+`adafruit_displayio_ssd1306.mpy` (for the OLED driver) plus
+`adafruit_display_text/`.
 
 > **Option W2 is not recommended for first-time builders** due to the
 > soldering requirement. Option W1 is plug-and-play.
@@ -1233,40 +1225,37 @@ you want it.
 
 ---
 
-### Step 8E — Set up the wireless display board (optional)
+### Step 8E — Set up the wireless display board hardware (optional)
 
-Skip this step if you are not using a wireless display.
+Skip this step if you are not using a wireless display. Software setup
+for the receiver is covered separately in **§9.4.1**.
 
 #### Option W1 — Second Reverse TFT Feather
 
-No hardware assembly needed. Simply:
+No hardware assembly needed — the board ships ready to power on. Mount
+the second Feather face-up where you can see the TFT. Once §9.4.1 is
+complete it will start mirroring the main board's display within one
+second of either board powering on.
 
-1. Flash the latest stable CircuitPython onto the second Feather (same procedure
-   as Step 9.1 below).
-2. Copy the files listed under **Option W1** in Section 5 (receiver.py → code.py,
-   receiver_boot.py → boot.py, morse_map.py, and your /lib folder).
-3. Power the second board from any USB-C phone charger or USB power bank.
-
-Mount the second Feather face-up where you can see the TFT. It starts
-displaying within one second of the main board powering on.
+Power source: any USB-C phone charger, USB power bank, or one of the
+LiPoly batteries listed in §5 Option W1.
 
 #### Option W2 — XIAO ESP32C3 + OLED
 
-1. Solder four short wires between the XIAO and the OLED 4-pin header:
+Solder four short wires between the XIAO and the OLED's 4-pin header:
 
-   | OLED pin | XIAO pin |
-   |----------|---------|
-   | VCC | 3V3 |
-   | GND | GND |
-   | SCL | D3 (SCL) |
-   | SDA | D2 (SDA) |
+| OLED pin | XIAO pin |
+|----------|---------|
+| VCC | 3V3 |
+| GND | GND |
+| SCL | D3 (SCL) |
+| SDA | D2 (SDA) |
 
-2. Flash the latest stable CircuitPython onto the XIAO (see circuitpython.org/downloads,
-   search "XIAO ESP32C3").
-3. Make the one-line code change described in Section 5 (Option W2).
-4. Copy `receiver.py` as `code.py`, `receiver_boot.py` as `boot.py`, and the
-   two library files listed in Section 5 into `/lib`.
-5. Power the XIAO from any USB-C power source.
+That's the only assembly. Software setup (CircuitPython firmware, the
+one-line I²C edit, and copying receiver files) is in **§9.4.1 Option W2**.
+
+Power source: any USB-C phone charger or USB power bank. The XIAO has
+no battery connector — Option W1 is the only battery-capable receiver.
 
 ---
 
@@ -1490,6 +1479,96 @@ runs the code automatically.
 > The first boot after copying `boot.py` takes a few extra seconds. This is
 > normal — the board is negotiating USB HID with the host. If nothing seems to
 > happen, unplug and replug the USB cable once.
+
+---
+
+### Step 9.4.1 — Software for the Wireless Display receiver (optional)
+
+Skip this step if you are not using the ESP-NOW wireless display
+(§5 "Wireless Display — ESP-NOW Remote Mirror"). The main board you set
+up above is already fully functional.
+
+The receiver is a **second** board that runs entirely independently of
+the main board — its own CircuitPython firmware, its own `code.py`, its
+own `/lib` folder. It listens for ESP-NOW broadcasts from the main board
+and mirrors the four display fields on its own screen. It does **not**
+act as a keyboard or mouse; you do not load `morse_map.py` or
+`adafruit_hid` on it.
+
+#### Files on the receiver
+
+| File on your computer | Copy to the receiver as |
+|----------------------|------------------------|
+| `receiver.py` | `code.py` (rename when copying) |
+| `receiver_boot.py` | `boot.py` (rename when copying) |
+
+> **`receiver_boot.py` deliberately disables USB HID on the receiver.**
+> Without renaming it to `boot.py` on the receiver, Windows / macOS /
+> Linux will see the second board as a duplicate keyboard and try to
+> type from it as well.
+
+> **Do NOT copy `morse_map.py` to the receiver.** The receiver only
+> draws what the main board sends — no Morse decoding happens on it.
+
+#### Firmware on the receiver (Step 9.1 equivalent)
+
+Install CircuitPython on the receiver the same way you did on the main
+board in §9.1. The receiver needs **at least CircuitPython 9** so the
+`espnow` module is included. The main board and the receiver do **not**
+need to be on the same CircuitPython major version — see §12 "Wireless
+display → CircuitPython versions on the two boards" for the details.
+
+---
+
+#### Option W1 — Second ESP32-S3 Reverse TFT Feather #5691 (recommended)
+
+```
+CIRCUITPY/    (on the W1 receiver)
+├── boot.py                        (= renamed copy of receiver_boot.py)
+├── code.py                        (= renamed copy of receiver.py)
+└── lib/
+    └── adafruit_display_text/     (only library needed)
+```
+
+Just **two files** at the root plus **one library folder** under `/lib`.
+Nothing else. The built-in TFT is initialised via `board.DISPLAY` so no
+display-driver `.mpy` is needed.
+
+> `adafruit_hid/`, `adafruit_bus_device/`, `adafruit_register/`,
+> `neopixel.mpy`, and `adafruit_lps35hw.mpy` are **not** required on the
+> receiver — leaving them off saves flash and avoids confusion.
+
+---
+
+#### Option W2 — Seeed XIAO ESP32C3 + SSD1306 OLED
+
+The XIAO has no STEMMA QT port. Before copying `receiver.py`, edit it
+once to switch I²C from STEMMA QT to bit-banged D2/D3 pins. See
+§5 "Option W2" for the exact one-line change.
+
+```
+CIRCUITPY/    (on the W2 receiver)
+├── boot.py                                (= renamed copy of receiver_boot.py)
+├── code.py                                (= renamed and edited copy of receiver.py)
+└── lib/
+    ├── adafruit_display_text/             (always)
+    └── adafruit_displayio_ssd1306.mpy     (only — SSD1306 OLED driver)
+```
+
+Two files at the root plus one library folder and one driver `.mpy`
+under `/lib`.
+
+---
+
+#### Verifying the receiver
+
+1. Plug the receiver into a USB-C power source.
+2. Within ~1 second of the **main board** booting, the receiver's
+   display should mirror the four display fields (group, Morse buffer,
+   last action, status).
+3. If it stays blank or shows "No signal", open the receiver in Thonny
+   and check the Shell — `ImportError` messages name the missing file.
+   See §12 "Wireless display" for the full diagnostic table.
 
 ---
 
