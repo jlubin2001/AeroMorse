@@ -1400,6 +1400,40 @@ last line of the traceback names the problem (e.g.
 file is missing from `/lib`; re-do §9.2). Note: in some Thonny versions
 tracebacks render in plain text rather than red.
 
+#### Step 9.3.5 — Capturing a fresh boot trace (Ctrl+D)
+
+The Shell panel only shows messages that fire *while Thonny is
+listening*. The first time you connect, the device has usually already
+booted — the `Calibrating…` and `Baseline:` lines you want to see have
+already scrolled past. You don't need to physically replug the cable or
+hit a reset button to recapture them.
+
+**Click in the Shell panel, then press Ctrl+D.** That sends a CircuitPython
+"soft reset" — the device re-runs `boot.py` and `code.py` from scratch
+and prints everything to the Shell as it happens. Use it any time you:
+
+- want to see the boot output again,
+- have edited `code.py` and want a clean restart (saving normally
+  triggers an auto-reload, but Ctrl+D gives you a confirmed clean run),
+- need to capture a traceback for diagnosing a problem.
+
+**A healthy Ctrl+D in sensor mode looks like:**
+
+```
+soft reboot
+Auto-reload is on. ...
+code.py output:
+Calibrating — do not sip or puff ...
+Baseline: 1013.241  sip<1008.241  puff>1018.241
+Input mode: 2-switch  (1-sw input = dot, 3-sw accept = long_dash)
+Code repeat: off  long-press cycles group: True
+ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
+```
+
+> If `ESP-NOW: init failed (ESP-NOW error 0x3065)` shows up, that's a
+> known CircuitPython 9.0.3 bug — see §12 "Wireless display" for the
+> workaround.
+
 #### Useful Thonny shortcuts
 
 | Action | Shortcut |
@@ -1707,10 +1741,15 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 
 **No sound from the STEMMA Speaker (or any speaker option)**
 - Verify wiring: Audio → A0, VIN → 3V, GND → GND.
+- Confirm the #4046 cable is fully seated in the #3885 speaker's JST PH
+  socket — this is the most common cause of silent speakers.
 - Open the serial console in Thonny (§9.3). If you see
-  `WARNING: audio modules not available`, your CircuitPython build is
-  missing `audiopwmio` — download a standard build (not a minimal one)
+  `WARNING: pwmio module not available`, you are running an unusual
+  minimal CircuitPython build — `pwmio` is present in every standard
+  build for every supported board. Re-flash with the standard `.uf2`
   from circuitpython.org/downloads.
+- The audio is a square wave (not a sine), so the tone will sound
+  slightly buzzy — that is expected and not a defect.
 
 ---
 
@@ -1789,6 +1828,17 @@ working — e.g., heavy WiFi interference on channel 1):
 - The `wifi` module initialisation failed. Try power-cycling the main
   board. Rarely, the WiFi radio needs a cold boot (unplug power
   completely rather than pressing Reset).
+
+**`ESP-NOW: init failed (ESP-NOW error 0x3065)` on CircuitPython 9.0.x**
+- 0x3065 decodes as `ESP_ERR_ESPNOW_NOT_INIT` — the underlying ESP-NOW
+  subsystem wasn't ready when `ESPNow()` was constructed. This is a
+  known bug in CircuitPython 9.0.x that was fixed in 9.1+. Two fixes:
+  - **Easy:** set `USE_WIRELESS_DISPLAY = False` in `code.py` (§10) to
+    skip ESP-NOW entirely. Acceptable if you don't need the wireless
+    display.
+  - **Best:** upgrade CircuitPython on the Feather to **9.2.x or 10.x**
+    from circuitpython.org/downloads. The fix is included in those
+    versions; leave `USE_WIRELESS_DISPLAY = True`.
 
 **Wireless display acts as a second keyboard on Windows**
 - The `receiver_boot.py` file was not copied as `boot.py` on the second

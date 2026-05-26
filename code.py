@@ -52,12 +52,11 @@ except ImportError:
     _ESPNOW_IMPORTABLE = False
 
 try:
-    import audiopwmio
-    import synthio
+    import pwmio
     _AUDIO_AVAILABLE = True
 except ImportError:
     _AUDIO_AVAILABLE = False
-    print("WARNING: audio modules not available — speaker disabled")
+    print("WARNING: pwmio module not available — speaker disabled")
 
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
@@ -264,57 +263,70 @@ if USE_SENSOR:
     _avg_pressure = RollingAverage(POINTS_TO_AVERAGE)
 
 # ── Audio setup ───────────────────────────────────────────────────────────────
+# Square-wave tone generator on AUDIO_PIN via pwmio. This works on every
+# CircuitPython chip including ESP32-S3 — synthio / audiopwmio are not
+# available on ESP32-S3, so we use the simpler pwmio path uniformly.
+#
+# Frequency is switched per beep (dot / dash / confirm / group). 50% duty
+# (0x8000) drives the STEMMA Speaker #3885 amp or a passive piezo cleanly;
+# 0% duty (0) is silence.
 
 if _AUDIO_AVAILABLE:
-    _audio_out   = audiopwmio.PWMAudioOut(AUDIO_PIN)
-    _synth       = synthio.Synthesizer(sample_rate=22050)
-    _audio_out.play(_synth)
-    _dot_note     = synthio.Note(frequency=BEEP_DOT_FREQ)
-    _dash_note    = synthio.Note(frequency=BEEP_DASH_FREQ)
-    _confirm_note = synthio.Note(frequency=CONFIRM_FREQ)
-    _group_note   = synthio.Note(frequency=GROUP_FREQ)
+    _audio_out = pwmio.PWMOut(AUDIO_PIN, frequency=BEEP_DOT_FREQ,
+                              duty_cycle=0, variable_frequency=True)
 
-_beeping_morse     = False  # True while a DIT or DAH is held
-_active_morse_note = None   # which note is currently playing
-_notify_end        = 0.0    # monotonic time when the current blip should stop
+_beeping_morse  = False  # True while a DIT or DAH is held
+_notify_end     = 0.0    # monotonic time when the timed blip should stop
+
+
+def _tone_on(freq):
+    """Drive the speaker at `freq` Hz with a 50% duty square wave."""
+    if not _AUDIO_AVAILABLE:
+        return
+    _audio_out.frequency = freq
+    _audio_out.duty_cycle = 0x8000        # ~50% duty — clean square wave
+
+
+def _tone_off():
+    """Silence the speaker."""
+    if not _AUDIO_AVAILABLE:
+        return
+    _audio_out.duty_cycle = 0
 
 
 def _beep_start(state):
     """Start sidetone on press — higher pitch for dot, lower for dash."""
-    global _beeping_morse, _active_morse_note
-    if _AUDIO_AVAILABLE and not _beeping_morse:
-        # DIT == 0, DAH == 1 — constants defined further down, resolved at call time
-        _active_morse_note = _dot_note if state == 0 else _dash_note
-        _synth.press(_active_morse_note)
-        _beeping_morse = True
+    global _beeping_morse
+    if not _AUDIO_AVAILABLE or _beeping_morse:
+        return
+    # DIT == 0, DAH == 1 — constants defined further down
+    _tone_on(BEEP_DOT_FREQ if state == 0 else BEEP_DASH_FREQ)
+    _beeping_morse = True
 
 
 def _beep_stop():
     """Stop sidetone when press releases."""
-    global _beeping_morse, _active_morse_note
-    if _AUDIO_AVAILABLE and _beeping_morse and _active_morse_note is not None:
-        _synth.release(_active_morse_note)
-        _active_morse_note = None
-        _beeping_morse = False
+    global _beeping_morse
+    if not _AUDIO_AVAILABLE or not _beeping_morse:
+        return
+    _tone_off()
+    _beeping_morse = False
 
 
-def _beep_notify(duration=BEEP_CONFIRM_S, note=None):
+def _beep_notify(duration=BEEP_CONFIRM_S, freq=None):
     """Short timed blip for action confirmation or group change."""
     global _notify_end
     if not _AUDIO_AVAILABLE:
         return
-    if note is None:
-        note = _confirm_note
-    _synth.press(note)
+    _tone_on(freq if freq is not None else CONFIRM_FREQ)
     _notify_end = time.monotonic() + duration
 
 
 def _audio_tick():
-    """Release the timed notification note once its duration has elapsed."""
+    """Silence the timed notification tone once its duration has elapsed."""
     global _notify_end
     if _AUDIO_AVAILABLE and _notify_end and time.monotonic() >= _notify_end:
-        _synth.release(_confirm_note)
-        _synth.release(_group_note)
+        _tone_off()
         _notify_end = 0.0
 
 
@@ -683,7 +695,7 @@ def cycle_group(direction):
     _last_repeatable = None     # reset repeat on group change — must mmove first
     _last_action     = f"-> group {active_group}"
     print(f"GROUP -> {active_group} ({_GROUP_NAMES[active_group]})")
-    _beep_notify(duration=BEEP_GROUP_S, note=_group_note if _AUDIO_AVAILABLE else None)
+    _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
 
 # ── Display ────────────────────────────────────────────────────────────────────
 #
