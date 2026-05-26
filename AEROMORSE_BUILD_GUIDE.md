@@ -1584,12 +1584,28 @@ VS Code). Look for the configuration section near the top of the file.
 | `USE_SENSOR` | `True` | Change to `False` if using AT switches |
 | `THRESH_SIP` | `5` | Raise to `8` or `10` if getting false triggers; lower to `3` if light sips are missed |
 | `THRESH_PUFF` | `5` | Same as above but for puff/dash |
-| `ACCEPT_DELAY` | `0.2` | Raise to `0.3` if patterns commit before you finish |
-| `LONG_PRESS` | `1.0` | Hold time in seconds to cycle groups. Raise if accidentally cycling |
+| `ACCEPT_DELAY` | `0.2` | Raise to `0.3` if patterns commit before you finish. In 3-switch mode this is a safety-net timeout; the third-switch gesture commits instantly regardless. |
+| `LONG_PRESS` | `1.0` | Hold time in seconds for the long-gesture (cycle / Accept). Raise if accidentally triggering |
+| `SWITCH_MODE` | `2` | `1` = single-switch timed; `2` = paddle (dot + dash); `3` = paddle + explicit Accept. See "Input modes" below. |
+| `ONE_SWITCH_INPUT` | `"dot"` | 1-switch mode only — `"dot"` uses the sip / D5 input; `"dash"` uses the puff / D6 input |
+| `ONE_SWITCH_DOT_MS` | `200` | 1-switch mode only — press ≤ this is a dot; longer is a dash; ≥ `LONG_PRESS`×1000 cycles group |
+| `THIRD_SWITCH_GESTURE` | `"long_dash"` | 3-switch mode only — `"long_dash"` makes long-puff the Accept switch; `"long_dot"` makes long-sip the Accept switch |
 | `DISPLAY_ROTATION` | `0` | `0` = USB port on left; `180` = USB port on right (`90` / `270` also valid) |
 | `USE_WIRELESS_DISPLAY` | `True` | `False` turns off the ESP-NOW broadcast and saves ~80–100 mA. Set to `False` if you have no Option W1 / W2 receiver attached |
 | `BEEP_DOT_FREQ` | `1200` | Pitch in Hz for dot (sip) beeps — higher pitch |
 | `BEEP_DASH_FREQ` | `800` | Pitch in Hz for dash (puff) beeps — lower pitch |
+
+### Input modes — what `SWITCH_MODE` does
+
+| Mode | Behaviour | Group cycling |
+|---|---|---|
+| **1** | Only `ONE_SWITCH_INPUT` is active. Press ≤ `ONE_SWITCH_DOT_MS` (200 ms) = dot, longer = dash. Pause `ACCEPT_DELAY` = end-of-letter. | Long-press (≥ `LONG_PRESS`) cycles forward. **No backward cycle** — use a g0 Morse pattern. |
+| **2** *(default)* | Dot input = dot, dash input = dash. Pause `ACCEPT_DELAY` = end-of-letter. | Long-press dot = cycle back; long-press dash = cycle forward. |
+| **3** | Dot input = dot, dash input = dash. **Explicit Accept**: long-press of `THIRD_SWITCH_GESTURE` commits immediately. | Long-press of the *other* gesture cycles forward. **No backward cycle** — use a g0 Morse pattern. |
+
+For a side-by-side comparison of how AeroMorse, Darci USB, morAce, and
+Adap2U each implement 1/2/3-switch input, see
+`MORSE_DEVICES_COMPARISON.md`.
 
 Save the file to the CIRCUITPY drive. The Feather reloads automatically within
 a few seconds.

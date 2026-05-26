@@ -38,11 +38,11 @@ Companion documents:
 All four devices support multiple input modes, but they implement them
 differently and on different hardware.
 
-| Mode | **Adap2U** | **Darci USB** | **morAce** | **AeroMorse** (today) | **AeroMorse** (planned) |
-|---|---|---|---|---|---|
-| **1-switch** (timed) | ✓ Time Code system: Short / Medium / Long / Xlong pulse lengths, settable thresholds. Loaded with `LOADER -F TCODES.CNF`. | ✓ One switch; firmware times dot vs. dash internally. | ✓ **Default mode**. Holding the switch for ≥ `dot_length` (default 200 ms) = dot; ≥ 3× = dash. | ✗ Not supported | ✓ **Planned** — short press = dot, long press = dash, pause = end-of-letter (morAce-style) |
-| **2-switch** (dot + dash) | ✓ `LOADER -F MORSE2.CNF`. Switch on SW1 = dit, SW2 = dah. Pause for settable timeout = end of letter. | ✓ Switch 1 = dot, switch 2 = dash. Pause = end of letter. | ✓ Configurable in `user/config.py` (`two_button_mode = 1`). | ✓ **Default** (D5 = dot, D6 = dash, or sip = dot / puff = dash). Pause `ACCEPT_DELAY` = end of letter. | (unchanged) |
-| **3-switch** (dot + dash + accept) | ✓ `LOADER -F MORSE3.CNF`. SW1 = dit, SW2 = dah, SW3 = explicit Accept (no timing pause needed). | ✓ Three-switch mode. Switch 3 explicitly commits the letter. | ✓ `three_button_mode = 1` in `user/config.py`. | ✗ Not supported (hardware has 2 inputs only) | ✓ **Planned** — long sip OR long puff as the third "switch" (user-selectable; details TBD) |
+| Mode | **Adap2U** | **Darci USB** | **morAce** | **AeroMorse** |
+|---|---|---|---|---|
+| **1-switch** (timed) | ✓ Time Code system: Short / Medium / Long / Xlong pulse lengths, settable thresholds. Loaded with `LOADER -F TCODES.CNF`. | ✓ One switch; firmware times dot vs. dash internally. | ✓ **Default mode**. Holding the switch for ≥ `dot_length` (default 200 ms) = dot; ≥ 3× = dash. | ✓ `SWITCH_MODE = 1`. `ONE_SWITCH_INPUT` picks which physical input (sip / D5 or puff / D6) is the sole switch. Press ≤ `ONE_SWITCH_DOT_MS` (default 200 ms) = dot, longer = dash. Long-press cycles group forward. |
+| **2-switch** (dot + dash) | ✓ `LOADER -F MORSE2.CNF`. Switch on SW1 = dit, SW2 = dah. Pause for settable timeout = end of letter. | ✓ Switch 1 = dot, switch 2 = dash. Pause = end of letter. | ✓ Configurable in `user/config.py` (`two_button_mode = 1`). | ✓ **Default** (`SWITCH_MODE = 2`) — D5 = dot, D6 = dash, or sip = dot / puff = dash. Pause `ACCEPT_DELAY` = end of letter. |
+| **3-switch** (dot + dash + accept) | ✓ `LOADER -F MORSE3.CNF`. SW1 = dit, SW2 = dah, SW3 = explicit Accept (no timing pause needed). | ✓ Three-switch mode. Switch 3 explicitly commits the letter. | ✓ `three_button_mode = 1` in `user/config.py`. | ✓ `SWITCH_MODE = 3`. Long-press of `THIRD_SWITCH_GESTURE` (default `"long_dash"` = long puff / long-D6) = explicit Accept. The other long-gesture cycles group forward. |
 
 **Why 1-switch matters:** Users with very limited motor control may only
 be able to operate one switch reliably (a single sip-and-puff straw, a
@@ -57,11 +57,12 @@ the dependency on inter-symbol timing entirely.
 
 **What the third "switch" looks like on AeroMorse:** AeroMorse hardware
 has only two physical inputs (two jacks, or one sip-and-puff sensor).
-The proposed third input is a *gesture* on the existing inputs — most
-likely a long sip or a long puff (user-configurable which) — that the
-firmware treats as an explicit Accept. Group cycling, which today uses
-long sip / long puff, would need to move to a different gesture in
-3-switch mode.
+The third input is a *gesture* on the existing inputs — by default a
+**long puff** (or long-D6 in jack mode) treated as an explicit Accept.
+The user can flip it to long sip via `THIRD_SWITCH_GESTURE = "long_dot"`.
+Forward group-cycle moves to the *other* long-gesture in 3-switch mode;
+backward cycling is unavailable as a gesture and must be done via a g0
+Morse pattern.
 
 ---
 

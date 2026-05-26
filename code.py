@@ -11,9 +11,10 @@
 #   Speaker             — Build Guide §6  (S1 #3885 STEMMA / S2 piezo / S3 amp+speaker)
 #   Assembly steps      — Build Guide §8  (8A display, 8B sensor, 8C switches, 8D speaker)
 #
-# Input modes (select with USE_SENSOR below)
-#   SENSOR  — LPS33HW via STEMMA QT: sip lowers pressure (dot), puff raises it (dash)
-#   SWITCH  — two digital switches: DOT_PIN press = dot, DASH_PIN press = dash
+# Input modes
+#   USE_SENSOR    — True = LPS33HW sip-and-puff (default), False = two AT switches
+#   SWITCH_MODE   — 1 / 2 / 3 switch (default 2). See config block below and
+#                   MORSE_DEVICES_COMPARISON.md for the model.
 #
 # Group model (see morse_map.py)
 #   Group 0  always-available layer — checked before the active group
@@ -88,6 +89,38 @@ POINTS_TO_AVERAGE = 8
 DOT_PIN         = board.D5      # → TIP of dot jack / dot terminal
 DASH_PIN        = board.D6      # → TIP of dash jack / dash terminal
 
+# ── Input mode — 1 / 2 / 3 switch ──────────────────────────────────────────────
+# Compare AeroMorse / Darci / Adap2U / morAce input modes in
+# MORSE_DEVICES_COMPARISON.md.
+#
+# SWITCH_MODE = 2 (default, paddle-style):
+#   DIT input = dot, DAH input = dash, pause (ACCEPT_DELAY) = end of letter.
+#   Long-press of either input cycles groups (DIT-side = back, DAH-side = forward).
+#
+# SWITCH_MODE = 1 (single-switch timed):
+#   Only ONE_SWITCH_INPUT counts; the other input is ignored.
+#   Short press (<= ONE_SWITCH_DOT_MS) = dot, longer press (< LONG_PRESS) = dash,
+#   very long press (>= LONG_PRESS) = cycle group forward.
+#   Cycle back is unavailable in 1-switch mode (use a g0 Morse pattern).
+#
+# SWITCH_MODE = 3 (dot + dash + explicit Accept):
+#   DIT and DAH short presses behave as in mode 2 (no timing pause needed).
+#   THIRD_SWITCH_GESTURE long-press = Accept (commits the pending pattern now).
+#   The OTHER long-gesture cycles groups forward.
+#   Cycle back must use a g0 Morse pattern in 3-switch mode.
+SWITCH_MODE         = 2
+
+# 1-switch mode only — which physical input is the sole switch
+ONE_SWITCH_INPUT    = "dot"        # "dot"  = sip (sensor)  / D5 jack (switches)
+                                   # "dash" = puff (sensor) / D6 jack (switches)
+ONE_SWITCH_DOT_MS   = 200          # press <= this is a dot; longer is a dash
+                                   # (group cycle still at LONG_PRESS)
+
+# 3-switch mode only — which long-gesture is the "third switch" (Accept)
+THIRD_SWITCH_GESTURE = "long_dash" # "long_dash" = long puff (sensor) / long-D6 (switches)
+                                   # "long_dot"  = long sip  (sensor) / long-D5 (switches)
+                                   # The OTHER long-gesture cycles groups forward.
+
 # Audio                                                       Build Guide §6, §8D
 # Option S1: Adafruit STEMMA Speaker #3885 wired White=A0, Red=3V, Black=GND.
 # Option S2: passive piezo across A0 and GND.
@@ -152,6 +185,25 @@ i2c = board.STEMMA_I2C()
 if USE_SENSOR and not _LPS_AVAILABLE:
     print("adafruit_lps35hw missing — switching to USE_SENSOR = False")
     USE_SENSOR = False
+
+# Validate input-mode configuration
+if SWITCH_MODE not in (1, 2, 3):
+    print(f"SWITCH_MODE = {SWITCH_MODE} is not 1, 2, or 3 — falling back to 2")
+    SWITCH_MODE = 2
+if ONE_SWITCH_INPUT not in ("dot", "dash"):
+    print(f"ONE_SWITCH_INPUT = {ONE_SWITCH_INPUT!r} invalid — falling back to 'dot'")
+    ONE_SWITCH_INPUT = "dot"
+if THIRD_SWITCH_GESTURE not in ("long_dot", "long_dash"):
+    print(f"THIRD_SWITCH_GESTURE = {THIRD_SWITCH_GESTURE!r} invalid — "
+          f"falling back to 'long_dash'")
+    THIRD_SWITCH_GESTURE = "long_dash"
+
+# Derived constants (kept once, used in the main loop hot path)
+_ONE_SWITCH_DOT_S    = ONE_SWITCH_DOT_MS / 1000.0
+_ONE_SWITCH_USES_DIT = (ONE_SWITCH_INPUT == "dot")     # True = DIT-side input wins
+_THIRD_SWITCH_IS_DAH = (THIRD_SWITCH_GESTURE == "long_dash")
+print(f"Input mode: {SWITCH_MODE}-switch  "
+      f"(1-sw input = {ONE_SWITCH_INPUT}, 3-sw accept = {THIRD_SWITCH_GESTURE})")
 
 if USE_SENSOR:
     lps = adafruit_lps35hw.LPS35HW(i2c)
@@ -732,6 +784,13 @@ while True:
         new_state = DIT if dot_dn else (DAH if dash_dn else IDLE)
         _display_pressure = 0.0
 
+    # 1-switch mode mask: ignore the input that isn't ONE_SWITCH_INPUT
+    if SWITCH_MODE == 1:
+        if _ONE_SWITCH_USES_DIT and new_state == DAH:
+            new_state = IDLE
+        elif (not _ONE_SWITCH_USES_DIT) and new_state == DIT:
+            new_state = IDLE
+
     # ── State machine ───────────────────────────────────────────────────────
     if new_state != _last_state:
 
@@ -750,14 +809,64 @@ while True:
             # DIT/DAH → IDLE: stop sidetone, commit the element (or long-press)
             _beep_stop()
             duration = now - _press_start
-            if duration >= LONG_PRESS:
-                cycle_group(-1 if _last_state == DIT else +1)
-                _pending_char = 0
-                _num_shifts   = 0
+
+            if SWITCH_MODE == 1:
+                # Single-switch timed: classify by duration
+                if duration >= LONG_PRESS:
+                    # Very long hold → forward cycle (no cycle-back in 1-switch)
+                    cycle_group(+1)
+                    _pending_char = 0
+                    _num_shifts   = 0
+                elif duration <= _ONE_SWITCH_DOT_S:
+                    # Short press → dot bit (0)
+                    _pending_char = (_pending_char << 1) | 0
+                    _num_shifts  += 1
+                else:
+                    # Medium press → dash bit (1)
+                    _pending_char = (_pending_char << 1) | 1
+                    _num_shifts  += 1
+
+            elif SWITCH_MODE == 3:
+                # Three-switch: short presses are bits; long-press of the
+                # configured gesture is Accept; long-press of the other gesture
+                # is forward cycle.
+                if duration >= LONG_PRESS:
+                    is_accept_gesture = (
+                        (_THIRD_SWITCH_IS_DAH and _last_state == DAH) or
+                        ((not _THIRD_SWITCH_IS_DAH) and _last_state == DIT)
+                    )
+                    if is_accept_gesture:
+                        # Explicit Accept: commit pending pattern immediately
+                        if _num_shifts > 0:
+                            pattern = _pending_to_str(_num_shifts, _pending_char)
+                            action  = lookup_action(_num_shifts, _pending_char)
+                            if action is not None:
+                                execute(action, pattern)
+                            else:
+                                _last_action = f"? {pattern}"
+                                print(f"{pattern}  ?")
+                            _pending_char = 0
+                            _num_shifts   = 0
+                    else:
+                        # Long-press of the OTHER gesture → forward cycle
+                        cycle_group(+1)
+                        _pending_char = 0
+                        _num_shifts   = 0
+                else:
+                    # Normal short press → shift bit (DIT=0, DAH=1)
+                    _pending_char = (_pending_char << 1) | _last_state
+                    _num_shifts  += 1
+
             else:
-                # Shift current state bit into accumulator (DIT=0, DAH=1)
-                _pending_char = (_pending_char << 1) | _last_state
-                _num_shifts  += 1
+                # SWITCH_MODE == 2 — original paddle behaviour, unchanged
+                if duration >= LONG_PRESS:
+                    cycle_group(-1 if _last_state == DIT else +1)
+                    _pending_char = 0
+                    _num_shifts   = 0
+                else:
+                    # Shift current state bit into accumulator (DIT=0, DAH=1)
+                    _pending_char = (_pending_char << 1) | _last_state
+                    _num_shifts  += 1
 
         _last_trans_at = now
         _last_state    = new_state
