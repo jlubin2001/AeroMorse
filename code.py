@@ -77,7 +77,7 @@ THRESH_SIP      = 5             # must sip this many hPa below baseline
 THRESH_PUFF     = 5             # must puff this many hPa above baseline
 
 # Timing (seconds)                                            Build Guide §10
-ACCEPT_DELAY    = 0.2           # idle pause after last element before committing
+ACCEPT_DELAY    = 0.5           # idle pause after last element before committing
 LONG_PRESS      = 1.0           # hold duration that cycles the active group
 
 # Pressure smoothing — average this many readings before thresholding.
@@ -700,15 +700,21 @@ def _build_display():
     bar_bg_pal[0] = 0x202020
     root.append(displayio.TileGrid(bar_bg_bmp, pixel_shader=bar_bg_pal, x=4, y=126))
 
-    bar_pal = displayio.Palette(1)
-    bar_pal[0] = 0x00FFFF
-    bar_bmp = displayio.Bitmap(1, 8, 1)
+    # Foreground bar — full-width bitmap. Palette index 0 = transparent
+    # (matches background), index 1 = direction colour painted by
+    # _update_display() based on sip / puff.
+    bar_pal = displayio.Palette(2)
+    bar_pal.make_transparent(0)
+    bar_pal[1] = 0x00FF00
+    bar_bmp = displayio.Bitmap(display.width - 8, 8, 2)
     root.append(displayio.TileGrid(bar_bmp, pixel_shader=bar_pal, x=4, y=126))
 
     display.root_group = root
-    return lbl_group, lbl_buf, lbl_action, lbl_mods, bar_pal
+    return lbl_group, lbl_buf, lbl_action, lbl_mods, bar_pal, bar_bmp
 
-_lbl_group, _lbl_buf, _lbl_action, _lbl_mods, _bar_pal = _build_display()
+_lbl_group, _lbl_buf, _lbl_action, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
+_BAR_WIDTH_PX = display.width - 8
+_last_bar_fill = 0    # tracks last frame's fill width for incremental updates
 
 _MOD_NAMES = {
     Keycode.LEFT_CONTROL:  "Ctrl",  Keycode.RIGHT_CONTROL: "RCtrl",
@@ -744,7 +750,28 @@ def _update_display(pressure=0.0):
     _lbl_action.text = action_str
     _lbl_mods.text   = mods_str
     if USE_SENSOR:
-        _bar_pal[0] = 0x00FF00 if pressure >= 0 else 0xFF4000
+        # Pressure bar — direction colour + magnitude-encoded fill width.
+        # pressure is delta-from-baseline (hPa): negative = sip, positive = puff.
+        # Bar fills to 100% at the trigger threshold (THRESH_SIP / THRESH_PUFF)
+        # and saturates beyond that.
+        _bar_pal[1] = 0x00FF00 if pressure >= 0 else 0xFF4000
+        if pressure >= 0:
+            ratio = min(pressure / THRESH_PUFF, 1.0) if THRESH_PUFF else 0
+        else:
+            ratio = min(-pressure / THRESH_SIP, 1.0) if THRESH_SIP else 0
+        fill_px = int(ratio * _BAR_WIDTH_PX)
+        global _last_bar_fill
+        if fill_px != _last_bar_fill:
+            # Only repaint the columns that changed between last frame and this
+            # frame. Keeps display refresh cheap (avoids painting 232x8 every
+            # 100 ms).
+            lo = min(fill_px, _last_bar_fill)
+            hi = max(fill_px, _last_bar_fill)
+            for x in range(lo, hi):
+                v = 1 if x < fill_px else 0
+                for y in range(8):
+                    _bar_bmp[x, y] = v
+            _last_bar_fill = fill_px
 
     # Mirror to wireless OLED (no-op if ESP-NOW not initialised).
     _espnow_send(group_str, buf_str, action_str, mods_str)
