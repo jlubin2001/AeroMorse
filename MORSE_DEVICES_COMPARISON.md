@@ -66,6 +66,21 @@ Morse pattern.
 
 ---
 
+## Hold-to-repeat (code repeat)
+
+A user holds the switch and the device emits a stream of identical symbols
+at a fixed interval, rather than requiring one tap per symbol. Important
+for users who find tap-per-symbol fatiguing.
+
+| | **Adap2U** | **Darci USB** | **morAce** | **AeroMorse** |
+|---|---|---|---|---|
+| Hold-to-repeat | ✓ Settable in Time Code / Morse config | ✓ "Code repeat" — holding the switch streams the same symbol; release ends the stream or transitions to the other symbol | — *(not documented; release-and-press required)* | ✓ `CODE_REPEAT = True` — `DOT_REPEAT_MS` (default 200 ms) and `DASH_REPEAT_MS` (default 600 ms) are independent; `CODE_REPEAT_MAX` (default 8) caps a runaway hold |
+| Per-symbol repeat rate | Settable | Settable | — | Two independent settings |
+| Default repeat behaviour | Off | On | n/a | Off (opt-in via `CODE_REPEAT = True`) |
+| Companion flag | — | — | — | `LONG_PRESS_CYCLES_GROUP = False` recommended alongside `CODE_REPEAT = True` so a sustained stream doesn't accidentally cycle groups; use a g0 Morse pattern to switch groups instead (matches the Darci muscle memory). |
+
+---
+
 ## Mode / group model
 
 How the device organises functions beyond plain typing.

@@ -121,6 +121,27 @@ THIRD_SWITCH_GESTURE = "long_dash" # "long_dash" = long puff (sensor) / long-D6 
                                    # "long_dot"  = long sip  (sensor) / long-D5 (switches)
                                    # The OTHER long-gesture cycles groups forward.
 
+# ── Code repeat (Darci-style hold-to-repeat) ──────────────────────────────────
+# When CODE_REPEAT is True, holding DIT or DAH emits a stream of symbols at the
+# configured repeat interval — one symbol on press, then one every
+# DOT_REPEAT_MS / DASH_REPEAT_MS while held. Release ends the stream; the next
+# press begins a new stream. ACCEPT_DELAY of idle still commits the
+# accumulated pattern. This is the Darci USB "code repeat" behaviour.
+#
+# Only honoured when SWITCH_MODE == 2 (in mode 1 the duration already classifies
+# dot vs dash, and in mode 3 holding overlaps with the explicit-Accept gesture).
+CODE_REPEAT          = False   # True = Darci-style hold-to-repeat
+DOT_REPEAT_MS        = 200     # ms per auto-repeated dot
+DASH_REPEAT_MS       = 600     # ms per auto-repeated dash (typically 3 × dot)
+CODE_REPEAT_MAX      = 8       # cap on symbols per held stream (runaway guard)
+
+# Long-press group cycling — independent of CODE_REPEAT.
+# True  (default): holding DIT or DAH for >= LONG_PRESS cycles groups.
+# False: long-press does nothing; switch groups via g0 Morse patterns instead.
+# Recommended False alongside CODE_REPEAT = True so a sustained symbol stream
+# doesn't accidentally trigger a group cycle.
+LONG_PRESS_CYCLES_GROUP = True
+
 # Audio                                                       Build Guide §6, §8D
 # Option S1: Adafruit STEMMA Speaker #3885 wired White=A0, Red=3V, Black=GND.
 # Option S2: passive piezo across A0 and GND.
@@ -202,6 +223,16 @@ _ONE_SWITCH_DOT_S    = ONE_SWITCH_DOT_MS / 1000.0
 _ONE_SWITCH_USES_DIT = (ONE_SWITCH_INPUT == "dot")     # True = DIT-side input wins
 _THIRD_SWITCH_IS_DAH = (THIRD_SWITCH_GESTURE == "long_dash")
 print(f"Input mode: {SWITCH_MODE}-switch  (1-sw input = {ONE_SWITCH_INPUT}, 3-sw accept = {THIRD_SWITCH_GESTURE})")
+
+# Code-repeat derived constants and warnings
+_DOT_REPEAT_S  = DOT_REPEAT_MS  / 1000.0
+_DASH_REPEAT_S = DASH_REPEAT_MS / 1000.0
+_CODE_REPEAT_ACTIVE = bool(CODE_REPEAT) and SWITCH_MODE == 2
+if CODE_REPEAT and SWITCH_MODE != 2:
+    print(f"CODE_REPEAT ignored — only applies when SWITCH_MODE = 2 (you have {SWITCH_MODE})")
+if _CODE_REPEAT_ACTIVE and LONG_PRESS_CYCLES_GROUP:
+    print("NOTE: CODE_REPEAT + LONG_PRESS_CYCLES_GROUP both on — a sustained symbol stream may also cycle groups on release.")
+print(f"Code repeat: {'on' if _CODE_REPEAT_ACTIVE else 'off'}  long-press cycles group: {LONG_PRESS_CYCLES_GROUP}")
 
 if USE_SENSOR:
     lps = adafruit_lps35hw.LPS35HW(i2c)
@@ -363,6 +394,8 @@ _num_shifts   = 0
 _last_state   = IDLE
 _last_trans_at = 0.0    # time of most recent state change (used for ACCEPT_DELAY)
 _press_start   = 0.0    # time the current DIT/DAH press began (for LONG_PRESS)
+_stream_count  = 0      # symbols emitted during the current held state
+                        # (CODE_REPEAT only — counts toward CODE_REPEAT_MAX)
 
 _armed_mods   = set()   # sticky modifier keycodes currently armed
 
@@ -816,6 +849,19 @@ while True:
         elif (not _ONE_SWITCH_USES_DIT) and new_state == DIT:
             new_state = IDLE
 
+    # ── Code-repeat auto-emit (Darci-style hold-to-repeat) ──────────────────
+    # While DIT/DAH is held in SWITCH_MODE = 2 with CODE_REPEAT on, emit one
+    # symbol per repeat interval — 1 at press, +1 every DOT/DASH_REPEAT_MS.
+    # Cap at CODE_REPEAT_MAX to prevent buffer overflow on a forgotten hold.
+    if _CODE_REPEAT_ACTIVE and _last_state in (DIT, DAH) and not _mouse_repeating:
+        interval = _DOT_REPEAT_S if _last_state == DIT else _DASH_REPEAT_S
+        held_duration = now - _press_start
+        expected_count = 1 + int(held_duration / interval)
+        while _stream_count < expected_count and _stream_count < CODE_REPEAT_MAX:
+            _pending_char = (_pending_char << 1) | _last_state
+            _num_shifts  += 1
+            _stream_count += 1
+
     # ── State machine ───────────────────────────────────────────────────────
     if new_state != _last_state:
 
@@ -826,8 +872,10 @@ while True:
             new_state = IDLE
 
         elif _last_state == IDLE:
-            # IDLE → DIT/DAH: record when the press started, begin sidetone
-            _press_start = now
+            # IDLE → DIT/DAH: record when the press started, begin sidetone,
+            # reset the code-repeat stream counter
+            _press_start  = now
+            _stream_count = 0
             _beep_start(new_state)
 
         elif new_state == IDLE:
@@ -837,7 +885,7 @@ while True:
 
             if SWITCH_MODE == 1:
                 # Single-switch timed: classify by duration
-                if duration >= LONG_PRESS:
+                if duration >= LONG_PRESS and LONG_PRESS_CYCLES_GROUP:
                     # Very long hold → forward cycle (no cycle-back in 1-switch)
                     cycle_group(+1)
                     _pending_char = 0
@@ -854,7 +902,7 @@ while True:
             elif SWITCH_MODE == 3:
                 # Three-switch: short presses are bits; long-press of the
                 # configured gesture is Accept; long-press of the other gesture
-                # is forward cycle.
+                # is forward cycle (when LONG_PRESS_CYCLES_GROUP).
                 if duration >= LONG_PRESS:
                     is_accept_gesture = (
                         (_THIRD_SWITCH_IS_DAH and _last_state == DAH) or
@@ -872,24 +920,33 @@ while True:
                                 print(f"{pattern}  ?")
                             _pending_char = 0
                             _num_shifts   = 0
-                    else:
+                    elif LONG_PRESS_CYCLES_GROUP:
                         # Long-press of the OTHER gesture → forward cycle
                         cycle_group(+1)
                         _pending_char = 0
                         _num_shifts   = 0
+                    # else: long-press of non-Accept gesture is a no-op
                 else:
                     # Normal short press → shift bit (DIT=0, DAH=1)
                     _pending_char = (_pending_char << 1) | _last_state
                     _num_shifts  += 1
 
             else:
-                # SWITCH_MODE == 2 — original paddle behaviour, unchanged
-                if duration >= LONG_PRESS:
+                # SWITCH_MODE == 2 — paddle-style
+                if _CODE_REPEAT_ACTIVE:
+                    # Bits already emitted during hold; release just ends the
+                    # stream. Optionally cycle group on very long holds.
+                    if LONG_PRESS_CYCLES_GROUP and duration >= LONG_PRESS:
+                        cycle_group(-1 if _last_state == DIT else +1)
+                        _pending_char = 0
+                        _num_shifts   = 0
+                elif LONG_PRESS_CYCLES_GROUP and duration >= LONG_PRESS:
+                    # Original long-press cycle behaviour
                     cycle_group(-1 if _last_state == DIT else +1)
                     _pending_char = 0
                     _num_shifts   = 0
                 else:
-                    # Shift current state bit into accumulator (DIT=0, DAH=1)
+                    # Tap-per-symbol — shift current state bit into accumulator
                     _pending_char = (_pending_char << 1) | _last_state
                     _num_shifts  += 1
 
