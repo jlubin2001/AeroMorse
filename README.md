@@ -560,7 +560,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `AEROMORSE_BUILD_GUIDE.md` | Full build guide covering hardware options, wiring, soldering, wireless display setup, library installation, troubleshooting, and parts lists |
 | `CAREGIVER_SETUP_GUIDE.md` | Plain-English step-by-step assembly guide for a non-technical caregiver, using a specific recommended parts set |
 | `AEROMORSE_VS_DARCI.md` | Feature-by-feature comparison vs. the WesTest Darci USB, with migration guide for Darci users |
-| `TOOLS_AND_GUIDES.md` | Reference for development tools: Mu editor, Thonny, PuTTY, CircuitPython installer |
+| `MORSE_DEVICES_COMPARISON.md` | Side-by-side comparison of AeroMorse vs Adap2U, Darci USB, and morAce — including 1/2/3-switch mode support |
+| `TOOLS_AND_GUIDES.md` | Reference for development tools: Thonny, CircuitPython installer |
 | `Morse Code Cheat Sheet.pdf` | Printable one-page reference card for all AeroMorse patterns |
 
 ### Development tools (run on your PC, not on the device)
