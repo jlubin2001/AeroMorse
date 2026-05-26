@@ -154,7 +154,7 @@ DISPLAY_ROTATION   = 0          # degrees — 0 = USB on left, 180 = USB on righ
 #          no wireless display attached.
 # Has no effect on boards without an `espnow` module (RP2040, M4, nRF52840) —
 # the import already fails on those.
-USE_WIRELESS_DISPLAY = True
+USE_WIRELESS_DISPLAY = False
 
 # ── RollingAverage ─────────────────────────────────────────────────────────────
 
@@ -194,16 +194,14 @@ if ONE_SWITCH_INPUT not in ("dot", "dash"):
     print(f"ONE_SWITCH_INPUT = {ONE_SWITCH_INPUT!r} invalid — falling back to 'dot'")
     ONE_SWITCH_INPUT = "dot"
 if THIRD_SWITCH_GESTURE not in ("long_dot", "long_dash"):
-    print(f"THIRD_SWITCH_GESTURE = {THIRD_SWITCH_GESTURE!r} invalid — "
-          f"falling back to 'long_dash'")
+    print(f"THIRD_SWITCH_GESTURE = {THIRD_SWITCH_GESTURE!r} invalid — falling back to 'long_dash'")
     THIRD_SWITCH_GESTURE = "long_dash"
 
 # Derived constants (kept once, used in the main loop hot path)
 _ONE_SWITCH_DOT_S    = ONE_SWITCH_DOT_MS / 1000.0
 _ONE_SWITCH_USES_DIT = (ONE_SWITCH_INPUT == "dot")     # True = DIT-side input wins
 _THIRD_SWITCH_IS_DAH = (THIRD_SWITCH_GESTURE == "long_dash")
-print(f"Input mode: {SWITCH_MODE}-switch  "
-      f"(1-sw input = {ONE_SWITCH_INPUT}, 3-sw accept = {THIRD_SWITCH_GESTURE})")
+print(f"Input mode: {SWITCH_MODE}-switch  (1-sw input = {ONE_SWITCH_INPUT}, 3-sw accept = {THIRD_SWITCH_GESTURE})")
 
 if USE_SENSOR:
     lps = adafruit_lps35hw.LPS35HW(i2c)
