@@ -287,7 +287,7 @@ fundamentally need headers.
 | **AT switches — Option B2 TRRS breakout** | ⚠ Solder 3 wires | Solder breakout output wires to D5/D6/GND pads |
 | **AT switches — Option B3 #2915 Terminal Block** | ⚠ Solder 3 wires | Solder terminal-block wires to D5/D6/GND pads |
 | **Speaker — #3885 STEMMA Speaker** | ⚠ Solder 3 wires | Cut JST PH plug off, solder to A0/3V/GND pads |
-| **Speaker — Piezo (#1740/#1739)** | ⚠ Solder 2 wires | Solder leads to A0/GND pads |
+| **Speaker — Option S2 piezo (#2915 + #2790 + #1740/#1739)** | ⚠ Solder 2 wires only if no headers | If Feather has headers: 2 F-F jumpers from #2915 → A0/GND (zero soldering). If no headers: solder 2 wires from #2915 → A0/GND pads. Piezo side is screw-terminal either way. |
 | **Speaker — PAM8302 amp (#2130)** | ⚠ Solder 3 wires | Solder amp board to A0/3V/GND pads |
 
 **STEMMA QT does not solve every problem.** STEMMA QT carries I²C, 3 V, and
@@ -1217,8 +1217,11 @@ Feather's header pin. Match black → GND, white → A0, red → 3V.
 | White (Audio / signal) | A0 |
 | Red (VIN) | 3V |
 
-**Passive piezo (#1740 / #1739)** — push the two bare wire ends into the
-breadboard rows for A0 and GND. Red/+ → A0, Black/− → GND. No resistor.
+**Option S2 piezo (#2915 + #2790 + #1740/#1739)** — the piezo's bare
+leads go into the #2790 plug's screw terminals (red/+ → Tip, black/− →
+Sleeve). The #2790 plug then plugs into the #2915 jack. On the Feather
+side, two short F-F jumper wires from the #2915 terminals to header pins:
+Tip terminal → **A0**, Sleeve terminal → **GND**. No resistor, no cap.
 
 **PAM8302 amplifier (#2130) + speaker** — same pin mapping as the STEMMA
 Speaker (A0, 3V, GND), but soldered to the amp's A+ / VIN / GND pads first.
@@ -1239,8 +1242,10 @@ Cleanest, lowest profile, and the most permanent.
    the underside).
 2. Plug the #4046 cable's JST PH socket end into the #3885 speaker. The
    other end of #4046 already has three tinned bare wires — no cutting
-   needed. (For the piezo, the leads are already bare; for the PAM8302,
-   solder the wires to the amp's A+ / VIN / GND pads first.)
+   needed. (For the Option S2 piezo build, strip two short wires for the
+   #2915 → Feather link; the piezo itself stays attached to the #2790
+   plug via screw terminals. For PAM8302, solder the wires to the amp's
+   A+ / VIN / GND pads first.)
 3. Trim each tinned wire to ~15 cm if longer than you need, and re-tin
    the cut ends with a touch of solder.
 4. Tin each Feather pad with a touch of solder.
@@ -1263,8 +1268,9 @@ to make the speaker removable later.
 2. Then follow the "header pins" instructions above:
    - #3885 STEMMA Speaker — male pins plug into a breadboard, or use three
      female-to-female jumpers from the speaker cable to the Feather pins.
-   - Piezo — solder the bare leads to two female jumper wires (or solder
-     to short pin headers), then plug onto A0 and GND.
+   - Option S2 piezo (#2915 + #2790 + piezo) — two F-F jumpers from the
+     #2915 jack's Tip and Sleeve screw terminals to the Feather's A0
+     and GND pins. The piezo itself attaches to #2790's screw terminals.
    - PAM8302 — wire the amp board to A0 / 3V / GND via female jumpers.
 
 > A local makerspace, library maker lab, or electronics repair shop will
@@ -1280,11 +1286,10 @@ you want it.
 
 #### Quick reference — all paths, all options
 
-| Feather has headers? | #3885 + #4046 cable | Piezo #1740/#1739 | PAM8302 + speaker |
+| Feather has headers? | #3885 + #4046 cable | Option S2 piezo (#2915 + #2790 + #1740/#1739) | PAM8302 + speaker |
 |---|---|---|---|
-| **Yes (breadboard)** | Tin/cap 3 wire ends, push into breadboard rows for A0/3V/GND | Push 2 bare leads into A0 + GND rows | Wire amp to A0/3V/GND via breadboard |
-| **Yes (FeatherWing only)** | Crimp/solder F-F jumpers to #4046 wire ends, plug onto Feather pins | Solder leads to F-F jumper, plug onto A0+GND | Wire amp via F-F jumpers |
-| **No (bare pads)** | Solder #4046 tinned wires directly to A0/3V/GND pads | Solder 2 leads to A0+GND pads | Solder amp board to A0/3V/GND pads |
+| **Yes (breadboard or pins)** | Tin/cap 3 wire ends, push into breadboard rows for A0/3V/GND, or use F-F jumpers | 2 F-F jumpers from #2915 (Tip / Sleeve) → A0 / GND pins. Piezo wired to #2790 by screw terminals. **Zero soldering.** | Wire amp to A0/3V/GND via breadboard or F-F jumpers |
+| **No (bare pads)** | Solder #4046 tinned wires directly to A0/3V/GND pads | Solder 2 wires from #2915 (Tip / Sleeve) screw terminals to Feather A0 / GND pads. Piezo side still screw-terminal. | Solder amp board to A0/3V/GND pads |
 
 ---
 

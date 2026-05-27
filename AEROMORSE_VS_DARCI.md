@@ -202,7 +202,7 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 | Group/Mode change tone | (per LED) | Distinct low tone (`GROUP_FREQ`) |
 | Volume | Not adjustable | Not adjustable directly — set by speaker choice (#3885 has a built-in 1 W amp; piezo options are quieter) |
 | On-board speaker | None — headset out only | #3885 STEMMA Speaker (Option S1), or piezo (S2), or PAM8302 amp + speaker (S3) |
-| External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — the existing **Darci AT-40 external speaker plugs straight in** (see Build Guide Appendix E) |
+| External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — the existing **Darci AT-40 external speaker plugs straight in** (see Build Guide §6 Option S2 → "Legacy Darci AT-40") |
 | Sticky-key indicator | LED on box | Text on OLED (`SHIFT`, `CTRL`, etc.) |
 | Current character preview | None | OLED shows growing dot/dash sequence |
 | Pressure bar | None (no sip-and-puff) | Magnitude-encoded fill bar on the TFT (green for puff, orange for sip) |
@@ -282,7 +282,7 @@ emits dashes at ~1.7 per second; group switches happen only when an
 | 2 × 3.5 mm jacks (#1699 or #2915 each) | Dot switch (D5) / Dash switch (D6) |
 | STEMMA QT chain | Pressure sensor (#4414), OLED (#326) |
 | 3-pin speaker connector | On-board speaker out (A0 + 3V + GND) — #3885 STEMMA Speaker |
-| Optional 3.5 mm audio jack (#2915) | External speaker out (A0 + GND) — accepts Darci AT-40 or any 3.5 mm-plug piezo. See Build Guide Appendix E. |
+| Optional 3.5 mm audio jack (#2915) | External speaker out (A0 + GND) — accepts Darci AT-40 or any 3.5 mm-plug piezo. See Build Guide §6 Option S2. |
 | USB-C | To computer |
 
 **Both Darci accessories plug directly into AeroMorse with no rewiring:**
@@ -361,7 +361,8 @@ an issue on GitHub.
 
 ---
 
-*Document version: 2.0  •  Updated for AeroMorse 1/2/3-switch modes,*
+*Document version: 2.1  •  Updated for AeroMorse 1/2/3-switch modes,*
 *CODE_REPEAT hold-to-repeat, LONG_PRESS_CYCLES_GROUP, pwmio audio, and*
-*Option S4 external-speaker jack.*
+*the restructured Option S2 (#2915 jack + #2790 plug + passive piezo —*
+*solderless and removable; also accepts a Darci AT-40 directly).*
 *Project: https://github.com/jlubin2001/AeroMorse*
