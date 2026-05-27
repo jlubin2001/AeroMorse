@@ -3,9 +3,13 @@
 For users of the **WesTest Darci USB** considering or moving to **AeroMorse**.
 
 This document compares the two devices feature-by-feature, calls out the
-real gaps (where AeroMorse cannot match Darci), and lists practical
-workarounds. A companion file, `morse_map_darci.py`, provides a Darci-style
-code set you can drop into AeroMorse to keep your existing muscle memory.
+remaining gaps, and lists the AeroMorse config settings that reproduce
+Darci behaviour. A companion file, `morse_map_darci.py`, provides a
+Darci-style code set you can drop into AeroMorse to keep your existing
+muscle memory.
+
+For a broader comparison that also covers Adap2U and morAce, see
+`MORSE_DEVICES_COMPARISON.md`.
 
 ---
 
@@ -17,8 +21,9 @@ code set you can drop into AeroMorse to keep your existing muscle memory.
 | Output | USB HID | USB HID |
 | Switch jacks | 3 × 3.5 mm mono | 2 × 3.5 mm (or sip-and-puff sensor) |
 | Sip and puff | No (use external interface) | **Yes — built in** (#4414 pressure sensor) |
-| Switch inputs supported | 1 / 2 / 3 switches | 2 switches only |
-| Audio feedback | Headset jack, single tone | Built-in speaker, distinct dot/dash pitches |
+| Switch input modes | 1 / 2 / 3 switches (hardware) | **1 / 2 / 3 switch modes** (`SWITCH_MODE = 1/2/3`) — 3rd switch implemented as a long-press gesture on the existing 2 inputs |
+| Hold-to-repeat (code repeat) | ✓ Built in | ✓ `CODE_REPEAT = True` — opt-in, independent dot / dash repeat intervals |
+| Audio feedback | Headset jack, single tone | Built-in speaker, distinct dot/dash pitches (square wave via `pwmio`) |
 | Visual feedback | Indicator LEDs (sticky-key status) | **OLED display** + optional wireless TFT for caregiver |
 | Customization | CodeMaker program (Windows only, `.CST` files) | Plain-text `morse_map.py` — any editor on any OS |
 | Host OS | Windows 98 → Windows 7 (32-bit) | **Windows / macOS / Linux / ChromeOS / iPad** — anything that takes USB HID |
@@ -28,28 +33,28 @@ code set you can drop into AeroMorse to keep your existing muscle memory.
 
 ---
 
-## 1. Switch input — the one place AeroMorse cannot match Darci
+## 1. Switch input — now at parity with Darci
 
-Darci supports three input arrangements:
+AeroMorse supports all three Darci input arrangements via the
+`SWITCH_MODE` config setting in `code.py`:
 
 | Darci mode | What it expects | AeroMorse support |
 |---|---|---|
-| **Single switch** | One switch; firmware times dot vs. dash | ❌ Not supported |
-| **Double switch** | Switch 1 = dot, Switch 2 = dash | ✅ Native (D5/D6 jacks) |
-| **Triple switch** | Switch 1 = dot, Switch 2 = dash, Switch 3 = end-of-character | ❌ Not supported |
+| **Single switch** | One switch; firmware times dot vs. dash | ✅ `SWITCH_MODE = 1` — press ≤ `ONE_SWITCH_DOT_MS` (default 200 ms) = dot; longer = dash; pause = end-of-character. `ONE_SWITCH_INPUT` picks which physical input (sip / D5 or puff / D6) is the sole switch. |
+| **Double switch** | Switch 1 = dot, Switch 2 = dash | ✅ `SWITCH_MODE = 2` (default) — D5 = dot, D6 = dash. Pause `ACCEPT_DELAY` = end-of-character. |
+| **Triple switch** | Switch 1 = dot, Switch 2 = dash, Switch 3 = end-of-character | ✅ `SWITCH_MODE = 3` — short presses still go to D5 (dot) / D6 (dash), and a **long-press gesture** on one of those inputs serves as the explicit Accept (end-of-character). `THIRD_SWITCH_GESTURE = "long_dash"` (default) makes a sustained puff the Accept; `"long_dot"` makes a sustained sip the Accept. |
 | **Sip-and-puff** | Pressure sensor with external 2-switch adapter | ✅ Native (#4414 sensor, no adapter needed) |
 
-**Workaround for single-switch Darci users:**
-Single-switch operation requires an external timing module that converts long
-press → dash, short press → dot, pause → end-of-character. Off-the-shelf
-options exist (e.g. Tecla, AbleNet timing relays), but the user experience
-is not identical. If single-switch is essential, Darci or a software
-solution like Morse-Code-Keyboard for iOS may be a better fit.
+**Note on triple-switch:** AeroMorse only has two *physical* inputs, so the
+third "switch" is implemented as a gesture (a long-press on whichever input
+you nominate). This preserves the *behavioural* benefit Darci's third
+switch provides — explicit, timing-independent end-of-character — without
+adding a third hardware jack. If a Darci user is muscle-memory-trained on
+a physical third switch, the gesture is a substitute, not an exact match.
 
-**Workaround for triple-switch Darci users:**
-The third (end-of-character) switch is unnecessary in AeroMorse because
-firmware always uses inter-symbol timing for character segmentation.
-The two existing dot/dash switches map directly.
+**Other input options Darci doesn't offer:** AeroMorse adds **code repeat**
+(`CODE_REPEAT = True`) for Darci-style hold-to-repeat — see §8 below for
+the full breakdown.
 
 ---
 
@@ -91,6 +96,27 @@ Modifiers are sticky in the same single-tap-arms way Darci uses.
 | Alternate Code Set | Swap `morse_map.py` files |
 | `mr` command | g0 toggle code |
 | Sticky shift | Same — single-tap modifier in g1 |
+
+### Group-switching style — gestures vs. codes
+
+AeroMorse's default is **gesture-based** group cycling: long-sip cycles back,
+long-puff cycles forward. Darci is **code-based** — modes are entered with
+explicit Morse command codes (e.g., `--.-.` enters Mouse Mode), not
+gestures.
+
+If you prefer Darci's all-codes approach, set `LONG_PRESS_CYCLES_GROUP =
+False` in `code.py`. Long-press gestures then do nothing, and group
+switching happens entirely through g0 Morse patterns:
+
+| Group target | g0 pattern | Length |
+|---|---|---|
+| Group 1 (Keyboard) | `........` | 8 dots |
+| Group 2 (Mouse) | `--------` | 8 dashes |
+| Group 3 (Macros) | `....----` | 4 dots + 4 dashes |
+
+This matches Darci's "modes are codes, not gestures" muscle memory while
+keeping the 8-symbol patterns long enough that no normal letter or number
+can be misread as a group change.
 
 ---
 
@@ -170,14 +196,17 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 
 | | Darci | AeroMorse |
 |---|---|---|
-| Dot/dash tones | Same pitch | Different pitches (1200 Hz dot, 800 Hz dash) |
-| Command confirmation beep | Yes | Yes |
-| Group/Mode change tone | (per LED) | Distinct low tone |
-| Volume | Not adjustable | Adjustable in firmware constants |
-| Output | Headset jack | Built-in speaker (#3885) |
+| Dot/dash tones | Same pitch | Different pitches (default 1200 Hz dot, 800 Hz dash — `BEEP_DOT_FREQ` / `BEEP_DASH_FREQ`) |
+| Tone waveform | Sine (analog speaker driver) | Square wave (PWM via `pwmio` — slightly buzzy but clearly audible) |
+| Command confirmation beep | Yes | Yes (`CONFIRM_FREQ`) |
+| Group/Mode change tone | (per LED) | Distinct low tone (`GROUP_FREQ`) |
+| Volume | Not adjustable | Not adjustable directly — set by speaker choice (#3885 has a built-in 1 W amp; piezo options are quieter) |
+| On-board speaker | None — headset out only | #3885 STEMMA Speaker (Option S1), or piezo (S2), or PAM8302 amp + speaker (S3) |
+| External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — the existing **Darci AT-40 external speaker plugs straight in** (see Build Guide Appendix E) |
 | Sticky-key indicator | LED on box | Text on OLED (`SHIFT`, `CTRL`, etc.) |
 | Current character preview | None | OLED shows growing dot/dash sequence |
-| Across-the-room display | None | Optional wireless TFT (#5691) |
+| Pressure bar | None (no sip-and-puff) | Magnitude-encoded fill bar on the TFT (green for puff, orange for sip) |
+| Across-the-room display | None | Optional wireless TFT mirror via ESP-NOW (`USE_WIRELESS_DISPLAY = True`) |
 
 ---
 
@@ -202,14 +231,39 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 
 ---
 
-## 8. Repeat
+## 8. Repeat (hold-to-repeat / code repeat)
 
-| | Darci | AeroMorse |
+Darci's "code repeat" behaviour — holding the switch produces a stream of
+the same symbol — is now supported in AeroMorse via the `CODE_REPEAT`
+config flag (default `False`). When enabled in `SWITCH_MODE = 2`:
+
+- Tap (release within `DOT_REPEAT_MS`) → 1 symbol
+- Hold ≥ 2 × `DOT_REPEAT_MS` → 2 symbols
+- Hold ≥ 3 × `DOT_REPEAT_MS` → 3 symbols
+- …capped at `CODE_REPEAT_MAX` (default 8) per held stream
+
+| | Darci | AeroMorse (with `CODE_REPEAT = True`) |
 |---|---|---|
-| 1-switch repeat | `--` (rr) command | N/A (no 1-switch mode) |
-| 2-switch repeat | Hold last switch after final dot/dash | Hold last switch (dash-stream / dot-stream) |
-| Dedicated repeat code | No | Yes: `..-..` repeats the last keystroke |
-| Repeat delay/rate | Adjustable in Setup | Adjustable in firmware constants |
+| 1-switch repeat | `--` (rr) command | Inherent — `SWITCH_MODE = 1` duration already classifies dot vs. dash; longer hold yields a longer single press. (`CODE_REPEAT` is not honoured in `SWITCH_MODE = 1`.) |
+| 2-switch repeat | Hold last switch after final dot/dash | `CODE_REPEAT = True` — hold DIT for a dot-stream, DAH for a dash-stream. Release ends the stream; the next press starts a new one. |
+| Repeat rate — dots | One Setup value | `DOT_REPEAT_MS` (default 200 ms) |
+| Repeat rate — dashes | Same Setup value | `DASH_REPEAT_MS` (default 600 ms) — **separately adjustable** from dot rate, unlike Darci |
+| Repeat cap | Setup limits | `CODE_REPEAT_MAX` (default 8) — prevents buffer overflow if a hold lasts longer than intended |
+| Dedicated repeat code | No | Yes: `..-..` repeats the last keystroke (independent of `CODE_REPEAT`) |
+| Conflict with long-press group cycle | n/a (Darci doesn't use gesture group cycling) | Sustained dot-stream could hit `LONG_PRESS` (1 s) and cycle a group. Recommended: set `LONG_PRESS_CYCLES_GROUP = False` alongside `CODE_REPEAT = True` — use g0 Morse patterns to switch groups (matches Darci's behaviour exactly). |
+
+**Recommended Darci-style configuration** (preserves muscle memory):
+
+```python
+CODE_REPEAT             = True   # hold-to-repeat
+DOT_REPEAT_MS           = 200    # tune to user's rhythm
+DASH_REPEAT_MS          = 600    # tune to user's rhythm
+LONG_PRESS_CYCLES_GROUP = False  # group changes via g0 codes only
+```
+
+With this set, holding a sip emits dots at 5 per second; holding a puff
+emits dashes at ~1.7 per second; group switches happen only when an
+8-symbol g0 code is entered — exactly the Darci interaction model.
 
 ---
 
@@ -225,13 +279,17 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 ### AeroMorse
 | Port | Use |
 |---|---|
-| 2 × 3.5 mm jacks (#1699 each) | Dot switch (D5) / Dash switch (D6) |
+| 2 × 3.5 mm jacks (#1699 or #2915 each) | Dot switch (D5) / Dash switch (D6) |
 | STEMMA QT chain | Pressure sensor (#4414), OLED (#326) |
-| 3-pin speaker connector | Audio out (A0 + 3V + GND) |
+| 3-pin speaker connector | On-board speaker out (A0 + 3V + GND) — #3885 STEMMA Speaker |
+| Optional 3.5 mm audio jack (#2915) | External speaker out (A0 + GND) — accepts Darci AT-40 or any 3.5 mm-plug piezo. See Build Guide Appendix E. |
 | USB-C | To computer |
 
-Existing Darci AT switches with 3.5 mm plugs work directly in AeroMorse's
-#1699 jacks — no rewiring needed.
+**Both Darci accessories plug directly into AeroMorse with no rewiring:**
+
+- Darci AT switches (3.5 mm mono plugs) → AeroMorse D5 / D6 jacks
+- Darci AT-40 external speaker (3.5 mm mono plug) → AeroMorse #2915 jack
+  wired to A0/GND
 
 ---
 
@@ -256,19 +314,34 @@ For a Darci user moving to AeroMorse, in order:
 
 ## 11. When AeroMorse is the right choice
 
-- ✅ You have a 2-switch setup or want sip-and-puff
-- ✅ You use a Mac, Linux, ChromeOS, iPad, or modern Windows machine
+- ✅ You have a 1-, 2-, or 3-switch setup (all three are now supported)
+- ✅ You want sip-and-puff input
+- ✅ You use a Mac, Linux, ChromeOS, iPad, Android, or modern Windows machine
 - ✅ You want active development, open source, and modern hardware
 - ✅ You want a wireless caregiver display
 - ✅ You value customizable macros beyond Darci's 4-character limit
-- ✅ Cost is a factor
+- ✅ You want Darci-style hold-to-repeat (with separate dot / dash rates) —
+  enable `CODE_REPEAT = True`
+- ✅ You want Darci's code-based group switching — enable
+  `LONG_PRESS_CYCLES_GROUP = False`
+- ✅ Cost is a factor (~$50–100 in parts vs ~$1000+ when Darci was current)
 
 ## When Darci may still be the right choice
 
-- ⚠ You need **single-switch timed input** (most important Darci-only feature)
-- ⚠ You need **3-switch input** with a hardware end-of-character switch
-- ⚠ You are locked to an old Windows machine and existing CodeMaker `.CST` files
-- ⚠ You need a fully enclosed, ruggedized commercial device
+The functional gap has closed significantly with the addition of
+`SWITCH_MODE`, `CODE_REPEAT`, and `LONG_PRESS_CYCLES_GROUP`. Reasons
+Darci might still suit you:
+
+- ⚠ You need **three separate physical jacks** for true mechanical
+  3-switch input (AeroMorse's 3-switch mode uses a long-press gesture
+  on the existing two inputs, not a third physical jack — see §1)
+- ⚠ You are locked to an old Windows machine and existing CodeMaker
+  `.CST` files
+- ⚠ You need a fully enclosed, ruggedized commercial device with
+  vendor warranty (AeroMorse is an open-source DIY build)
+- ⚠ You require sine-wave audio output (AeroMorse uses square-wave
+  PWM via `pwmio`, which sounds slightly buzzy compared to Darci's
+  analog tone generator)
 
 ---
 
@@ -288,4 +361,7 @@ an issue on GitHub.
 
 ---
 
-*Document version: 1.0  •  Project: https://github.com/jlubin2001/AeroMorse*
+*Document version: 2.0  •  Updated for AeroMorse 1/2/3-switch modes,*
+*CODE_REPEAT hold-to-repeat, LONG_PRESS_CYCLES_GROUP, pwmio audio, and*
+*Option S4 external-speaker jack.*
+*Project: https://github.com/jlubin2001/AeroMorse*
