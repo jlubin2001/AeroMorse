@@ -1664,7 +1664,7 @@ VS Code). Look for the configuration section near the top of the file.
 | `USE_SENSOR` | `True` | Change to `False` if using AT switches |
 | `THRESH_SIP` | `5` | Raise to `8` or `10` if getting false triggers; lower to `3` if light sips are missed |
 | `THRESH_PUFF` | `5` | Same as above but for puff/dash |
-| `ACCEPT_DELAY` | `0.2` | Raise to `0.3` if patterns commit before you finish. In 3-switch mode this is a safety-net timeout; the third-switch gesture commits instantly regardless. |
+| `ACCEPT_DELAY` | `0.5` | Idle pause (seconds) after the last element before the pattern fires. Lower (0.3) for fast users; higher (0.7) for sip-and-puff users with slower breath rhythm. In 3-switch mode this is a safety-net timeout; the third-switch gesture commits instantly regardless. |
 | `LONG_PRESS` | `1.0` | Hold time in seconds for the long-gesture (cycle / Accept). Raise if accidentally triggering |
 | `SWITCH_MODE` | `2` | `1` = single-switch timed; `2` = paddle (dot + dash); `3` = paddle + explicit Accept. See "Input modes" below. |
 | `ONE_SWITCH_INPUT` | `"dot"` | 1-switch mode only — `"dot"` uses the sip / D5 input; `"dash"` uses the puff / D6 input |
@@ -1676,7 +1676,7 @@ VS Code). Look for the configuration section near the top of the file.
 | `CODE_REPEAT_MAX` | `8` | Cap on symbols per held stream — prevents buffer overflow on a forgotten hold |
 | `LONG_PRESS_CYCLES_GROUP` | `True` | `False` disables the long-press group cycle gesture (DIT-side = cycle back, DAH-side = cycle forward). Switch groups via g0 Morse patterns instead. Recommended `False` alongside `CODE_REPEAT = True`. |
 | `DISPLAY_ROTATION` | `0` | `0` = USB port on left; `180` = USB port on right (`90` / `270` also valid) |
-| `USE_WIRELESS_DISPLAY` | `True` | `False` turns off the ESP-NOW broadcast and saves ~80–100 mA. Set to `False` if you have no Option W1 / W2 receiver attached |
+| `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off because most builds don't include a second board — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on. |
 | `BEEP_DOT_FREQ` | `1200` | Pitch in Hz for dot (sip) beeps — higher pitch |
 | `BEEP_DASH_FREQ` | `800` | Pitch in Hz for dash (puff) beeps — lower pitch |
 

@@ -486,24 +486,70 @@ GROUP -> 2 (Mouse)
 
 ## Configuration
 
-All tunable values are at the top of `code.py`:
+All tunable values are at the top of `code.py`. The full Key Settings table
+also appears in **§10 Configuration** of `AEROMORSE_BUILD_GUIDE.md` — they
+are kept in sync.
+
+### Input — sensor / switches / thresholds
 
 | Constant | Default | Effect |
 |----------|---------|--------|
-| `USE_SENSOR` | `True` | `True` = LPS33HW sensor; `False` = two switches |
-| `THRESH_SIP` | `5` | hPa below baseline required to detect a sip (dot) |
-| `THRESH_PUFF` | `5` | hPa above baseline required to detect a puff (dash) |
-| `ACCEPT_DELAY` | `0.2` | Seconds of idle after the last element before the pattern fires |
-| `LONG_PRESS` | `2.0` | Seconds of continuous sip/puff to trigger a group cycle |
-| `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged for smoothing |
+| `USE_SENSOR` | `True` | `True` = LPS33HW sensor (sip-and-puff); `False` = two AT switches on D5/D6 |
+| `THRESH_SIP` | `5` | hPa below baseline required to detect a sip (dot). Raise to `8`/`10` if getting false triggers; lower to `3` if light sips are missed |
+| `THRESH_PUFF` | `5` | hPa above baseline required to detect a puff (dash). Same tuning rule |
+| `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged before thresholding. Increase to reduce bounce; decrease if fast elements are missed |
 | `DOT_PIN` | `board.D5` | GPIO pin for dot switch (switch mode only) |
 | `DASH_PIN` | `board.D6` | GPIO pin for dash switch (switch mode only) |
+
+### Input mode — 1 / 2 / 3 switch
+
+| Constant | Default | Effect |
+|----------|---------|--------|
+| `SWITCH_MODE` | `2` | `1` = single-switch timed; `2` = paddle (dot + dash); `3` = paddle + explicit Accept. See "Input modes" in build guide §10 for the full model |
+| `ONE_SWITCH_INPUT` | `"dot"` | 1-switch mode only — `"dot"` uses the sip / D5 input; `"dash"` uses the puff / D6 input |
+| `ONE_SWITCH_DOT_MS` | `200` | 1-switch mode only — press ≤ this many ms is a dot; longer is a dash; ≥ `LONG_PRESS`×1000 cycles group |
+| `THIRD_SWITCH_GESTURE` | `"long_dash"` | 3-switch mode only — `"long_dash"` makes long-puff the Accept switch; `"long_dot"` makes long-sip the Accept switch |
+
+### Code repeat (Darci-style hold-to-repeat)
+
+| Constant | Default | Effect |
+|----------|---------|--------|
+| `CODE_REPEAT` | `False` | `True` enables hold-to-repeat — while DIT/DAH is held, one symbol fires per `DOT_REPEAT_MS` / `DASH_REPEAT_MS`. Release ends the stream. Only honoured when `SWITCH_MODE = 2` |
+| `DOT_REPEAT_MS` | `200` | ms between auto-repeated dots (`CODE_REPEAT` only) |
+| `DASH_REPEAT_MS` | `600` | ms between auto-repeated dashes (`CODE_REPEAT` only — conventionally 3 × dot) |
+| `CODE_REPEAT_MAX` | `8` | Cap on symbols per held stream — prevents buffer overflow on a forgotten hold |
+| `LONG_PRESS_CYCLES_GROUP` | `True` | `False` disables the long-press group cycle gesture (DIT-side = cycle back, DAH-side = cycle forward). Switch groups via g0 Morse patterns instead. Recommended `False` alongside `CODE_REPEAT = True` |
+
+### Timing
+
+| Constant | Default | Effect |
+|----------|---------|--------|
+| `ACCEPT_DELAY` | `0.5` | Idle pause (seconds) after the last element before the pattern fires. Lower (0.3) for fast users; higher (0.7) for sip-and-puff users with slower breath rhythm. In 3-switch mode this is a safety-net timeout |
+| `LONG_PRESS` | `1.0` | Hold time (seconds) for the long-gesture (cycle / Accept). Raise if accidentally triggering |
+
+### Audio (speaker pitches)
+
+| Constant | Default | Effect |
+|----------|---------|--------|
+| `BEEP_DOT_FREQ` | `1200` | Pitch in Hz for dot (sip) beeps — higher pitch |
+| `BEEP_DASH_FREQ` | `800` | Pitch in Hz for dash (puff) beeps — lower pitch |
+
+### Mouse
+
+| Constant | Default | Effect |
+|----------|---------|--------|
 | `MOUSE_SPEED_NORMAL` | `2` | Normal speed multiplier |
 | `MOUSE_SPEED_SLOW` | `1` | Slow speed multiplier |
 | `MOUSE_SPEED_FAST` | `3` | Fast speed multiplier |
 | `MOUSE_SPEED_FACTOR` | `2` | Additional scale applied to all mouse moves |
 | `MOUSE_REPEAT_DELAY` | `0.040` | Seconds between repeat ticks (40 ms) |
+
+### Display / wireless
+
+| Constant | Default | Effect |
+|----------|---------|--------|
 | `DISPLAY_ROTATION` | `0` | Display orientation in degrees — `0` = USB on left, `180` = USB on right; also `90`, `270` |
+| `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
 
 ---
 
