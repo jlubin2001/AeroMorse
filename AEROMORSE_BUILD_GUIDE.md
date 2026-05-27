@@ -808,6 +808,21 @@ For louder output or a specific speaker size:
 
 ---
 
+### Option S4 — External 3.5 mm-plug piezo (e.g., legacy Darci AT-40)
+
+If you already own a passive piezo that terminates in a **3.5 mm mono plug**
+— for example, the AT-40 speaker that shipped with a Darci USB — you can
+plug it straight into AeroMorse via a TRRS Terminal Block (#2915). No
+soldering, no signal conditioning.
+
+| Adafruit # | Cost |
+|---|---|
+| #2915 TRRS Terminal Block | $2.50 |
+
+See **[Appendix E — Connecting a 3.5 mm-plug external speaker](#appendix-e--connecting-a-35 mm-plug-external-speaker)** for the full walkthrough — wiring, polarity, parts list, and notes on running the external speaker alongside an on-board #3885.
+
+---
+
 ## 7. Complete Parts Lists
 
 Pick one item from each section. Everything in **Core hardware** is always
@@ -950,6 +965,7 @@ several GND pins — any of them work).
 | — | *or* Small Enclosed Piezo with Leads (passive) | #1740 | https://www.adafruit.com/product/1740 |
 | — | *or* Large Enclosed Piezo with Leads (passive, louder) | #1739 | https://www.adafruit.com/product/1739 |
 | — | *or* PAM8302 Amplifier + small 8 Ω speaker | #2130 | https://www.adafruit.com/product/2130 |
+| — | *or* Option S4 — TRRS Terminal Block for external 3.5 mm-plug piezo (e.g., Darci AT-40) — see Appendix E | #2915 | https://www.adafruit.com/product/2915 |
 
 ---
 
@@ -2084,6 +2100,130 @@ switches into the single stereo jack:
 
 If you only have one switch, plug it directly into the jack — it will be your
 dot (.) switch.
+
+---
+
+## Appendix E — Connecting a 3.5 mm-plug external speaker
+
+Use this appendix if you own a passive piezo speaker that terminates in
+a **3.5 mm mono plug** rather than bare leads. The most common case is
+the **AT-40 speaker** that shipped with WesTest's **Darci USB** —
+identifiable by the black coin-shaped piezo, a thin grey shielded cable,
+and a 3.5 mm mono plug at the far end. Any equivalent passive piezo
+(e.g., a generic "buzzer with plug" from an electronics surplus bin)
+will work the same way.
+
+### Why this works without any signal conditioning
+
+The audio output of AeroMorse is a PWM square wave on pin **A0**
+(see §6 Option S2). Passive piezos are high-impedance, capacitive
+loads — they tolerate direct PWM drive from a 3.3 V GPIO with no
+series resistor, no AC coupling capacitor, and no amplifier. This is
+the same electrical path used by Option S2's #1740 / #1739 bare-lead
+piezos; the only difference here is the connector.
+
+### Parts
+
+| Qty | Item | Adafruit # | Price | Notes |
+|-----|------|-----------|-------|-------|
+| 1 | TRRS Jack Terminal Block | [#2915](https://www.adafruit.com/product/2915) | $2.50 | Same part used for AT-switch Option B3. Screw terminals — no soldering on the jack side. |
+| 2 | Female-to-female jumper wires | [#266](https://www.adafruit.com/product/266) | (in a pack) | Used if the Feather has header pins. |
+| — | *or* 2 short stripped wires + soldering iron | — | — | Used if the Feather is bare-PCB (no header pins). |
+
+Total marginal cost: ~$2.50 plus whatever wiring you already have.
+
+> The #2915 is a TRRS jack but it accepts mono plugs without complaint —
+> only the Tip and Sleeve contacts are used, exactly what a mono plug
+> connects.
+
+### Wiring diagram
+
+```
+   AT-40 piezo (or any 3.5 mm-plug passive piezo)
+   ┌──────────┐
+   │ "+" red ─┼─────╲                    Feather
+   │ "−" blk ─┼──┐   ╲   3.5 mm mono     ────────
+   └──────────┘  │    ╲    plug          
+                 │     ╲                    A0  ───┐
+              cable     ╲╱                         │
+                 │       │┐                        │
+                 ▼       │└── TIP   ── wire ───────┘
+                 ─       │┌── RING  (unused — internally shorted in jack)
+                         │└── SLEEVE ── wire ─── GND
+                #2915 TRRS Terminal Block
+```
+
+### #2915 terminals → Feather pins
+
+| #2915 terminal | Feather pin | Function |
+|----------------|-------------|----------|
+| Tip | **A0** | Audio (PWM signal that drives the piezo) |
+| Ring | — | Leave empty (mono plug doesn't reach it) |
+| Sleeve | **GND** | Audio return |
+| Ring 2 | — | Leave empty |
+
+### Step-by-step
+
+**If your Feather has header pins:**
+
+1. Cut two female-to-female jumper wires to ~15 cm. Different colours
+   help — say red and black.
+2. Use a small flathead screwdriver to loosen the **Tip** and **Sleeve**
+   screws on the #2915.
+3. Strip ~5 mm of insulation from the male-pin end of each jumper.
+4. Insert the red wire into the **Tip** terminal and tighten.
+5. Insert the black wire into the **Sleeve** terminal and tighten.
+6. Plug the female ends onto the Feather: red → **A0**, black → **GND**.
+7. Plug the AT-40's 3.5 mm jack into the #2915. Done.
+
+**If your Feather has no header pins** (bare PCB pads):
+
+Same as above, except in step 6, **solder** the two wire ends directly
+to the Feather's A0 and GND pads instead of plugging onto pins. Two
+solder joints total. (See §8D Path 1 for the soldering procedure
+illustrated for the STEMMA Speaker — the technique is identical here.)
+
+### Polarity
+
+The AT-40 has a "+" mark on its top. Match Tip = "+" (which the
+internal cable typically wires to the red lead), Sleeve = "−" (black
+lead). With an AC PWM signal at audio frequencies, polarity won't
+damage the piezo if reversed — but matching it follows good practice
+and is consistent across all piezos in this guide.
+
+### Coexistence with the on-board #3885 STEMMA Speaker
+
+You can wire **both** the #3885 STEMMA Speaker (Option S1) **and** the
+external piezo (Option S4) at the same time. They share A0 and GND,
+connected in parallel. Both will sound on every dot, dash, accept blip,
+and group-change tone.
+
+| Setup | Use case |
+|---|---|
+| **#3885 only** | Room-volume feedback near the device. |
+| **#2915 jack only** | Near-field feedback right by the user (e.g., piezo clipped to a pillow). |
+| **Both** | Loud room speaker + close-to-ear backup. Each plays at its natural volume; the #3885 (with its 1 W amp) is louder than the unamplified piezo, so the room-speaker volume should be set low. |
+
+> **There is no auto-mute when you plug into the #2915.** Neither #2915
+> nor the standard Adafruit jacks have a "tip-switch" contact that
+> disconnects when a plug is inserted. If you want the on-board
+> speaker to silence automatically when the external piezo is plugged
+> in, you need a PJ-307-style switched jack (not in the Adafruit
+> catalog; ~$0.30 on DigiKey or Amazon) and a small code addition.
+> Open a GitHub issue if that's what you need — it's a contained
+> follow-on feature.
+
+### How loud will the piezo be?
+
+The AT-40 piezo is small (~20 mm coin) and passive, so it's much
+quieter than the #3885 STEMMA Speaker. Expect a clear *audible* tone
+in a quiet room or close to the user's ear, but not loud enough to fill
+a noisy environment. The pitch follows the same constants as the
+on-board speaker (`BEEP_DOT_FREQ = 1200`, `BEEP_DASH_FREQ = 800`,
+etc.) — see §10 Configuration if you want to retune them for the
+piezo's resonant frequency (most AT-40-style piezos peak around 4 kHz
+for maximum loudness, but the 800–1200 Hz tones are clearly audible
+even off-resonance).
 
 ---
 
