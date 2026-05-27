@@ -1,12 +1,28 @@
 # AeroMorse
 
-AeroMorse is an open-source CircuitPython project by Jim Lubin — a
+AeroMorse is an open-source CircuitPython project directed by Jim Lubin — a
 ventilator-dependent quadriplegic who has used Morse code for computer access
-since 1989 — that turns an Adafruit Feather microcontroller into a USB HID
-keyboard and mouse. Inspired by [AirTalker](https://github.com/ATMakersOrg/AirTalker),
-it connects via USB-C and appears to the host as a standard keyboard and mouse
-with no drivers required. Works on **Windows, macOS, Linux, iPadOS, Android,
-and ChromeOS**.
+since 1989. Inspired by [AirTalker](https://github.com/ATMakersOrg/AirTalker), it turns an Adafruit Feather
+microcontroller into a USB HID keyboard and mouse that connects via USB-C and
+appears to the host as a standard keyboard and mouse with no drivers required.
+Works on **Windows, macOS, Linux, iPadOS, Android, and ChromeOS**.
+
+**How this project was built — what's confirmed vs documented.** Jim is the
+user, project lead, and source of all design decisions: hardware choices,
+input-mode requirements, Morse code-set conventions, accessibility trade-offs,
+and ongoing user feedback (his own and from other AAC users — Darci USB
+veterans in particular). The firmware (`code.py`), the build guide, and the
+comparison documents were written by **Claude Opus 4.7** (Anthropic) acting as
+the coding assistant — a "vibe coding" workflow in which Jim directs and
+Claude writes. Jim does not write the firmware himself, and has not personally
+soldered or assembled every hardware combination listed here. Several options
+— particularly some board / display / speaker combinations — are documented
+from datasheets and Claude's understanding of the parts rather than from a
+verified build.
+
+**If you build a configuration, please report back via a GitHub issue —
+whether it works or doesn't.** Confirmed-vs-theoretical is the single most
+useful signal this project can collect right now.
 
 Input is by **sip-and-puff** (LPS33HW pressure sensor) or **two standard AT
 switches**. A short sip (or switch 1) is a **dot**; a short puff (or switch 2)
