@@ -65,7 +65,7 @@ If you are a current Darci user or know someone who is, AeroMorse provides:
   device.
 - ✅ **Built-in sip-and-puff** — no external interface required.
 - ✅ **Active development** — open source, customisable, and supported.
-- ✅ **Optional wireless caregiver display** — see the user's screen from
+- ✅ **Optional wireless remote display** — see the user's screen from
   across the room (no equivalent on Darci).
 
 Read **[`AEROMORSE_VS_DARCI.md`](AEROMORSE_VS_DARCI.md)** for a full

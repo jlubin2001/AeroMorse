@@ -795,8 +795,8 @@ Wiring (#4046 cable to Feather):
 
 A passive piezo wired via a **3.5 mm jack-and-plug pair**, so the piezo
 end can be unplugged and swapped. Quieter than Option S1, but every
-connection is screw-terminal — no soldering anywhere, and a legacy
-Darci AT-40 (or any other 3.5 mm-plug piezo) plugs straight into the
+connection is screw-terminal — no soldering anywhere. Any speaker that
+already terminates in a 3.5 mm mono plug also plugs straight into the
 same #2915 jack with no adapter.
 
 > **Important:** Buy a *passive* piezo, not an *active* one. An active
@@ -849,11 +849,11 @@ need for a series resistor, AC-coupling capacitor, or amplifier. Same
 electrical path as the bare-lead piezo of older Option S2 builds; the
 jack-and-plug pair just adds detachability.
 
-#### Legacy Darci AT-40 (or any other 3.5 mm-plug piezo)
+#### Already have a 3.5 mm-plug piezo or speaker?
 
-Already have a 3.5 mm-plug piezo from a previous AAC device? Skip the
-#2790 plug — your speaker's existing plug goes straight into the #2915
-jack. You still need the jack itself wired to A0 / GND on the Feather.
+If your speaker already terminates in a 3.5 mm mono plug, skip the
+#2790 plug — the existing plug goes straight into the #2915 jack. You
+still need the jack itself wired to A0 / GND on the Feather.
 
 ---
 
