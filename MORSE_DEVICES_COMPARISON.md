@@ -87,7 +87,7 @@ How the device organises functions beyond plain typing.
 
 | | **Adap2U** | **Darci USB** | **morAce** | **AeroMorse** |
 |---|---|---|---|---|
-| Naming | "Configurations" | "Modes" (toggled with command codes) | Single set of codes + "shortcuts" via `morse_code_shortcuts.py` | **Four groups** (g0 always-on, g1 keyboard, g2 mouse, g3 macros) |
+| Naming | "Configurations" | "Modes" (toggled with command codes) | Single set of codes + "shortcuts" via `morse_code_shortcuts.py` | **Ten groups** (g0 always-on; g1 keyboard, g2 mouse, g3 macros, g4 F-keys/Switch Control, g5–g9 customisable) |
 | Mouse control | ✓ Event system | ✓ Mouse Mode (uses Windows Mouse Keys) | ✓ Switch Control mode (separate from Morse) | ✓ Group 2 — native USB HID mouse events |
 | Macros / phrases | ✓ Time Code "Meanings" (up to 4 chars) | ✓ Code Set assignments (4-char limit) | ✓ Shortcut strings in `morse_code_shortcuts.py` | ✓ Group 3 — unlimited length, any keycode tuple |
 | Sticky modifiers | ✓ | ✓ | ✓ | ✓ (single-tap arms, double-tap locks) |

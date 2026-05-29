@@ -545,12 +545,14 @@ def execute(action, pattern=""):
 
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
-_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro")
+_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "F-Keys",
+                 "Group 5", "Group 6", "Group 7", "Group 8", "Group 9")
 
 def cycle_group(direction):
-    """direction: +1 = forward, -1 = backward through groups 1–3 (group 0 skipped)."""
+    """direction: +1 = forward, -1 = backward through groups 1–9 (group 0 skipped).
+    The 8-symbol Group 0 toggle codes are the direct-jump fast path to any group."""
     global active_group, _last_action, _last_repeatable
-    active_group     = (active_group - 1 + direction) % 3 + 1
+    active_group     = (active_group - 1 + direction) % 9 + 1
     _last_repeatable = None
     _last_action     = f"-> {_GROUP_NAMES[active_group]}"
     print(f"GROUP -> {active_group} ({_GROUP_NAMES[active_group]})")

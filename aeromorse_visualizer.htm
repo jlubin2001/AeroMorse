@@ -285,16 +285,24 @@
       const container = document.getElementById('pages-container');
       container.innerHTML = '';
 
-      const parsedGroups = { g0: [], g1: [], g2: [], g3: [] };
+      const parsedGroups = { g0: [], g1: [], g2: [], g3: [], g4: [], g5: [], g6: [], g7: [], g8: [], g9: [] };
       const groupNames = {
         g0: "Group 0: System / Group Toggles",
         g1: "Group 1: Keyboard",
         g2: "Group 2: Mouse & Windows",
-        g3: "Group 3: Macros"
+        g3: "Group 3: Macros",
+        g4: "Group 4: Function Keys F1-F12 (Switch Control)",
+        g5: "Group 5 (placeholder)",
+        g6: "Group 6 (placeholder)",
+        g7: "Group 7 (placeholder)",
+        g8: "Group 8 (placeholder)",
+        g9: "Group 9 (placeholder)"
       };
 
       // Matches lines like: g1[4][0b1000]='b'   or   g2[2][0b11] = "mmove 0 -1 0"
-      const regex = /^(g[0-3])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
+      // Placeholder groups g5-g9 are seeded programmatically (no literal lines),
+      // so only their customised entries will appear here.
+      const regex = /^(g[0-9])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
 
       dataStr.split('\n').forEach(line => {
         const match = line.match(regex);
@@ -362,7 +370,7 @@
 
       let pagesGenerated = false;
 
-      ['g0', 'g1', 'g2', 'g3'].forEach(groupKey => {
+      ['g0', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9'].forEach(groupKey => {
         const groupItems = parsedGroups[groupKey];
         if (groupItems.length === 0) return;
 

@@ -187,33 +187,45 @@ table and the matching action fires.
 
 ### Long Press — Group Cycling
 
-Holding a sip or puff for **2 or more seconds** cycles through groups 1–3
-instead of recording an element (Group 0 is skipped — its 8-symbol emergency
-patterns remain available in the background at all times):
+Holding a sip or puff for the `LONG_PRESS` duration cycles through groups 1–9
+instead of recording an element (Group 0 is skipped — its 8-symbol patterns
+remain available in the background at all times):
 
 | Long press | Effect |
 |------------|--------|
-| Long sip | Cycle groups **backward** (3 → 2 → 1 → 3 …) |
-| Long puff | Cycle groups **forward**  (1 → 2 → 3 → 1 …) |
+| Long sip | Cycle groups **backward** (… 3 → 2 → 1 → 9 → 8 …) |
+| Long puff | Cycle groups **forward**  (1 → 2 → 3 → … → 9 → 1 …) |
+
+With ten groups, cycling all the way around is slow — use the 8-symbol
+**Group 0 jump codes** below to go straight to any group from anywhere.
 
 ---
 
 ## Groups
 
-The device has four groups.  The active group determines which code table is
-used for pattern lookup.  **Group 0 is always checked first**, regardless of
-the active group — its 8-symbol patterns are available at all times.
+The device has ten groups: g0 (always-on) plus g1–g9.  The active group
+determines which code table is used for pattern lookup.  **Group 0 is always
+checked first**, regardless of the active group — its 8-symbol patterns are
+available at all times.
 
-### Group 0 — Always Available (Emergency Group Switch)
+### Group 0 — Always Available (Group Switch)
 
-These 8-symbol patterns work in any group and jump directly to the named group.
+These 8-symbol patterns work in any group and jump directly to the named
+group.  The codes use a "count of trailing dashes" scheme: 8 dots = g1, then
+add trailing dashes to reach the higher groups.
 
-| Pattern | Symbols | Destination |
-|---------|---------|-------------|
-| `........` | 8 dots | Group 1 — Keyboard |
-| `--------` | 8 dashes | Group 2 — Mouse / Shortcuts |
-| `....----` | 4 dots then 4 dashes | Group 3 — Macros |
-| `----....` | 4 dashes then 4 dots | Group 2 — Mouse / Shortcuts (second shortcut) |
+| Pattern | Trailing dashes | Destination |
+|---------|-----------------|-------------|
+| `........` | 0 | Group 1 — Keyboard |
+| `.......-` | 1 | Group 4 — Function Keys / Switch Control |
+| `......--` | 2 | Group 5 — placeholder |
+| `.....---` | 3 | Group 6 — placeholder |
+| `....----` | 4 | Group 3 — Macros |
+| `...-----` | 5 | Group 7 — placeholder |
+| `..------` | 6 | Group 8 — placeholder |
+| `.-------` | 7 | Group 9 — placeholder |
+| `--------` | 8 | Group 2 — Mouse / Shortcuts |
+| `----....` | (alias) | Group 2 — Mouse / Shortcuts (second shortcut) |
 
 ### Group 1 — Keyboard
 
@@ -460,6 +472,28 @@ Some example entries are pre-filled:
 | All other letter patterns | D, F–Z | *(empty — fill in)* |
 
 Numbers 0–9 and Enter / Backspace work the same as in Group 1.
+
+### Group 4 — Function Keys F1–F12 (Switch Control)
+
+Group 4 maps the **12 shortest Morse patterns** to F1–F12, so the
+least-effort codes drive the most-used actions. This makes AeroMorse usable
+as a **Switch Control** input on iOS and Android, where function keys act as
+switch actions. The remaining letters and numbers are inherited from Group 1
+as a placeholder and can be customised.
+
+| Key | Pattern | Key | Pattern | Key | Pattern |
+|-----|---------|-----|---------|-----|---------|
+| F1 | `.` | F5 | `-.` | F9 | `.-.` |
+| F2 | `-` | F6 | `--` | F10 | `.--` |
+| F3 | `..` | F7 | `...` | F11 | `-..` |
+| F4 | `.-` | F8 | `..-` | F12 | `-.-` |
+
+### Groups 5–9 — Placeholders
+
+Groups 5–9 are seeded with a copy of Group 1's letters and numbers so the
+same muscle memory works while you decide what each group is for. Replace the
+entries in `morse_map.py` with your own keycodes, macros, or command strings.
+Reach each group with its Group 0 jump code (table above).
 
 ---
 

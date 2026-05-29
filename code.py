@@ -21,6 +21,9 @@
 #   Group 1  keyboard  — letters, numbers, punctuation, function keys
 #   Group 2  mouse + Windows shortcuts
 #   Group 3  macro strings
+#   Group 4  function keys F1–F12 on the 12 shortest codes (Switch Control)
+#   Group 5–9  placeholders (copy of g1 letters + numbers — customise)
+#   Reach any group directly with its 8-symbol Group 0 toggle code.
 #
 # Group switching
 #   Primary   : long sip (> LONG_PRESS s) cycles groups backward
@@ -690,9 +693,10 @@ def execute(action, pattern=""):
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
 def cycle_group(direction):
-    """direction: +1 = forward, -1 = backward through groups 1–3 (group 0 skipped)."""
+    """direction: +1 = forward, -1 = backward through groups 1–9 (group 0 skipped).
+    The 8-symbol Group 0 toggle codes are the direct-jump fast path to any group."""
     global active_group, _last_action, _last_repeatable
-    active_group     = (active_group - 1 + direction) % 3 + 1
+    active_group     = (active_group - 1 + direction) % 9 + 1
     _last_repeatable = None     # reset repeat on group change — must mmove first
     _last_action     = f"-> group {active_group}"
     print(f"GROUP -> {active_group} ({_GROUP_NAMES[active_group]})")
@@ -707,8 +711,10 @@ def cycle_group(direction):
 #   Row 4  armed modifiers / speed  (orange)
 #   Bottom pressure bar             (green = puff, red = sip)
 
-_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro")
-_GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000)
+_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "F-Keys",
+                 "Group 5", "Group 6", "Group 7", "Group 8", "Group 9")
+_GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
+                 0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
 display = board.DISPLAY
 try:

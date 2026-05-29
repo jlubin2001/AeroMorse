@@ -75,14 +75,17 @@ Modifiers (Shift, Ctrl, Alt, GUI) work as **sticky keys** — single tap
 arms, double tap locks, third tap releases.
 
 ### AeroMorse's model
-AeroMorse uses four **groups**, each with its own code map:
+AeroMorse uses ten **groups** (g0 always-on plus g1–g9), each with its own
+code map:
 
-| Group | Role | Default activation |
+| Group | Role | Jump code (8 symbols) |
 |---|---|---|
-| **g0** | Always-available system codes | Detected on every keystroke (very long 8-symbol codes — no false-trigger risk) |
-| **g1** | Keyboard (letters, numbers, punctuation) | Default after boot |
-| **g2** | Mouse / Windows shortcuts | `........` (8 dots) → g1, `--------` (8 dashes) → g2 |
+| **g0** | Always-available system codes | Detected on every keystroke (8-symbol codes — no false-trigger risk) |
+| **g1** | Keyboard (letters, numbers, punctuation) | `........` |
+| **g2** | Mouse / Windows shortcuts | `--------` |
 | **g3** | Macros (or Number Mode in `morse_map_darci.py`) | `....----` |
+| **g4** | Function keys F1–F12 (Switch Control on iOS / Android) | `.......-` |
+| **g5–g9** | Placeholders (copy of g1 letters + numbers — customise) | `......--` … `.-------` |
 
 Modifiers are sticky in the same single-tap-arms way Darci uses.
 

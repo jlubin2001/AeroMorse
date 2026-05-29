@@ -60,6 +60,12 @@ GROUP_TITLES = {
     1: 'Group 1 — Keyboard',
     2: 'Group 2 — Mouse / Shortcuts',
     3: 'Group 3 — Macros',
+    4: 'Group 4 — Function Keys F1–F12 (Switch Control)',
+    5: 'Group 5 — Placeholder',
+    6: 'Group 6 — Placeholder',
+    7: 'Group 7 — Placeholder',
+    8: 'Group 8 — Placeholder',
+    9: 'Group 9 — Placeholder',
 }
 
 # ── 1. Duplicate assignments (source scan) ────────────────────────────────────

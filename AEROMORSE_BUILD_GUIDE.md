@@ -1962,18 +1962,34 @@ working — e.g., heavy WiFi interference on channel 1):
 
 ## Appendix A — Groups and Group Cycling
 
-AeroMorse has four groups. Group 0 is always available in the background (its
-8-symbol patterns work in any group). Groups 1–3 cycle with long-press:
+AeroMorse has ten groups: g0 (always-available) plus g1–g9. Group 0 is
+checked in the background on every keystroke (its 8-symbol patterns work
+in any group). Groups 1–9 cycle with long-press, or you can jump straight
+to any group with its 8-symbol Group 0 toggle code.
 
-| Group | Contents | How to reach |
-|-------|---------|-------------|
-| 0 | Emergency group-jump patterns (8 symbols) | Always active |
-| 1 | Letters, numbers, punctuation, function keys | Power-on default |
-| 2 | Mouse movement, clicks, Windows shortcuts | Long-puff from Group 1 |
-| 3 | Macro text strings | Long-puff from Group 2 |
+| Group | Contents | 8-symbol jump code | How to reach by cycling |
+|-------|---------|-------------------|------------------------|
+| 0 | Group-jump patterns (8 symbols) | — | Always active |
+| 1 | Letters, numbers, punctuation, function keys | `........` | Power-on default |
+| 2 | Mouse movement, clicks, Windows shortcuts | `--------` | Long-puff cycling |
+| 3 | Macro text strings | `....----` | Long-puff cycling |
+| 4 | Function keys F1–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` | Long-puff cycling |
+| 5 | Placeholder (copy of g1 letters + numbers) | `......--` | Long-puff cycling |
+| 6 | Placeholder | `.....---` | Long-puff cycling |
+| 7 | Placeholder | `...-----` | Long-puff cycling |
+| 8 | Placeholder | `..------` | Long-puff cycling |
+| 9 | Placeholder | `.-------` | Long-puff cycling |
 
-**Long sip** (hold ≥ `LONG_PRESS` seconds) → cycle backward (3→2→1→3…)
-**Long puff** (hold ≥ `LONG_PRESS` seconds) → cycle forward (1→2→3→1…)
+**Long sip** (hold ≥ `LONG_PRESS` seconds) → cycle backward (…3→2→1→9→8…)
+**Long puff** (hold ≥ `LONG_PRESS` seconds) → cycle forward (1→2→3→4→…→9→1…)
+
+With 10 groups, cycling all the way around takes a while — the 8-symbol
+Group 0 jump codes are the fast path to any group from anywhere. The
+group-toggle codes use a "count of trailing dashes" scheme: 8 dots = g1,
+then add trailing dashes to reach the higher groups (see `morse_map.py`
+Group 0 comments for the full list). Group 4's F-keys make AeroMorse
+usable as a Switch Control input on iOS and Android, where function keys
+act as switch actions.
 
 ---
 

@@ -13,16 +13,32 @@ def init_group():
 # Checked before the active group on every lookup.
 # All patterns are 8 symbols — too long to trigger accidentally.
 #
-#   ........ (8 dots)      → Keyboard
-#   -------- (8 dashes)    → Mouse / Shortcuts
-#   ....---- (dots→dashes) → Macros
-#   ----.... (dashes→dots) → Mouse / Shortcuts  (second shortcut)
+# Group toggles use a "count of trailing dashes" scheme: start from 8 dots
+# (Keyboard) and add trailing dashes to reach the higher groups. The legacy
+# g1 / g2 / g3 codes are unchanged; the gaps are filled by g4–g9.
+#
+#   ........  (0 dashes)  → g1  Keyboard
+#   .......-  (1 dash)    → g4  Function keys / Switch Control (iOS / Android)
+#   ......--  (2 dashes)  → g5
+#   .....---  (3 dashes)  → g6
+#   ....----  (4 dashes)  → g3  Macros
+#   ...-----  (5 dashes)  → g7
+#   ..------  (6 dashes)  → g8
+#   .-------  (7 dashes)  → g9
+#   --------  (8 dashes)  → g2  Mouse / Shortcuts
+#   ----....  (alias)     → g2  Mouse / Shortcuts (second shortcut)
 
 g0 = init_group()
 
 g0[8][0b00000000] = "group 1"   # ........  → Keyboard
-g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
+g0[8][0b00000001] = "group 4"   # .......-  → Function keys / Switch Control
+g0[8][0b00000011] = "group 5"   # ......--  → Group 5 (placeholder)
+g0[8][0b00000111] = "group 6"   # .....---  → Group 6 (placeholder)
 g0[8][0b00001111] = "group 3"   # ....----  → Macros
+g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 (placeholder)
+g0[8][0b00111111] = "group 8"   # ..------  → Group 8 (placeholder)
+g0[8][0b01111111] = "group 9"   # .-------  → Group 9 (placeholder)
+g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
 g0[8][0b11110000] = "group 2"   # ----....  → Mouse/Shortcuts (second shortcut)
 
 groups[0] = g0
@@ -315,3 +331,67 @@ g3[4][0b0101]=Keycode.ENTER      # .-.-
 g3[2][0b11]=Keycode.BACKSPACE    # --
 
 groups[3] = g3
+
+############################################
+# Placeholder group seed (g4–g9)
+############################################
+# Builds a fresh group pre-loaded with g1's A–Z (1–4 symbol patterns) and
+# 0–9 (5-symbol patterns). Punctuation, function keys, navigation, and
+# modifiers are intentionally NOT copied, so placeholder groups start
+# minimal and are easy to customise. Switch between groups any time using
+# the 8-symbol Group 0 toggle codes documented at the top of this file.
+
+def _seed_letters_numbers():
+    g = init_group()
+    for length in (1, 2, 3, 4):
+        for pattern, value in g1[length].items():
+            if isinstance(value, str) and len(value) == 1 and value.isalpha():
+                g[length][pattern] = value          # copy single letters a–z
+    for pattern, value in g1[5].items():
+        if isinstance(value, str) and len(value) == 1 and value.isdigit():
+            g[5][pattern] = value                   # copy single digits 0–9
+    return g
+
+############################################
+# Begin Group 4
+# FUNCTION KEYS F1–F12 (Switch Control on iOS / Android)
+############################################
+# iOS and Android "Switch Control" accessibility modes can be driven by
+# function keys acting as switch actions. The 12 SHORTEST Morse patterns
+# are mapped to F1–F12 so the most-used switch actions take the least
+# effort. The remaining letters / numbers are inherited from g1 as a
+# placeholder and can be customised.
+#
+#   F1  .      F5  -.     F9   .-.
+#   F2  -      F6  --     F10  .--
+#   F3  ..     F7  ...    F11  -..
+#   F4  .-     F8  ..-    F12  -.-
+
+g4 = _seed_letters_numbers()
+
+g4[1][0b0]   = Keycode.F1     # .
+g4[1][0b1]   = Keycode.F2     # -
+g4[2][0b00]  = Keycode.F3     # ..
+g4[2][0b01]  = Keycode.F4     # .-
+g4[2][0b10]  = Keycode.F5     # -.
+g4[2][0b11]  = Keycode.F6     # --
+g4[3][0b000] = Keycode.F7     # ...
+g4[3][0b001] = Keycode.F8     # ..-
+g4[3][0b010] = Keycode.F9     # .-.
+g4[3][0b011] = Keycode.F10    # .--
+g4[3][0b100] = Keycode.F11    # -..
+g4[3][0b101] = Keycode.F12    # -.-
+
+groups[4] = g4
+
+############################################
+# Begin Groups 5–9
+# PLACEHOLDERS — copy of g1 letters + numbers
+############################################
+# Identical letter/number layout to Group 1 so existing muscle memory works
+# while you decide what each group is for. Replace the entries with your own
+# keycodes, macros, or command strings. Reach each group with its Group 0
+# toggle code (see top of file).
+
+for _gid in range(5, 10):
+    groups[_gid] = _seed_letters_numbers()
