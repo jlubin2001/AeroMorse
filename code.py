@@ -260,6 +260,7 @@ if USE_SENSOR:
     print("Calibrating — do not sip or puff ...")
     _baseline, _sip_threshold, _puff_threshold = _calibrate()
     print(f"Baseline: {_baseline:.3f}  sip<{_sip_threshold:.3f}  puff>{_puff_threshold:.3f}")
+    print("Calibration complete — ready for input.")
     _avg_pressure = RollingAverage(POINTS_TO_AVERAGE)
 
 # ── Audio setup ───────────────────────────────────────────────────────────────
