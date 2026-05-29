@@ -21,7 +21,7 @@
 #   Group 1  keyboard  — letters, numbers, punctuation, function keys
 #   Group 2  mouse + Windows shortcuts
 #   Group 3  macro strings
-#   Group 4  function keys F1–F12 on the 12 shortest codes (Switch Control)
+#   Group 4  scanning — F1–F12 on the 12 shortest codes (Switch Control)
 #   Group 5–9  placeholders (copy of g1 letters + numbers — customise)
 #   Reach any group directly with its 8-symbol Group 0 toggle code.
 #
@@ -711,7 +711,7 @@ def cycle_group(direction):
 #   Row 4  armed modifiers / speed  (orange)
 #   Bottom pressure bar             (green = puff, red = sip)
 
-_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "F-Keys",
+_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "Scanning",
                  "Group 5", "Group 6", "Group 7", "Group 8", "Group 9")
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)

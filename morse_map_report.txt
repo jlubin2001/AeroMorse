@@ -1,5 +1,5 @@
 morse_map.py  —  Analysis Report
-Generated : 2026-05-28
+Generated : 2026-05-29
 Source    : C:\Users\jlubi\aeromorse\morse_map.py
 
 ==============================================================================
@@ -1091,8 +1091,8 @@ Source    : C:\Users\jlubi\aeromorse\morse_map.py
       g3[7][0b1111110]=         ''   # ------.
       g3[7][0b1111111]=         ''   # -------
 
-  Group 4 — Function Keys F1–F12 (Switch Control)
-  -------------------------------------------------
+  Group 4 — Scanning / F1–F12 (Switch Control)
+  ----------------------------------------------
 
     Length 2  —  4 of 4 used,  0 unused:
       (none — all slots used)

@@ -1973,7 +1973,7 @@ to any group with its 8-symbol Group 0 toggle code.
 | 1 | Letters, numbers, punctuation, function keys | `........` | Power-on default |
 | 2 | Mouse movement, clicks, Windows shortcuts | `--------` | Long-puff cycling |
 | 3 | Macro text strings | `....----` | Long-puff cycling |
-| 4 | Function keys F1–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` | Long-puff cycling |
+| 4 | Scanning — F1–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` | Long-puff cycling |
 | 5 | Placeholder (copy of g1 letters + numbers) | `......--` | Long-puff cycling |
 | 6 | Placeholder | `.....---` | Long-puff cycling |
 | 7 | Placeholder | `...-----` | Long-puff cycling |
@@ -1987,9 +1987,9 @@ With 10 groups, cycling all the way around takes a while — the 8-symbol
 Group 0 jump codes are the fast path to any group from anywhere. The
 group-toggle codes use a "count of trailing dashes" scheme: 8 dots = g1,
 then add trailing dashes to reach the higher groups (see `morse_map.py`
-Group 0 comments for the full list). Group 4's F-keys make AeroMorse
-usable as a Switch Control input on iOS and Android, where function keys
-act as switch actions.
+Group 0 comments for the full list). Group 4 (Scanning) sends F1–F12,
+making AeroMorse usable as a Switch Control scanning input on iOS and
+Android, where function keys act as switch actions.
 
 ---
 

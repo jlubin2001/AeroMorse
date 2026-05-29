@@ -18,7 +18,7 @@ def init_group():
 # g1 / g2 / g3 codes are unchanged; the gaps are filled by g4–g9.
 #
 #   ........  (0 dashes)  → g1  Keyboard
-#   .......-  (1 dash)    → g4  Function keys / Switch Control (iOS / Android)
+#   .......-  (1 dash)    → g4  Scanning / Switch Control (iOS / Android)
 #   ......--  (2 dashes)  → g5
 #   .....---  (3 dashes)  → g6
 #   ....----  (4 dashes)  → g3  Macros
@@ -31,7 +31,7 @@ def init_group():
 g0 = init_group()
 
 g0[8][0b00000000] = "group 1"   # ........  → Keyboard
-g0[8][0b00000001] = "group 4"   # .......-  → Function keys / Switch Control
+g0[8][0b00000001] = "group 4"   # .......-  → Scanning / Switch Control
 g0[8][0b00000011] = "group 5"   # ......--  → Group 5 (placeholder)
 g0[8][0b00000111] = "group 6"   # .....---  → Group 6 (placeholder)
 g0[8][0b00001111] = "group 3"   # ....----  → Macros
@@ -354,13 +354,13 @@ def _seed_letters_numbers():
 
 ############################################
 # Begin Group 4
-# FUNCTION KEYS F1–F12 (Switch Control on iOS / Android)
+# SCANNING (Switch Control on iOS / Android)
 ############################################
-# iOS and Android "Switch Control" accessibility modes can be driven by
+# iOS and Android "Switch Control" accessibility scanning can be driven by
 # function keys acting as switch actions. The 12 SHORTEST Morse patterns
-# are mapped to F1–F12 so the most-used switch actions take the least
-# effort. The remaining letters / numbers are inherited from g1 as a
-# placeholder and can be customised.
+# are mapped to F1–F12 so the most-used scan actions take the least effort.
+# The remaining letters / numbers are inherited from g1 as a placeholder
+# and can be customised.
 #
 #   F1  .      F5  -.     F9   .-.
 #   F2  -      F6  --     F10  .--
@@ -381,6 +381,7 @@ g4[3][0b010] = Keycode.F9     # .-.
 g4[3][0b011] = Keycode.F10    # .--
 g4[3][0b100] = Keycode.F11    # -..
 g4[3][0b101] = Keycode.F12    # -.-
+g4[4][0b0000]='h'             # .... for action Home
 
 groups[4] = g4
 

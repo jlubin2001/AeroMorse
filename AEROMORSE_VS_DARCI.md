@@ -84,7 +84,7 @@ code map:
 | **g1** | Keyboard (letters, numbers, punctuation) | `........` |
 | **g2** | Mouse / Windows shortcuts | `--------` |
 | **g3** | Macros (or Number Mode in `morse_map_darci.py`) | `....----` |
-| **g4** | Function keys F1–F12 (Switch Control on iOS / Android) | `.......-` |
+| **g4** | Scanning — F1–F12 (Switch Control on iOS / Android) | `.......-` |
 | **g5–g9** | Placeholders (copy of g1 letters + numbers — customise) | `......--` … `.-------` |
 
 Modifiers are sticky in the same single-tap-arms way Darci uses.

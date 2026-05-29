@@ -13,16 +13,32 @@ def init_group():
 # Checked before the active group on every lookup.
 # All patterns are 8 symbols — too long to trigger accidentally.
 #
-#   ........ (8 dots)      → Keyboard
-#   -------- (8 dashes)    → Mouse / Shortcuts
-#   ....---- (dots→dashes) → Macros
-#   ----.... (dashes→dots) → Mouse / Shortcuts  (second shortcut)
+# Group toggles use a "count of trailing dashes" scheme: start from 8 dots
+# (Keyboard) and add trailing dashes to reach the higher groups. The legacy
+# g1 / g2 / g3 codes are unchanged; the gaps are filled by g4–g9.
+#
+#   ........  (0 dashes)  → g1  Keyboard
+#   .......-  (1 dash)    → g4  Scanning / Switch Control (iOS / Android)
+#   ......--  (2 dashes)  → g5
+#   .....---  (3 dashes)  → g6
+#   ....----  (4 dashes)  → g3  Macros
+#   ...-----  (5 dashes)  → g7
+#   ..------  (6 dashes)  → g8
+#   .-------  (7 dashes)  → g9
+#   --------  (8 dashes)  → g2  Mouse / Shortcuts
+#   ----....  (alias)     → g2  Mouse / Shortcuts (second shortcut)
 
 g0 = init_group()
 
 g0[8][0b00000000] = "group 1"   # ........  → Keyboard
-g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
+g0[8][0b00000001] = "group 4"   # .......-  → Scanning / Switch Control
+g0[8][0b00000011] = "group 5"   # ......--  → Group 5 (placeholder)
+g0[8][0b00000111] = "group 6"   # .....---  → Group 6 (placeholder)
 g0[8][0b00001111] = "group 3"   # ....----  → Macros
+g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 (placeholder)
+g0[8][0b00111111] = "group 8"   # ..------  → Group 8 (placeholder)
+g0[8][0b01111111] = "group 9"   # .-------  → Group 9 (placeholder)
+g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
 g0[8][0b11110000] = "group 2"   # ----....  → Mouse/Shortcuts (second shortcut)
 
 groups[0] = g0
@@ -108,17 +124,17 @@ g1[5][0b00110]='{'          # ..--.
 g1[6][0b110011]='<'         # --..--
 g1[6][0b001100]='>'         # ..--..
 g1[6][0b101111]='?'         # -.----
-g1[6][0b000011]='/'         # ....--
-g1[6][0b111100]='\\'        # ----..
+g1[6][0b000011]='/'         # ....--    (forward slash)
+g1[6][0b111100]='\\'        # ----..    (backslash)
 g1[6][0b000010]='|'         # ....-.
 g1[6][0b111101]='_'         # ----.-
-g1[6][0b000110]='\"'        # ...--.
-g1[6][0b001000]='\''        # ..-...
+g1[6][0b000110]='\"'        # ...--.    (double quote)
+g1[6][0b001000]='\''        # ..-...    (single quote)
 g1[6][0b110111]='`'         # --.---
 g1[6][0b111011]='~'         # ---.--
 
 # ── Function Keys ─────────────────────────────────────────────────────────────
-# 7-symbol patterns. The dot/dash boundary shifts one position per key:
+# 7-symbol patterns. Standand Numbers 1–0 lead with dashes. 1–2 trailed with dashes.
 #   F1  --.----   F6  ---....
 #   F2  --..---   F7  ----...
 #   F3  --...--   F8  -----..
@@ -126,35 +142,36 @@ g1[6][0b111011]='~'         # ---.--
 #   F5  --.....   F10 -------
 #                 F11 .------
 #                 F12 ..-----
-g1[7][0b1101111]=Keycode.F1   # --.----
-g1[7][0b1100111]=Keycode.F2   # --..---
-g1[7][0b1100011]=Keycode.F3   # --...--
-g1[7][0b1100001]=Keycode.F4   # --....-
-g1[7][0b1100000]=Keycode.F5   # --.....
-g1[7][0b1110000]=Keycode.F6   # ---....
-g1[7][0b1111000]=Keycode.F7   # ----...
-g1[7][0b1111100]=Keycode.F8   # -----..
-g1[7][0b1111110]=Keycode.F9   # ------.
-g1[7][0b1111111]=Keycode.F10  # -------
-g1[7][0b0111111]=Keycode.F11  # .------
-g1[7][0b0011111]=Keycode.F12  # ..-----
+g1[7][0b1101111]=Keycode.F1   # --.---- (--1)
+g1[7][0b1100111]=Keycode.F2   # --..--- (--2)
+g1[7][0b1100011]=Keycode.F3   # --...-- (--3)
+g1[7][0b1100001]=Keycode.F4   # --....- (--4)
+g1[7][0b1100000]=Keycode.F5   # --..... (--5)
+g1[7][0b1110000]=Keycode.F6   # ---.... (--6)
+g1[7][0b1111000]=Keycode.F7   # ----... (--7)
+g1[7][0b1111100]=Keycode.F8   # -----.. (--8)
+g1[7][0b1111110]=Keycode.F9   # ------. (--9)
+g1[7][0b1111111]=Keycode.F10  # ------- (--0)
+g1[7][0b0111111]=Keycode.F11  # .------ (1--)
+g1[7][0b0011111]=Keycode.F12  # ..----- (2--)
 
 # ── Non-printable keyboard keys ───────────────────────────────────────────────
-g1[5][0b01001]=Keycode.UP_ARROW      # .-..-
-g1[5][0b01100]=Keycode.DOWN_ARROW    # .--..
-g1[6][0b010100]=Keycode.LEFT_ARROW   # .-.-..
-g1[5][0b01010]=Keycode.RIGHT_ARROW   # .-.-.
-g1[7][0b0000000]=Keycode.HOME        # .......  (7 dots)
-g1[7][0b0001000]=Keycode.END         # ...-...
-g1[6][0b000001]=Keycode.PAGE_UP      # .....-
-g1[6][0b000100]=Keycode.PAGE_DOWN    # ...-..
+g1[5][0b01001]=Keycode.UP_ARROW      # .-..-    (au)
+g1[5][0b01100]=Keycode.DOWN_ARROW    # .--..    (ad)
+g1[6][0b010100]=Keycode.LEFT_ARROW   # .-.-..   (al)
+g1[5][0b01010]=Keycode.RIGHT_ARROW   # .-.-.    (ar)
+g1[7][0b0000000]=Keycode.HOME        # .......  (sh) (7 dots)
+g1[7][0b0001000]=Keycode.END         # ...-...  (sb)
+g1[6][0b000001]=Keycode.PAGE_UP      # .....-   (su)
+g1[6][0b000100]=Keycode.PAGE_DOWN    # ...-..   (sd)
 g1[4][0b0101]=Keycode.ENTER          # .-.-
-g1[6][0b110000]=Keycode.ESCAPE       # --....
-g1[6][0b101100]=Keycode.DELETE       # -.--..
-g1[5][0b10100]=Keycode.INSERT        # -.-..
+g1[6][0b110000]=Keycode.ESCAPE       # --....   (gs)
+g1[6][0b101100]=Keycode.DELETE       # -.--..   (kd)
+g1[5][0b10100]=Keycode.INSERT        # -.-..    (ku)
 g1[2][0b11]=Keycode.BACKSPACE        # --     (freed from M)
 g1[4][0b0011]=Keycode.SPACE          # ..--
-g1[7][0b1110010]=Keycode.TAB         # ---..-.
+g1[7][0b1110010]=Keycode.TAB         # ---..-.  (sf)
+g1[5][0b00100] = "repeat"            # ..-..    repeat
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
 # Sticky: press once to arm, next key fires with the modifier, then it releases.
@@ -237,10 +254,10 @@ g2[6][0b000011]=Keycode.KEYPAD_FORWARD_SLASH  # ....--
 g2[6][0b111100]=Keycode.APPLICATION        # ----..  context-menu key
 g2[7][0b1110001]=Keycode.KEYPAD_NUMLOCK    # ---...-
 g2[4][0b0101]=Keycode.KEYPAD_ENTER         # .-.-
-g2[5][0b01001]=Keycode.UP_ARROW            # .-..-
-g2[5][0b01100]=Keycode.DOWN_ARROW          # .--..
-g2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..
-g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.
+g2[5][0b01001]=Keycode.UP_ARROW            # .-..-      (au)
+g2[5][0b01100]=Keycode.DOWN_ARROW          # .--..      (ad)
+g2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..     (al)
+g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.      (ar)
 
 # ── Windows Shortcuts (tuples = all keys pressed simultaneously) ──────────────
 g2[6][0b110000]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --....  free mouse from VM
@@ -274,28 +291,28 @@ g3[4][0b1110]='phone'       # ---.  C (non-standard pattern)
 g3[1][0b0]='email'          # .     E
 
 # ── Placeholders — fill with user phrases; pattern = Group 1 letter ───────────
-g3[3][0b100]=''             # -..   D
-g3[4][0b0010]=''            # ..-.  F
-g3[3][0b110]=''             # --.   G
-g3[4][0b0000]=''            # ....  H
-g3[2][0b00]=''              # ..    I
-g3[4][0b0111]=''            # .---  J
-g3[3][0b101]=''             # -.-   K
-g3[4][0b0100]=''            # .-..  L
-g3[2][0b11]=''              # --    (backspace pattern)
-g3[2][0b10]=''              # -.    N
-g3[3][0b111]=''             # ---   O
-g3[4][0b0110]=''            # .--.  P
-g3[4][0b1101]=''            # --.-  Q
-g3[3][0b010]=''             # .-.   R
-g3[3][0b000]=''             # ...   S
-g3[1][0b1]=''               # -     T
-g3[3][0b001]=''             # ..-   U
-g3[4][0b0001]=''            # ...-  V
-g3[3][0b011]=''             # .--   W
-g3[4][0b1001]=''            # -..-  X
-g3[4][0b1011]=''            # -.--  Y
-g3[4][0b1100]=''            # --..  Z
+g3[3][0b100]='phrase'             # -..   D
+g3[4][0b0010]='phrase'            # ..-.  F
+g3[3][0b110]='phrase'             # --.   G
+g3[4][0b0000]='phrase'            # ....  H
+g3[2][0b00]='phrase'              # ..    I
+g3[4][0b0111]='phrase'            # .---  J
+g3[3][0b101]='phrase'             # -.-   K
+g3[4][0b0100]='phrase'            # .-..  L
+g3[4][0b1111]='phrase'            # ----  M
+g3[2][0b10]='phrase'              # -.    N
+g3[3][0b111]='phrase'             # ---   O
+g3[4][0b0110]='phrase'            # .--.  P
+g3[4][0b1101]='phrase'            # --.-  Q
+g3[3][0b010]='phrase'             # .-.   R
+g3[3][0b000]='phrase'             # ...   S
+g3[1][0b1]='phrase'               # -     T
+g3[3][0b001]='phrase'             # ..-   U
+g3[4][0b0001]='phrase'            # ...-  V
+g3[3][0b011]='phrase'             # .--   W
+g3[4][0b1001]='phrase'            # -..-  X
+g3[4][0b1011]='phrase'            # -.--  Y
+g3[4][0b1100]='phrase'            # --..  Z
 
 # ── Numbers (same patterns as Group 1) ───────────────────────────────────────
 g3[5][0b01111]='1'          # .----
@@ -314,3 +331,68 @@ g3[4][0b0101]=Keycode.ENTER      # .-.-
 g3[2][0b11]=Keycode.BACKSPACE    # --
 
 groups[3] = g3
+
+############################################
+# Placeholder group seed (g4–g9)
+############################################
+# Builds a fresh group pre-loaded with g1's A–Z (1–4 symbol patterns) and
+# 0–9 (5-symbol patterns). Punctuation, function keys, navigation, and
+# modifiers are intentionally NOT copied, so placeholder groups start
+# minimal and are easy to customise. Switch between groups any time using
+# the 8-symbol Group 0 toggle codes documented at the top of this file.
+
+def _seed_letters_numbers():
+    g = init_group()
+    for length in (1, 2, 3, 4):
+        for pattern, value in g1[length].items():
+            if isinstance(value, str) and len(value) == 1 and value.isalpha():
+                g[length][pattern] = value          # copy single letters a–z
+    for pattern, value in g1[5].items():
+        if isinstance(value, str) and len(value) == 1 and value.isdigit():
+            g[5][pattern] = value                   # copy single digits 0–9
+    return g
+
+############################################
+# Begin Group 4
+# SCANNING (Switch Control on iOS / Android)
+############################################
+# iOS and Android "Switch Control" accessibility scanning can be driven by
+# function keys acting as switch actions. The 12 SHORTEST Morse patterns
+# are mapped to F1–F12 so the most-used scan actions take the least effort.
+# The remaining letters / numbers are inherited from g1 as a placeholder
+# and can be customised.
+#
+#   F1  .      F5  -.     F9   .-.
+#   F2  -      F6  --     F10  .--
+#   F3  ..     F7  ...    F11  -..
+#   F4  .-     F8  ..-    F12  -.-
+
+g4 = _seed_letters_numbers()
+
+g4[1][0b0]   = Keycode.F1     # .
+g4[1][0b1]   = Keycode.F2     # -
+g4[2][0b00]  = Keycode.F3     # ..
+g4[2][0b01]  = Keycode.F4     # .-
+g4[2][0b10]  = Keycode.F5     # -.
+g4[2][0b11]  = Keycode.F6     # --
+g4[3][0b000] = Keycode.F7     # ...
+g4[3][0b001] = Keycode.F8     # ..-
+g4[3][0b010] = Keycode.F9     # .-.
+g4[3][0b011] = Keycode.F10    # .--
+g4[3][0b100] = Keycode.F11    # -..
+g4[3][0b101] = Keycode.F12    # -.-
+g4[4][0b0000]='h'             # .... for action Home
+
+groups[4] = g4
+
+############################################
+# Begin Groups 5–9
+# PLACEHOLDERS — copy of g1 letters + numbers
+############################################
+# Identical letter/number layout to Group 1 so existing muscle memory works
+# while you decide what each group is for. Replace the entries with your own
+# keycodes, macros, or command strings. Reach each group with its Group 0
+# toggle code (see top of file).
+
+for _gid in range(5, 10):
+    groups[_gid] = _seed_letters_numbers()

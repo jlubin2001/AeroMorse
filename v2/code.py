@@ -554,7 +554,7 @@ def execute(action, pattern=""):
 
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
-_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "F-Keys",
+_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "Scanning",
                  "Group 5", "Group 6", "Group 7", "Group 8", "Group 9")
 
 def cycle_group(direction):

@@ -217,7 +217,7 @@ add trailing dashes to reach the higher groups.
 | Pattern | Trailing dashes | Destination |
 |---------|-----------------|-------------|
 | `........` | 0 | Group 1 — Keyboard |
-| `.......-` | 1 | Group 4 — Function Keys / Switch Control |
+| `.......-` | 1 | Group 4 — Scanning / Switch Control |
 | `......--` | 2 | Group 5 — placeholder |
 | `.....---` | 3 | Group 6 — placeholder |
 | `....----` | 4 | Group 3 — Macros |
@@ -473,13 +473,14 @@ Some example entries are pre-filled:
 
 Numbers 0–9 and Enter / Backspace work the same as in Group 1.
 
-### Group 4 — Function Keys F1–F12 (Switch Control)
+### Group 4 — Scanning (Switch Control on iOS / Android)
 
 Group 4 maps the **12 shortest Morse patterns** to F1–F12, so the
-least-effort codes drive the most-used actions. This makes AeroMorse usable
-as a **Switch Control** input on iOS and Android, where function keys act as
-switch actions. The remaining letters and numbers are inherited from Group 1
-as a placeholder and can be customised.
+least-effort codes drive the most-used scan actions. This makes AeroMorse
+usable as a **Switch Control** scanning input on iOS and Android, where
+function keys act as switch actions. The `....` pattern is set to `h`
+(labelled "Home"); the remaining letters and numbers are inherited from
+Group 1 as a placeholder and can be customised.
 
 | Key | Pattern | Key | Pattern | Key | Pattern |
 |-----|---------|-----|---------|-----|---------|
@@ -487,6 +488,7 @@ as a placeholder and can be customised.
 | F2 | `-` | F6 | `--` | F10 | `.--` |
 | F3 | `..` | F7 | `...` | F11 | `-..` |
 | F4 | `.-` | F8 | `..-` | F12 | `-.-` |
+| Home (`h`) | `....` | | | | |
 
 ### Groups 5–9 — Placeholders
 
