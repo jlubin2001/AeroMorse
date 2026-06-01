@@ -135,9 +135,9 @@ exactly which features are included.
 
 | Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|---------|-------|------|-------|
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✓ | ※ | ✓ 2MB | ✓ | **Recommended — see below** |
+| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended — see below** |
 | ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up (normal) |
-| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount) |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✓ | ※ | ✓ 2MB | ✓ | No built-in display — pair with an EYESPI or FeatherWing TFT (§5) |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
 
 ※ BLE HID bugs fixed in CircuitPython 10.x, but requires 8MB+ flash firmware
