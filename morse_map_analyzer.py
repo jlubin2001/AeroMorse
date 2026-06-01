@@ -51,6 +51,11 @@ for _n in [
     'STOP', 'FAST_FORWARD', 'REWIND',
     'BRIGHTNESS_INCREMENT', 'BRIGHTNESS_DECREMENT',
     'EJECT', 'RECORD',
+    # Application Launch + system controls (may or may not be in the
+    # installed adafruit_hid bundle — morse_map skips missing ones)
+    'AL_CALCULATOR', 'AL_LOCAL_MACHINE_BROWSER',
+    'AL_INTERNET_BROWSER', 'AL_EMAIL_READER',
+    'SLEEP', 'POWER',
 ]:
     setattr(_ConsumerControlCode, _n, f'ConsumerControlCode.{_n}')
 

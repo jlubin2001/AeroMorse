@@ -1334,10 +1334,9 @@ Source    : C:\Users\jlubi\aeromorse\morse_map.py
     Length 3  —  8 of 8 used,  0 unused:
       (none — all slots used)
 
-    Length 4  —  13 of 16 used,  3 unused:
+    Length 4  —  14 of 16 used,  2 unused:
       g5[4][0b0011]=            ''   # ..--
       g5[4][0b0101]=            ''   # .-.-
-      g5[4][0b1010]=            ''   # -.-.
 
     Length 5  —  10 of 32 used,  22 unused:
       g5[5][0b00010]=           ''   # ...-.

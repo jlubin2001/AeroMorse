@@ -492,11 +492,13 @@ Group 1 as a placeholder and can be customised.
 
 ### Group 5 — Media (USB HID Consumer Controls)
 
-Group 5 maps the **12 shortest Morse patterns** to USB HID Consumer Control
-codes — media playback, volume, mute, track skip, brightness, and eject.
-The codes route through a dedicated `ConsumerControl` HID device (enabled in
-`boot.py`), so they reach the host as standard media keys that every modern
-OS understands.
+Group 5 sends USB HID Consumer Control codes — media playback, volume,
+mute, track skip, brightness, eject, application launch, and system power
+controls. The codes route through a dedicated `ConsumerControl` HID device
+(enabled in `boot.py`), so they reach the host as standard media-keyboard
+keys that every modern OS understands.
+
+**Media — 12 shortest patterns (1–3 symbol):**
 
 | Pattern | Action | Pattern | Action |
 |---------|--------|---------|--------|
@@ -507,8 +509,22 @@ OS understands.
 | `-.` | Previous Track | `-..` | Brightness − |
 | `.-` | Next Track | `-.-` | Eject |
 
-The remaining letters and numbers are inherited from Group 1 as a
-placeholder and can be customised.
+**Application Launch + System (4-symbol patterns; first-letter mnemonics):**
+
+| Pattern | ITU letter | Action |
+|---------|-----------|--------|
+| `-.-.` | C | **C**alculator — `AL_CALCULATOR` |
+| `..-.` | F | **F**ile explorer — `AL_LOCAL_MACHINE_BROWSER` |
+| `-...` | B | **B**rowser — `AL_INTERNET_BROWSER` |
+| `.-..` | L | mai-**L** — `AL_EMAIL_READER` |
+| `--..` | Z | Z-z-z — `SLEEP` |
+| `.--.` | P | **P**ower — `POWER` |
+
+The application-launch and system codes require an `adafruit_hid` bundle
+recent enough to expose the corresponding `ConsumerControlCode` constants.
+If any are missing the firmware prints a warning at boot and skips just
+those entries. The remaining letters and numbers in g5 are inherited from
+Group 1 as a placeholder and can be customised.
 
 ### Groups 6–9 — Placeholders
 
