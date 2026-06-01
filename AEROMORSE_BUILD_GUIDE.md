@@ -139,7 +139,6 @@ exactly which features are included.
 | ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up (normal) |
 | ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount) |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
-| Feather nRF52840 Express | [#4062](https://www.adafruit.com/product/4062) | ✓ | ✓ | — | — | Most mature BLE HID; no PSRAM |
 
 ※ BLE HID bugs fixed in CircuitPython 10.x, but requires 8MB+ flash firmware
 build to include the BLE stack. Verify at circuitpython.org before relying on
@@ -216,44 +215,16 @@ https://www.adafruit.com/product/5500
 
 ---
 
-**If you want wireless HID (BLE) and do not need a large colour display:**
+**A note on PSRAM:**
 
-The **nRF52840 Feather #4062** has the most mature and battle-tested BLE HID
-implementation in CircuitPython — it predates the ESP32-S3 fixes by years and
-works reliably on iOS, Android, and Windows.
-https://www.adafruit.com/product/4062
-
-**What PSRAM is and why it matters for display choice:**
-
-PSRAM is extra RAM soldered onto the board alongside the main chip. The
-ESP32-S3 chip itself has 512 KB of built-in RAM. A colour TFT display needs a
-*framebuffer* — a block of RAM that holds every pixel on screen before sending
-it to the display. Here is how the numbers work out:
-
-| Display | Resolution | Framebuffer RAM needed |
-|---------|-----------|----------------------|
-| 128×64 OLED (monochrome) | 8,192 pixels | ~1 KB |
-| 240×135 TFT (built-in on #5691) | 32,400 pixels × 2 bytes | ~63 KB |
-| 320×240 TFT FeatherWing | 76,800 pixels × 2 bytes | ~150 KB |
-| 480×320 TFT FeatherWing #3651 | 153,600 pixels × 2 bytes | ~300 KB |
-
-The nRF52840 has **256 KB** of total RAM — shared between your code, variables,
-and the display framebuffer. A 128×64 OLED uses only ~1 KB of that, leaving
-plenty for everything else. A 480×320 colour TFT at ~300 KB would leave
-nothing for the program itself and simply won't fit.
-
-The ESP32-S3 boards with PSRAM have **2 MB** (or 8 MB on the #5500) of extra
-RAM on top of the 512 KB built-in. The framebuffer lives in PSRAM, leaving the
-main 512 KB free for code. Any display size works.
-
-**Practical rule:**
-- Using the **STEMMA QT OLED** (128×64)? → nRF52840 has more than enough RAM.
-  The OLED is a fine choice here and gives you the most mature BLE HID.
-- Using the **built-in 240×135 TFT** or any FeatherWing colour display? →
-  You need PSRAM. Choose the #5500 (Metro) or an ESP32-S3 Feather.
-- Using the **ESP-NOW wireless display** option? → The main board's display
-  is just the small built-in TFT or an OLED, so nRF52840 could work — but
-  it has no WiFi or ESP-NOW, so the wireless display feature is unavailable.
+PSRAM is extra RAM soldered alongside the main chip. The ESP32-S3 chip
+itself has 512 KB of built-in RAM; a colour TFT display needs a
+*framebuffer* (a block of RAM holding every pixel) that can easily
+exceed that. Every Feather and Metro board still listed above has at
+least **2 MB of PSRAM** (the #5500 Metro has 8 MB), so the framebuffer
+lives in PSRAM and the built-in 512 KB stays free for code. Any
+supported display size — 128×64 OLED through 480×320 FeatherWing —
+fits comfortably.
 
 ---
 
@@ -263,8 +234,7 @@ main 512 KB free for code. Any display size works.
 |---------|--------|
 | Simplest build, colour TFT included, USB only | #5691 Reverse TFT Feather |
 | Same but screen faces up | #5483 TFT Feather |
-| BLE HID + colour TFT or large display | #5500 Metro ESP32-S3 |
-| BLE HID + OLED only (no large display needed) | #4062 nRF52840 Feather |
+| BLE HID (in addition to USB HID) | #5500 Metro ESP32-S3 |
 
 ---
 
@@ -1859,9 +1829,9 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
   `ESP-NOW: wireless display active (broadcast)` at startup.
   - `ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False` → flip the
     `USE_WIRELESS_DISPLAY` flag back to `True` in `code.py` (§10).
-  - `ESP-NOW: module not available on this board` → the board is not
-    an ESP32 (e.g., RP2040, M4, nRF52840). Wireless display requires
-    an ESP32-family board.
+  - `ESP-NOW: module not available on this board` → the board is not an
+    ESP32-family chip. Wireless display requires ESP-NOW, which is
+    ESP32-only.
   - `ESP-NOW: init failed (...)` → see entry below.
 - Range is approximately 30 m indoors. Move the boards closer to test.
 - Channel mismatch: see "How the ESP-NOW channel is selected" below.

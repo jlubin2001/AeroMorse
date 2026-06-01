@@ -379,7 +379,6 @@ for understanding how the code works.
 | ESP32-S3 TFT Feather #5483 | https://learn.adafruit.com/adafruit-esp32-s3-tft-feather |
 | ESP32-S3 Reverse TFT Feather #5691 | https://learn.adafruit.com/adafruit-esp32-s3-reverse-tft-feather |
 | ESP32-S2 TFT Feather #5300 | https://learn.adafruit.com/adafruit-esp32-s2-tft-feather |
-| nRF52840 Feather #4062 | https://learn.adafruit.com/introducing-the-adafruit-nrf52840-feather |
 
 Each guide covers pinouts, CircuitPython installation, and first-use
 instructions specific to that board. Recommended to read alongside this build

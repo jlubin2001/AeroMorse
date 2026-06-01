@@ -220,6 +220,6 @@ DISPLAY_ROTATION   = 0
 # False = leave the WiFi radio off. No emission, lower power. Use this when
 #         you have no receiver paired.
 #
-# Has no effect on boards without an `espnow` module (RP2040, M4, nRF52840) —
-# the import fails on those and the radio stays off regardless.
+# Has no effect on non-ESP32 boards — the `espnow` import fails there and the
+# radio stays off regardless.
 USE_WIRELESS_DISPLAY = False
