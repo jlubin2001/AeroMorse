@@ -135,9 +135,9 @@ exactly which features are included.
 
 | Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|---------|-------|------|-------|
-| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended — see below** |
-| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up (normal) |
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✓ | ※ | ✓ 2MB | ✓ | No built-in display — pair with an EYESPI or FeatherWing TFT (§5) |
+| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
+| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✓ | ※ | ✓ 2MB | ✓ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). EYESPI is also possible but needs the most code editing. |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
 
 ※ BLE HID bugs fixed in CircuitPython 10.x, but requires 8MB+ flash firmware
@@ -189,14 +189,47 @@ STEMMA QT with no wiring change.
 - Available from Adafruit:
   https://www.adafruit.com/product/5691
 
+> **Watch out — #5691 is not breadboard-friendly once you solder headers.**
+> The TFT is on the back of the board, so once header pins are soldered and
+> the Feather is pressed into a breadboard, the screen ends up facing the
+> breadboard and is unreadable. #5691 is designed for **panel-mount enclosures**
+> (a cutout in a case with the screen showing through), not for prototyping
+> on a solderless breadboard. If you plan to develop on a breadboard before
+> moving to an enclosure, use **#5483** (built-in TFT facing up — screen
+> still visible when the Feather is on a breadboard) or **#5477** with an
+> external display.
+
 ---
 
-**If you want the same simplicity with the screen facing up (not panel-mounted):**
+**If you want a built-in TFT and plan to use a breadboard (or no enclosure):**
 
-The **ESP32-S3 TFT Feather #5483** is identical to #5691 except the display
-faces the same side as the components. Everything else — PSRAM, STEMMA QT,
-ESP-NOW, USB HID — is the same.
+The **ESP32-S3 TFT Feather #5483** is electrically identical to #5691, but
+its TFT faces the same side as the components. Press it into a breadboard
+with headers and the screen still faces up. Everything else — PSRAM,
+STEMMA QT, ESP-NOW, USB HID — is the same.
 https://www.adafruit.com/product/5483
+
+---
+
+**If you want a bare Feather (no built-in display) for the cleanest breadboard
+or for maximum display flexibility:**
+
+The **ESP32-S3 Feather #5477** is the same chip without a soldered-on TFT,
+so it sits flat in a breadboard. Pair it with one of:
+
+- **STEMMA QT OLED #326 (0.96") or #938 (1.3")** — plug-and-play via the
+  STEMMA QT chain (the same chain that carries the sensor). You'll need to
+  swap the `display = board.DISPLAY` line at the top of `code.py` for a
+  short SSD1306 init block (a few lines). Monochrome 128×64.
+- **FeatherWing TFT (#3651, #5872, or #3315)** — plugs straight onto the
+  header pins, no extra wiring. Same kind of one-time `code.py` display-init
+  swap. Larger, colour, much more screen area than the OLED.
+- **EYESPI TFT** (Build Guide §5 "EYESPI displays") — possible but the most
+  involved option: needs a #5613 breakout, ~7 jumper wires, a flex cable,
+  and a more complex `displayio` init block. Use only if you specifically
+  want EYESPI's flex-cable advantages.
+
+https://www.adafruit.com/product/5477
 
 ---
 
