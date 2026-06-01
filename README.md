@@ -128,9 +128,10 @@ connected to a computer.
 
 | File | Purpose |
 |------|---------|
-| `boot.py` | Runs once at power-on before `code.py`.  Enables USB HID keyboard and mouse devices. **Must be present or the device will not appear as a keyboard/mouse.** |
-| `code.py` | Main program.  Reads input, runs the state machine, executes actions, drives the display. |
-| `morse_map.py` | All Morse code assignments for every group.  Edit this file to remap keys. |
+| `boot.py` | Runs once at power-on before `code.py`. Enables the USB HID Keyboard, Mouse, and ConsumerControl (media keys) devices. **Must be present or the device will not appear as a keyboard/mouse.** |
+| `code.py` | Main program. Reads input, runs the state machine, executes actions, drives the display. You should not need to open this file — all tunable settings live in `config.py`. |
+| `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, strong sip/puff, audio pitches, timing, etc. Edit this file (in Thonny) to change behaviour. The Feather auto-reloads on save. |
+| `morse_map.py` | All Morse code assignments for every group. Edit this file to remap keys, add macros, or change which Consumer Control codes g5 sends. |
 
 ### Required Libraries (in `lib/` folder on CIRCUITPY)
 
