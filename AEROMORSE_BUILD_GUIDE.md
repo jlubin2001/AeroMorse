@@ -1519,11 +1519,12 @@ ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
 ### Step 9.4 — Copy the AeroMorse project files
 
 > **Filenames must be exact.** CircuitPython looks for `code.py`,
-> `boot.py`, and `morse_map.py` by *literal* name. If you copy a file as
-> `morse_map_darci.py` (or any other variant name) it will be ignored —
-> `code.py` does `from morse_map import groups`, and that import resolves
-> only to a file named `morse_map.py`. **Rename the file to `morse_map.py`
-> *before* or *after* copying** — see the Darci callout below.
+> `boot.py`, `morse_map.py`, and `config.py` by *literal* name. If you
+> copy a file as `morse_map_darci.py` (or any other variant name) it
+> will be ignored — `code.py` does `from morse_map import groups`, and
+> that import resolves only to a file named `morse_map.py`. **Rename
+> the file to `morse_map.py` *before* or *after* copying** — see the
+> Darci callout below.
 
 **Which `code.py` to use depends on your Feather board:**
 
@@ -1534,15 +1535,24 @@ ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
 | #5300 ESP32-S2 TFT Feather | `v1/` folder — uses built-in display |
 | All other boards | `v2/` folder — uses external display |
 
-Copy these three files to the **root** of the CIRCUITPY drive (not inside any
-subfolder). Take `code.py` from the correct folder for your board (above), and
-`boot.py` and `morse_map.py` from either folder — they are identical:
+Copy these four files to the **root** of the CIRCUITPY drive (not inside
+any subfolder). `code.py` comes from the correct folder for your board
+(above); `boot.py`, `config.py`, and `morse_map.py` come from the repo
+root and are the same for every board:
 
 ```
 boot.py
 code.py
+config.py
 morse_map.py
 ```
+
+> **`config.py` is new** — it holds every user-tunable setting (sensor
+> thresholds, switch mode, code repeat, audio pitches, etc.) that used
+> to live at the top of `code.py`. You edit `config.py` to change
+> behaviour, not `code.py`. See §10 for the full settings reference.
+> If you're on the **v2 build** (external display), `config.py` is NOT
+> used — v2/code.py keeps its config inline at the top of that file.
 
 > **If you are a Darci USB user starting from `morse_map_darci.py`:**
 > Copy `morse_map_darci.py` to the CIRCUITPY drive, then **rename it to
@@ -1557,6 +1567,7 @@ The CIRCUITPY drive should now look like this:
 CIRCUITPY/
 ├── boot.py
 ├── code.py
+├── config.py          (user-tunable settings — see §10)
 ├── morse_map.py
 └── lib/
     ├── adafruit_hid/                       (always — keyboard/mouse HID)
@@ -1676,10 +1687,28 @@ under `/lib`.
 
 ## 10. Configuration
 
-Open `code.py` in Thonny (§9.3) or any plain-text editor (Notepad, TextEdit,
-VS Code). Look for the configuration section near the top of the file.
+All user-tunable settings live in **`config.py`** at the root of the
+CIRCUITPY drive — not in `code.py`. Open `config.py` in Thonny (§9.3) or
+any plain-text editor (Notepad, TextEdit, VS Code). The file is organised
+into seven sub-sections (Input, Input mode, Code repeat, Timing, Audio,
+Mouse, Display / wireless) with a comment block above every setting
+explaining what it does and what other values mean.
 
-### Key settings
+> **Save in Thonny → the Feather auto-reloads** with the new values.
+> Press **Ctrl+D** in the Shell panel any time to force a fresh restart
+> with full boot output (§9.3.5).
+
+> **v2 builds (external OLED display) do not use `config.py`** — their
+> config remains inline at the top of `v2/code.py`. The settings below
+> still apply, just edit them in `v2/code.py` instead. (v2 also lacks
+> some of the newer settings — `SWITCH_MODE`, `CODE_REPEAT`,
+> `USE_WIRELESS_DISPLAY` — until it gets feature-parity.)
+
+### Key settings — quick reference
+
+Each setting also has a longer comment block in `config.py` itself.
+The table below is a one-row-per-setting overview; use it to find a
+setting, then open `config.py` for the full notes.
 
 | Setting | Default | What to change |
 |---------|---------|----------------|

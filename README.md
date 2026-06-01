@@ -538,9 +538,15 @@ GROUP -> 2 (Mouse)
 
 ## Configuration
 
-All tunable values are at the top of `code.py`. The full Key Settings table
-also appears in **§10 Configuration** of `AEROMORSE_BUILD_GUIDE.md` — they
-are kept in sync.
+All tunable values live in **`config.py`** (not `code.py`). Open it in
+Thonny, find the setting you want, change the value, save — the Feather
+auto-reloads with the new value. Each setting has a comment block above it
+explaining what it does. The same Key Settings table also appears in
+**§10 Configuration** of `AEROMORSE_BUILD_GUIDE.md` — all three sources
+(table below, build guide §10, and `config.py` itself) are kept in sync.
+
+> **v2 builds keep config inline at the top of `v2/code.py`** — `config.py`
+> is only used by the root (built-in TFT) build.
 
 ### Input — sensor / switches / thresholds
 
@@ -645,6 +651,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | File | Purpose |
 |------|---------|
 | `code.py` | Main firmware — Morse state machine, USB HID, display, ESP-NOW sender |
+| `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, audio pitches, timing, etc. Edit this file instead of `code.py`. |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on; enables USB HID keyboard and mouse |
