@@ -85,7 +85,8 @@ code map:
 | **g2** | Mouse / Windows shortcuts | `--------` |
 | **g3** | Macros (or Number Mode in `morse_map_darci.py`) | `....----` |
 | **g4** | Scanning — F1–F12 (Switch Control on iOS / Android) | `.......-` |
-| **g5–g9** | Placeholders (copy of g1 letters + numbers — customise) | `......--` … `.-------` |
+| **g5** | Media — USB HID Consumer Controls on the 12 shortest codes (volume / play-pause / mute / track / brightness / eject) | `......--` |
+| **g6–g9** | Placeholders (copy of g1 letters + numbers — customise) | `.....---` … `.-------` |
 
 Modifiers are sticky in the same single-tap-arms way Darci uses.
 

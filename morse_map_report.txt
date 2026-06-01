@@ -1,5 +1,5 @@
 morse_map.py  —  Analysis Report
-Generated : 2026-05-30
+Generated : 2026-06-01
 Source    : C:\Users\jlubi\aeromorse\morse_map.py
 
 ==============================================================================
@@ -1325,11 +1325,11 @@ Source    : C:\Users\jlubi\aeromorse\morse_map.py
       g4[7][0b1111110]=         ''   # ------.
       g4[7][0b1111111]=         ''   # -------
 
-  Group 5 — Placeholder
-  -----------------------
+  Group 5 — Media / USB HID Consumer Controls
+  ---------------------------------------------
 
-    Length 2  —  3 of 4 used,  1 unused:
-      g5[2][0b11]=              ''   # --
+    Length 2  —  4 of 4 used,  0 unused:
+      (none — all slots used)
 
     Length 3  —  8 of 8 used,  0 unused:
       (none — all slots used)

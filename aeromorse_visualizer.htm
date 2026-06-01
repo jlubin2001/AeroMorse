@@ -292,7 +292,7 @@
         g2: "Group 2: Mouse & Windows",
         g3: "Group 3: Macros",
         g4: "Group 4: Scanning - F1-F12 (Switch Control)",
-        g5: "Group 5 (placeholder)",
+        g5: "Group 5: Media (USB HID Consumer Controls)",
         g6: "Group 6 (placeholder)",
         g7: "Group 7 (placeholder)",
         g8: "Group 8 (placeholder)",
@@ -342,6 +342,14 @@
           key = key.replace('mclick left 2',  'mclick left dbl');
           key = key.replace('mclick right 2', 'mclick right dbl');
           key = key.replace('mdrag left',     'drag left toggle');
+        } else if (raw.startsWith('CC(')) {
+          // ── ConsumerControl action: CC(ConsumerControlCode.XXX) ──────────
+          const inner = raw.split('#')[0].trim().slice(3, -1).trim();
+          // Strip "ConsumerControlCode." prefix, convert to Title Case
+          key = inner.replace(/^ConsumerControlCode\./, '')
+                     .replace(/_/g, ' ')
+                     .toLowerCase()
+                     .replace(/\b\w/g, c => c.toUpperCase());
         } else {
           // ── Unquoted: single Keycode or comma-separated tuple ────────────
           const noComment = raw.split('#')[0].trim();

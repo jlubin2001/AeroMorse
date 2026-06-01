@@ -1,4 +1,22 @@
 from adafruit_hid.keycode import Keycode
+from adafruit_hid.consumer_control_code import ConsumerControlCode
+
+
+class CC:
+    """Wrapper marking a value as a USB HID ConsumerControl action.
+
+    Keycode and ConsumerControlCode constants are both plain ints in
+    adafruit_hid, so the firmware dispatcher can't tell them apart on
+    `isinstance(x, int)`. Wrapping a ConsumerControlCode in CC() lets
+    `code.py` route it to the ConsumerControl device instead of the
+    Keyboard device.
+
+    Use like:  g5[1][0b0] = CC(ConsumerControlCode.PLAY_PAUSE)
+    """
+    __slots__ = ('code',)
+    def __init__(self, code):
+        self.code = code
+
 
 groups = {}
 
@@ -396,3 +414,33 @@ groups[4] = g4
 
 for _gid in range(5, 10):
     groups[_gid] = _seed_letters_numbers()
+
+############################################
+# Group 5 — MEDIA (USB HID Consumer Controls)
+############################################
+# The 12 SHORTEST Morse patterns are reassigned to the most-used USB HID
+# Consumer Control codes — volume, play/pause, mute, track skip, etc. This
+# turns g5 into a media-remote group. The remaining letters and numbers
+# stay as the placeholder seed.
+#
+# Wrapped in CC(...) so the dispatcher routes them through the
+# ConsumerControl HID device, not the Keyboard.
+#
+#   .    PLAY_PAUSE         ..   VOLUME_DECREMENT    -.   PREVIOUS TRACK
+#   -    MUTE               --   VOLUME_INCREMENT    .-   NEXT TRACK
+#   ...  STOP               ..-  REWIND              .-.  FAST FORWARD
+#   .--  BRIGHTNESS +       -..  BRIGHTNESS -        -.-  EJECT
+
+g5 = groups[5]
+g5[1][0b0]   = CC(ConsumerControlCode.PLAY_PAUSE)            # .
+g5[1][0b1]   = CC(ConsumerControlCode.MUTE)                  # -
+g5[2][0b00]  = CC(ConsumerControlCode.VOLUME_DECREMENT)      # ..
+g5[2][0b01]  = CC(ConsumerControlCode.SCAN_NEXT_TRACK)       # .-
+g5[2][0b10]  = CC(ConsumerControlCode.SCAN_PREVIOUS_TRACK)   # -.
+g5[2][0b11]  = CC(ConsumerControlCode.VOLUME_INCREMENT)      # --
+g5[3][0b000] = CC(ConsumerControlCode.STOP)                  # ...
+g5[3][0b001] = CC(ConsumerControlCode.REWIND)                # ..-
+g5[3][0b010] = CC(ConsumerControlCode.FAST_FORWARD)          # .-.
+g5[3][0b011] = CC(ConsumerControlCode.BRIGHTNESS_INCREMENT)  # .--
+g5[3][0b100] = CC(ConsumerControlCode.BRIGHTNESS_DECREMENT)  # -..
+g5[3][0b101] = CC(ConsumerControlCode.EJECT)                 # -.-

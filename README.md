@@ -218,7 +218,7 @@ add trailing dashes to reach the higher groups.
 |---------|-----------------|-------------|
 | `........` | 0 | Group 1 — Keyboard |
 | `.......-` | 1 | Group 4 — Scanning / Switch Control |
-| `......--` | 2 | Group 5 — placeholder |
+| `......--` | 2 | Group 5 — Media (USB HID Consumer Controls) |
 | `.....---` | 3 | Group 6 — placeholder |
 | `....----` | 4 | Group 3 — Macros |
 | `...-----` | 5 | Group 7 — placeholder |
@@ -490,12 +490,32 @@ Group 1 as a placeholder and can be customised.
 | F4 | `.-` | F8 | `..-` | F12 | `-.-` |
 | Home (`h`) | `....` | | | | |
 
-### Groups 5–9 — Placeholders
+### Group 5 — Media (USB HID Consumer Controls)
 
-Groups 5–9 are seeded with a copy of Group 1's letters and numbers so the
-same muscle memory works while you decide what each group is for. Replace the
-entries in `morse_map.py` with your own keycodes, macros, or command strings.
-Reach each group with its Group 0 jump code (table above).
+Group 5 maps the **12 shortest Morse patterns** to USB HID Consumer Control
+codes — media playback, volume, mute, track skip, brightness, and eject.
+The codes route through a dedicated `ConsumerControl` HID device (enabled in
+`boot.py`), so they reach the host as standard media keys that every modern
+OS understands.
+
+| Pattern | Action | Pattern | Action |
+|---------|--------|---------|--------|
+| `.` | Play / Pause | `...` | Stop |
+| `-` | Mute | `..-` | Rewind |
+| `..` | Volume Down | `.-.` | Fast Forward |
+| `--` | Volume Up | `.--` | Brightness + |
+| `-.` | Previous Track | `-..` | Brightness − |
+| `.-` | Next Track | `-.-` | Eject |
+
+The remaining letters and numbers are inherited from Group 1 as a
+placeholder and can be customised.
+
+### Groups 6–9 — Placeholders
+
+Groups 6–9 are seeded with a copy of Group 1's letters and numbers so the
+same muscle memory works while you decide what each group is for. Replace
+the entries in `morse_map.py` with your own keycodes, macros, or command
+strings. Reach each group with its Group 0 jump code (table above).
 
 ---
 

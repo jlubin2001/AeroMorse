@@ -39,12 +39,31 @@ for _n in [
 ]:
     setattr(_Keycode, _n, f'Keycode.{_n}')
 
+# ConsumerControlCode is referenced by morse_map.py for g5 media keys.
+# Mock just enough that morse_map imports — the analyzer only counts the
+# patterns, not the resulting code values.
+class _ConsumerControlCode:
+    pass
+
+for _n in [
+    'PLAY_PAUSE', 'MUTE', 'VOLUME_INCREMENT', 'VOLUME_DECREMENT',
+    'SCAN_NEXT_TRACK', 'SCAN_PREVIOUS_TRACK',
+    'STOP', 'FAST_FORWARD', 'REWIND',
+    'BRIGHTNESS_INCREMENT', 'BRIGHTNESS_DECREMENT',
+    'EJECT', 'RECORD',
+]:
+    setattr(_ConsumerControlCode, _n, f'ConsumerControlCode.{_n}')
+
 _hid     = types.ModuleType('adafruit_hid')
 _kc      = types.ModuleType('adafruit_hid.keycode')
+_ccc     = types.ModuleType('adafruit_hid.consumer_control_code')
 _kc.Keycode = _Keycode
+_ccc.ConsumerControlCode = _ConsumerControlCode
 _hid.keycode = _kc
-sys.modules['adafruit_hid']         = _hid
-sys.modules['adafruit_hid.keycode'] = _kc
+_hid.consumer_control_code = _ccc
+sys.modules['adafruit_hid']                            = _hid
+sys.modules['adafruit_hid.keycode']                    = _kc
+sys.modules['adafruit_hid.consumer_control_code']      = _ccc
 
 sys.path.insert(0, os.path.dirname(MORSE_MAP_PATH))
 import morse_map
@@ -61,7 +80,7 @@ GROUP_TITLES = {
     2: 'Group 2 — Mouse / Shortcuts',
     3: 'Group 3 — Macros',
     4: 'Group 4 — Scanning / F1–F12 (Switch Control)',
-    5: 'Group 5 — Placeholder',
+    5: 'Group 5 — Media / USB HID Consumer Controls',
     6: 'Group 6 — Placeholder',
     7: 'Group 7 — Placeholder',
     8: 'Group 8 — Placeholder',

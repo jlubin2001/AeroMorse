@@ -2007,7 +2007,7 @@ to any group with its 8-symbol Group 0 toggle code.
 | 2 | Mouse movement, clicks, Windows shortcuts | `--------` | Long-puff cycling |
 | 3 | Macro text strings | `....----` | Long-puff cycling |
 | 4 | Scanning — F1–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` | Long-puff cycling |
-| 5 | Placeholder (copy of g1 letters + numbers) | `......--` | Long-puff cycling |
+| 5 | Media — USB HID Consumer Controls (volume / play-pause / mute / track / brightness / eject) on the 12 shortest codes | `......--` | Long-puff cycling |
 | 6 | Placeholder | `.....---` | Long-puff cycling |
 | 7 | Placeholder | `...-----` | Long-puff cycling |
 | 8 | Placeholder | `..------` | Long-puff cycling |

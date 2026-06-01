@@ -65,8 +65,9 @@ from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
+from adafruit_hid.consumer_control import ConsumerControl
 
-from morse_map import groups
+from morse_map import groups, CC
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 # All user-tunable settings live in config.py. Edit that file (not this one)
@@ -96,6 +97,13 @@ class RollingAverage:
 kbd    = Keyboard(usb_hid.devices)
 layout = KeyboardLayoutUS(kbd)
 mouse  = Mouse(usb_hid.devices)
+try:
+    cc_device = ConsumerControl(usb_hid.devices)
+    _CC_AVAILABLE = True
+except Exception as _ex:
+    cc_device = None
+    _CC_AVAILABLE = False
+    print(f"WARNING: ConsumerControl HID not available ({_ex}) — CC codes will no-op. Re-flash boot.py with usb_hid.Device.CONSUMER_CONTROL enabled.")
 
 i2c = board.STEMMA_I2C()
 
@@ -545,10 +553,27 @@ def _is_command(action):
     return action.split(' ')[0] in _CMD_VERBS
 
 
+def _exec_consumer(cc_action):
+    """Send a USB HID ConsumerControl code (media keys, volume, brightness, etc.)."""
+    if _CC_AVAILABLE:
+        cc_device.send(cc_action.code)
+
+
 def execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
-    if isinstance(action, tuple):
+    if isinstance(action, CC):
+        _last_action     = f"CC {action.code}"
+        _last_repeatable = None        # CC not yet repeatable (would re-fire same code)
+        _last_mouse_vec  = (0, 0, 0)
+        print(f"{pattern}  CC {action.code}")
+        _exec_consumer(action)
+        _beep_notify()
+        if active_group == 3:                               # auto-return after macro
+            active_group     = 1
+            _last_repeatable = None
+            print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
+    elif isinstance(action, tuple):
         _last_action     = "COMBO"
         _last_repeatable = action
         _last_mouse_vec  = (0, 0, 0)
@@ -610,7 +635,7 @@ def cycle_group(direction):
 #   Bottom pressure bar             (green = puff, red = sip)
 
 _GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "Scanning",
-                 "Group 5", "Group 6", "Group 7", "Group 8", "Group 9")
+                 "Media", "Group 6", "Group 7", "Group 8", "Group 9")
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
