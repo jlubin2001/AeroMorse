@@ -1,3 +1,15 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# !! DEPRECATED — frozen 2026-06. See legacy_v2/DEPRECATED.md.
+#
+# The active AeroMorse firmware is at the repo root. This file is missing the
+# config.py split, SWITCH_MODE 1/3, CODE_REPEAT, strong sip/puff, the
+# ConsumerControl HID dispatcher (g5 Media), USE_WIRELESS_DISPLAY, the tuned
+# ACCEPT_DELAY default, and the calibration-complete log line.
+#
+# Recommended migration: switch to a Feather with a built-in TFT (#5691 etc.)
+# or an EYESPI / FeatherWing TFT, and run the root code.py instead.
+# ──────────────────────────────────────────────────────────────────────────────
+#
 # code.py — AeroMorse v2  (STEMMA QT OLED · TRRS AT-switch · STEMMA Speaker)
 #
 # Hardware

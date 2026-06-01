@@ -1,5 +1,17 @@
-# AeroMorse v2 — Build Guide
-### STEMMA QT OLED · TRRS AT-Switch · Speaker Edition
+# AeroMorse v2 — Build Guide  *(DEPRECATED)*
+
+> **⚠ This v2 build is deprecated as of 2026-06.** It targets a
+> 128×64 SSD1306 OLED display and is missing many recent features (config.py
+> split, 1- and 3-switch modes, CODE_REPEAT, strong sip/puff,
+> ConsumerControl / g5 Media, USE_WIRELESS_DISPLAY, the tuned ACCEPT_DELAY
+> default). See [`DEPRECATED.md`](DEPRECATED.md) for the full feature-gap
+> table and migration recommendations.
+>
+> **New builders should use the main `AEROMORSE_BUILD_GUIDE.md` at the repo
+> root and the root `code.py`** — pair with a Feather that has a built-in
+> TFT (#5691 Reverse TFT, #5483, #5300) or with an EYESPI / FeatherWing TFT.
+
+### STEMMA QT OLED · TRRS AT-Switch · Speaker Edition  *(frozen)*
 
 This guide walks a first-time builder through assembling AeroMorse v2 from scratch.
 There are **two build options**:

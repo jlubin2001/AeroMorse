@@ -581,8 +581,8 @@ explaining what it does. The same Key Settings table also appears in
 **§10 Configuration** of `AEROMORSE_BUILD_GUIDE.md` — all three sources
 (table below, build guide §10, and `config.py` itself) are kept in sync.
 
-> **v2 builds keep config inline at the top of `v2/code.py`** — `config.py`
-> is only used by the root (built-in TFT) build.
+> The deprecated `legacy_v2/` build (frozen SSD1306 OLED variant) does
+> not use `config.py`. See `legacy_v2/DEPRECATED.md`.
 
 ### Input — sensor / switches / thresholds
 

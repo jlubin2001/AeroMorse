@@ -14,9 +14,9 @@
 # settings against Darci USB, Adap2U, and morAce.
 #
 # ─────────────────────────────────────────────────────────────────────────────
-# NOTE: The v2/code.py build (external OLED display) keeps its config inline
-# at the top of v2/code.py for the moment. It does not import from this file.
-# Only the root code.py (built-in TFT) uses config.py.
+# NOTE: The deprecated `legacy_v2/` build (frozen SSD1306 OLED variant) does
+# not use this file — its config lives inline at the top of
+# legacy_v2/code.py. See legacy_v2/DEPRECATED.md.
 # ─────────────────────────────────────────────────────────────────────────────
 
 import board  # board.D5, board.D6, board.A0 are referenced below

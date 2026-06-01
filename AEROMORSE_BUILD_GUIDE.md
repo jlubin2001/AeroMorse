@@ -499,9 +499,10 @@ All three have the display soldered onto the board and accessed via
 
 All three are functionally identical for AeroMorse.
 
-> **Code file:** #5483, #5691, and #5300 all use **`v1/code.py`**, not
-> `v2/code.py`. Copy `v1/code.py` to the CIRCUITPY drive instead. Everything
-> else (libraries, `boot.py`, `morse_map.py`) is the same.
+> **Code file:** #5483, #5691, and #5300 all use the **repo root**
+> `code.py` (which drives the built-in TFT via `board.DISPLAY`). The
+> deprecated `legacy_v2/` build is for an external 128×64 SSD1306 OLED
+> and is no longer recommended — see `legacy_v2/DEPRECATED.md`.
 
 ---
 
@@ -741,7 +742,7 @@ for the complete file tree. In short:
 
 | Chip | Library | Used by |
 |------|---------|---------|
-| Built-in (board.DISPLAY) | *(none — built in)* | #5691 Reverse TFT Feather — use `v1/code.py` |
+| Built-in (board.DISPLAY) | *(none — built in)* | #5691 Reverse TFT Feather — uses the repo root `code.py` |
 | SSD1306 | `adafruit_displayio_ssd1306` | #326 (0.96" OLED) and #938 (1.3" OLED) |
 | ILI9341 | `adafruit_ili9341` | #3315, #1770, #1743 |
 | HX8357D | `adafruit_hx8357` | #3651, #5872, #2050 |
@@ -1526,19 +1527,13 @@ ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
 > the file to `morse_map.py` *before* or *after* copying** — see the
 > Darci callout below.
 
-**Which `code.py` to use depends on your Feather board:**
+**The repo root `code.py` is the active firmware** — it targets boards
+with a built-in 240×135 colour TFT (#5691 Reverse TFT, #5483, #5300) and
+also drives an EYESPI or FeatherWing TFT with a one-line display init
+swap (see §5).
 
-| Board | Copy `code.py` from |
-|-------|-------------------|
-| #5483 ESP32-S3 TFT Feather | `v1/` folder — uses built-in display |
-| #5691 ESP32-S3 Reverse TFT Feather | `v1/` folder — uses built-in display |
-| #5300 ESP32-S2 TFT Feather | `v1/` folder — uses built-in display |
-| All other boards | `v2/` folder — uses external display |
-
-Copy these four files to the **root** of the CIRCUITPY drive (not inside
-any subfolder). `code.py` comes from the correct folder for your board
-(above); `boot.py`, `config.py`, and `morse_map.py` come from the repo
-root and are the same for every board:
+Copy these four files from the **repo root** to the root of the
+CIRCUITPY drive (not inside any subfolder):
 
 ```
 boot.py
@@ -1547,12 +1542,15 @@ config.py
 morse_map.py
 ```
 
-> **`config.py` is new** — it holds every user-tunable setting (sensor
-> thresholds, switch mode, code repeat, audio pitches, etc.) that used
-> to live at the top of `code.py`. You edit `config.py` to change
-> behaviour, not `code.py`. See §10 for the full settings reference.
-> If you're on the **v2 build** (external display), `config.py` is NOT
-> used — v2/code.py keeps its config inline at the top of that file.
+> **`config.py` holds every user-tunable setting** — sensor thresholds,
+> switch mode, code repeat, audio pitches, etc. You edit `config.py`
+> to change behaviour, not `code.py`. See §10 for the full settings
+> reference.
+
+> **The legacy `legacy_v2/` build** (128×64 SSD1306 OLED variant) is
+> **deprecated and frozen**. It lacks most features added since early
+> 2026 — see `legacy_v2/DEPRECATED.md` for the gap list and migration
+> options.
 
 > **If you are a Darci USB user starting from `morse_map_darci.py`:**
 > Copy `morse_map_darci.py` to the CIRCUITPY drive, then **rename it to
@@ -1698,11 +1696,10 @@ explaining what it does and what other values mean.
 > Press **Ctrl+D** in the Shell panel any time to force a fresh restart
 > with full boot output (§9.3.5).
 
-> **v2 builds (external OLED display) do not use `config.py`** — their
-> config remains inline at the top of `v2/code.py`. The settings below
-> still apply, just edit them in `v2/code.py` instead. (v2 also lacks
-> some of the newer settings — `SWITCH_MODE`, `CODE_REPEAT`,
-> `USE_WIRELESS_DISPLAY` — until it gets feature-parity.)
+> The deprecated `legacy_v2/` build keeps its config inline at the top
+> of `legacy_v2/code.py` and lacks most of the settings listed below.
+> New builds should ignore `legacy_v2/` entirely — see
+> `legacy_v2/DEPRECATED.md`.
 
 ### Key settings — quick reference
 
