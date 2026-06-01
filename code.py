@@ -902,14 +902,34 @@ while True:
 
             else:
                 # SWITCH_MODE == 2 — paddle-style
-                if _CODE_REPEAT_ACTIVE:
+                long_held = duration >= LONG_PRESS
+                handled = False
+
+                # Switch-mode "strong" equivalent: when not using the
+                # pressure sensor, the strong-gesture is a long-press of
+                # the corresponding switch (DIT-side or DAH-side). Takes
+                # precedence over LONG_PRESS_CYCLES_GROUP. Sensor mode
+                # uses the peak-pressure detector above instead, so this
+                # block intentionally fires only when USE_SENSOR is False.
+                if long_held and not USE_SENSOR:
+                    strong_action = STRONG_SIP_ACTION if _last_state == DIT else STRONG_PUFF_ACTION
+                    if strong_action:
+                        execute(strong_action,
+                                "STRONG DOT" if _last_state == DIT else "STRONG DASH")
+                        _pending_char = 0
+                        _num_shifts   = 0
+                        handled       = True
+
+                if handled:
+                    pass   # strong action consumed the press
+                elif _CODE_REPEAT_ACTIVE:
                     # Bits already emitted during hold; release just ends the
                     # stream. Optionally cycle group on very long holds.
-                    if LONG_PRESS_CYCLES_GROUP and duration >= LONG_PRESS:
+                    if LONG_PRESS_CYCLES_GROUP and long_held:
                         cycle_group(-1 if _last_state == DIT else +1)
                         _pending_char = 0
                         _num_shifts   = 0
-                elif LONG_PRESS_CYCLES_GROUP and duration >= LONG_PRESS:
+                elif LONG_PRESS_CYCLES_GROUP and long_held:
                     # Original long-press cycle behaviour
                     cycle_group(-1 if _last_state == DIT else +1)
                     _pending_char = 0

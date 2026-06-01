@@ -41,26 +41,34 @@ USE_SENSOR      = True
 THRESH_SIP      = 5     # hPa below baseline to register a sip (dot)
 THRESH_PUFF     = 5     # hPa above baseline to register a puff (dash)
 
-# Strong sip / strong puff — peak-pressure gestures distinct from regular
-# dot/dash, useful for jumping groups or firing a dedicated action without
-# leaving the current group via a long-press. Inspired by users who already
-# use strong sip/puff to drive a powered wheelchair.
+# Strong sip / strong puff — a distinct gesture from regular dot/dash and
+# from long-press cycle/accept. Useful for jumping groups or firing a
+# dedicated action without leaving the current group via a long-press.
+# Inspired by users who already use strong sip/puff to drive a powered
+# wheelchair.
 #
-# Detection: while a sip or puff is held, the firmware tracks the peak
-# pressure delta. As soon as it crosses the STRONG threshold, the configured
-# STRONG_*_ACTION fires immediately, the pending Morse pattern is cleared,
-# and no dot/dash is emitted for that press. Release just ends the gesture.
+# How "strong" is detected:
+#   • Sensor mode (USE_SENSOR = True): while a sip/puff is held, the
+#     firmware tracks peak pressure delta. As soon as it crosses the
+#     STRONG threshold, STRONG_*_ACTION fires. THRESH_SIP_STRONG and
+#     THRESH_PUFF_STRONG should be noticeably higher than the regular
+#     THRESH_SIP / THRESH_PUFF (3× is a sensible start) so a normal
+#     sip can't accidentally trigger.
+#   • Switch mode (USE_SENSOR = False): switches have no intensity, so
+#     the equivalent gesture is a LONG-PRESS of the corresponding
+#     switch — DIT-side input fires STRONG_SIP_ACTION, DAH-side input
+#     fires STRONG_PUFF_ACTION. Long-press is detected at the existing
+#     LONG_PRESS duration (1.0 s by default). Setting either action
+#     OVERRIDES the LONG_PRESS_CYCLES_GROUP cycle-on-long-press
+#     behaviour for that switch. THRESH_*_STRONG values are ignored in
+#     switch mode.
 #
-# Set both thresholds noticeably higher than THRESH_SIP / THRESH_PUFF so a
-# normal sip can't accidentally cross. 3× the regular threshold is a sensible
-# starting point.
-#
-# The STRONG_*_ACTION strings use the same syntax as g0 toggle codes — most
-# commonly "group N" to jump to a specific group. Leave the action set to
-# "" (empty string) to disable the strong gesture entirely. Sensor mode only;
-# switch-mode builds ignore strong gestures (switches have no "strength").
-THRESH_SIP_STRONG  = 15    # hPa below baseline to register a STRONG sip
-THRESH_PUFF_STRONG = 15    # hPa above baseline to register a STRONG puff
+# The STRONG_*_ACTION strings use the same syntax as g0 toggle codes —
+# most commonly "group N" to jump to a specific group. Leave the action
+# set to "" (empty string) to disable the strong gesture entirely.
+# Strong gestures honoured in SWITCH_MODE = 2 (paddle) only.
+THRESH_SIP_STRONG  = 15    # hPa below baseline to register a STRONG sip (sensor mode)
+THRESH_PUFF_STRONG = 15    # hPa above baseline to register a STRONG puff (sensor mode)
 STRONG_SIP_ACTION  = ""    # e.g. "group 2" to jump to Mouse; "" disables
 STRONG_PUFF_ACTION = ""    # e.g. "group 1" to jump to Keyboard; "" disables
 

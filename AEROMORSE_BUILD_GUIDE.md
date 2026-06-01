@@ -1715,10 +1715,10 @@ setting, then open `config.py` for the full notes.
 | `USE_SENSOR` | `True` | Change to `False` if using AT switches |
 | `THRESH_SIP` | `5` | Raise to `8` or `10` if getting false triggers; lower to `3` if light sips are missed |
 | `THRESH_PUFF` | `5` | Same as above but for puff/dash |
-| `THRESH_SIP_STRONG` | `15` | hPa below baseline at which a **strong sip** is detected. Set noticeably higher than `THRESH_SIP` (3× is a sensible start) so a normal sip can't accidentally trigger |
+| `THRESH_SIP_STRONG` | `15` | **Sensor mode only.** hPa below baseline at which a strong sip is detected. Set noticeably higher than `THRESH_SIP` (3× is a sensible start) so a normal sip can't accidentally trigger. Ignored in switch mode |
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
-| `STRONG_SIP_ACTION` | `""` | Command string fired when a strong sip is detected. Same syntax as g0 toggles (e.g. `"group 2"` to jump to Mouse). Empty string = disabled |
-| `STRONG_PUFF_ACTION` | `""` | Same as above but for puff (e.g. `"group 1"`) |
+| `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip. Same syntax as g0 toggles (e.g. `"group 2"` to jump to Mouse). Empty string = disabled. **In switch mode** the trigger is a long-press of the DIT-side switch instead of pressure peak, and setting this overrides `LONG_PRESS_CYCLES_GROUP` for that switch |
+| `STRONG_PUFF_ACTION` | `""` | Same as above but for puff (or DAH-side switch in switch mode) — e.g. `"group 1"` |
 | `ACCEPT_DELAY` | `0.5` | Idle pause (seconds) after the last element before the pattern fires. Lower (0.3) for fast users; higher (0.7) for sip-and-puff users with slower breath rhythm. In 3-switch mode this is a safety-net timeout; the third-switch gesture commits instantly regardless. |
 | `LONG_PRESS` | `1.0` | Hold time in seconds for the long-gesture (cycle / Accept). Raise if accidentally triggering |
 | `SWITCH_MODE` | `2` | `1` = single-switch timed; `2` = paddle (dot + dash); `3` = paddle + explicit Accept. See "Input modes" below. |
