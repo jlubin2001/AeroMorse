@@ -306,6 +306,10 @@ _last_trans_at = 0.0    # time of most recent state change (used for ACCEPT_DELA
 _press_start   = 0.0    # time the current DIT/DAH press began (for LONG_PRESS)
 _stream_count  = 0      # symbols emitted during the current held state
                         # (CODE_REPEAT only — counts toward CODE_REPEAT_MAX)
+_peak_delta    = 0.0    # peak |pressure - baseline| during the current press
+                        # (sensor mode only — used to detect strong sip/puff)
+_strong_handled = False # True after STRONG_SIP/PUFF_ACTION fires for the
+                        # current press, suppressing dot/dash/cycle/accept
 
 _armed_mods   = set()   # sticky modifier keycodes currently armed
 
@@ -762,11 +766,32 @@ while True:
         elif (not _ONE_SWITCH_USES_DIT) and new_state == DIT:
             new_state = IDLE
 
+    # ── Strong sip / strong puff detection ──────────────────────────────────
+    # Track peak |pressure - baseline| during a held press. When it crosses
+    # the STRONG threshold, fire the configured STRONG_*_ACTION exactly once
+    # per press. The press is then "claimed" — no dot/dash is emitted, no
+    # auto-repeat fires, no cycle/accept on release. Sensor mode only.
+    if USE_SENSOR and not _strong_handled and _last_state in (DIT, DAH):
+        abs_delta = abs(_display_pressure)
+        if abs_delta > _peak_delta:
+            _peak_delta = abs_delta
+        if _last_state == DIT and _peak_delta >= THRESH_SIP_STRONG and STRONG_SIP_ACTION:
+            execute(STRONG_SIP_ACTION, "STRONG SIP")
+            _pending_char   = 0
+            _num_shifts     = 0
+            _strong_handled = True
+        elif _last_state == DAH and _peak_delta >= THRESH_PUFF_STRONG and STRONG_PUFF_ACTION:
+            execute(STRONG_PUFF_ACTION, "STRONG PUFF")
+            _pending_char   = 0
+            _num_shifts     = 0
+            _strong_handled = True
+
     # ── Code-repeat auto-emit (Darci-style hold-to-repeat) ──────────────────
     # While DIT/DAH is held in SWITCH_MODE = 2 with CODE_REPEAT on, emit one
     # symbol per repeat interval — 1 at press, +1 every DOT/DASH_REPEAT_MS.
     # Cap at CODE_REPEAT_MAX to prevent buffer overflow on a forgotten hold.
-    if _CODE_REPEAT_ACTIVE and _last_state in (DIT, DAH) and not _mouse_repeating:
+    # Skipped if a strong gesture has already fired for this press.
+    if _CODE_REPEAT_ACTIVE and _last_state in (DIT, DAH) and not _mouse_repeating and not _strong_handled:
         interval = _DOT_REPEAT_S if _last_state == DIT else _DASH_REPEAT_S
         held_duration = now - _press_start
         expected_count = 1 + int(held_duration / interval)
@@ -786,9 +811,11 @@ while True:
 
         elif _last_state == IDLE:
             # IDLE → DIT/DAH: record when the press started, begin sidetone,
-            # reset the code-repeat stream counter
-            _press_start  = now
-            _stream_count = 0
+            # reset the code-repeat stream counter and strong-press tracking
+            _press_start    = now
+            _stream_count   = 0
+            _peak_delta     = 0.0
+            _strong_handled = False
             _beep_start(new_state)
 
         elif new_state == IDLE:
@@ -796,7 +823,11 @@ while True:
             _beep_stop()
             duration = now - _press_start
 
-            if SWITCH_MODE == 1:
+            # If a strong gesture already fired during the hold, the press
+            # has been fully handled — skip all dot/dash/cycle/accept logic.
+            if _strong_handled:
+                pass
+            elif SWITCH_MODE == 1:
                 # Single-switch timed: classify by duration
                 if duration >= LONG_PRESS and LONG_PRESS_CYCLES_GROUP:
                     # Very long hold → forward cycle (no cycle-back in 1-switch)

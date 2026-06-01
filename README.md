@@ -555,6 +555,10 @@ explaining what it does. The same Key Settings table also appears in
 | `USE_SENSOR` | `True` | `True` = LPS33HW sensor (sip-and-puff); `False` = two AT switches on D5/D6 |
 | `THRESH_SIP` | `5` | hPa below baseline required to detect a sip (dot). Raise to `8`/`10` if getting false triggers; lower to `3` if light sips are missed |
 | `THRESH_PUFF` | `5` | hPa above baseline required to detect a puff (dash). Same tuning rule |
+| `THRESH_SIP_STRONG` | `15` | hPa below baseline at which a **strong sip** is detected. Distinct gesture from a regular sip; fires `STRONG_SIP_ACTION` exactly once per press |
+| `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
+| `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip — e.g. `"group 2"` to jump to Mouse. Empty string = disabled |
+| `STRONG_PUFF_ACTION` | `""` | Same as above but for puff |
 | `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged before thresholding. Increase to reduce bounce; decrease if fast elements are missed |
 | `DOT_PIN` | `board.D5` | GPIO pin for dot switch (switch mode only) |
 | `DASH_PIN` | `board.D6` | GPIO pin for dash switch (switch mode only) |
