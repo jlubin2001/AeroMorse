@@ -48,8 +48,8 @@ e = espnow.ESPNow()     # receives from any sender — no peer registration need
 #   Row 3  y= 58   last action         (yellow)
 #   Row 4  y= 86   modifiers / status  (orange)
 
-_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "Scanning",
-                 "Media", "Group 6", "Group 7", "Group 8", "Group 9")
+_GROUP_NAMES  = ("BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
+                 "MEDIA", "GROUP 6", "GROUP 7", "GROUP 8", "GROUP 9")
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 

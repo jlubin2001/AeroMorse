@@ -647,7 +647,7 @@ def execute(action, pattern=""):
         if active_group == 3:                               # auto-return after macro
             active_group     = 1
             _last_repeatable = None
-            print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
+            print(f"GROUP -> 1 ({_GROUP_NAMES[1]})  [auto-return from Macro]")
     elif isinstance(action, tuple):
         label = " + ".join(_KEYCODE_NAMES.get(k, f"KEY {k}") for k in action)
         _last_action     = label[:20] if label else "COMBO"
@@ -659,7 +659,7 @@ def execute(action, pattern=""):
         if active_group == 3:                               # auto-return after macro
             active_group     = 1
             _last_repeatable = None
-            print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
+            print(f"GROUP -> 1 ({_GROUP_NAMES[1]})  [auto-return from Macro]")
     elif isinstance(action, int):
         label = _KEYCODE_NAMES.get(action, f"KEY {action}")
         _last_action     = label[:20]
@@ -671,11 +671,14 @@ def execute(action, pattern=""):
         if active_group == 3:                               # auto-return after macro
             active_group     = 1
             _last_repeatable = None
-            print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
+            print(f"GROUP -> 1 ({_GROUP_NAMES[1]})  [auto-return from Macro]")
     elif isinstance(action, str):
         if _is_command(action):
             # Friendly label for display + serial (raw `action` still dispatched).
-            display = _FRIENDLY_CMD.get(action, action)
+            # Fallback uppercases anything not in _FRIENDLY_CMD so REPEAT,
+            # MSLOW, MFAST, MRESET, and user-added commands also display
+            # in the same all-caps style.
+            display = _FRIENDLY_CMD.get(action, action.upper())
             _last_action = display[:20]
             print(f"{pattern}  {display}")
             _exec_command(action)
@@ -696,7 +699,7 @@ def execute(action, pattern=""):
             if active_group == 3:                           # auto-return after macro
                 active_group     = 1
                 _last_repeatable = None
-                print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
+                print(f"GROUP -> 1 ({_GROUP_NAMES[1]})  [auto-return from Macro]")
 
 # ── Group cycling via long-press ───────────────────────────────────────────────
 
@@ -719,8 +722,8 @@ def cycle_group(direction):
 #   Row 4  armed modifiers / speed  (orange)
 #   Bottom pressure bar             (green = puff, red = sip)
 
-_GROUP_NAMES  = ("Base", "Keyboard", "Mouse", "Macro", "Scanning",
-                 "Media", "Group 6", "Group 7", "Group 8", "Group 9")
+_GROUP_NAMES  = ("BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
+                 "MEDIA", "GROUP 6", "GROUP 7", "GROUP 8", "GROUP 9")
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
@@ -750,7 +753,7 @@ def _build_display():
     pal[0] = 0x000020
     root.append(displayio.TileGrid(bmp, pixel_shader=pal))
 
-    lbl_group  = _make_label(root, "[ Keyboard ]", _GROUP_COLORS[1], 2,  2)
+    lbl_group  = _make_label(root, f"[ {_GROUP_NAMES[1]} ]", _GROUP_COLORS[1], 2,  2)
     lbl_buf    = _make_label(root, " ",             0x00FFFF,          2, 30)
     lbl_action = _make_label(root, " ",             0xFFFF00,          2, 58)
     lbl_mods   = _make_label(root, " ",             0xFF8000,          2, 86)
