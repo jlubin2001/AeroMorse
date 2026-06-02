@@ -319,6 +319,18 @@ _peak_delta    = 0.0    # peak |pressure - baseline| during the current press
 _strong_handled = False # True after STRONG_SIP/PUFF_ACTION fires for the
                         # current press, suppressing dot/dash/cycle/accept
 
+# Debounce: only accept a sensor state change after DEBOUNCE_SAMPLES
+# consecutive readings agree. Filters mid-element pressure wobble at low
+# thresholds. Sensor mode only.
+_candidate_state = IDLE
+_candidate_count = 0
+
+# When a new sip/puff interrupts a mouse repeat, the press itself must NOT
+# also be recorded as a Morse element. _consuming_press is set on cancel and
+# cleared on the release, causing the bit-shift in DIT/DAH→IDLE to be
+# skipped exactly once.
+_consuming_press = False
+
 _armed_mods   = set()   # sticky modifier keycodes currently armed
 
 # Mouse state
@@ -772,12 +784,22 @@ while True:
         raw = lps.pressure
         _avg_pressure.add(raw)
         _display_pressure = raw - _baseline
+        # Raw candidate state from pressure thresholds.
         if raw > _puff_threshold:
-            new_state = DAH
+            candidate = DAH
         elif raw < _sip_threshold:
-            new_state = DIT
+            candidate = DIT
         else:
-            new_state = IDLE
+            candidate = IDLE
+        # Debounce: require DEBOUNCE_SAMPLES consecutive agreeing readings
+        # before accepting a new state. Filters mid-element pressure wobble.
+        if candidate == _candidate_state:
+            if _candidate_count < DEBOUNCE_SAMPLES:
+                _candidate_count += 1
+        else:
+            _candidate_state = candidate
+            _candidate_count = 1
+        new_state = _candidate_state if _candidate_count >= DEBOUNCE_SAMPLES else _last_state
     else:
         dot_dn  = not _dot_btn.value    # active-low with pull-up
         dash_dn = not _dash_btn.value
@@ -829,10 +851,13 @@ while True:
     if new_state != _last_state:
 
         if _mouse_repeating:
-            # Any new input cancels a mouse repeat
+            # New input cancels mouse repeat. Mark this press as consumed so
+            # its release is not recorded as a Morse element. We deliberately
+            # do NOT force new_state to IDLE — the press lands normally and
+            # the release path discards it via _consuming_press.
             _stop_mouse_repeat()
             _beep_stop()
-            new_state = IDLE
+            _consuming_press = True
 
         elif _last_state == IDLE:
             # IDLE → DIT/DAH: record when the press started, begin sidetone,
@@ -848,9 +873,13 @@ while True:
             _beep_stop()
             duration = now - _press_start
 
+            # If this press was the one that cancelled a mouse repeat, swallow
+            # the release entirely — no bit shift, no cycle, no accept.
+            if _consuming_press:
+                _consuming_press = False
             # If a strong gesture already fired during the hold, the press
             # has been fully handled — skip all dot/dash/cycle/accept logic.
-            if _strong_handled:
+            elif _strong_handled:
                 pass
             elif SWITCH_MODE == 1:
                 # Single-switch timed: classify by duration

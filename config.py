@@ -39,7 +39,7 @@ USE_SENSOR      = True
 #   • Light sips/puffs going unrecognised? Drop both to 3.
 #   • Sip and puff thresholds can be tuned independently.
 THRESH_SIP      = 5     # hPa below baseline to register a sip (dot)
-THRESH_PUFF     = 5     # hPa above baseline to register a puff (dash)
+THRESH_PUFF     = 3     # hPa above baseline to register a puff (dash)
 
 # Strong sip / strong puff — a distinct gesture from regular dot/dash and
 # from long-press cycle/accept. Useful for jumping groups or firing a
@@ -77,6 +77,22 @@ STRONG_PUFF_ACTION = ""    # e.g. "group 1" to jump to Keyboard; "" disables
 # but jitterier. 8 is a sensible default for sip-and-puff.
 POINTS_TO_AVERAGE = 8
 
+# Debounce — number of consecutive sensor readings that must agree on the
+# new state (DIT / DAH / IDLE) before the firmware accepts a state change.
+# At 75 Hz each sample is ~13 ms, so DEBOUNCE_SAMPLES = 3 filters wobble
+# shorter than ~40 ms without adding noticeable lag.
+#
+# Why this matters: a held sip naturally fluctuates a bit around the
+# threshold. Without debounce, a momentary dip is treated as "release →
+# new sip" and a single dot becomes dot-dot. With debounce you can use
+# LOW thresholds (THRESH_SIP / PUFF = 2 or 3) and still get rock-solid
+# element detection — best of both: sensitive AND stable.
+#
+# Set to 1 to disable debounce (instantaneous response, raw thresholds).
+# Sensor mode only; switch mode reads digital pins which are already
+# clean.
+DEBOUNCE_SAMPLES = 3
+
 # Switch GPIO pins — only used when USE_SENSOR = False.
 # Wired via 3.5 mm TRRS jack #1699 (B1/B2) or terminal block #2915 (B3).
 DOT_PIN         = board.D5   # → TIP of dot jack
@@ -89,15 +105,15 @@ DASH_PIN        = board.D6   # → TIP of dash jack
 # See MORSE_DEVICES_COMPARISON.md for how each mode compares to Darci,
 # Adap2U, and morAce.
 #
-# SWITCH_MODE = 2 (default, paddle-style):
-#   DIT input = dot, DAH input = dash, pause (ACCEPT_DELAY) = end of letter.
-#   Long-press of either input cycles groups (DIT-side = back, DAH-side = forward).
-#
 # SWITCH_MODE = 1 (single-switch timed):
 #   Only ONE_SWITCH_INPUT counts; the other input is ignored.
 #   Short press (<= ONE_SWITCH_DOT_MS) = dot, longer press (< LONG_PRESS) = dash,
 #   very long press (>= LONG_PRESS) = cycle group forward.
 #   Cycle back is unavailable in 1-switch mode (use a g0 Morse pattern).
+#
+# SWITCH_MODE = 2 (default, paddle-style):
+#   DIT input = dot, DAH input = dash, pause (ACCEPT_DELAY) = end of letter.
+#   Long-press of either input cycles groups (DIT-side = back, DAH-side = forward).
 #
 # SWITCH_MODE = 3 (dot + dash + explicit Accept):
 #   DIT and DAH short presses behave as in mode 2 (no timing pause needed).
@@ -159,7 +175,7 @@ LONG_PRESS_CYCLES_GROUP = True
 #   • Sip-and-puff users typically need 0.5–0.7 for comfortable breath rhythm.
 #   • In 3-switch mode this is a safety-net timeout; the third-switch gesture
 #     commits instantly regardless of ACCEPT_DELAY.
-ACCEPT_DELAY    = 0.5
+ACCEPT_DELAY    = 0.7
 
 # Hold time (seconds) for the long-gesture (cycle / Accept).
 # Raise (e.g. 1.5) if accidentally triggering on slow dots.
