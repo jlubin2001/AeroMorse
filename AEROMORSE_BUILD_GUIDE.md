@@ -1464,6 +1464,7 @@ A healthy startup after §9.4 looks like this in the Shell:
 ```
 Calibrating — do not sip or puff ...
 Baseline: 1013.241  sip<1008.241  puff>1018.241
+Calibration complete — ready for input.
 ```
 
 If you see a red `Traceback (most recent call last):` line instead, the
@@ -1715,6 +1716,8 @@ setting, then open `config.py` for the full notes.
 | `USE_SENSOR` | `True` | Change to `False` if using AT switches |
 | `THRESH_SIP` | `5` | Raise to `8` or `10` if getting false triggers; lower to `3` if light sips are missed |
 | `THRESH_PUFF` | `5` | Same as above but for puff/dash |
+| `DEBOUNCE_SAMPLES` | `3` | **Sensor mode only.** Number of consecutive sensor readings that must agree before a state change is accepted (~13 ms per sample at 75 Hz). Filters mid-element pressure wobble so you can use LOW thresholds (`THRESH_*` = 2 or 3) and still get rock-solid element detection. Set to `1` to disable. |
+| `POINTS_TO_AVERAGE` | `8` | **Sensor mode only.** Number of pressure readings averaged before threshold comparison. Higher = more bounce immunity, slower response. Lower = faster but jitterier. |
 | `THRESH_SIP_STRONG` | `15` | **Sensor mode only.** hPa below baseline at which a strong sip is detected. Set noticeably higher than `THRESH_SIP` (3× is a sensible start) so a normal sip can't accidentally trigger. Ignored in switch mode |
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
 | `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip. Same syntax as g0 toggles (e.g. `"group 2"` to jump to Mouse). Empty string = disabled. **In switch mode** the trigger is a long-press of the DIT-side switch instead of pressure peak, and setting this overrides `LONG_PRESS_CYCLES_GROUP` for that switch |
