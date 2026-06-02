@@ -561,6 +561,30 @@ def _exec_command(cmd):
 
 _CMD_VERBS = {'group', 'mmove', 'mclick', 'mdrag', 'repeat', 'mslow', 'mfast', 'mreset'}
 
+# Human-friendly display labels for mouse commands — matches the
+# aeromorse_visualizer.htm substitutions so the OLED/TFT last-action
+# line and the serial console both read clearly (e.g. "mmove up" on
+# screen instead of "mmove 0 -1 0"). The raw command string is still
+# what gets dispatched to _exec_command; only the display changes.
+_FRIENDLY_CMD = {
+    "mmove 0 -1 0":   "mmove up",
+    "mmove 0 1 0":    "mmove down",
+    "mmove 1 0 0":    "mmove right",
+    "mmove -1 0 0":   "mmove left",
+    "mmove 0 0 1":    "mwheel up",
+    "mmove 0 0 -1":   "mwheel down",
+    "mmove -1 -1 0":  "mmove up-left",
+    "mmove 1 -1 0":   "mmove up-right",
+    "mmove -1 1 0":   "mmove down-left",
+    "mmove 1 1 0":    "mmove down-right",
+    "mclick left 1":  "mclick left sgl",
+    "mclick right 1": "mclick right sgl",
+    "mclick left 2":  "mclick left dbl",
+    "mclick right 2": "mclick right dbl",
+    "mdrag left":     "drag left toggle",
+}
+
+
 def _is_command(action):
     return action.split(' ')[0] in _CMD_VERBS
 
@@ -609,8 +633,10 @@ def execute(action, pattern=""):
             print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
     elif isinstance(action, str):
         if _is_command(action):
-            _last_action = action[:20]
-            print(f"{pattern}  {action}")
+            # Friendly label for display + serial (raw `action` still dispatched).
+            display = _FRIENDLY_CMD.get(action, action)
+            _last_action = display[:20]
+            print(f"{pattern}  {display}")
             _exec_command(action)
             # commands (including "group 3") are NOT auto-returned — intentional
         else:
