@@ -1786,11 +1786,14 @@ copy them all from the CircuitPython 10.x library bundle. The
 ## 10. Configuration
 
 All user-tunable settings live in **`config.py`** at the root of the
-CIRCUITPY drive — not in `code.py`. Open `config.py` in Thonny (§9.3) or
-any plain-text editor (Notepad, TextEdit, VS Code). The file is organised
-into seven sub-sections (Input, Input mode, Code repeat, Timing, Audio,
-Mouse, Display / wireless) with a comment block above every setting
-explaining what it does and what other values mean.
+CIRCUITPY drive (not in `code.py`). Open `config.py` in Thonny (§9.3) or
+any plain-text editor — it's a slim ~65-line file with one assignment
+per line, grouped into seven sub-sections (Input, Input mode, Strong
+sip/puff, Timing, Code repeat, Audio, Mouse, Display / wireless). Each
+line has a short trailing hint; for **full per-setting explanations
+including when and how to tune**, see **[Appendix E — Configuration
+Reference](#appendix-e--configuration-reference)** at the end of this
+guide.
 
 > **Save in Thonny → the Feather auto-reloads** with the new values.
 > Press **Ctrl+D** in the Shell panel any time to force a fresh restart
@@ -1803,36 +1806,36 @@ explaining what it does and what other values mean.
 
 ### Key settings — quick reference
 
-Each setting also has a longer comment block in `config.py` itself.
-The table below is a one-row-per-setting overview; use it to find a
-setting, then open `config.py` for the full notes.
+One row per setting with its shipped default and a one-line hint.
+For the full "what does this do / when do I change it / how does it
+interact with other settings" explanation, jump to Appendix E.
 
-| Setting | Default | What to change |
-|---------|---------|----------------|
-| `USE_SENSOR` | `True` | Change to `False` if using AT switches |
-| `THRESH_SIP` | `5` | Raise to `8` or `10` if getting false triggers; lower to `3` if light sips are missed |
-| `THRESH_PUFF` | `5` | Same as above but for puff/dash |
-| `DEBOUNCE_SAMPLES` | `3` | **Sensor mode only.** Number of consecutive sensor readings that must agree before a state change is accepted (~13 ms per sample at 75 Hz). Filters mid-element pressure wobble so you can use LOW thresholds (`THRESH_*` = 2 or 3) and still get rock-solid element detection. Set to `1` to disable. |
-| `POINTS_TO_AVERAGE` | `8` | **Sensor mode only.** Number of pressure readings averaged before threshold comparison. Higher = more bounce immunity, slower response. Lower = faster but jitterier. |
-| `THRESH_SIP_STRONG` | `15` | **Sensor mode only.** hPa below baseline at which a strong sip is detected. Set noticeably higher than `THRESH_SIP` (3× is a sensible start) so a normal sip can't accidentally trigger. Ignored in switch mode |
-| `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
-| `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip. Same syntax as g0 toggles (e.g. `"group 2"` to jump to Mouse). Empty string = disabled. **In switch mode** the trigger is a long-press of the DIT-side switch instead of pressure peak, and setting this overrides `LONG_PRESS_CYCLES_GROUP` for that switch |
-| `STRONG_PUFF_ACTION` | `""` | Same as above but for puff (or DAH-side switch in switch mode) — e.g. `"group 1"` |
-| `ACCEPT_DELAY` | `0.5` | Idle pause (seconds) after the last element before the pattern fires. Lower (0.3) for fast users; higher (0.7) for sip-and-puff users with slower breath rhythm. In 3-switch mode this is a safety-net timeout; the third-switch gesture commits instantly regardless. |
-| `LONG_PRESS` | `1.0` | Hold time in seconds for the long-gesture (cycle / Accept). Raise if accidentally triggering |
-| `SWITCH_MODE` | `2` | `1` = single-switch timed; `2` = paddle (dot + dash); `3` = paddle + explicit Accept. See "Input modes" below. |
-| `ONE_SWITCH_INPUT` | `"dot"` | 1-switch mode only — `"dot"` uses the sip / D5 input; `"dash"` uses the puff / D6 input |
-| `ONE_SWITCH_DOT_MS` | `200` | 1-switch mode only — press ≤ this is a dot; longer is a dash; ≥ `LONG_PRESS`×1000 cycles group |
-| `THIRD_SWITCH_GESTURE` | `"long_dash"` | 3-switch mode only — `"long_dash"` makes long-puff the Accept switch; `"long_dot"` makes long-sip the Accept switch |
-| `CODE_REPEAT` | `False` | `True` enables Darci-style hold-to-repeat — while DIT/DAH is held, one symbol fires per `DOT_REPEAT_MS` / `DASH_REPEAT_MS`. Release ends the stream. Only honoured when `SWITCH_MODE = 2`. |
-| `DOT_REPEAT_MS` | `200` | ms between auto-repeated dots (`CODE_REPEAT` only) |
-| `DASH_REPEAT_MS` | `600` | ms between auto-repeated dashes (`CODE_REPEAT` only — conventionally 3 × dot) |
-| `CODE_REPEAT_MAX` | `8` | Cap on symbols per held stream — prevents buffer overflow on a forgotten hold |
-| `LONG_PRESS_CYCLES_GROUP` | `True` | `False` disables the long-press group cycle gesture (DIT-side = cycle back, DAH-side = cycle forward). Switch groups via g0 Morse patterns instead. Recommended `False` alongside `CODE_REPEAT = True`. |
-| `DISPLAY_ROTATION` | `0` | `0` = USB port on left; `180` = USB port on right (`90` / `270` also valid) |
-| `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off because most builds don't include a second board — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on. |
-| `BEEP_DOT_FREQ` | `1200` | Pitch in Hz for dot (sip) beeps — higher pitch |
-| `BEEP_DASH_FREQ` | `800` | Pitch in Hz for dash (puff) beeps — lower pitch |
+| Setting | Default | Hint |
+|---------|---------|------|
+| `USE_SENSOR` | `True` | `False` = AT switches on D5/D6 instead of LPS33HW sensor |
+| `THRESH_SIP` | `2` | hPa below baseline = dot (raise if false triggers) |
+| `THRESH_PUFF` | `2` | hPa above baseline = dash |
+| `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing samples to confirm a state change |
+| `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged before threshold compare |
+| `SWITCH_MODE` | `2` | `1` = single-switch timed, `2` = paddle, `3` = paddle + explicit Accept |
+| `ONE_SWITCH_INPUT` | `"dot"` | Mode 1 only — `"dot"` or `"dash"` |
+| `ONE_SWITCH_DOT_MS` | `200` | Mode 1 only — press ≤ this ms = dot, longer = dash |
+| `THIRD_SWITCH_GESTURE` | `"long_dash"` | Mode 3 only — `"long_dash"` or `"long_dot"` = Accept |
+| `STRONG_SIP_ACTION` | `""` | e.g. `"group 2"` — empty = disabled |
+| `STRONG_PUFF_ACTION` | `""` | e.g. `"group 1"` — empty = disabled |
+| `THRESH_SIP_STRONG` | `15` | Sensor mode — hPa for strong-sip detection |
+| `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
+| `ACCEPT_DELAY` | `0.3` | Idle seconds before pattern commits |
+| `LONG_PRESS` | `1.0` | Seconds to hold for cycle / Accept gesture |
+| `CODE_REPEAT` | `False` | `True` = Darci-style hold-to-repeat (mode 2 only) |
+| `DOT_REPEAT_MS` | `200` | ms per auto-repeated dot |
+| `DASH_REPEAT_MS` | `600` | ms per auto-repeated dash |
+| `CODE_REPEAT_MAX` | `8` | Cap on symbols per held stream |
+| `LONG_PRESS_CYCLES_GROUP` | `True` | `False` disables long-press group cycling |
+| `BEEP_DOT_FREQ` | `1200` | Hz — dot (sip) sidetone |
+| `BEEP_DASH_FREQ` | `800` | Hz — dash (puff) sidetone |
+| `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
+| `USE_WIRELESS_DISPLAY` | `False` | `True` = enable ESP-NOW broadcast (adds ~80–100 mA) |
 
 ### Input modes — what `SWITCH_MODE` does
 
@@ -2325,6 +2328,219 @@ switches into the single stereo jack:
 
 If you only have one switch, plug it directly into the jack — it will be your
 dot (.) switch.
+
+---
+
+## Appendix E — Configuration Reference
+
+Per-setting deep explanations for every entry in `config.py`. §10's
+Key Settings table is the quick-reference; this appendix is the
+"what does this actually do and how should I tune it" companion.
+
+Settings are grouped here in the same order as in `config.py` itself.
+
+### Input — sensor / switches / thresholds
+
+**`USE_SENSOR`** (default `True`).
+`True` selects Option A in the build guide (LPS33HW pressure sensor
+#4414) — sip is a dot, puff is a dash. `False` selects Option B (two
+AT switches on D5 / D6, or whatever you set `DOT_PIN` / `DASH_PIN`
+to). The Feather still presents the same USB HID Keyboard / Mouse /
+ConsumerControl interfaces either way; only the input transducer
+changes.
+
+**`THRESH_SIP`** (default `2`), **`THRESH_PUFF`** (default `2`).
+hPa delta from the calibrated baseline at which a sip or puff is
+detected. A sip pulls pressure DOWN, a puff pushes it UP; the symbol
+fires once the delta exceeds the threshold.
+- Getting false triggers (sips firing when you're not sipping)? Raise
+  both to `5` or `8`.
+- Light sips going unrecognised? Drop both to `2` or even `1`.
+- The two thresholds tune independently — many users find their puffs
+  are naturally stronger than their sips and need a higher
+  `THRESH_PUFF` to balance.
+- Works in concert with `DEBOUNCE_SAMPLES` — see below.
+
+**`DEBOUNCE_SAMPLES`** (default `3`). *Sensor mode only.*
+Number of consecutive sensor readings that must agree on a new state
+before the firmware accepts a state change. At 75 Hz each sample is
+~13 ms, so `DEBOUNCE_SAMPLES = 3` means a change must hold for ~40 ms
+before it takes effect. Filters out brief pressure wobble that would
+otherwise turn a single dot into dot-dot.
+- The big win: with debounce, you can use **low** `THRESH_*` values
+  (2 or even 1) and still get rock-solid element detection. That gives
+  you fast response (no need to press hard) AND wobble immunity.
+- Set to `1` to disable. Switch mode reads digital pins which are
+  already clean, so this value is ignored when `USE_SENSOR = False`.
+
+**`POINTS_TO_AVERAGE`** (default `8`). *Sensor mode only.*
+Number of pressure readings averaged before threshold comparison.
+Higher = more bounce immunity, slower response. Lower = faster but
+jitterier. `8` is a sensible default for sip-and-puff. Most users
+don't need to touch this.
+
+**`DOT_PIN`** / **`DASH_PIN`** (defaults `board.D5`, `board.D6`).
+GPIO pins for the AT-switch jacks. Only used when `USE_SENSOR = False`.
+Wired via 3.5 mm TRRS jack #1699 (B1/B2) or terminal block #2915 (B3) —
+see Build Guide §4 Option B and §8C.
+
+### Input mode — 1 / 2 / 3 switch
+
+See **§10 "Input modes — what `SWITCH_MODE` does"** for the mode
+behaviour table.
+
+**`SWITCH_MODE`** (default `2`).
+`1` = single-switch timed (one input; short = dot, long = dash, pause
+= end-of-letter). `2` = paddle / two-switch (dot input = dot, dash
+input = dash). `3` = paddle + explicit Accept (long-press of
+`THIRD_SWITCH_GESTURE` commits immediately).
+
+**`ONE_SWITCH_INPUT`** (default `"dot"`). *Mode 1 only.*
+Which physical input is the sole switch. `"dot"` uses the sip (sensor
+mode) or D5 jack (switch mode); `"dash"` uses puff / D6.
+
+**`ONE_SWITCH_DOT_MS`** (default `200`). *Mode 1 only.*
+ms boundary between dot and dash. Press ≤ this is a dot, longer is a
+dash. Group cycle still kicks in at `LONG_PRESS` regardless.
+
+**`THIRD_SWITCH_GESTURE`** (default `"long_dash"`). *Mode 3 only.*
+Which long-gesture serves as the explicit Accept. `"long_dash"` makes
+a long puff (or long-D6) the Accept; `"long_dot"` makes a long sip
+(or long-D5) the Accept. The OTHER long-gesture cycles groups forward.
+
+### Strong sip / strong puff
+
+A distinct gesture from regular dot/dash and from long-press
+cycle/Accept. Useful for jumping groups or firing a dedicated action
+without leaving the current group.
+
+**Detection in sensor mode**: while a sip/puff is held, the firmware
+tracks peak pressure delta. As soon as it crosses `THRESH_SIP_STRONG`
+or `THRESH_PUFF_STRONG`, the configured `STRONG_*_ACTION` fires
+immediately, the pending Morse pattern is cleared, and no dot/dash
+is emitted for that press.
+
+**Detection in switch mode**: switches have no intensity, so the
+equivalent gesture is a **long-press** of the corresponding switch —
+DIT-side input fires `STRONG_SIP_ACTION`, DAH-side input fires
+`STRONG_PUFF_ACTION`. The long-press is detected at the existing
+`LONG_PRESS` duration. Setting either action **overrides** the
+`LONG_PRESS_CYCLES_GROUP` cycle-on-long-press behaviour for that
+switch. `THRESH_*_STRONG` values are ignored in switch mode.
+
+**`STRONG_SIP_ACTION`** / **`STRONG_PUFF_ACTION`** (defaults `""`).
+Command strings fired when the gesture is detected. Same syntax as
+g0 toggle codes — most commonly `"group N"` to jump to a specific
+group. Empty string disables the gesture entirely (the default).
+Honoured only in `SWITCH_MODE = 2`.
+
+**`THRESH_SIP_STRONG`** / **`THRESH_PUFF_STRONG`** (defaults `15`).
+*Sensor mode only.* hPa thresholds. Set noticeably higher than the
+regular `THRESH_SIP` / `THRESH_PUFF` (3× is a sensible start) so a
+normal sip can't accidentally trigger a strong gesture.
+
+### Timing
+
+**`ACCEPT_DELAY`** (default `0.3`).
+Idle pause (seconds) after the last element before the pattern
+commits.
+- Patterns committing before you finish? Raise to `0.5` or `0.7`.
+- Patterns feeling sluggish? Lower to `0.2`.
+- Sip-and-puff users with comfortable breath rhythm typically land
+  somewhere in 0.3–0.7.
+- In `SWITCH_MODE = 3` this is a safety-net timeout; the third-switch
+  gesture commits instantly regardless of `ACCEPT_DELAY`.
+
+**`LONG_PRESS`** (default `1.0`).
+Hold time (seconds) for the long-gesture (cycle / Accept / strong).
+Raise (e.g. `1.5`) if accidentally triggering on slow elements; lower
+(e.g. `0.7`) if a deliberate long-press feels too slow.
+
+### Code repeat (Darci-style hold-to-repeat)
+
+**`CODE_REPEAT`** (default `False`).
+When `True`, holding DIT or DAH emits a stream of symbols at the
+configured repeat interval — one symbol on press, then one every
+`DOT_REPEAT_MS` / `DASH_REPEAT_MS` while held. Release ends the
+stream. `ACCEPT_DELAY` of idle still commits the accumulated pattern.
+This is the Darci USB "code repeat" behaviour. Honoured only in
+`SWITCH_MODE = 2`.
+
+**`DOT_REPEAT_MS`** (default `200`) / **`DASH_REPEAT_MS`** (default
+`600`).
+ms per auto-repeated dot / dash. Dash conventionally ≈ 3 × dot but
+tune to your rhythm.
+
+**`CODE_REPEAT_MAX`** (default `8`).
+Cap on symbols per held stream. Prevents buffer overflow if a hold
+goes on too long.
+
+**`LONG_PRESS_CYCLES_GROUP`** (default `True`).
+Independent of `CODE_REPEAT`. `True` = holding DIT/DAH for ≥
+`LONG_PRESS` cycles groups (DIT = back, DAH = forward). `False` =
+long-press does nothing; switch groups via g0 Morse patterns instead.
+**Recommended `False` alongside `CODE_REPEAT = True`** so a sustained
+symbol stream doesn't accidentally trigger a group cycle.
+
+### Audio
+
+**`AUDIO_PIN`** (default `board.A0`).
+PWM output pin for the speaker. All speaker options (S1 STEMMA Speaker,
+S2 jack-and-piezo, S3 PAM8302 amp) wire to A0 / GND. The output is a
+50% duty square wave at the chosen frequency — see Build Guide §6.
+
+**`BEEP_DOT_FREQ`** (default `1200`) / **`BEEP_DASH_FREQ`** (default
+`800`).
+Hz — dot (sip) and dash (puff) sidetone frequencies. Different
+pitches make it easier to hear what symbol just fired. Raise both
+proportionally if a piezo's resonance peak is higher; the STEMMA
+speaker is reasonably flat across these frequencies.
+
+**`CONFIRM_FREQ`** (default `1050`) / **`GROUP_FREQ`** (default `550`).
+Hz — short blips fired when an action commits (`CONFIRM_FREQ`) and
+when groups change (`GROUP_FREQ`).
+
+**`BEEP_CONFIRM_S`** (default `0.06`) / **`BEEP_GROUP_S`** (default
+`0.14`).
+Seconds — duration of the confirm and group-change blips.
+
+### Mouse (Group 2 movement speeds)
+
+Effective pixels per step = `raw direction × MOUSE_SPEED_* ×
+MOUSE_SPEED_FACTOR`.
+
+**`MOUSE_SPEED_NORMAL`** (default `2`) — default speed when group 2
+is entered.
+
+**`MOUSE_SPEED_SLOW`** (default `1`) — toggled via the `mslow`
+command.
+
+**`MOUSE_SPEED_FAST`** (default `3`) — toggled via the `mfast`
+command if you map it.
+
+**`MOUSE_SPEED_FACTOR`** (default `2`) — overall scale (matches the
+AirTalker feel that AeroMorse was originally tuned to).
+
+**`MOUSE_REPEAT_DELAY`** (default `0.040`).
+Seconds between repeat ticks when mouse-repeat is active (40 ms =
+25 ticks/sec).
+
+### Display / wireless
+
+**`DISPLAY_ROTATION`** (default `0`).
+Display orientation in degrees. `0` = USB-C port on the LEFT side of
+the display, `180` = USB-C port on the RIGHT. `90` / `270` are also
+valid but place the text vertically — useful if you've mounted the
+Feather sideways.
+
+**`USE_WIRELESS_DISPLAY`** (default `False`).
+`True` enables the WiFi radio at boot and broadcasts the display
+state via ESP-NOW for an Option W1 / W2 / W3 receiver to mirror.
+Default is `False` because most builds don't include a second board —
+flip to `True` only when you actually have a receiver paired. Adds
+roughly 80–100 mA to the current draw while running. Has no effect on
+non-ESP32 boards — the `espnow` import fails there and the radio
+stays off regardless.
 
 ---
 
