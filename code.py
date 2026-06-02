@@ -66,6 +66,7 @@ from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
 from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.consumer_control_code import ConsumerControlCode
 
 from morse_map import groups, CC
 
@@ -581,8 +582,45 @@ _FRIENDLY_CMD = {
     "mclick right 1": "mclick right sgl",
     "mclick left 2":  "mclick left dbl",
     "mclick right 2": "mclick right dbl",
-    "mdrag left":     "drag left toggle",
+    "mdrag left":     "DRAG LEFT TOGGLE",
 }
+# Uppercase the mouse labels too — easier to read on the small display.
+_FRIENDLY_CMD = {k: v.upper() for k, v in _FRIENDLY_CMD.items()}
+
+# Friendly names for single-character actions — punctuation gets a word,
+# letters get uppercased. Multi-character macros stay as quoted strings.
+_FRIENDLY_CHAR = {
+    '+':  'PLUS',          '-':  'MINUS',          '=':  'EQUALS',
+    '*':  'ASTERISK',      '!':  'EXCLAMATION',    '@':  'AT',
+    '#':  'HASH',          '$':  'DOLLAR',         '%':  'PERCENT',
+    '^':  'CARET',         '&':  'AMPERSAND',      '.':  'PERIOD',
+    ',':  'COMMA',         ':':  'COLON',          ';':  'SEMICOLON',
+    ')':  'RIGHT PAREN',   '(':  'LEFT PAREN',
+    ']':  'RIGHT BRACKET', '[':  'LEFT BRACKET',
+    '}':  'RIGHT BRACE',   '{':  'LEFT BRACE',
+    '<':  'LESS THAN',     '>':  'GREATER THAN',
+    '?':  'QUESTION',      '/':  'SLASH',          '\\': 'BACKSLASH',
+    '|':  'PIPE',          '_':  'UNDERSCORE',
+    '"':  'DOUBLE QUOTE',  "'":  'APOSTROPHE',
+    '`':  'BACKTICK',      '~':  'TILDE',
+    ' ':  'SPACE',         '\n': 'NEWLINE',        '\t': 'TAB',
+}
+
+# Auto-built reverse maps: integer Keycode / ConsumerControlCode → friendly
+# all-caps name (UP_ARROW → "UP ARROW"). Built once at module import by
+# introspecting the adafruit_hid constants.
+def _build_int_name_map(cls):
+    result = {}
+    for name in dir(cls):
+        if name.startswith('_'):
+            continue
+        val = getattr(cls, name)
+        if isinstance(val, int):
+            result[val] = name.replace('_', ' ')
+    return result
+
+_KEYCODE_NAMES = _build_int_name_map(Keycode)
+_CC_NAMES      = _build_int_name_map(ConsumerControlCode)
 
 
 def _is_command(action):
@@ -599,10 +637,11 @@ def execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
     if isinstance(action, CC):
-        _last_action     = f"CC {action.code}"
+        label = _CC_NAMES.get(action.code, f"CC {action.code}")
+        _last_action     = label[:20]
         _last_repeatable = None        # CC not yet repeatable (would re-fire same code)
         _last_mouse_vec  = (0, 0, 0)
-        print(f"{pattern}  CC {action.code}")
+        print(f"{pattern}  {label}")
         _exec_consumer(action)
         _beep_notify()
         if active_group == 3:                               # auto-return after macro
@@ -610,10 +649,11 @@ def execute(action, pattern=""):
             _last_repeatable = None
             print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
     elif isinstance(action, tuple):
-        _last_action     = "COMBO"
+        label = " + ".join(_KEYCODE_NAMES.get(k, f"KEY {k}") for k in action)
+        _last_action     = label[:20] if label else "COMBO"
         _last_repeatable = action
         _last_mouse_vec  = (0, 0, 0)
-        print(f"{pattern}  COMBO")
+        print(f"{pattern}  {label}")
         _exec_combo(action)
         _beep_notify()
         if active_group == 3:                               # auto-return after macro
@@ -621,10 +661,11 @@ def execute(action, pattern=""):
             _last_repeatable = None
             print("GROUP -> 1 (Keyboard)  [auto-return from Macro]")
     elif isinstance(action, int):
-        _last_action     = f"KEY {action}"
+        label = _KEYCODE_NAMES.get(action, f"KEY {action}")
+        _last_action     = label[:20]
         _last_repeatable = action
         _last_mouse_vec  = (0, 0, 0)
-        print(f"{pattern}  KEY {action}")
+        print(f"{pattern}  {label}")
         _exec_keycode(action)
         _beep_notify()
         if active_group == 3:                               # auto-return after macro
@@ -640,10 +681,16 @@ def execute(action, pattern=""):
             _exec_command(action)
             # commands (including "group 3") are NOT auto-returned — intentional
         else:
-            _last_action     = f'"{action[:16]}"'
+            # Single char: friendly word for punctuation, uppercase for letters/digits.
+            # Multi-char macros: keep as quoted text (user-supplied content).
+            if len(action) == 1:
+                label = _FRIENDLY_CHAR.get(action, action.upper())
+            else:
+                label = f'"{action[:16]}"'
+            _last_action     = label[:20]
             _last_repeatable = action
             _last_mouse_vec  = (0, 0, 0)
-            print(f"{pattern}  \"{action}\"")
+            print(f"{pattern}  {label}")
             _exec_text(action)
             _beep_notify()
             if active_group == 3:                           # auto-return after macro
