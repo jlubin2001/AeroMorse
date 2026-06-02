@@ -726,18 +726,82 @@ for the complete file tree. In short:
 
 ---
 
+#### Option W3 — Adafruit MagTag (2.9" e-ink, plug-and-play)
+
+**Adafruit MagTag 2025 Edition — 2.9" Grayscale E-Ink WiFi Display
+[#4800](https://www.adafruit.com/product/4800) — $34.95**
+
+A 2.9" 296×128 grayscale e-ink display on an ESP32-S2, with four
+onboard NeoPixels, USB-C, LiPoly charging, and magnet-friendly
+mounting. The e-ink is much more readable from across a room than the
+W1 #5691's small TFT, and the screen stays on with zero power draw
+between refreshes.
+
+> ⚠ **CircuitPython 10.x required.** The 2025 Edition MagTag (with
+> the SSD1680 e-ink driver) **will NOT work with CircuitPython 9.2.x
+> or earlier**. You must install CircuitPython **10.x.x or later** on
+> the MagTag before `receiver_magtag.py` will run. More information at
+> https://learn.adafruit.com/adafruit-magtag.
+
+**What you see vs Option W1.** E-ink physically cannot refresh fast
+enough for AeroMorse's 10 Hz pattern preview. The W3 receiver
+intentionally shows **three** of the four fields broadcast by the main
+board, dropping the two that change every loop iteration:
+
+| Field | Option W1 (TFT) | Option W3 (MagTag e-ink) |
+|---|---|---|
+| Group name (`[ KEYBOARD ]`) | ✓ | ✓ |
+| Live Morse buffer (`. - . .`) | ✓ | ✗ (e-ink too slow) |
+| Last action (`UP ARROW`) | ✓ | ✓ |
+| Modifiers / status (`SHIFT`) | ✓ | ✓ |
+| Pressure bar | ✓ | ✗ (continuous changes) |
+| Group colour indicator | ✓ (TFT colour) | ✓ (4 onboard NeoPixels) |
+
+The four NeoPixels show the **group colour** matching `code.py`'s
+`_GROUP_COLORS` palette — so even though the e-ink itself is grayscale,
+you can tell at a glance which mode the device is in from across a room.
+
+**Refresh policy.** The receiver throttles refreshes to once every
+~2 seconds and only redraws when a field has actually changed. A fast
+burst of typing won't queue 50 refreshes — only the last state at the
+moment the throttle expires gets drawn. The "last action" line will
+therefore lag the actual typing by 1–2 s; for live keystroke viewing
+use Option W1 instead.
+
+**When to choose W3 over W1:**
+- Across-the-room readability (e-ink contrast is far better than a
+  small TFT at distance).
+- The display will sit unused for long periods between updates — e-ink
+  burns no power except during the brief refresh.
+- A caregiver / family member's glance display where 1–2 s lag is fine.
+- Sleek aesthetic (the MagTag is designed for wall mounting).
+
+**Files needed on the MagTag:** see **§9.4.1 Option W3** for the
+complete file tree. In short: `receiver_magtag.py` → `code.py`,
+`receiver_boot.py` → `boot.py`, and the `adafruit_magtag/` library
+folder (which pulls in several support libraries — listed in the
+receiver_magtag.py file header).
+
+> The MagTag is also available with a header strip and other variants;
+> for this build any 2025 Edition MagTag (SSD1680) works.
+
+---
+
 #### Wireless display comparison
 
-| | Option W1 — Second #5691 | Option W2 — XIAO + OLED |
-|--|--|--|
-| Cost | $35 | ~$11 |
-| Display | 240×135 colour TFT | 128×64 mono OLED |
-| Group colours | ✓ Yes | ✗ No |
-| Assembly | Plug USB-C in | Solder 4 wires |
-| Code change | None | 1 line |
-| Libraries to add | None (reuse existing) | 2 files |
-| Availability | adafruit.com | Amazon / DigiKey |
-| Wireless power | ✓ LiPoly battery (#3898 / #1578 / #258) | ✗ No battery connector |
+| | Option W1 — Second #5691 | Option W2 — XIAO + OLED | Option W3 — MagTag #4800 |
+|--|--|--|--|
+| Cost | $35 | ~$11 | $35 |
+| Display | 240×135 colour TFT | 128×64 mono OLED | **2.9" 296×128 e-ink** |
+| Refresh rate | 100 ms | 100 ms | ~2 s |
+| Live Morse preview | ✓ | ✓ | ✗ (e-ink too slow) |
+| Pressure bar | ✓ | ✗ | ✗ |
+| Group colours | ✓ Native | ✗ | ✓ Via 4 NeoPixels |
+| Assembly | Plug USB-C in | Solder 4 wires | Plug USB-C in |
+| Best viewing distance | Arm's length | Arm's length | **Across a room** |
+| CircuitPython required | 9.x+ | 9.x+ | **10.x+** |
+| Wireless power | ✓ LiPoly | ✗ No battery | ✓ LiPoly |
+| Availability | adafruit.com | Amazon / DigiKey | adafruit.com |
 
 ---
 
@@ -1675,6 +1739,38 @@ under `/lib`.
 
 ---
 
+#### Option W3 — Adafruit MagTag (#4800, 2.9" e-ink)
+
+> ⚠ **CircuitPython 10.x required.** The 2025 Edition MagTag will NOT
+> work with CircuitPython 9.2.x or earlier — see §5 Option W3 and the
+> warning banner at the top of `receiver_magtag.py`.
+
+The W3 receiver file is `receiver_magtag.py` (a different file from the
+W1/W2 `receiver.py` because the display layout and refresh model are
+fundamentally different — fewer fields, slower throttled refresh).
+
+```
+CIRCUITPY/    (on the W3 MagTag receiver)
+├── boot.py                            (= renamed copy of receiver_boot.py)
+├── code.py                            (= renamed copy of receiver_magtag.py)
+└── lib/
+    ├── adafruit_magtag/                (e-ink + peripherals)
+    ├── adafruit_display_text/
+    ├── adafruit_bitmap_font/
+    ├── adafruit_io/                    (pulled in by adafruit_magtag)
+    ├── adafruit_portalbase/            (pulled in by adafruit_magtag)
+    ├── adafruit_fakerequests.mpy       (pulled in by adafruit_magtag)
+    ├── adafruit_lis3dh.mpy             (onboard accelerometer driver)
+    ├── neopixel.mpy
+    └── simpleio.mpy
+```
+
+Most of the libraries are pulled in transitively by `adafruit_magtag/`;
+copy them all from the CircuitPython 10.x library bundle. The
+`receiver_magtag.py` file header lists the exact required set.
+
+---
+
 #### Verifying the receiver
 
 1. Plug the receiver into a USB-C power source.
@@ -1957,6 +2053,31 @@ working — e.g., heavy WiFi interference on channel 1):
   `device_address=0x3C` and change it to `device_address=0x3D`.
 - Confirm `adafruit_displayio_ssd1306.mpy` and `adafruit_display_text/`
   are in the `/lib` folder on the XIAO.
+
+**Option W3 MagTag — e-ink stuck on "[ WAITING ]" or never updates**
+- ⚠ **First check CircuitPython version.** The 2025 Edition MagTag
+  requires **CircuitPython 10.x or later**. Open `boot_out.txt` on the
+  MagTag's CIRCUITPY drive; if it says 9.x.x the e-ink driver won't
+  work. Re-flash from circuitpython.org/downloads with the **MagTag
+  10.x** UF2. See https://learn.adafruit.com/adafruit-magtag.
+- Confirm `adafruit_magtag/` (the folder, not a single .mpy) is in
+  `/lib`, plus its support libraries (see §9.4.1 Option W3).
+- Confirm `boot.py` on the MagTag is the renamed `receiver_boot.py`
+  (not the main-board `boot.py`, which enables USB HID and uses
+  pins/ports the MagTag handles differently).
+
+**Option W3 MagTag — pattern preview and pressure bar never appear**
+- That's **by design**, not a bug. E-ink refresh is too slow (~1–2 s
+  per redraw) to render the 10 Hz pattern preview or pressure bar
+  meaningfully. The MagTag receiver shows only the group name, last
+  action, and modifiers — the fields that don't change at 10 Hz. For
+  live preview viewing use Option W1 (second #5691 colour TFT).
+
+**Option W3 MagTag — last action lags the actual typing by 1–2 seconds**
+- Also by design. The MagTag receiver throttles e-ink refreshes to
+  once every ~2 s so a fast burst of typing doesn't queue a backlog of
+  refreshes. Only the last state at the moment the throttle expires is
+  drawn. If you need live keystroke feedback use Option W1.
 
 **CircuitPython versions on the two boards**
 - ESP-NOW sends plain bytes with no awareness of CircuitPython versions.
