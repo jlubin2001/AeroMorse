@@ -332,7 +332,7 @@ Each pad is ~1.5 mm — much easier to solder than the pin holes for headers.
 ### Option A — Sip-and-Puff (LPS33HW pressure sensor)
 
 A small barometric pressure sensor detects the tiny pressure change when you
-breathe into or out of a short plastic tube. No hand movement required.
+breathe into or out of a short plastic tube. No hand or head movement required.
 
 **Sensor:** Adafruit LPS33HW Water-Resistant Pressure Sensor — STEMMA QT
 https://www.adafruit.com/product/4414
@@ -393,7 +393,8 @@ that first.
 
 #### Option B2 — Soldered TRRS breakout (compact, durable)
 
-Solders four short wires to an Adafruit TRRS Jack Breakout board.
+Solders three short wires to an Adafruit TRRS Jack Breakout board (T, R1, S
+— Ring 2 is unused).
 
 > **Can I use clips instead of soldering on the #5764?**
 >
@@ -421,7 +422,7 @@ Solders four short wires to an Adafruit TRRS Jack Breakout board.
 
 Parts needed:
 - Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
-- 4 short wires ~8 cm (different colours help)
+- 3 short wires ~8 cm (different colours help)
 - Soldering iron + solder
 
 | TRRS pad | Feather pin | Wire colour suggestion |
@@ -429,7 +430,7 @@ Parts needed:
 | T (Tip) | D5 | Red |
 | R1 (Ring 1) | D6 | Blue |
 | S (Sleeve) | GND | Black |
-| R2 | Not used | — |
+| R2 | *(no wire — pad left bare)* | — |
 
 > **Both switch options work with the same `code.py`** — set `USE_SENSOR = False`
 > in the configuration section.
