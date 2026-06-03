@@ -223,7 +223,11 @@ so it sits flat in a breadboard. Pair it with one of:
   short SSD1306 init block (a few lines). Monochrome 128×64.
 - **FeatherWing TFT (#3651, #5872, or #3315)** — plugs straight onto the
   header pins, no extra wiring. Same kind of one-time `code.py` display-init
-  swap. Larger, colour, much more screen area than the OLED.
+  swap. Larger, colour, much more screen area than the OLED. For the
+  full **#5477 + #3651** combo see **Appendix F** at the end of this
+  guide for a consolidated walkthrough including the display-init code
+  to paste, the upscaled-label layout for 480×320, and the pressure-bar
+  repositioning.
 - **EYESPI TFT** (Build Guide §5 "EYESPI displays") — possible but the most
   involved option: needs a #5613 breakout, ~7 jumper wires, a flex cable,
   and a more complex `displayio` init block. Use only if you specifically
@@ -2585,6 +2589,253 @@ flip to `True` only when you actually have a receiver paired. Adds
 roughly 80–100 mA to the current draw while running. Has no effect on
 non-ESP32 boards — the `espnow` import fails there and the radio
 stays off regardless.
+
+---
+
+## Appendix F — Building with #5477 + 3.5" TFT FeatherWing #3651
+
+A consolidated walkthrough for builders pairing the bare-Feather
+**ESP32-S3 Feather #5477** with the **3.5" TFT FeatherWing Resistive
+Touch #3651** — the largest readable display AeroMorse supports
+(480×320 colour). Same chip family as the recommended #5691, so all
+behaviour (USB HID, ESP-NOW, etc.) is identical; only the display path
+differs.
+
+The cost of this build relative to #5691 is **one code edit** (a
+display-init swap) plus an **optional layout retune** that takes
+better advantage of the much larger screen. Everything else (sensor,
+speaker, AT switches, ESP-NOW wireless display) is identical to the
+recommended build.
+
+### F.1 When this build is the right pick
+
+| Want | This combo |
+|---|---|
+| **Big, glance-able display** with much more text area than #5691's 240×135 | ✓ 480×320 is ~4.4× the pixel area |
+| Bright, colour, backlit display | ✓ HX8357D TFT with built-in backlight |
+| Same input + ESP-NOW capabilities as #5691 | ✓ ESP32-S3 chip family is identical |
+| Built-in display (no separate display to buy) | ✗ — display is a separate FeatherWing |
+| Display + Feather as a single PCB (panel-mount friendly) | ✗ — two PCBs stacked together |
+| Cheaper than #5691 | ✗ — #5477 + #3651 costs more than #5691 alone |
+
+Pick this combo if you want the **biggest display** and don't mind a
+two-board stack or one code-edit step. Pick #5691 instead for the
+simplest single-board build.
+
+### F.2 Parts list
+
+The hardware-side parts list is the standard sensor / speaker / switch
+options from §7 with these display-path changes:
+
+| Qty | Item | Adafruit # | Notes |
+|---|---|---|---|
+| 1 | **ESP32-S3 Feather 4MB/2MB PSRAM with Headers** | [#5477](https://www.adafruit.com/product/5477) | Order the variant with headers pre-installed, OR buy bare + a header strip ([#2886](https://www.adafruit.com/product/2886)) and solder them — see §F.3 |
+| 1 | 3.5" TFT FeatherWing Resistive Touch | [#3651](https://www.adafruit.com/product/3651) | The display itself; resistive touch is not used by AeroMorse |
+| — | *(everything else from §7 Sensor / Speaker / Input choices)* | — | Sensor (#4414 + STEMMA QT cable), speaker (S1/S2/S3), AT switches if not using sensor |
+
+You do **not** need any extra wires, cables, or breakouts beyond the
+two boards above — the FeatherWing plugs directly onto the Feather's
+headers.
+
+### F.3 Header pins on the #5477 — required
+
+#5477 ships as a bare PCB with empty through-hole pads. The
+FeatherWing has female sockets on its underside that need male header
+pins on the Feather to grip. The "build without header pins" path
+documented in §3 does **not** work with FeatherWings — the wing's
+holes can't grip flat pads, and gripping the through-holes from below
+is not mechanically reliable.
+
+Three ways to get headers on:
+
+| Path | Cost | Effort |
+|---|---|---|
+| Order #5477 **with headers pre-installed** (Adafruit lists this as a separate variant) | Same as bare #5477 | None |
+| Bring #5477 + #2886 header strip to a makerspace / library maker lab / electronics shop | Usually free or a few dollars | Drop off, pick up |
+| Solder them yourself | Cost of an iron if you don't have one | ~30 minutes for a beginner |
+
+If you don't already own a soldering iron, the **with-headers** variant
+or the **makerspace** path are the practical options. See §8 "Before
+you start" for makerspace pointers.
+
+### F.4 Hardware assembly
+
+Once headers are on the #5477:
+
+1. **Mount the #3651 onto the #5477.** Hold the FeatherWing above the
+   Feather with the display facing up. Line up the two rows of holes
+   on the FeatherWing with the two rows of male header pins on the
+   Feather. Press firmly and evenly downward until the wing sits flush.
+   The pins should click through all the way.
+
+2. **Connect the sensor** (sip-and-puff builds). The Feather's
+   STEMMA QT port sits on the side edge of the Feather PCB. The
+   FeatherWing's PCB is **above** the STEMMA QT port, so you can plug
+   a STEMMA QT cable from the side without removing the wing. Run the
+   cable to the LPS33HW #4414 as in §8B.
+
+3. **Connect the speaker.** A0 / 3V / GND are passed through to the
+   FeatherWing's top-side pin headers. The STEMMA Speaker #3885 + #4046
+   cable plugs onto those header pins exactly the same way it would on
+   a bare Feather. See §8D.
+
+4. **Connect AT switches** (switch-mode builds). D5 and D6 are also
+   passed through. Wire as in §8C.
+
+USB-C, the Reset button, and the user button on the Feather all remain
+accessible. The FeatherWing has cutouts and pin pass-throughs in the
+standard FeatherWing layout.
+
+### F.5 Software setup
+
+#### Libraries on /lib
+
+The standard /lib set from §9.2 *plus* the HX8357D driver:
+
+```
+/lib/
+├── adafruit_hid/                       (always)
+├── adafruit_bus_device/                (always)
+├── adafruit_register/                  (always)
+├── adafruit_display_text/              (always)
+├── neopixel.mpy                        (always)
+├── adafruit_lps35hw.mpy                (sip-and-puff builds)
+└── adafruit_hx8357.mpy                 (THIS COMBO — for the #3651 driver)
+```
+
+#### Project files
+
+The same `boot.py`, `code.py`, `config.py`, and `morse_map.py` as the
+standard build. Then make the two edits below to `code.py`.
+
+#### Edit 1 — Display init swap (required)
+
+The root `code.py` initialises the display with:
+
+```python
+display = board.DISPLAY
+```
+
+That works on #5691 / #5483 / #5300 because those Feathers have a
+built-in TFT wired up at firmware level, so `board.DISPLAY` is
+auto-populated. The #5477 has no built-in display, so `board.DISPLAY`
+is `None` and the firmware crashes at the first label-creation call.
+
+Find that line near the top of the display-setup section (just before
+`def _make_label`) and replace with:
+
+```python
+import busio
+import fourwire
+from adafruit_hx8357 import HX8357
+
+displayio.release_displays()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+display_bus = fourwire.FourWire(
+    spi, command=board.D10, chip_select=board.D9, reset=None
+)
+display = HX8357(display_bus, width=480, height=320, rotation=DISPLAY_ROTATION)
+```
+
+The `D9 = CS` / `D10 = DC` pin assignment is Adafruit's standard
+FeatherWing convention — those are the pins the #3651's CS and DC
+traces wire to on the FeatherWing PCB. The `rotation=DISPLAY_ROTATION`
+reads from `config.py` so the existing `DISPLAY_ROTATION` setting
+keeps working.
+
+After this edit your CIRCUITPY drive's `code.py` should boot with
+**[ KEYBOARD ]** showing on the #3651 TFT — but the text will appear
+tiny because the layout is still tuned for the much smaller #5691
+panel. That's what the next (optional) edit fixes.
+
+#### Edit 2 — Resize labels and reposition the pressure bar (optional but strongly recommended)
+
+The default layout positions and scales in `_build_display()` were
+chosen for the 240×135 px #5691 TFT. On the 480×320 px #3651 the
+labels are perfectly readable but use only the top-left ~quarter of
+the panel, leaving most of the screen blank.
+
+To use the full 480×320 area, change the values in `_build_display()`
+from the **left column** (current #5691 defaults) to the **right column**
+(#3651 layout). Just edit the literal numbers — no structural changes.
+
+| Element | #5691 (current) | #3651 (recommended) | What changes |
+|---|---|---|---|
+| Group name `_make_label(...)` | `scale=2, y=2` | `scale=5, y=10` | Largest text, top of screen |
+| Morse buffer `_make_label(...)` | `scale=2, y=30` | `scale=4, y=90` | Big, easy to follow as you sip/puff |
+| Last action `_make_label(...)` | `scale=2, y=58` | `scale=4, y=160` | Big "what just fired" |
+| Modifier/status `_make_label(...)` | `scale=2, y=86` | `scale=3, y=230` | Smaller — less important info |
+| Pressure bar y-position (both `TileGrid` calls) | `y=126` | `y=290` | Bottom of screen with 22 px margin |
+| Pressure bar height (`Bitmap` 2nd arg, both bar bitmaps) | `8` | `20` | Thicker for visibility from distance |
+
+Concretely, your `_build_display()` becomes something like (only the
+two TileGrid `y=` values and the Bitmap height change for the bar; the
+four `_make_label` calls change their `scale` and `y` arguments):
+
+```python
+lbl_group  = _make_label(root, f"[ {_GROUP_NAMES[1]} ]", _GROUP_COLORS[1], 5,  10)
+lbl_buf    = _make_label(root, " ",                       0x00FFFF,         4,  90)
+lbl_action = _make_label(root, " ",                       0xFFFF00,         4, 160)
+lbl_mods   = _make_label(root, " ",                       0xFF8000,         3, 230)
+
+bar_bg_bmp = displayio.Bitmap(display.width - 8, 20, 1)   # was height 8
+bar_bg_pal = displayio.Palette(1)
+bar_bg_pal[0] = 0x202020
+root.append(displayio.TileGrid(bar_bg_bmp, pixel_shader=bar_bg_pal, x=4, y=290))
+
+bar_pal = displayio.Palette(2)
+bar_pal.make_transparent(0)
+bar_pal[1] = 0x00FF00
+bar_bmp = displayio.Bitmap(display.width - 8, 20, 2)      # was height 8
+root.append(displayio.TileGrid(bar_bmp, pixel_shader=bar_pal, x=4, y=290))
+```
+
+The pixel-bar painting code further down in `_update_display()` uses
+`for y in range(8)` — change those `range(8)` calls to `range(20)` to
+fill the taller bar.
+
+> All numbers above are starting points — feel free to tune. A
+> reasonable rule of thumb on the 480×320: terminalio.FONT is 6×12 px
+> at scale 1, so at scale 5 a character is 30×60 px and you fit
+> 480/30 = 16 characters per line at full width; at scale 4 you fit
+> 20 characters per line.
+
+### F.6 Configuration
+
+Once the display is up, configuration is identical to any other build:
+edit `config.py` per §10 (and Appendix E for the deep notes). Set
+`USE_SENSOR`, thresholds, switch mode, and so on the same way you
+would on a #5691. The display layout edits above don't interact with
+any of those settings.
+
+### F.7 Verifying it works
+
+A healthy first boot on this build should show:
+
+```
+Baseline: <pressure> sip<...> puff>...
+Calibration complete — ready for input.
+Input mode: 2-switch  (1-sw input = dot, 3-sw accept = long_dash)
+Code repeat: off  long-press cycles group: True
+Baseline auto-zero: 30s time constant
+ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
+```
+
+…and the 3.5" TFT should display the standard four-row layout with the
+pressure bar at the bottom (after applying Edit 2), at the much
+larger scale.
+
+If you get a blank display or a `KeyError` / `AttributeError` on
+`board.DISPLAY`, Edit 1 didn't apply cleanly — open the file again
+and confirm the import lines and the `display = HX8357(...)` block are
+above the first `_make_label(...)` call.
+
+If the display lights up but text is tiny in the top-left corner of a
+blank screen, Edit 1 worked but Edit 2 wasn't applied yet. Apply Edit
+2 for the full-size layout.
+
+If text rotates the wrong way, change `DISPLAY_ROTATION` in
+`config.py` (valid values: `0`, `90`, `180`, `270`).
 
 ---
 
