@@ -169,6 +169,17 @@ if USE_SENSOR:
     print("Calibration complete — ready for input.")
     _avg_pressure = RollingAverage(POINTS_TO_AVERAGE)
 
+    # Auto-zero coefficient: each IDLE-state sample nudges _baseline this
+    # fraction of the way toward the current raw reading. Sensor runs at
+    # 75 Hz, so a 30 s time constant means alpha ≈ 1 / (30 × 75) ≈ 4.4e-4.
+    # BASELINE_DRIFT_S = 0 disables auto-zero entirely.
+    if BASELINE_DRIFT_S > 0:
+        _BASELINE_ALPHA = 1.0 / (BASELINE_DRIFT_S * 75.0)
+    else:
+        _BASELINE_ALPHA = 0.0
+    print(f"Baseline auto-zero: {BASELINE_DRIFT_S}s time constant"
+          if BASELINE_DRIFT_S > 0 else "Baseline auto-zero: disabled")
+
 # ── Audio setup ───────────────────────────────────────────────────────────────
 # Square-wave tone generator on AUDIO_PIN via pwmio. This works on every
 # CircuitPython chip including ESP32-S3 — synthio / audiopwmio are not
@@ -860,6 +871,16 @@ while True:
         raw = lps.pressure
         _avg_pressure.add(raw)
         _display_pressure = raw - _baseline
+
+        # Auto-zero: while no input is active, slowly drift baseline toward
+        # the current raw reading so weather / HVAC / temperature changes
+        # in ambient atmospheric pressure don't accumulate into a phantom
+        # sip. Frozen during DIT / DAH so a held sip never gets absorbed.
+        if _BASELINE_ALPHA and _last_state == IDLE:
+            _baseline += (raw - _baseline) * _BASELINE_ALPHA
+            _sip_threshold  = _baseline - THRESH_SIP
+            _puff_threshold = _baseline + THRESH_PUFF
+
         # Raw candidate state from pressure thresholds.
         if raw > _puff_threshold:
             candidate = DAH

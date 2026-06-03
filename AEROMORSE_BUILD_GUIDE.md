@@ -1817,6 +1817,7 @@ interact with other settings" explanation, jump to Appendix E.
 | `THRESH_PUFF` | `2` | hPa above baseline = dash |
 | `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing samples to confirm a state change |
 | `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged before threshold compare |
+| `BASELINE_DRIFT_S` | `30` | Auto-zero time constant in seconds — baseline tracks ambient pressure drift while idle. `0` disables. |
 | `SWITCH_MODE` | `2` | `1` = single-switch timed, `2` = paddle, `3` = paddle + explicit Accept |
 | `ONE_SWITCH_INPUT` | `"dot"` | Mode 1 only — `"dot"` or `"dash"` |
 | `ONE_SWITCH_DOT_MS` | `200` | Mode 1 only — press ≤ this ms = dot, longer = dash |
@@ -1901,8 +1902,28 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 - Confirm `adafruit_lps35hw.mpy` is in `/lib` on the CIRCUITPY drive.
 
 **False pressure triggers (random dots/dashes while not sipping or puffing)**
-- Raise `THRESH_SIP` and `THRESH_PUFF` to 8 or 10 in `code.py`.
+- Raise `THRESH_SIP` and `THRESH_PUFF` to 3 or 5 in `config.py` if it
+  happens immediately on touching the tube. Combined with a low
+  `DEBOUNCE_SAMPLES` change.
 - Check the sip-and-puff tube is not kinked or pinched.
+- Confirm auto-zero is on: `BASELINE_DRIFT_S` should be non-zero
+  (default `30`). If it's `0`, the boot-time baseline is fixed and
+  will go stale over minutes/hours.
+
+**Pressure bar slowly grows red/green over time, then fires random codes**
+- Classic symptom of **ambient pressure drift** (weather, HVAC,
+  temperature). The LPS33HW measures absolute atmospheric pressure,
+  so a slow real-world change in the room shows up as a slow drift
+  away from the boot-time baseline — eventually crossing the
+  threshold and firing as a phantom sip or puff.
+- Confirm `BASELINE_DRIFT_S` in `config.py` is non-zero (default
+  `30`). If it's `0`, auto-zero is disabled — set it to `30` and
+  reboot (Ctrl+D in Thonny). The pressure bar should stay near zero
+  even after the device sits idle for hours.
+- If even with auto-zero on the bar still drifts visibly, lower
+  `BASELINE_DRIFT_S` to `15` to track faster. Don't go below ~10 or
+  slow deliberate sips may start getting absorbed into the baseline.
+- See Appendix E "`BASELINE_DRIFT_S`" for the full tuning rationale.
 
 ---
 
@@ -2378,6 +2399,29 @@ Number of pressure readings averaged before threshold comparison.
 Higher = more bounce immunity, slower response. Lower = faster but
 jitterier. `8` is a sensible default for sip-and-puff. Most users
 don't need to touch this.
+
+**`BASELINE_DRIFT_S`** (default `30`). *Sensor mode only.*
+Time constant in seconds for auto-zero drift correction. The LPS33HW
+sensor measures **absolute** atmospheric pressure, not pressure-
+relative-to-anything, so the boot-time baseline goes stale as real
+ambient pressure changes — from weather systems, HVAC cycling, doors
+opening, temperature changes, anything. Without correction, after
+30–60 minutes the device often starts firing phantom sips or puffs
+as the stale baseline drifts further and further from current ambient.
+- While the state machine is **IDLE** (no active sip/puff), baseline
+  drifts slowly toward the current raw reading at this time constant.
+  At 75 Hz sampling, `BASELINE_DRIFT_S = 30` gives a per-sample
+  correction factor of ~0.00044, so a step change in ambient is
+  ~95 % corrected in ~90 s.
+- While in **DIT** or **DAH** the baseline is **frozen** — a held sip
+  or puff cannot be absorbed into the baseline, so a sustained
+  element still detects normally.
+- Set to `0` to disable auto-zero entirely (return to the original
+  fixed-baseline behaviour). Useful if your environment has perfectly
+  stable atmospheric pressure (rare) or for debugging.
+- Tune lower (`15`) for environments with fast pressure changes
+  (close to an HVAC vent); higher (`60` or `120`) if you find the
+  baseline drifting away during slow deliberate sips.
 
 **`DOT_PIN`** / **`DASH_PIN`** (defaults `board.D5`, `board.D6`).
 GPIO pins for the AT-switch jacks. Only used when `USE_SENSOR = False`.

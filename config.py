@@ -21,6 +21,7 @@ THRESH_SIP        = 2         # hPa below baseline = dot (raise if false trigger
 THRESH_PUFF       = 2         # hPa above baseline = dash
 DEBOUNCE_SAMPLES  = 3         # consecutive agreeing samples to confirm a state change (~13 ms each)
 POINTS_TO_AVERAGE = 8         # pressure readings averaged before threshold compare
+BASELINE_DRIFT_S  = 30        # auto-zero time constant; 0 disables, follows ambient pressure drift
 
 DOT_PIN           = board.D5  # switch-mode only — TIP of dot jack
 DASH_PIN          = board.D6  # switch-mode only — TIP of dash jack
