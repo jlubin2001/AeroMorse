@@ -927,6 +927,75 @@ If your speaker already terminates in a 3.5 mm mono plug, skip the
 #2790 plug — the existing plug goes straight into the #2915 jack. You
 still need the jack itself wired to A0 / GND on the Feather.
 
+#### Can one #2915 do BOTH AT switches AND audio?
+
+**No — they have to be on separate jacks.** A single #2915 can only
+wire to one set of Feather pins (D5 / D6 / GND for switches *or*
+A0 / GND for audio), and even if you tried to share the Tip terminal
+between D5 and A0 the signals would fight each other (D5 is a digital
+input with pull-up, read every main-loop iteration; A0 is a PWM
+audio output — they can't coexist on the same wire).
+
+Mono plug behaviour makes a "clever" TRRS sharing scheme worse, not
+better: when a mono switch is plugged into a TRRS jack, the plug's
+sleeve **shorts Ring1, Ring2, and Sleeve together**, so any pin you
+wire to a Ring would be permanently pulled to GND.
+
+The #2915 is cheap enough ($2.50) that the right answer is to use
+**two** jacks when you need both roles — one wired for switches, one
+wired for audio. Both keep their no-solder-on-the-jack-side benefit.
+
+#### Common configurations — how many #2915 jacks you need
+
+| Build | #2915 jacks needed | What each one is wired for |
+|---|---|---|
+| **Sip-and-puff + on-board STEMMA Speaker (#3885)** | **0** | Sensor uses STEMMA QT; speaker uses JST PH (#4046 cable). No 3.5 mm jack involved. |
+| **Sip-and-puff + removable 3.5 mm-plug piezo (Option S2)** | **1** (Audio) | Tip → A0, Sleeve → GND |
+| **AT switches + on-board STEMMA Speaker (#3885)** | **1** (Switches) | Tip → D5, Ring → D6, Sleeve → GND |
+| **AT switches + removable 3.5 mm-plug piezo** | **2** (Switches + Audio) | Jack 1: Tip → D5, Ring → D6, Sleeve → GND  ·  Jack 2: Tip → A0, Sleeve → GND |
+| **AT switches + PAM8302 amp + speaker (Option S3)** | **1** (Switches) | Tip → D5, Ring → D6, Sleeve → GND. PAM8302 wires to A0/3V/GND directly. |
+
+#### Wiring guide for each role
+
+**Switches jack** (one #2915, mono or TRS-Y plugs in):
+
+| #2915 terminal | Feather pin | Plug type used | What it does |
+|---|---|---|---|
+| Tip | **D5** | mono switch *or* TRS Y-splitter ring 1 | Dot input |
+| Ring | **D6** | TRS Y-splitter ring 2 | Dash input |
+| Ring 2 | — | (leave empty) | — |
+| Sleeve | **GND** | mono switch sleeve / TRS sleeve | Ground / switch return |
+
+> A single mono switch plugged into the same jack gives **dot only**
+> (D5 alone). For both dot and dash, use a TRS Y-splitter (mono-to-
+> stereo) with one switch on each branch.
+
+**Audio jack** (one #2915, 3.5 mm-plug piezo plugs in):
+
+| #2915 terminal | Feather pin | Plug type used | What it does |
+|---|---|---|---|
+| Tip | **A0** | piezo's Tip lead | Audio (PWM signal) |
+| Ring | — | (leave empty) | — |
+| Ring 2 | — | (leave empty) | — |
+| Sleeve | **GND** | piezo's Sleeve lead | Audio return |
+
+> If your piezo doesn't already have a 3.5 mm plug, pair it with the
+> #2790 plug-side terminal block — that gives you a fully solderless
+> Feather-to-piezo chain (see the parts table at the top of Option S2).
+
+#### Connecting either jack to the Feather
+
+Two short wires per jack from the screw terminals to the matching
+Feather pin (or pad, if your Feather has no headers). The §8D speaker
+assembly already covers the headers-vs-pads choice — same procedure
+for the switches jack.
+
+For builders running **both** jacks (the AT-switches + audio
+combination): wire each jack to its set of pins independently. The
+Tip terminal of the switches jack goes to D5 *only*. The Tip terminal
+of the audio jack goes to A0 *only*. No shared wires between the two
+jacks except GND, which both jacks return to.
+
 ---
 
 ### Option S3 — Small speaker + separate amplifier board
