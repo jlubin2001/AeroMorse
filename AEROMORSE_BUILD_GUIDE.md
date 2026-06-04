@@ -56,13 +56,22 @@ switches**. A short sip (or switch 1) is a dot; a short puff (or switch 2) is
 a dash. A small OLED display shows the active group, the Morse pattern as it
 builds, and the last action. An optional speaker beeps for every dot and dash.
 
-Four groups organize all functions:
+Ten groups organize all functions — `g0` plus `g1–g9`:
 
-- **Group 0** — always-available emergency group-switch patterns
-- **Group 1** — keyboard: letters, numbers, punctuation, function keys,
-  navigation, sticky modifiers
-- **Group 2** — mouse movement, clicks, drag, repeat, and Windows shortcuts
-- **Group 3** — user-defined macro text strings
+- **Group 0** — always-available system layer; 8-symbol patterns jump
+  directly to any other group from anywhere
+- **Group 1** — **Keyboard**: letters, numbers, punctuation, function keys,
+  navigation, sticky modifiers (default group at boot)
+- **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
+  shortcuts
+- **Group 3** — **Macro**: user-defined text strings
+- **Group 4** — **Scanning**: F1–F12 on the 12 shortest codes — for iOS /
+  Android Switch Control
+- **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
+  mute, track skip, brightness, plus launchers for calculator, file
+  explorer, browser, mail, and system power
+- **Groups 6–9** — **Placeholders** seeded with g1's letters and numbers,
+  ready for you to customise
 
 Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
 mirrors the main screen on a second board up to ~30 m away — useful when the
@@ -395,30 +404,6 @@ that first.
 
 Solders three short wires to an Adafruit TRRS Jack Breakout board (T, R1, S
 — Ring 2 is unused).
-
-> **Can I use clips instead of soldering on the #5764?**
->
-> | Clip type | On the #5764 | On the Feather | Verdict |
-> |-----------|-------------|----------------|---------|
-> | IC hooks (dual hook-to-hook) | Flat pads — hooks slip off | Flat pads or header pins | ✗ Not reliable |
-> | Alligator clip to female jumper | TRRS jack **legs** (round metal, grippable) — **not** flat pads | Female slides onto Feather header pin directly | ✓ Works if jack legs protrude and Feather has header pins |
-> | Alligator clip to female jumper | Flat pads only (no protruding legs) | Any | ✗ Not reliable |
->
-> **How to check:** Look at the bottom of the #5764. If the TRRS jack's metal
-> legs stick out 1–2 mm below the PCB, alligator clips can grip them. Clip
-> one jaw onto each leg — T, R1, S — and plug the female end directly onto
-> the matching Feather header pin. No male-to-male cable needed if the Feather
-> has soldered header pins.
->
-> Secure the wires with a cable tie or tape so they cannot be tugged loose
-> during use.
->
-> **If the Feather has no header pins** the chain becomes alligator→female→
-> male-to-male→alligator→Feather pad, which adds two extra connection points
-> and is too unreliable for daily use.
->
-> **For guaranteed no-solder reliability** use **Option B1** with two #1699
-> jacks — each switch gets its own dedicated jack, no clips, no Y-splitter.
 
 Parts needed:
 - Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
@@ -927,24 +912,6 @@ jack-and-plug pair just adds detachability.
 If your speaker already terminates in a 3.5 mm mono plug, skip the
 #2790 plug — the existing plug goes straight into the #2915 jack. You
 still need the jack itself wired to A0 / GND on the Feather.
-
-#### Can one #2915 do BOTH AT switches AND audio?
-
-**No — they have to be on separate jacks.** A single #2915 can only
-wire to one set of Feather pins (D5 / D6 / GND for switches *or*
-A0 / GND for audio), and even if you tried to share the Tip terminal
-between D5 and A0 the signals would fight each other (D5 is a digital
-input with pull-up, read every main-loop iteration; A0 is a PWM
-audio output — they can't coexist on the same wire).
-
-Mono plug behaviour makes a "clever" TRRS sharing scheme worse, not
-better: when a mono switch is plugged into a TRRS jack, the plug's
-sleeve **shorts Ring1, Ring2, and Sleeve together**, so any pin you
-wire to a Ring would be permanently pulled to GND.
-
-The #2915 is cheap enough ($2.50) that the right answer is to use
-**two** jacks when you need both roles — one wired for switches, one
-wired for audio. Both keep their no-solder-on-the-jack-side benefit.
 
 #### Common configurations — how many #2915 jacks you need
 

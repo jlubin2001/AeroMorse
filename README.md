@@ -30,13 +30,22 @@ is a **dash**. A small OLED display shows the active group, the Morse pattern
 as it builds, and the last action. An optional speaker beeps for every dot
 and dash.
 
-Four groups organize all functions:
+Ten groups organize all functions — `g0` plus `g1–g9`:
 
-- **Group 0** — always-available emergency group-switch patterns
-- **Group 1** — keyboard: letters, numbers, punctuation, function keys,
-  navigation, sticky modifiers
-- **Group 2** — mouse movement, clicks, drag, repeat, and Windows shortcuts
-- **Group 3** — user-defined macro text strings
+- **Group 0** — always-available system layer; 8-symbol patterns jump
+  directly to any other group from anywhere
+- **Group 1** — **Keyboard**: letters, numbers, punctuation, function keys,
+  navigation, sticky modifiers (default group at boot)
+- **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
+  shortcuts
+- **Group 3** — **Macro**: user-defined text strings
+- **Group 4** — **Scanning**: F1–F12 on the 12 shortest codes — for iOS /
+  Android Switch Control
+- **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
+  mute, track skip, brightness, plus launchers for calculator, file
+  explorer, browser, mail, and system power
+- **Groups 6–9** — **Placeholders** seeded with g1's letters and numbers,
+  ready for you to customise
 
 Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
 mirrors the main screen on a second board up to ~30 m away — useful when the
