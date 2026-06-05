@@ -574,7 +574,7 @@ def _exec_command(cmd):
 _CMD_VERBS = {'group', 'mmove', 'mclick', 'mdrag', 'repeat', 'mslow', 'mfast', 'mreset'}
 
 # Human-friendly display labels for mouse commands — matches the
-# aeromorse_visualizer.htm substitutions so the OLED/TFT last-action
+# aeromorse_cheatsheet.htm substitutions so the OLED/TFT last-action
 # line and the serial console both read clearly (e.g. "mmove up" on
 # screen instead of "mmove 0 -1 0"). The raw command string is still
 # what gets dispatched to _exec_command; only the display changes.

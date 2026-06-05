@@ -230,7 +230,7 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 - Macros: any string, any keycode, or any keycode-tuple combination —
   no 4-character limit
 - Companion tools:
-  - **`aeromorse_visualizer.htm`** — generates printable cheat sheets
+  - **`aeromorse_cheatsheet.htm`** — interactive browser cheat sheet (animated dots/dashes, click for timing audio) — also prints cleanly
   - **`morse_map_analyzer.exe`** — audits for duplicates, conflicts, unused codes
 
 ---
@@ -307,7 +307,7 @@ For a Darci user moving to AeroMorse, in order:
 3. **Decide on code set:**
    - To keep Darci muscle memory → install `morse_map_darci.py` (rename to `morse_map.py` on the CIRCUITPY drive).
    - To use AeroMorse's optimized defaults → keep the shipped `morse_map.py`.
-4. **Print a cheat sheet** — open `aeromorse_visualizer.htm` in a browser,
+4. **Print a cheat sheet** — open `aeromorse_cheatsheet.htm` in a browser,
    load your chosen `morse_map.py`, click Print.
 5. **Practice** for a week with familiar codes (A–Z, 0–9) before learning
    any AeroMorse-specific extensions or group changes.

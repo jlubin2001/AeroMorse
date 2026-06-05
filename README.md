@@ -704,10 +704,9 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, audio pitches, timing, etc. Edit this file instead of `code.py`. |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
-| `boot.py` | Runs once at power-on; enables USB HID keyboard and mouse |
-| `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT) and W2 (XIAO + OLED). 240×135 colour display with full live preview. |
-| `receiver_magtag.py` | Wireless display mirror firmware — Option W3 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** |
-| `receiver_boot.py` | boot.py for any of the receiver boards (W1, W2, or W3) — does not enable USB HID. |
+| `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
+| `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT) and W2 (XIAO + OLED). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
+| `receiver_magtag.py` | Wireless display mirror firmware — Option W3 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** Copy as `code.py` to the MagTag. |
 
 ### Documentation
 
@@ -724,10 +723,10 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 
 | File | Purpose |
 |------|---------|
-| `aeromorse_visualizer.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |
+| `aeromorse_cheatsheet.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |
 | `morse_map_analyzer.py` | Python 3 script that reads `morse_map.py` and reports duplicate codes, conflicts with the always-on Group 0 patterns, and unused code slots for lengths 2–7. Run with `python morse_map_analyzer.py`; output is saved to `morse_map_report.txt`. |
 | `morse_map_report.txt` | Latest output from `morse_map_analyzer.py` |
-| `test_pressure.py` | Diagnostic script — copy to CIRCUITPY, run via REPL; prints live pressure readings for 30 s to help set sip/puff thresholds |
+| `test_pressure.py` | Diagnostic script — copy to CIRCUITPY; press Ctrl-C to reach the `>>>` REPL prompt (do **not** reset — that re-runs `code.py`), then `import test_pressure`. To run again: `exec(open('test_pressure.py').read())` (`importlib` is not available in CircuitPython). Prints a live pressure-delta bar chart for 30 s and suggests `THRESH_SIP` / `THRESH_PUFF` values for `config.py`. |
 
 ---
 

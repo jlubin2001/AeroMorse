@@ -30,9 +30,13 @@
 # Setup
 #   1. Flash CircuitPython 10.x onto the MagTag.
 #   2. Copy the libraries above to /lib on the MagTag.
-#   3. Copy receiver_boot.py to the MagTag as boot.py
-#      (disables USB HID so the host doesn't see it as a keyboard).
-#   4. Copy this file to the MagTag as code.py.
+#   3. Copy the SAME boot.py from the sender to the MagTag. boot.py
+#      auto-detects its role from whether /morse_map.py is present, so
+#      it will correctly leave USB HID off on this receiver (you won't
+#      copy morse_map.py here in step 4).
+#   4. Copy this file to the MagTag as code.py. Do NOT copy
+#      morse_map.py — its absence is what tells boot.py this is a
+#      receiver.
 #   5. Power on. The e-ink display shows "[ WAITING ]" until the main
 #      AeroMorse board comes up, then mirrors the group / last action /
 #      modifier status.

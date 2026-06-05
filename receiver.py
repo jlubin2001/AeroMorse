@@ -11,9 +11,12 @@
 # Setup
 #   1. Flash CircuitPython 9.x onto the second Feather.
 #   2. Copy your existing /lib folder from the main board — no new files needed.
-#   3. Copy receiver_boot.py to this board as boot.py
-#      (skips USB HID so Windows does not see it as a second keyboard).
-#   4. Copy this file to the board as code.py.
+#   3. Copy the SAME boot.py from the sender to this board. boot.py
+#      auto-detects its role from whether /morse_map.py is present, so
+#      it will correctly leave USB HID off on this receiver (no
+#      morse_map.py is copied here in step 4).
+#   4. Copy this file to the board as code.py. Do NOT copy morse_map.py
+#      — its absence is what tells boot.py this is a receiver.
 #   5. Power on — the display shows "Waiting" until the main board comes up.
 #
 # Protocol

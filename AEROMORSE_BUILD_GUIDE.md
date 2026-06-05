@@ -665,8 +665,10 @@ The #5691 has a built-in JST-PH battery connector and charges over USB-C. Plug i
 
 **Files needed on the second board:** See **§9.4.1 Option W1** for the
 complete file tree and step-by-step setup. In short: `receiver.py` →
-`code.py`, `receiver_boot.py` → `boot.py`, and one library folder
-(`adafruit_display_text/`) under `/lib`. No HID library, no Morse map.
+`code.py`, the **same** `boot.py` from the sender (auto-detects the
+receiver role because no `morse_map.py` is present), and one library
+folder (`adafruit_display_text/`) under `/lib`. No HID library, no
+Morse map.
 
 ---
 
@@ -767,10 +769,10 @@ use Option W1 instead.
 - Sleek aesthetic (the MagTag is designed for wall mounting).
 
 **Files needed on the MagTag:** see **§9.4.1 Option W3** for the
-complete file tree. In short: `receiver_magtag.py` → `code.py`,
-`receiver_boot.py` → `boot.py`, and the `adafruit_magtag/` library
-folder (which pulls in several support libraries — listed in the
-receiver_magtag.py file header).
+complete file tree. In short: `receiver_magtag.py` → `code.py`, the
+**same** `boot.py` from the sender (auto-detects receiver role), and
+the `adafruit_magtag/` library folder (which pulls in several support
+libraries — listed in the `receiver_magtag.py` file header).
 
 > The MagTag is also available with a header strip and other variants;
 > for this build any 2025 Edition MagTag (SSD1680) works.
@@ -1719,16 +1721,25 @@ act as a keyboard or mouse; you do not load `morse_map.py` or
 
 | File on your computer | Copy to the receiver as |
 |----------------------|------------------------|
-| `receiver.py` | `code.py` (rename when copying) |
-| `receiver_boot.py` | `boot.py` (rename when copying) |
+| `boot.py` | `boot.py` (same file used on the sender) |
+| `receiver.py` (W1 / W2) **or** `receiver_magtag.py` (W3) | `code.py` (rename when copying) |
 
-> **`receiver_boot.py` deliberately disables USB HID on the receiver.**
-> Without renaming it to `boot.py` on the receiver, Windows / macOS /
-> Linux will see the second board as a duplicate keyboard and try to
-> type from it as well.
+> **One `boot.py` for every board.** The same `boot.py` from the sender
+> works unchanged on every receiver — it inspects the filesystem at
+> boot and chooses its role automatically:
+> - If `morse_map.py` is present → **sender**: enables USB HID
+>   (Keyboard, Mouse, ConsumerControl).
+> - If `morse_map.py` is absent → **receiver**: leaves HID off so the
+>   host doesn't see the second board as a duplicate keyboard.
+> - If `morse_map.py` is absent AND an empty `/hide` file is also
+>   present → **hidden receiver**: also disables the CIRCUITPY drive
+>   and serial port so the host sees nothing at all. Useful once the
+>   receiver is configured and you want a clean USB enumeration.
 
-> **Do NOT copy `morse_map.py` to the receiver.** The receiver only
-> draws what the main board sends — no Morse decoding happens on it.
+> **Do NOT copy `morse_map.py` to the receiver.** It's the file the
+> boot detection uses to choose sender vs receiver — and the receiver
+> doesn't decode any Morse anyway (it just renders what the main
+> board sends).
 
 #### Firmware on the receiver (Step 9.1 equivalent)
 
@@ -1744,7 +1755,7 @@ display → CircuitPython versions on the two boards" for the details.
 
 ```
 CIRCUITPY/    (on the W1 receiver)
-├── boot.py                        (= renamed copy of receiver_boot.py)
+├── boot.py                        (= same boot.py as the sender)
 ├── code.py                        (= renamed copy of receiver.py)
 └── lib/
     └── adafruit_display_text/     (only library needed)
@@ -1768,7 +1779,7 @@ once to switch I²C from STEMMA QT to bit-banged D2/D3 pins. See
 
 ```
 CIRCUITPY/    (on the W2 receiver)
-├── boot.py                                (= renamed copy of receiver_boot.py)
+├── boot.py                                (= same boot.py as the sender)
 ├── code.py                                (= renamed and edited copy of receiver.py)
 └── lib/
     ├── adafruit_display_text/             (always)
@@ -1792,7 +1803,7 @@ fundamentally different — fewer fields, slower throttled refresh).
 
 ```
 CIRCUITPY/    (on the W3 MagTag receiver)
-├── boot.py                            (= renamed copy of receiver_boot.py)
+├── boot.py                            (= same boot.py as the sender)
 ├── code.py                            (= renamed copy of receiver_magtag.py)
 └── lib/
     ├── adafruit_magtag/                (e-ink + peripherals)
@@ -2106,10 +2117,12 @@ working — e.g., heavy WiFi interference on channel 1):
     versions; leave `USE_WIRELESS_DISPLAY = True`.
 
 **Wireless display acts as a second keyboard on Windows**
-- The `receiver_boot.py` file was not copied as `boot.py` on the second
-  board, or the original `boot.py` (which enables USB HID) is still on
-  the second board. Replace `boot.py` on the second board with the
-  contents of `receiver_boot.py`.
+- The receiver has `morse_map.py` on it. The shared `boot.py` checks
+  for that file to decide its role: present = sender (USB HID
+  enabled), absent = receiver (HID disabled). If you copied
+  `morse_map.py` onto the receiver by mistake, delete it and reboot
+  the receiver — `boot.py` will then leave USB HID off and the host
+  will stop seeing the receiver as a second keyboard.
 
 **Option W2 OLED stays blank**
 - Check all four wires are connected to the correct pins on both the
@@ -2127,9 +2140,11 @@ working — e.g., heavy WiFi interference on channel 1):
   10.x** UF2. See https://learn.adafruit.com/adafruit-magtag.
 - Confirm `adafruit_magtag/` (the folder, not a single .mpy) is in
   `/lib`, plus its support libraries (see §9.4.1 Option W3).
-- Confirm `boot.py` on the MagTag is the renamed `receiver_boot.py`
-  (not the main-board `boot.py`, which enables USB HID and uses
-  pins/ports the MagTag handles differently).
+- Confirm `boot.py` on the MagTag is **the same `boot.py` from the
+  sender** (it auto-detects the receiver role from the absence of
+  `morse_map.py`). If you accidentally copied `morse_map.py` onto the
+  MagTag, boot.py will treat it as a sender and enable USB HID —
+  delete the file and reboot.
 
 **Option W3 MagTag — pattern preview and pressure bar never appear**
 - That's **by design**, not a bug. E-ink refresh is too slow (~1–2 s

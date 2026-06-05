@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Morse Code Cheat Sheet</title>
+<title>AeroMorse Cheat Sheet</title>
 <style>
   @charset "utf-8";
 
@@ -53,7 +53,7 @@
     display: inline-block;
     font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", "monospace";
     line-height: 1.4em;
-    margin: 0; /* Removed margin so it sits perfectly flush against the right edge */
+    margin: 0;
     padding: 0.1em 0.6em;
     text-shadow: 0 1px 0 #fff;
     white-space: nowrap;
@@ -90,12 +90,21 @@
     break-inside: avoid;
     border-bottom: 1px dashed #f0f0f0;
     padding-bottom: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding-left: 2px;
+    padding-right: 2px;
+    transition: background 0.1s;
   }
+
+  .item:hover { background: #f0f4ff; }
+  .item:active { background: #ddeeff; }
 
   .morse-seq {
     display: flex;
     align-items: center;
     gap: 3px;
+    flex-shrink: 0;
   }
 
   .key-output {
@@ -104,7 +113,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    margin-left: 10px; /* Provide some buffer space from the morse dots */
+    margin-left: 10px;
   }
 
   .unassigned {
@@ -113,6 +122,18 @@
     font-size: 0.85em;
     text-align: right;
   }
+
+  /* Small speaker hint shown on screen, hidden when printing */
+  .audio-hint {
+    flex-shrink: 0;
+    margin-left: 6px;
+    color: #7806ec;
+    opacity: 0.35;
+    line-height: 1;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .item:hover .audio-hint { opacity: 0.75; }
 
   /* UI Controls */
   .controls-container {
@@ -184,9 +205,9 @@
       max-width: 100%;
       page-break-after: always;
       border-radius: 0;
-      display: block !important; /* Ensure visible during print */
+      display: block !important;
     }
-    .controls-container { display: none; } /* Hide the uploader when printing */
+    .controls-container { display: none; }
     .columns {
       column-gap: 20px;
     }
@@ -194,7 +215,10 @@
     .cols-2 { column-count: 2 !important; }
     .item {
       page-break-inside: avoid;
+      cursor: default;
     }
+    /* Hide audio affordances when printing */
+    .audio-hint { display: none !important; }
   }
 
   /* Responsive fallback */
@@ -210,14 +234,14 @@
 <body>
 
   <div class="controls-container no-print">
-    <h2>Morse Code Visualizer</h2>
+    <h2>AeroMorse Cheat Sheet</h2>
     <div class="file-upload-wrapper">
       <label class="custom-file-upload">
         <input type="file" id="file-input" accept=".py,.txt" />
         📂 Select morse_map.py
       </label>
       <button class="print-btn" id="print-btn" onclick="window.print()">🖨️ Print Cheat Sheets</button>
-      <span id="file-name-display">No file chosen yet...</span>
+      <span id="file-name-display">No file chosen yet… click a row to hear its Morse tones.</span>
     </div>
   </div>
 
@@ -227,13 +251,12 @@
     document.getElementById('file-input').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
-      document.getElementById('file-name-display').textContent = `Loaded: ${file.name}`;
+      document.getElementById('file-name-display').textContent = `Loaded: ${file.name} — click any row to hear its Morse tones.`;
       const reader = new FileReader();
       reader.onload = function(e) { processMorseData(e.target.result); };
       reader.readAsText(file);
     });
 
-    // Format a single Keycode name (with Keycode. already stripped or not) into a readable label.
     function formatKeyPart(part) {
       part = part.trim().replace(/^Keycode\./, '');
 
@@ -299,10 +322,7 @@
         g9: "Group 9 (placeholder)"
       };
 
-      // Matches lines like: g1[4][0b1000]='b'   or   g2[2][0b11] = "mmove 0 -1 0"
-      // Placeholder groups g5-g9 are seeded programmatically (no literal lines),
-      // so only their customised entries will appear here.
-      const regex = /^(g[0-9])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
+      const regex = /^\s*(g[0-9])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
 
       dataStr.split('\n').forEach(line => {
         const match = line.match(regex);
@@ -316,7 +336,6 @@
         let key;
 
         if (raw.startsWith("'") || raw.startsWith('"')) {
-          // ── Quoted string ────────────────────────────────────────────────
           const q = raw[0];
           let end = -1;
           for (let i = 1; i < raw.length; i++) {
@@ -326,7 +345,6 @@
           key = end !== -1 ? raw.substring(1, end) : raw;
           key = key.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
 
-          // Mouse movement / click abbreviations
           key = key.replace('mmove 0 -1 0',  'mmove up');
           key = key.replace('mmove 0 1 0',   'mmove down');
           key = key.replace('mmove 1 0 0',   'mmove right');
@@ -343,15 +361,12 @@
           key = key.replace('mclick right 2', 'mclick right dbl');
           key = key.replace('mdrag left',     'drag left toggle');
         } else if (raw.startsWith('CC(')) {
-          // ── ConsumerControl action: CC(ConsumerControlCode.XXX) ──────────
           const inner = raw.split('#')[0].trim().slice(3, -1).trim();
-          // Strip "ConsumerControlCode." prefix, convert to Title Case
           key = inner.replace(/^ConsumerControlCode\./, '')
                      .replace(/_/g, ' ')
                      .toLowerCase()
                      .replace(/\b\w/g, c => c.toUpperCase());
         } else {
-          // ── Unquoted: single Keycode or comma-separated tuple ────────────
           const noComment = raw.split('#')[0].trim();
           key = noComment.split(',').map(formatKeyPart).filter(p => p).join(' + ');
         }
@@ -359,7 +374,6 @@
         parsedGroups[group].push({ length, binStr, key });
       });
 
-      // Sorting function
       const sortKeys = (a, b) => {
         const arrowOrder = { '←': 1, '↑': 2, '↓': 3, '→': 4 };
         const getRank = str => {
@@ -400,6 +414,9 @@
         groupItems.forEach(item => {
           const itemDiv = document.createElement('div');
           itemDiv.className = 'item';
+          /* binStr: 0=dot(.) 1=dash(-) — store as dot/dash pattern for audio */
+          itemDiv.dataset.morse = item.binStr.replace(/0/g, '.').replace(/1/g, '-');
+          itemDiv.title = 'Click to hear Morse tones';
 
           const seqDiv = document.createElement('div');
           seqDiv.className = 'morse-seq';
@@ -418,8 +435,15 @@
             keyDiv.appendChild(keybd);
           }
 
+          /* Speaker icon — hidden in print via CSS */
+          const hint = document.createElement('span');
+          hint.className = 'audio-hint';
+          hint.setAttribute('aria-hidden', 'true');
+          hint.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+
           itemDiv.appendChild(seqDiv);
           itemDiv.appendChild(keyDiv);
+          itemDiv.appendChild(hint);
           columnsDiv.appendChild(itemDiv);
         });
 
@@ -431,6 +455,83 @@
         document.getElementById('print-btn').style.display = 'inline-block';
       }
     }
+
+    /* ── MORSE AUDIO PLAYER ── */
+    (function () {
+      var DOT_SRC  = 'https://upload.wikimedia.org/wikipedia/commons/e/e7/E_morse_code.ogg';
+      var DASH_SRC = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/T_morse_code.ogg';
+
+      var dotAB = null, dashAB = null;
+      function prefetch(url, setter) {
+        fetch(url)
+          .then(function (r) { return r.arrayBuffer(); })
+          .then(setter)
+          .catch(function () {});
+      }
+      prefetch(DOT_SRC,  function (ab) { dotAB  = ab; });
+      prefetch(DASH_SRC, function (ab) { dashAB = ab; });
+
+      var ac = null;
+      var dotBuf = null, dashBuf = null;
+      var decoding = false;
+      var decodeQueue = [];
+
+      function getAC() {
+        if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+        return ac;
+      }
+
+      function ensureDecoded(cb) {
+        if (dotBuf && dashBuf) { cb(); return; }
+        decodeQueue.push(cb);
+        if (decoding) return;
+        decoding = true;
+        var ctx = getAC();
+        var n = 0;
+        function done() {
+          if (++n < 2) return;
+          decoding = false;
+          var q = decodeQueue.slice(); decodeQueue = [];
+          q.forEach(function (f) { f(); });
+        }
+        if (!dotBuf && dotAB) {
+          ctx.decodeAudioData(dotAB.slice(0), function (b) { dotBuf  = b; done(); }, done);
+        } else { done(); }
+        if (!dashBuf && dashAB) {
+          ctx.decodeAudioData(dashAB.slice(0), function (b) { dashBuf = b; done(); }, done);
+        } else { done(); }
+      }
+
+      function playPattern(pat) {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+        if (!dotAB || !dashAB) {
+          setTimeout(function () { playPattern(pat); }, 150);
+          return;
+        }
+        ensureDecoded(function () {
+          var ctx = getAC();
+          if (ctx.state === 'suspended') ctx.resume();
+          var t   = ctx.currentTime + 0.05;
+          var GAP = 0.06;
+          for (var i = 0; i < pat.length; i++) {
+            var buf = pat[i] === '-' ? dashBuf : dotBuf;
+            if (!buf) { t += 0.15 + GAP; continue; }
+            var src = ctx.createBufferSource();
+            src.buffer = buf;
+            src.connect(ctx.destination);
+            src.start(t);
+            t += buf.duration + GAP;
+          }
+        });
+      }
+
+      document.addEventListener('click', function (e) {
+        var item = e.target.closest('.item[data-morse]');
+        if (!item) return;
+        var p = item.dataset.morse;
+        if (p) playPattern(p);
+      });
+    }());
   </script>
 </body>
 </html>
