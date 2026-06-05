@@ -1,4 +1,4 @@
-# receiver_magtag.py — AeroMorse wireless e-ink remote display (Option W3)
+# receiver_magtag.py — AeroMorse wireless e-ink remote display (Option W2)
 #
 # ════════════════════════════════════════════════════════════════════════════
 # ⚠  WARNING — CIRCUITPYTHON VERSION REQUIREMENT  ⚠

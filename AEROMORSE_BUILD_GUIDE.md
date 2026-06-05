@@ -672,53 +672,7 @@ Morse map.
 
 ---
 
-#### Option W2 — Seeed XIAO ESP32C3 + SSD1306 OLED
-
-A cheaper alternative using a small third-party board and a 128×64
-monochrome OLED. Same ESP32-C3 chip as the Adafruit QT Py ESP32-C3 (if that
-had been available), fully supported by CircuitPython 9.x or later and ESP-NOW.
-
-**XIAO ESP32C3:** ~$7 — DigiKey (ships same day) or Amazon Prime  
-**SSD1306 128×64 I2C OLED:** ~$4 — Amazon (search "SSD1306 128x64 I2C OLED")
-
-| Advantages | Notes |
-|-----------|-------|
-| Lower cost (~$11 vs $35) | Monochrome display — no group colours |
-| Amazon Prime shipping | Requires soldering 4 wires to OLED |
-| Smaller form factor | One line of code must change (see below) |
-
-The XIAO has no STEMMA QT connector. Solder four short wires between the XIAO
-and the OLED's 4-pin header:
-
-| OLED pin | XIAO pin |
-|----------|---------|
-| VCC | 3V3 |
-| GND | GND |
-| SCL | SCL (D3) |
-| SDA | SDA (D2) |
-
-**One code change in `receiver.py`** (before copying to the XIAO as `code.py`):
-
-```python
-# Change this line:
-i2c = board.STEMMA_I2C()
-
-# To this:
-import busio
-i2c = busio.I2C(board.SCL, board.SDA)
-```
-
-**Libraries needed on the XIAO's `/lib` folder:** See **§9.4.1 Option W2**
-for the complete file tree. In short:
-`adafruit_displayio_ssd1306.mpy` (for the OLED driver) plus
-`adafruit_display_text/`.
-
-> **Option W2 is not recommended for first-time builders** due to the
-> soldering requirement. Option W1 is plug-and-play.
-
----
-
-#### Option W3 — Adafruit MagTag (2.9" e-ink, plug-and-play)
+#### Option W2 — Adafruit MagTag (2.9" e-ink, plug-and-play)
 
 **Adafruit MagTag 2025 Edition — 2.9" Grayscale E-Ink WiFi Display
 [#4800](https://www.adafruit.com/product/4800) — $34.95**
@@ -736,11 +690,11 @@ between refreshes.
 > https://learn.adafruit.com/adafruit-magtag.
 
 **What you see vs Option W1.** E-ink physically cannot refresh fast
-enough for AeroMorse's 10 Hz pattern preview. The W3 receiver
+enough for AeroMorse's 10 Hz pattern preview. The W2 receiver
 intentionally shows **three** of the four fields broadcast by the main
 board, dropping the two that change every loop iteration:
 
-| Field | Option W1 (TFT) | Option W3 (MagTag e-ink) |
+| Field | Option W1 (TFT) | Option W2 (MagTag e-ink) |
 |---|---|---|
 | Group name (`[ KEYBOARD ]`) | ✓ | ✓ |
 | Live Morse buffer (`. - . .`) | ✓ | ✗ (e-ink too slow) |
@@ -760,7 +714,7 @@ moment the throttle expires gets drawn. The "last action" line will
 therefore lag the actual typing by 1–2 s; for live keystroke viewing
 use Option W1 instead.
 
-**When to choose W3 over W1:**
+**When to choose W2 over W1:**
 - Across-the-room readability (e-ink contrast is far better than a
   small TFT at distance).
 - The display will sit unused for long periods between updates — e-ink
@@ -768,7 +722,7 @@ use Option W1 instead.
 - A caregiver / family member's glance display where 1–2 s lag is fine.
 - Sleek aesthetic (the MagTag is designed for wall mounting).
 
-**Files needed on the MagTag:** see **§9.4.1 Option W3** for the
+**Files needed on the MagTag:** see **§9.4.1 Option W2** for the
 complete file tree. In short: `receiver_magtag.py` → `code.py`, the
 **same** `boot.py` from the sender (auto-detects receiver role), and
 the `adafruit_magtag/` library folder (which pulls in several support
@@ -781,19 +735,19 @@ libraries — listed in the `receiver_magtag.py` file header).
 
 #### Wireless display comparison
 
-| | Option W1 — Second #5691 | Option W2 — XIAO + OLED | Option W3 — MagTag #4800 |
-|--|--|--|--|
-| Cost | $35 | ~$11 | $35 |
-| Display | 240×135 colour TFT | 128×64 mono OLED | **2.9" 296×128 e-ink** |
-| Refresh rate | 100 ms | 100 ms | ~2 s |
-| Live Morse preview | ✓ | ✓ | ✗ (e-ink too slow) |
-| Pressure bar | ✓ | ✗ | ✗ |
-| Group colours | ✓ Native | ✗ | ✓ Via 4 NeoPixels |
-| Assembly | Plug USB-C in | Solder 4 wires | Plug USB-C in |
-| Best viewing distance | Arm's length | Arm's length | **Across a room** |
-| CircuitPython required | 9.x+ | 9.x+ | **10.x+** |
-| Wireless power | ✓ LiPoly | ✗ No battery | ✓ LiPoly |
-| Availability | adafruit.com | Amazon / DigiKey | adafruit.com |
+| | Option W1 — Second #5691 | Option W2 — MagTag #4800 |
+|--|--|--|
+| Cost | $35 | $35 |
+| Display | 240×135 colour TFT | **2.9" 296×128 e-ink** |
+| Refresh rate | 100 ms | ~2 s |
+| Live Morse preview | ✓ | ✗ (e-ink too slow) |
+| Pressure bar | ✓ | ✗ |
+| Group colours | ✓ Native | ✓ Via 4 NeoPixels |
+| Assembly | Plug USB-C in | Plug USB-C in |
+| Best viewing distance | Arm's length | **Across a room** |
+| CircuitPython required | 9.x+ | **10.x+** |
+| Wireless power | ✓ LiPoly | ✓ LiPoly |
+| Availability | adafruit.com | adafruit.com |
 
 ---
 
@@ -1103,13 +1057,12 @@ several GND pins — any of them work).
 | — | *or* LiPoly Battery 500 mAh | #1578 | ~4–6 hrs | https://www.adafruit.com/product/1578 |
 | — | *or* LiPoly Battery 1200 mAh | #258 | ~9–14 hrs | https://www.adafruit.com/product/258 |
 
-#### Option W2 — XIAO ESP32C3 + OLED (budget)
+#### Option W2 — Adafruit MagTag (e-ink, plug-and-play)
 
-| Qty | Item | Source | Approx. price |
-|-----|------|--------|--------------|
-| 1 | Seeed XIAO ESP32C3 | DigiKey / Amazon | $5–7 |
-| 1 | SSD1306 128×64 I2C OLED (4-pin header) | Amazon | $3–5 |
-| 4 | Short wires ~8 cm | — | — |
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | MagTag 2025 Edition — 2.9" Grayscale E-Ink WiFi Display | #4800 | https://www.adafruit.com/product/4800 |
+| 1 | USB-C cable + power bank or charger (or any of the LiPoly batteries listed under W1) | — | — |
 
 ---
 
@@ -1419,22 +1372,17 @@ second of either board powering on.
 Power source: any USB-C phone charger, USB power bank, or one of the
 LiPoly batteries listed in §5 Option W1.
 
-#### Option W2 — XIAO ESP32C3 + OLED
+#### Option W2 — Adafruit MagTag (#4800)
 
-Solder four short wires between the XIAO and the OLED's 4-pin header:
+No hardware assembly needed — the MagTag ships ready to power on. Mount
+it where it will be glanced at from across the room (its e-ink panel is
+far more readable at distance than the W1 TFT). Once §9.4.1 is complete
+it will start mirroring the main board's group / last action / status
+within a few seconds of either board powering on.
 
-| OLED pin | XIAO pin |
-|----------|---------|
-| VCC | 3V3 |
-| GND | GND |
-| SCL | D3 (SCL) |
-| SDA | D2 (SDA) |
-
-That's the only assembly. Software setup (CircuitPython firmware, the
-one-line I²C edit, and copying receiver files) is in **§9.4.1 Option W2**.
-
-Power source: any USB-C phone charger or USB power bank. The XIAO has
-no battery connector — Option W1 is the only battery-capable receiver.
+Power source: any USB-C phone charger, USB power bank, or one of the
+LiPoly batteries listed in §5 Option W1 (the MagTag has the same
+JST-PH 2-pin LiPoly connector and onboard charging as the #5691).
 
 ---
 
@@ -1722,7 +1670,7 @@ act as a keyboard or mouse; you do not load `morse_map.py` or
 | File on your computer | Copy to the receiver as |
 |----------------------|------------------------|
 | `boot.py` | `boot.py` (same file used on the sender) |
-| `receiver.py` (W1 / W2) **or** `receiver_magtag.py` (W3) | `code.py` (rename when copying) |
+| `receiver.py` (W1) **or** `receiver_magtag.py` (W2) | `code.py` (rename when copying) |
 
 > **One `boot.py` for every board.** The same `boot.py` from the sender
 > works unchanged on every receiver — it inspects the filesystem at
@@ -1771,38 +1719,18 @@ display-driver `.mpy` is needed.
 
 ---
 
-#### Option W2 — Seeed XIAO ESP32C3 + SSD1306 OLED
-
-The XIAO has no STEMMA QT port. Before copying `receiver.py`, edit it
-once to switch I²C from STEMMA QT to bit-banged D2/D3 pins. See
-§5 "Option W2" for the exact one-line change.
-
-```
-CIRCUITPY/    (on the W2 receiver)
-├── boot.py                                (= same boot.py as the sender)
-├── code.py                                (= renamed and edited copy of receiver.py)
-└── lib/
-    ├── adafruit_display_text/             (always)
-    └── adafruit_displayio_ssd1306.mpy     (only — SSD1306 OLED driver)
-```
-
-Two files at the root plus one library folder and one driver `.mpy`
-under `/lib`.
-
----
-
-#### Option W3 — Adafruit MagTag (#4800, 2.9" e-ink)
+#### Option W2 — Adafruit MagTag (#4800, 2.9" e-ink)
 
 > ⚠ **CircuitPython 10.x required.** The 2025 Edition MagTag will NOT
-> work with CircuitPython 9.2.x or earlier — see §5 Option W3 and the
+> work with CircuitPython 9.2.x or earlier — see §5 Option W2 and the
 > warning banner at the top of `receiver_magtag.py`.
 
-The W3 receiver file is `receiver_magtag.py` (a different file from the
-W1/W2 `receiver.py` because the display layout and refresh model are
+The W2 receiver file is `receiver_magtag.py` (a different file from the
+W1 `receiver.py` because the display layout and refresh model are
 fundamentally different — fewer fields, slower throttled refresh).
 
 ```
-CIRCUITPY/    (on the W3 MagTag receiver)
+CIRCUITPY/    (on the W2 MagTag receiver)
 ├── boot.py                            (= same boot.py as the sender)
 ├── code.py                            (= renamed copy of receiver_magtag.py)
 └── lib/
@@ -2124,36 +2052,28 @@ working — e.g., heavy WiFi interference on channel 1):
   the receiver — `boot.py` will then leave USB HID off and the host
   will stop seeing the receiver as a second keyboard.
 
-**Option W2 OLED stays blank**
-- Check all four wires are connected to the correct pins on both the
-  XIAO and the OLED.
-- Try changing the I2C address in `receiver.py`: look for
-  `device_address=0x3C` and change it to `device_address=0x3D`.
-- Confirm `adafruit_displayio_ssd1306.mpy` and `adafruit_display_text/`
-  are in the `/lib` folder on the XIAO.
-
-**Option W3 MagTag — e-ink stuck on "[ WAITING ]" or never updates**
+**Option W2 MagTag — e-ink stuck on "[ WAITING ]" or never updates**
 - ⚠ **First check CircuitPython version.** The 2025 Edition MagTag
   requires **CircuitPython 10.x or later**. Open `boot_out.txt` on the
   MagTag's CIRCUITPY drive; if it says 9.x.x the e-ink driver won't
   work. Re-flash from circuitpython.org/downloads with the **MagTag
   10.x** UF2. See https://learn.adafruit.com/adafruit-magtag.
 - Confirm `adafruit_magtag/` (the folder, not a single .mpy) is in
-  `/lib`, plus its support libraries (see §9.4.1 Option W3).
+  `/lib`, plus its support libraries (see §9.4.1 Option W2).
 - Confirm `boot.py` on the MagTag is **the same `boot.py` from the
   sender** (it auto-detects the receiver role from the absence of
   `morse_map.py`). If you accidentally copied `morse_map.py` onto the
   MagTag, boot.py will treat it as a sender and enable USB HID —
   delete the file and reboot.
 
-**Option W3 MagTag — pattern preview and pressure bar never appear**
+**Option W2 MagTag — pattern preview and pressure bar never appear**
 - That's **by design**, not a bug. E-ink refresh is too slow (~1–2 s
   per redraw) to render the 10 Hz pattern preview or pressure bar
   meaningfully. The MagTag receiver shows only the group name, last
   action, and modifiers — the fields that don't change at 10 Hz. For
   live preview viewing use Option W1 (second #5691 colour TFT).
 
-**Option W3 MagTag — last action lags the actual typing by 1–2 seconds**
+**Option W2 MagTag — last action lags the actual typing by 1–2 seconds**
 - Also by design. The MagTag receiver throttles e-ink refreshes to
   once every ~2 s so a fast burst of typing doesn't queue a backlog of
   refreshes. Only the last state at the moment the throttle expires is
@@ -2647,7 +2567,7 @@ Feather sideways.
 
 **`USE_WIRELESS_DISPLAY`** (default `False`).
 `True` enables the WiFi radio at boot and broadcasts the display
-state via ESP-NOW for an Option W1 / W2 / W3 receiver to mirror.
+state via ESP-NOW for an Option W1 / W2 receiver to mirror.
 Default is `False` because most builds don't include a second board —
 flip to `True` only when you actually have a receiver paired. Adds
 roughly 80–100 mA to the current draw while running. Has no effect on

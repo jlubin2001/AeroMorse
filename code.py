@@ -249,10 +249,10 @@ def _audio_tick():
 
 
 # ── ESP-NOW wireless display ───────────────────────────────────────────────────
-# Broadcasts TFT state to a QT Py ESP32-C3 + SSD1306 OLED running receiver.py.
-# Entirely optional — if the espnow / wifi modules are absent nothing changes.
-# Wireless display hardware options — see Build Guide §5 "Wireless Display"
-# (any ESP32-family Feather/QT Py as receiver; optional battery #3898/#1578/#258).
+# Broadcasts TFT state to an Option W1 (second #5691 Reverse TFT Feather) or
+# Option W2 (Adafruit MagTag #4800 e-ink) receiver. Entirely optional — if the
+# espnow / wifi modules are absent nothing changes. See Build Guide §5
+# "Wireless Display" for the per-option file tree and battery choices.
 
 _ESPNOW_ENABLED = False
 if not USE_WIRELESS_DISPLAY:

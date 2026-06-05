@@ -705,8 +705,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
-| `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT) and W2 (XIAO + OLED). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
-| `receiver_magtag.py` | Wireless display mirror firmware — Option W3 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** Copy as `code.py` to the MagTag. |
+| `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
+| `receiver_magtag.py` | Wireless display mirror firmware — Option W2 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** Copy as `code.py` to the MagTag. |
 
 ### Documentation
 
