@@ -2438,6 +2438,18 @@ fires once the delta exceeds the threshold.
   `THRESH_PUFF` to balance.
 - Works in concert with `DEBOUNCE_SAMPLES` — see below.
 
+> **Use `test_pressure.py` to find your personal thresholds.** Copy
+> `test_pressure.py` to the CIRCUITPY drive, open the Thonny Shell,
+> press **Ctrl-C** to interrupt `code.py` and reach the `>>>` prompt
+> *(do not reset — that re-runs code.py)*, then type
+> `import test_pressure`. The script calibrates a baseline for 1 second,
+> then prints a live pressure-delta bar chart for 30 seconds while you
+> sip and puff normally. At the end it suggests `THRESH_SIP` and
+> `THRESH_PUFF` values based on 60 % of your observed peaks — copy
+> those into `config.py`. To run it again in the same session:
+> `exec(open('test_pressure.py').read())` (CircuitPython has no
+> `importlib.reload`).
+
 **`DEBOUNCE_SAMPLES`** (default `3`). *Sensor mode only.*
 Number of consecutive sensor readings that must agree on a new state
 before the firmware accepts a state change. At 75 Hz each sample is

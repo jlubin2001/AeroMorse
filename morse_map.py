@@ -446,22 +446,3 @@ g5[3][0b010] = CC(ConsumerControlCode.FAST_FORWARD)          # .-.
 g5[3][0b011] = CC(ConsumerControlCode.BRIGHTNESS_INCREMENT)  # .--
 g5[3][0b100] = CC(ConsumerControlCode.BRIGHTNESS_DECREMENT)  # -..
 g5[3][0b101] = CC(ConsumerControlCode.EJECT)                 # -.-
-
-# ── Application Launch — 4-symbol patterns; first-letter mnemonics ───────
-# Wrapped in try/except so an older adafruit_hid bundle that doesn't
-# include these constants logs a warning instead of crashing at import.
-# Literal assignments so the visualizer cheat sheet picks them up.
-try:
-    g5[4][0b1010] = CC(ConsumerControlCode.AL_CALCULATOR)             # -.-. ITU C — Calculator
-    g5[4][0b0010] = CC(ConsumerControlCode.AL_LOCAL_MACHINE_BROWSER)  # ..-. ITU F — File explorer
-    g5[4][0b1000] = CC(ConsumerControlCode.AL_INTERNET_BROWSER)       # -... ITU B — Browser
-    g5[4][0b0100] = CC(ConsumerControlCode.AL_EMAIL_READER)           # .-.. ITU L — mai-L
-except AttributeError as _ex:
-    print("morse_map: some AL_* ConsumerControlCode missing in this adafruit_hid bundle: " + str(_ex))
-
-# ── System controls ─────────────────────────────────────────────────────────
-try:
-    g5[4][0b1100] = CC(ConsumerControlCode.SLEEP)                     # --.. ITU Z — zzz
-    g5[4][0b0110] = CC(ConsumerControlCode.POWER)                     # .--. ITU P — Power
-except AttributeError as _ex:
-    print("morse_map: SLEEP/POWER ConsumerControlCode missing in this adafruit_hid bundle: " + str(_ex))
