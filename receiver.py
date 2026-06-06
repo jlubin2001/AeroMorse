@@ -122,7 +122,12 @@ _NO_SIGNAL = 10.0    # seconds before showing "No signal"
 _signal_ok = False
 
 while True:
-    pkt = e.read()
+    try:
+        pkt = e.read()
+    except ValueError:
+        # ESP-NOW queue occasionally yields a malformed entry after WiFi
+        # state changes (USB power swap, long idle). Drop it and continue.
+        pkt = None
     if pkt is None:
         time.sleep(0.01)   # yield to WiFi/ESP-NOW callbacks
     if pkt is not None:
