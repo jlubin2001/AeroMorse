@@ -91,4 +91,5 @@ MOUSE_REPEAT_DELAY = 0.040     # seconds between repeat ticks
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────
 
 DISPLAY_ROTATION     = 0        # degrees: 0 = USB left, 180 = USB right (also 90, 270)
-USE_WIRELESS_DISPLAY = False    # True = ESP-NOW broadcast (adds ~80–100 mA). ESP32-only.
+USE_WIRELESS_DISPLAY = True    # True = ESP-NOW broadcast (adds ~80–100 mA). ESP32-only.
+ESPNOW_CHANNEL       = 1        # WiFi channel (1–13) — receiver.py _CHANNEL must match

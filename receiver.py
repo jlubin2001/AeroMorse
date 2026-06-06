@@ -36,10 +36,17 @@ import espnow
 from adafruit_display_text import label
 
 # ── ESP-NOW ────────────────────────────────────────────────────────────────────
-# WiFi radio must be enabled for ESP-NOW; no network connection is needed.
+# Channel-lock dance: start_ap then immediately stop_ap pins the radio to a
+# known channel without leaving WiFi associated (which would enable power-save
+# and break ESP-NOW). Both boards must use the SAME channel — keep this in
+# sync with ESPNOW_CHANNEL in the sender's config.py.
 
-wifi.radio.enabled = True
-e = espnow.ESPNow()     # receives from any sender — no peer registration needed
+_CHANNEL = 1
+
+wifi.radio.start_ap(" ", "", channel=_CHANNEL, max_connections=0)
+wifi.radio.stop_ap()
+e = espnow.ESPNow()   # no peers needed for receive
+print("ESP-NOW: listening on channel", _CHANNEL)
 
 # ── Display ────────────────────────────────────────────────────────────────────
 # Mirrors the main board TFT layout exactly: same 4 rows, same colours,
@@ -116,8 +123,11 @@ _signal_ok = False
 
 while True:
     pkt = e.read()
-
+    if pkt is None:
+        time.sleep(0.01)   # yield to WiFi/ESP-NOW callbacks
     if pkt is not None:
+        if not _signal_ok:
+            print("first packet received:", pkt.msg)   # remove once stable
         _last_rx   = time.monotonic()
         _signal_ok = True
         try:

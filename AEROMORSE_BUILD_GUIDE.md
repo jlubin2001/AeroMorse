@@ -1817,6 +1817,7 @@ interact with other settings" explanation, jump to Appendix E.
 | `BEEP_DASH_FREQ` | `800` | Hz — dash (puff) sidetone |
 | `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = enable ESP-NOW broadcast (adds ~80–100 mA) |
+| `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `_CHANNEL` in `receiver.py` |
 
 ### Input modes — what `SWITCH_MODE` does
 
@@ -1974,54 +1975,50 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 
 **How the ESP-NOW channel is selected**
 
-AeroMorse does **not** set an ESP-NOW channel explicitly. Both boards
-run the equivalent of:
+In CircuitPython 9.x `wifi.radio.channel` is not settable (and on 9.2.9
+it isn't even readable). The only reliable way to pin the radio to a
+specific channel is the **start_ap / stop_ap dance** — start a soft AP
+on the desired channel, then immediately stop it. The radio stays on
+that channel. Both boards do this with the same channel:
 
 ```python
-wifi.radio.enabled = True              # turn on the radio
-espnow.ESPNow()                        # open ESP-NOW on it
-# main board only:
-peers.append(Peer(mac=b'\xff'*6))      # broadcast peer, channel default
+wifi.radio.start_ap(" ", "", channel=ESPNOW_CHANNEL, max_connections=0)
+wifi.radio.stop_ap()
+espnow.ESPNow()
 ```
 
-ESP-NOW always operates on whatever channel the WiFi radio is currently
-tuned to. When the radio is enabled but **not** joined to a network,
-both ESP32 chips sit on **channel 1** — the firmware default. That is
-why no configuration is needed in the typical AeroMorse build: both the
-main board and the receiver come up on channel 1 and find each other
-automatically.
+The channel is controlled by `ESPNOW_CHANNEL` in `config.py` (sender)
+and `_CHANNEL` at the top of `receiver.py` — these **must match**.
+Default is channel 1.
 
-**Things that move the channel away from 1:**
-- One board joins a WiFi network (`wifi.radio.connect(...)` in your own
-  code). The radio retunes to that network's channel and ESP-NOW
-  follows. If the other board didn't also connect to the same network,
-  they lose sync.
-- A captive-portal or provisioning library that calls `connect()`
-  silently.
-- Manually setting `Peer(mac=..., channel=N)` on the main board while
-  the receiver is still on channel 1.
+> Do **not** use `wifi.radio.connect()` to join a network for channel
+> selection — `connect()` enables WiFi power-save, which silently
+> drops most incoming ESP-NOW frames.
 
-**To force a specific channel** (only needed if the default isn't
-working — e.g., heavy WiFi interference on channel 1):
-1. On the **main board**, edit the `Peer(...)` line in `code.py`:
-   ```python
-   _espnow_dev.peers.append(
-       _espnow_mod.Peer(mac=b'\xff\xff\xff\xff\xff\xff', channel=6)
-   )
-   ```
-2. On the **receiver**, add this line in `receiver.py` *after*
-   `wifi.radio.enabled = True`:
-   ```python
-   wifi.radio.start_station()           # if not already in station mode
-   # the radio is now on whatever channel ESP-NOW will use; no further
-   # channel command is needed because the receiver listens on the
-   # radio's current channel.
-   ```
-   In practice the receiver picks up the sender's channel as soon as
-   the first broadcast arrives, so explicit station-mode setup is
-   usually unnecessary — but force it if signal is intermittent.
-3. Both boards must use the **same** channel number. Valid 2.4 GHz
-   channels are 1 – 13 (1, 6, 11 are the non-overlapping ones).
+**Sender peer setup — the dummy unicast workaround**
+
+CircuitPython issue [#9380](https://github.com/adafruit/circuitpython/issues/9380)
+causes `send()` to a broadcast peer to fail with
+`ESP_ERR_ESPNOW_NOT_FOUND (0x3069)` when **only** the broadcast peer
+is registered. The fix is to register a dummy unicast peer first, then
+the broadcast peer:
+
+```python
+e.peers.append(Peer(mac=b'\x02\x00\x00\x00\x00\x01', channel=ESPNOW_CHANNEL))
+broadcast = Peer(mac=b'\xff\xff\xff\xff\xff\xff', channel=ESPNOW_CHANNEL)
+e.peers.append(broadcast)
+e.send(msg, broadcast)
+```
+
+The receiver registers **no peers at all** — incoming ESP-NOW frames
+fire the receive callback regardless of peer registration.
+
+**To change the channel** (e.g., heavy 2.4 GHz interference on
+channel 1, common ones to try are 6 and 11):
+1. Edit `ESPNOW_CHANNEL` in `config.py` on the main board.
+2. Edit `_CHANNEL` near the top of `receiver.py` to the same value.
+3. Reflash and reboot both boards. Valid 2.4 GHz channels are 1 – 13
+   (1, 6, 11 are the non-overlapping ones).
 
 **Wireless display is frozen / not updating**
 - The receiver updates whenever a packet arrives (10× per second). If the
@@ -2032,6 +2029,16 @@ working — e.g., heavy WiFi interference on channel 1):
 - The `wifi` module initialisation failed. Try power-cycling the main
   board. Rarely, the WiFi radio needs a cold boot (unplug power
   completely rather than pressing Reset).
+
+**Repeating `ESP-NOW send error: ESP-NOW error 0x3069`**
+- 0x3069 is `ESP_ERR_ESPNOW_NOT_FOUND` (peer not registered). On
+  CircuitPython 9.x this happens when the sender has registered only a
+  broadcast peer — see [#9380](https://github.com/adafruit/circuitpython/issues/9380).
+  The fix is built into AeroMorse's `code.py`: a dummy unicast peer
+  (`02:00:00:00:00:01`) is registered before the broadcast peer. If
+  you see this error, confirm you have the current `code.py` — the
+  dummy-peer line should appear immediately before the broadcast peer
+  append.
 
 **`ESP-NOW: init failed (ESP-NOW error 0x3065)` on CircuitPython 9.0.x**
 - 0x3065 decodes as `ESP_ERR_ESPNOW_NOT_INIT` — the underlying ESP-NOW

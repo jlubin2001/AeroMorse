@@ -255,15 +255,28 @@ def _audio_tick():
 # "Wireless Display" for the per-option file tree and battery choices.
 
 _ESPNOW_ENABLED = False
+_broadcast_peer = None
 if not USE_WIRELESS_DISPLAY:
     print("ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False")
 elif _ESPNOW_IMPORTABLE:
     try:
-        _wifi_mod.radio.enabled = True
+        # Channel-lock dance: start_ap then immediately stop_ap pins the radio
+        # to ESPNOW_CHANNEL without leaving WiFi associated (which would enable
+        # power-save and break ESP-NOW). Both boards must do this with the
+        # SAME channel.
+        _wifi_mod.radio.start_ap(" ", "", channel=ESPNOW_CHANNEL, max_connections=0)
+        _wifi_mod.radio.stop_ap()
         _espnow_dev = _espnow_mod.ESPNow()
-        _espnow_dev.peers.append(_espnow_mod.Peer(mac=b'\xff\xff\xff\xff\xff\xff'))
+        # Workaround for CircuitPython issue #9380: registering ONLY a
+        # broadcast peer raises ESP_ERR_ESPNOW_NOT_FOUND (0x3069) on send.
+        # Register a dummy unicast peer first, then the broadcast peer.
+        _espnow_dev.peers.append(_espnow_mod.Peer(
+            mac=b'\x02\x00\x00\x00\x00\x01', channel=ESPNOW_CHANNEL))
+        _broadcast_peer = _espnow_mod.Peer(
+            mac=b'\xff\xff\xff\xff\xff\xff', channel=ESPNOW_CHANNEL)
+        _espnow_dev.peers.append(_broadcast_peer)
         _ESPNOW_ENABLED = True
-        print("ESP-NOW: wireless display active (broadcast)")
+        print(f"ESP-NOW: wireless display active (broadcast, channel {ESPNOW_CHANNEL})")
     except Exception as _ex:
         print(f"ESP-NOW: init failed ({_ex})")
 else:
@@ -275,7 +288,7 @@ def _espnow_send(group_str, buf_str, action_str, mods_str):
         return
     msg = (group_str + "|" + buf_str + "|" + action_str + "|" + mods_str).encode()
     try:
-        _espnow_dev.send(msg)
+        _espnow_dev.send(msg, _broadcast_peer)
     except Exception:
         pass
 
