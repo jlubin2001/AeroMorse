@@ -87,8 +87,15 @@ def _group_idx(group_str):
 
 
 # ── ESP-NOW ──────────────────────────────────────────────────────────────────
-wifi.radio.enabled = True
-e = espnow.ESPNow()
+# Channel-lock dance: start_ap then immediately stop_ap pins the radio to a
+# known channel without leaving WiFi associated (which would enable power-save
+# and break ESP-NOW). Must match ESPNOW_CHANNEL in the sender's config.py.
+_CHANNEL = 1
+
+wifi.radio.start_ap(" ", "", channel=_CHANNEL, max_connections=0)
+wifi.radio.stop_ap()
+e = espnow.ESPNow()   # no peers needed for receive
+print("ESP-NOW: listening on channel", _CHANNEL)
 
 
 # ── MagTag display setup ─────────────────────────────────────────────────────
@@ -173,7 +180,12 @@ while True:
 
     # Drain all queued ESP-NOW packets (only keep latest state).
     while True:
-        pkt = e.read()
+        try:
+            pkt = e.read()
+        except ValueError:
+            # ESP-NOW queue occasionally yields a malformed entry after WiFi
+            # state changes (USB power swap, long idle). Drop and continue.
+            continue
         if pkt is None:
             break
         try:
