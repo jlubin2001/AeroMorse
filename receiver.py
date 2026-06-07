@@ -117,9 +117,21 @@ def _show_no_signal():
 
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
-_last_rx   = time.monotonic()
-_NO_SIGNAL = 10.0    # seconds before showing "No signal"
-_signal_ok = False
+_last_rx     = time.monotonic()
+_NO_SIGNAL   = 10.0    # seconds before showing "No signal"
+_SLEEP_AFTER = 300.0   # seconds with no packet before blanking the screen
+_signal_ok   = False
+_screen_on   = True
+
+def _set_backlight(on):
+    """Turn the TFT backlight on/off. Falls back gracefully if the board
+    exposes brightness instead of a backlight pin (or neither)."""
+    global _screen_on
+    try:
+        display.brightness = 1.0 if on else 0.0
+    except (AttributeError, NotImplementedError):
+        pass
+    _screen_on = on
 
 while True:
     try:
@@ -133,6 +145,8 @@ while True:
     if pkt is not None:
         if not _signal_ok:
             print("first packet received:", pkt.msg)   # remove once stable
+        if not _screen_on:
+            _set_backlight(True)
         _last_rx   = time.monotonic()
         _signal_ok = True
         try:
@@ -146,6 +160,11 @@ while True:
         except Exception:
             pass  # malformed packet — keep last good display
 
-    elif _signal_ok and (time.monotonic() - _last_rx) > _NO_SIGNAL:
-        _signal_ok = False
-        _show_no_signal()
+    else:
+        idle = time.monotonic() - _last_rx
+        if _screen_on and idle > _SLEEP_AFTER:
+            # Long idle — blank the screen entirely (still listening).
+            _set_backlight(False)
+        elif _signal_ok and idle > _NO_SIGNAL:
+            _signal_ok = False
+            _show_no_signal()
