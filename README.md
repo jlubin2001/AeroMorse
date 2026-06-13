@@ -7,6 +7,12 @@ microcontroller into a USB HID keyboard and mouse that connects via USB-C and
 appears to the host as a standard keyboard and mouse with no drivers required.
 Works on **Windows, macOS, Linux, iPadOS, Android, and ChromeOS**.
 
+> **Sibling project — [MorseKey](https://github.com/jlubin2001/MorseKey):** the
+> same Morse engine on an **Adafruit TRRS Trinkey** (thumb-drive sized) for **AT
+> switch** input — one or two switches through the headset jack, no pressure
+> sensor or display. Use it when you want the smallest possible switch-based
+> Morse keyboard/mouse.
+
 **How this project was built — what's confirmed vs documented.** Jim is the
 user, project lead, and source of all design decisions: hardware choices,
 input-mode requirements, Morse code-set conventions, accessibility trade-offs,
