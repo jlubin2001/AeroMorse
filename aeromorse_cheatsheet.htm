@@ -44,6 +44,22 @@
     vertical-align: middle;
   }
 
+  /* Command badge — colour-coded by category (group switch, mouse, media, modifier, system) */
+  cmd {
+    border-radius: 10px;
+    display: inline-block;
+    font-size: 1.0em;
+    font-weight: bold;
+    padding: 0.15em 0.65em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  cmd.grp { background: #d4edda; color: #155724; border-color: #c3e6cb; }   /* group switch — green */
+  cmd.mse { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }   /* mouse — red */
+  cmd.med { background: #cce5ff; color: #004085; border-color: #b8daff; }   /* media (consumer controls) — blue */
+  cmd.mod { background: #fff3cd; color: #856404; border-color: #ffc107; }   /* modifier / lock — yellow */
+  cmd.sys { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }   /* system / repeat — gray */
+
   /* Keyboard */
   keybd {
     border: 1px solid #ccc;
@@ -190,6 +206,27 @@
     color: #666;
   }
 
+  /* Legend strip — shown above the pages, hidden when printing */
+  .legend {
+    margin: 0 auto 15px;
+    max-width: 1000px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    color: #555;
+  }
+
   /* Print Specific Styles */
   @media print {
     body {
@@ -207,7 +244,7 @@
       border-radius: 0;
       display: block !important;
     }
-    .controls-container { display: none; }
+    .controls-container, .legend { display: none !important; }
     .columns {
       column-gap: 20px;
     }
@@ -243,6 +280,16 @@
       <button class="print-btn" id="print-btn" onclick="window.print()">🖨️ Print Cheat Sheets</button>
       <span id="file-name-display">No file chosen yet… click a row to hear its Morse tones.</span>
     </div>
+  </div>
+
+  <div class="legend" id="legend">
+    <span class="legend-item"><dot></dot> dot &nbsp; <dash></dash> dash</span>
+    <span class="legend-item"><cmd class="grp">→ Group</cmd> group switch</span>
+    <span class="legend-item"><cmd class="mse">&#x1F5B1;&#xFE0E; Mouse</cmd> mouse / move / click</span>
+    <span class="legend-item"><cmd class="med">&#x1F3B5; Media</cmd> consumer controls</span>
+    <span class="legend-item"><cmd class="mod">Mod</cmd> modifier / lock</span>
+    <span class="legend-item"><cmd class="sys">System</cmd> repeat / system</span>
+    <span class="legend-item"><keybd>&#x2328;&#xFE0E; Key</keybd> keyboard key</span>
   </div>
 
   <div id="pages-container"></div>
@@ -304,6 +351,44 @@
       return part.trim();
     }
 
+    /* ── String-command → badge label/class lookup ────────────────────────── */
+    const CMD_MAP = {
+      'group 0':  { label: '→ Group 0',  cls: 'grp' },
+      'group 1':  { label: '→ Group 1',  cls: 'grp' },
+      'group 2':  { label: '→ Group 2',  cls: 'grp' },
+      'group 3':  { label: '→ Group 3',  cls: 'grp' },
+      'group 4':  { label: '→ Group 4',  cls: 'grp' },
+      'group 5':  { label: '→ Group 5',  cls: 'grp' },
+      'group 6':  { label: '→ Group 6',  cls: 'grp' },
+      'group 7':  { label: '→ Group 7',  cls: 'grp' },
+      'group 8':  { label: '→ Group 8',  cls: 'grp' },
+      'group 9':  { label: '→ Group 9',  cls: 'grp' },
+
+      'mmove 0 -1 0':   { label: 'Move ↑',         cls: 'mse' },
+      'mmove 0 1 0':    { label: 'Move ↓',         cls: 'mse' },
+      'mmove -1 0 0':   { label: 'Move ←',         cls: 'mse' },
+      'mmove 1 0 0':    { label: 'Move →',         cls: 'mse' },
+      'mmove -1 -1 0':  { label: 'Move ↖',         cls: 'mse' },
+      'mmove 1 -1 0':   { label: 'Move ↗',         cls: 'mse' },
+      'mmove -1 1 0':   { label: 'Move ↙',         cls: 'mse' },
+      'mmove 1 1 0':    { label: 'Move ↘',         cls: 'mse' },
+      'mmove 0 0 1':    { label: 'Scroll ↑',       cls: 'mse' },
+      'mmove 0 0 -1':   { label: 'Scroll ↓',       cls: 'mse' },
+
+      'mclick left 1':  { label: 'Click left',     cls: 'mse' },
+      'mclick right 1': { label: 'Click right',    cls: 'mse' },
+      'mclick left 2':  { label: 'Dbl-click left', cls: 'mse' },
+      'mclick right 2': { label: 'Dbl-click right',cls: 'mse' },
+      'mdrag left':     { label: 'Toggle drag L',  cls: 'mse' },
+      'mdrag right':    { label: 'Toggle drag R',  cls: 'mse' },
+
+      'mslow':   { label: 'Slow speed',   cls: 'mse' },
+      'mfast':   { label: 'Fast speed',   cls: 'mse' },
+      'mreset':  { label: 'Reset speed',  cls: 'mse' },
+
+      'repeat':  { label: 'Repeat last',  cls: 'sys' },
+    };
+
     function processMorseData(dataStr) {
       const container = document.getElementById('pages-container');
       container.innerHTML = '';
@@ -333,7 +418,7 @@
         const binStr = match[3].replace('0b', '').padStart(length, '0');
         const raw    = match[4].trim();
 
-        let key;
+        let key, cls = null;
 
         if (raw.startsWith("'") || raw.startsWith('"')) {
           const q = raw[0];
@@ -342,49 +427,57 @@
             if (raw[i] === '\\') { i++; continue; }
             if (raw[i] === q)    { end = i; break; }
           }
-          key = end !== -1 ? raw.substring(1, end) : raw;
-          key = key.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+          let strVal = end !== -1 ? raw.substring(1, end) : raw.slice(1);
+          strVal = strVal.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
 
-          key = key.replace('mmove 0 -1 0',  'mmove up');
-          key = key.replace('mmove 0 1 0',   'mmove down');
-          key = key.replace('mmove 1 0 0',   'mmove right');
-          key = key.replace('mmove -1 0 0',  'mmove left');
-          key = key.replace('mmove 0 0 1',   'mwheel up');
-          key = key.replace('mmove 0 0 -1',  'mwheel down');
-          key = key.replace('mmove -1 -1 0', 'mmove up-left');
-          key = key.replace('mmove 1 -1 0',  'mmove up-right');
-          key = key.replace('mmove -1 1 0',  'mmove down-left');
-          key = key.replace('mmove 1 1 0',   'mmove down-right');
-          key = key.replace('mclick left 1',  'mclick left sgl');
-          key = key.replace('mclick right 1', 'mclick right sgl');
-          key = key.replace('mclick left 2',  'mclick left dbl');
-          key = key.replace('mclick right 2', 'mclick right dbl');
-          key = key.replace('mdrag left',     'drag left toggle');
+          /* If the string is a known command, render as a coloured badge.
+             Otherwise it's typed-text — render in <keybd>. */
+          const cmd = CMD_MAP[strVal];
+          if (cmd) { key = cmd.label; cls = cmd.cls; }
+          else     { key = strVal;     cls = null;    }
         } else if (raw.startsWith('CC(')) {
+          /* Consumer Controls — Group 5 media keys. Render as 'med' badge. */
           const inner = raw.split('#')[0].trim().slice(3, -1).trim();
           key = inner.replace(/^ConsumerControlCode\./, '')
                      .replace(/_/g, ' ')
                      .toLowerCase()
                      .replace(/\b\w/g, c => c.toUpperCase());
+          cls = 'med';
         } else {
           const noComment = raw.split('#')[0].trim();
           key = noComment.split(',').map(formatKeyPart).filter(p => p).join(' + ');
+          cls = null;
         }
 
-        parsedGroups[group].push({ length, binStr, key });
+        /* Auto-classify modifier / lock keys as 'mod' badges */
+        if (cls === null && key) {
+          const modWords = ['Ctrl', 'CTRL', 'Shift', 'Alt', 'ALT', '⊞/⌘', 'CAPS', 'ScrLk', 'NumLk', 'PrtScn'];
+          if (modWords.some(w => key.includes(w))) cls = 'mod';
+        }
+
+        parsedGroups[group].push({ length, binStr, key, cls });
       });
 
       const sortKeys = (a, b) => {
         const arrowOrder = { '←': 1, '↑': 2, '↓': 3, '→': 4 };
-        const getRank = str => {
-          if (str === '') return 6;
+        /* Sort: badges (grp / sys / mod / mse / med) sink to the bottom of each
+           page so the printable keyboard rows on top stay clean. Within badge
+           classes, group them so all 'Move ↑/↓/←/→' land together. */
+        const getRank = item => {
+          const str = item.key;
+          if (str === '' || str === undefined) return 99;
+          if (item.cls === 'mse') return 50;
+          if (item.cls === 'med') return 51;
+          if (item.cls === 'mod') return 52;
+          if (item.cls === 'sys') return 53;
+          if (item.cls === 'grp') return 54;
           if (arrowOrder[str]) return 4;
           if (str.length === 1 && /[a-zA-Z]/.test(str)) return 1;
           if (str.length === 1 && /[0-9]/.test(str)) return 2;
           if (str.length === 1) return 3;
           return 5;
         };
-        const ra = getRank(a.key), rb = getRank(b.key);
+        const ra = getRank(a), rb = getRank(b);
         if (ra !== rb) return ra - rb;
         if (ra === 4) return arrowOrder[a.key] - arrowOrder[b.key];
         return a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: 'base' });
@@ -429,6 +522,15 @@
           if (item.key === '') {
             keyDiv.classList.add('unassigned');
             keyDiv.textContent = '[Unassigned]';
+          } else if (item.cls) {
+            /* Coloured badge for group / mouse / media / modifier / system commands */
+            const badge = document.createElement('cmd');
+            badge.className = item.cls;
+            let prefix = '';
+            if (item.cls === 'mse') prefix = '\u{1F5B1}\u{FE0E} ';   /* mouse */
+            if (item.cls === 'med') prefix = '\u{1F3B5} ';            /* music note for media */
+            badge.textContent = prefix + item.key;
+            keyDiv.appendChild(badge);
           } else {
             const keybd = document.createElement('keybd');
             keybd.textContent = item.key;
@@ -531,6 +633,32 @@
         var p = item.dataset.morse;
         if (p) playPattern(p);
       });
+    }());
+
+    /* ── AUTO-LOAD morse_map.py from this file's directory on page load ──
+       If the .htm sits next to morse_map.py (e.g. both on CIRCUITPY, or both
+       in the project folder), the cheat sheet appears with zero clicks.
+       Falls back silently to the manual file picker if fetch fails — which
+       happens when:
+         · The .htm is opened from file:// in Chrome/Edge (file:// fetch
+           is blocked for security; Firefox allows it).
+         · morse_map.py is in a different directory.
+         · The page is served from a URL where morse_map.py isn't a sibling.
+    */
+    (function autoLoadSibling() {
+      fetch('morse_map.py')
+        .then(function (r) {
+          if (!r.ok) throw new Error('not found');
+          return r.text();
+        })
+        .then(function (text) {
+          processMorseData(text);
+          document.getElementById('file-name-display').textContent =
+            'Auto-loaded morse_map.py from this folder — click any row to hear its Morse tones.';
+        })
+        .catch(function () {
+          /* Silent: user can still pick the file manually. */
+        });
     }());
   </script>
 </body>
