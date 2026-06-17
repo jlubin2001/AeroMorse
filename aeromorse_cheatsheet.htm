@@ -562,20 +562,19 @@
             badge.textContent = prefix + item.key;
             keyDiv.appendChild(badge);
           } else {
+            /* Group 4: prepend the iOS Switch Control action as a small purple
+               badge BEFORE the F-key pill, so the user reads "what iOS will do"
+               first and the literal F-key second. */
+            if (item.iosLabel) {
+              const iosBadge = document.createElement('cmd');
+              iosBadge.className = 'ios';
+              iosBadge.textContent = item.iosLabel;
+              iosBadge.style.marginRight = '8px';
+              keyDiv.appendChild(iosBadge);
+            }
             const keybd = document.createElement('keybd');
             keybd.textContent = item.key;
             keyDiv.appendChild(keybd);
-          }
-
-          /* Group 4: append the iOS Switch Control action as a small purple
-             badge next to the F-key, so the user sees both what the device
-             sends AND what iOS does with it. */
-          if (item.iosLabel) {
-            const iosBadge = document.createElement('cmd');
-            iosBadge.className = 'ios';
-            iosBadge.textContent = item.iosLabel;
-            iosBadge.style.marginLeft = '8px';
-            keyDiv.appendChild(iosBadge);
           }
 
           /* Speaker icon — hidden in print via CSS */
