@@ -378,12 +378,12 @@ pattern (5 symbols).
 | ↓ Down | `---` | `..---` |
 | ← Left | `..` | `....-` |
 | → Right | `...` | `-....` |
-| ↖ Up-Left | `--...` | — |
-| ↗ Up-Right | `----.` | — |
-| ↙ Down-Left | `.----` | — |
-| ↘ Down-Right | `...--` | — |
-| Scroll ↑ | `.....-` | — |
-| Scroll ↓ | `...-..` | — |
+| ↖ Up-Left | — | `--...` |
+| ↗ Up-Right | — | `----.` |
+| ↙ Down-Left | — | `.----` |
+| ↘ Down-Right | — | `...--` |
+| Scroll ↑ | — | `.....-` |
+| Scroll ↓ | — | `...-..` |
 
 Mouse speed is controlled by three modes:
 
