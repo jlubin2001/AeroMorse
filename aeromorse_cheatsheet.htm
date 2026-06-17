@@ -478,6 +478,14 @@
           if (modWords.some(w => key.includes(w))) cls = 'mod';
         }
 
+        /* Group 1: display single letters A–Z in uppercase. They're stored
+           lowercase in morse_map.py so that typing actually produces lowercase
+           output by default, but the printed cheat sheet reads better when the
+           letter glyphs are large and capitalised. */
+        if (group === 'g1' && cls === null && /^[a-z]$/.test(key)) {
+          key = key.toUpperCase();
+        }
+
         /* Group 4 only: if the key is F1..F12, look up its iOS Switch Control
            action so it can be rendered as a small purple badge next to the key. */
         let iosLabel = null;
