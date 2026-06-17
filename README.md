@@ -1,5 +1,7 @@
 # AeroMorse
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 AeroMorse is an open-source CircuitPython project directed by Jim Lubin — a
 ventilator-dependent quadriplegic who has used Morse code for computer access
 since 1989. Inspired by [AirTalker](https://github.com/ATMakersOrg/AirTalker), it turns an Adafruit Feather
