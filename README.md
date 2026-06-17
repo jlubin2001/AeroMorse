@@ -724,6 +724,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `CAREGIVER_SETUP_GUIDE.md` | Plain-English step-by-step assembly guide for a non-technical caregiver, using a specific recommended parts set |
 | `AEROMORSE_VS_DARCI.md` | Feature-by-feature comparison vs. the WesTest Darci USB, with migration guide for Darci users |
 | `MORSE_DEVICES_COMPARISON.md` | Side-by-side comparison of AeroMorse vs Adap2U, Darci USB, and morAce — including 1/2/3-switch mode support |
+| `AEROMORSE_SWITCH_CONTROL_GUIDE.md` | How to use AeroMorse's Group 4 (F1–F12) with **iOS Switch Control**, **Android Switch Access**, and **Samsung Universal Switch** — Morse-pattern → F-key → OS action tables, with step-by-step OS setup for each platform |
 | `TOOLS_AND_GUIDES.md` | Reference for development tools: Thonny, CircuitPython installer |
 | `Morse Code Cheat Sheet.pdf` | Printable one-page reference card for all AeroMorse patterns |
 
