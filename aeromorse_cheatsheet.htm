@@ -59,6 +59,7 @@
   cmd.med { background: #cce5ff; color: #004085; border-color: #b8daff; }   /* media (consumer controls) — blue */
   cmd.mod { background: #fff3cd; color: #856404; border-color: #ffc107; }   /* modifier / lock — yellow */
   cmd.sys { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }   /* system / repeat — gray */
+  cmd.ios { background: #ece6f8; color: #4b2e83; border-color: #d6c8ef; }   /* iOS Switch Control action — purple */
 
   /* Keyboard */
   keybd {
@@ -289,6 +290,7 @@
     <span class="legend-item"><cmd class="med">&#x1F3B5; Media</cmd> consumer controls</span>
     <span class="legend-item"><cmd class="mod">Mod</cmd> modifier / lock</span>
     <span class="legend-item"><cmd class="sys">System</cmd> repeat / system</span>
+    <span class="legend-item"><cmd class="ios">iOS</cmd> iOS Switch Control action (Group 4)</span>
     <span class="legend-item"><keybd>&#x2328;&#xFE0E; Key</keybd> keyboard key</span>
   </div>
 
@@ -389,6 +391,27 @@
       'repeat':  { label: 'Repeat last',  cls: 'sys' },
     };
 
+    /* ── Group 4 — iOS Switch Control labels for F1..F12 ──────────────────────
+       The "Switch Control" group sends F1..F12 because that's what iOS expects
+       to receive from an external switch interface. These badges show the
+       *iOS Switch Control action* each F-key triggers, so the printed cheat
+       sheet doubles as a reference card for the iOS user. Source: the
+       Cross-Platform Comparison table from 12-Switch Recommended Mapping.md. */
+    const IOS_F_KEY_LABELS = {
+      'F1':  'Select Item',
+      'F2':  'Next Item',
+      'F3':  'Previous Item',
+      'F4':  'Scanner Menu',
+      'F5':  'Home',
+      'F6':  'Tap',
+      'F7':  'Long Press',
+      'F8':  'Scroll Down',
+      'F9':  'Scroll Up',
+      'F10': 'App Switcher',
+      'F11': 'Notif/Control Center',
+      'F12': 'Siri',
+    };
+
     function processMorseData(dataStr) {
       const container = document.getElementById('pages-container');
       container.innerHTML = '';
@@ -455,7 +478,14 @@
           if (modWords.some(w => key.includes(w))) cls = 'mod';
         }
 
-        parsedGroups[group].push({ length, binStr, key, cls });
+        /* Group 4 only: if the key is F1..F12, look up its iOS Switch Control
+           action so it can be rendered as a small purple badge next to the key. */
+        let iosLabel = null;
+        if (group === 'g4' && IOS_F_KEY_LABELS[key]) {
+          iosLabel = IOS_F_KEY_LABELS[key];
+        }
+
+        parsedGroups[group].push({ length, binStr, key, cls, iosLabel });
       });
 
       const sortKeys = (a, b) => {
@@ -535,6 +565,17 @@
             const keybd = document.createElement('keybd');
             keybd.textContent = item.key;
             keyDiv.appendChild(keybd);
+          }
+
+          /* Group 4: append the iOS Switch Control action as a small purple
+             badge next to the F-key, so the user sees both what the device
+             sends AND what iOS does with it. */
+          if (item.iosLabel) {
+            const iosBadge = document.createElement('cmd');
+            iosBadge.className = 'ios';
+            iosBadge.textContent = item.iosLabel;
+            iosBadge.style.marginLeft = '8px';
+            keyDiv.appendChild(iosBadge);
           }
 
           /* Speaker icon — hidden in print via CSS */
