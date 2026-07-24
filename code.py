@@ -816,19 +816,22 @@ def _update_display(pressure=0.0):
     buf_str    = _pending_to_str(_num_shifts, _pending_char)
     action_str = _last_action[:20] if _last_action else " "
 
+    # Build the status line by concatenating whatever is active. Previously
+    # this was an if/elif chain, which meant DRAG stayed invisible whenever
+    # SLOW/FAST was also on — the first matching branch won.
+    _pieces = []
     mods_text = " ".join(_MOD_NAMES.get(m, "?") for m in sorted(_armed_mods))
     if mods_text:
-        mods_str = mods_text
-    elif _mouse_speed == MOUSE_SPEED_SLOW:
-        mods_str = "SLOW"
+        _pieces.append(mods_text)
+    if _mouse_speed == MOUSE_SPEED_SLOW:
+        _pieces.append("SLOW")
     elif _mouse_speed == MOUSE_SPEED_FAST:
-        mods_str = "FAST"
-    elif _mouse_repeating:
-        mods_str = "RPT"
-    elif _drag_active:
-        mods_str = "DRAG"
-    else:
-        mods_str = " "
+        _pieces.append("FAST")
+    if _mouse_repeating:
+        _pieces.append("RPT")
+    if _drag_active:
+        _pieces.append("DRAG")
+    mods_str = " ".join(_pieces) if _pieces else " "
 
     # Update the local TFT.
     _lbl_group.text  = group_str
