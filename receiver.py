@@ -32,6 +32,7 @@ import displayio
 import terminalio
 import wifi
 import espnow
+import microcontroller
 
 from adafruit_display_text import label
 
@@ -119,6 +120,12 @@ def _show_no_signal():
 
 _last_rx     = time.monotonic()
 _NO_SIGNAL   = 10.0    # seconds before showing "No signal"
+_AUTO_RESET  = 30.0    # seconds of no signal before soft-resetting this board.
+                       # The ESP32-S3 WiFi radio occasionally wedges — a soft
+                       # reset re-inits it without anyone having to unplug the
+                       # receiver. If the SENDER is what's really down, the
+                       # receiver just keeps resetting every 30 s until the
+                       # sender comes back — harmless.
 _SLEEP_AFTER = 300.0   # seconds with no packet before blanking the screen
 _signal_ok   = False
 _screen_on   = True
@@ -162,6 +169,12 @@ while True:
 
     else:
         idle = time.monotonic() - _last_rx
+        if idle > _AUTO_RESET:
+            # WiFi radio has almost certainly wedged — reboot the board so
+            # nobody has to unplug it manually. boot.py + code.py rerun; if
+            # the sender is up, we're mirroring again within a couple of
+            # seconds. If the sender is down we'll reset again in 30 s.
+            microcontroller.reset()
         if _screen_on and idle > _SLEEP_AFTER:
             # Long idle — blank the screen entirely (still listening).
             _set_backlight(False)

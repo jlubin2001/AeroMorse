@@ -69,6 +69,7 @@ import wifi
 import espnow
 import terminalio
 import displayio
+import microcontroller
 from adafruit_display_text import label
 from adafruit_magtag.magtag import MagTag
 
@@ -162,6 +163,12 @@ def _force_refresh():
 # moment the throttle expires gets drawn.
 REFRESH_MIN_INTERVAL = 2.0       # seconds — never refresh more often
 NO_SIGNAL_TIMEOUT    = 10.0      # seconds before showing "[ NO SIGNAL ]"
+AUTO_RESET_TIMEOUT   = 30.0      # seconds of no signal before soft-resetting.
+                                 # The ESP32-S2 WiFi radio occasionally wedges;
+                                 # a soft reset re-inits it without anyone
+                                 # having to unplug the MagTag. If the sender
+                                 # is really down we'll keep resetting every
+                                 # 30 s until it comes back — harmless.
 
 # Show initial state on screen.
 _set_pixels(0x000000)
@@ -227,5 +234,11 @@ while True:
         _force_refresh()
         _last_refresh = time.monotonic()
         _last_shown   = ("[ NO SIGNAL ]", "Out of range?", " ")
+
+    # Auto-reset if the WiFi radio has almost certainly wedged. boot.py +
+    # code.py rerun on the fresh boot; if the sender is up we're mirroring
+    # again within a couple of seconds.
+    if (now - _last_rx) > AUTO_RESET_TIMEOUT:
+        microcontroller.reset()
 
     time.sleep(0.05)
