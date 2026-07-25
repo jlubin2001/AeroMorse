@@ -166,9 +166,12 @@ NO_SIGNAL_TIMEOUT    = 10.0      # seconds before showing "[ NO SIGNAL ]"
 AUTO_RESET_TIMEOUT   = 30.0      # seconds of no signal before soft-resetting.
                                  # The ESP32-S2 WiFi radio occasionally wedges;
                                  # a soft reset re-inits it without anyone
-                                 # having to unplug the MagTag. If the sender
-                                 # is really down we'll keep resetting every
-                                 # 30 s until it comes back — harmless.
+                                 # having to unplug the MagTag. Only fires once
+                                 # signal has actually been seen this boot (see
+                                 # _ever_had_signal): if the sender is simply
+                                 # off — e.g. the host laptop is powered down
+                                 # overnight — the MagTag stays quiet instead
+                                 # of rebooting every 30 s all night.
 
 # Show initial state on screen.
 _set_pixels(0x000000)
@@ -179,6 +182,9 @@ _last_rx         = time.monotonic()
 _pending_refresh = True            # ensure the first received packet draws
 _last_shown      = ("", "", "")    # (group, action, mods) currently rendered
 _no_signal_shown = False
+_ever_had_signal = False           # True once a packet arrives this boot;
+                                   # gates auto-reset so a never-present sender
+                                   # doesn't cause an endless reboot loop.
 
 
 # ── Main loop ────────────────────────────────────────────────────────────────
@@ -203,6 +209,7 @@ while True:
             continue
         _last_rx = now
         _no_signal_shown = False
+        _ever_had_signal = True
         new_shown = (_clip(parts[0]), _clip(parts[2]), _clip(parts[3]))
         # parts[1] = live Morse buffer — INTENTIONALLY DROPPED (too fast for e-ink)
         if new_shown != _last_shown:
@@ -235,10 +242,13 @@ while True:
         _last_refresh = time.monotonic()
         _last_shown   = ("[ NO SIGNAL ]", "Out of range?", " ")
 
-    # Auto-reset if the WiFi radio has almost certainly wedged. boot.py +
+    # Auto-reset if the WiFi radio has almost certainly wedged. Gated on
+    # _ever_had_signal so a sender that is simply OFF (host laptop shut down
+    # overnight) doesn't trigger an all-night reboot loop — after one reset
+    # the fresh boot has never seen signal, so it waits quietly. boot.py +
     # code.py rerun on the fresh boot; if the sender is up we're mirroring
     # again within a couple of seconds.
-    if (now - _last_rx) > AUTO_RESET_TIMEOUT:
+    if _ever_had_signal and (now - _last_rx) > AUTO_RESET_TIMEOUT:
         microcontroller.reset()
 
     time.sleep(0.05)
