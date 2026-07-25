@@ -1973,6 +1973,37 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 - Range is approximately 30 m indoors. Move the boards closer to test.
 - Channel mismatch: see "How the ESP-NOW channel is selected" below.
 
+**Wireless display resets itself / you see it reboot**
+- **This is normal, intended behaviour — not a fault.** The ESP32 WiFi
+  radio on the receiver occasionally wedges: packets stop arriving even
+  though both boards are fine. The receiver detects this and
+  **soft-resets itself after 30 s with no signal** so nobody has to
+  unplug it. The timeline on the receiver is:
+  - **0–10 s** no packets → nothing shown (brief gaps are normal).
+  - **10 s** → the display switches to **"No signal"**.
+  - **30 s** → the receiver **soft-resets** (`microcontroller.reset()`);
+    `boot.py` + `code.py` rerun and, if the sender is up, the mirror is
+    back within a couple of seconds.
+- **The receiver only auto-resets once it has actually received signal
+  since powering on.** If the sender has never been present this boot —
+  for example the receiver is left plugged into a laptop that is powered
+  **off overnight** — the receiver shows "No signal" and then waits
+  quietly. It does **not** reboot every 30 s all night. When the sender
+  comes back (laptop powers on, main board boots), the receiver is still
+  listening and starts mirroring again on its own with no reset needed.
+- **If you see it reboot once when the host computer shuts down**, that
+  is expected: the receiver had signal earlier, so it makes one recovery
+  attempt, then the fresh boot has no signal and it goes quiet.
+- **If the receiver reboot-loops continuously while the sender IS up and
+  running**, that points at a persistent link problem rather than an
+  occasional wedge — check the channel match and range (below), and
+  watch the sender's serial console to confirm it is actually
+  broadcasting.
+- To change or disable this, edit the receiver firmware: `_AUTO_RESET`
+  in `receiver.py` (Option W1) or `AUTO_RESET_TIMEOUT` in
+  `receiver_magtag.py` (Option W2). Raise the value to reset less
+  eagerly, or set it very high to effectively disable auto-reset.
+
 **How the ESP-NOW channel is selected**
 
 In CircuitPython 9.x `wifi.radio.channel` is not settable (and on 9.2.9
@@ -2072,6 +2103,11 @@ channel 1, common ones to try are 6 and 11):
   `morse_map.py`). If you accidentally copied `morse_map.py` onto the
   MagTag, boot.py will treat it as a sender and enable USB HID —
   delete the file and reboot.
+- Note: once the MagTag has mirrored at least once, it **auto-resets
+  after 30 s of lost signal** to recover from a wedged radio — see
+  "Wireless display resets itself" above. A MagTag that has *never*
+  received signal this boot (e.g. sender powered off) will not
+  auto-reset; it waits quietly until the sender returns.
 
 **Option W2 MagTag — pattern preview and pressure bar never appear**
 - That's **by design**, not a bug. E-ink refresh is too slow (~1–2 s
