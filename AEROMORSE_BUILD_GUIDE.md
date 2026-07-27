@@ -1927,6 +1927,54 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 **Groups cycle when you did not mean to**
 - Raise `LONG_PRESS` from `1.0` to `1.5` or `2.0` to require a longer hold.
 
+**Typing feels slower than my previous Morse device**
+
+Experienced Morse users migrating from a switch-based device (Darci
+USB, morAce, a homebrew paddle) often find they have to deliberately
+slow down on AeroMorse or the error rate climbs. This is a **tuning**
+problem, not a limitation — the defaults are deliberately
+conservative, set for a first-time user who benefits from generous
+timing. A fluent user should retune.
+
+Understand the failure mode first, because it tells you which knob to
+turn. With `SWITCH_MODE = 2` a character commits after
+`ACCEPT_DELAY` of idle. So:
+
+- **Letters running together** (you meant `E` `T`, you got `A`) means
+  you started the next character before `ACCEPT_DELAY` elapsed. The
+  timeout is too long *for your speed*. **Lower `ACCEPT_DELAY`.**
+- **Letters splitting apart** (you meant `C`, you got `N` then `T`)
+  means you paused mid-character longer than `ACCEPT_DELAY`. **Raise
+  `ACCEPT_DELAY`.**
+
+Being forced to slow down is the first case. Work through these in
+order — the first two matter most:
+
+| Setting | Default | Try | Effect |
+|---|---|---|---|
+| `ACCEPT_DELAY` | `0.3` | `0.20`, then `0.15` | Directly sets the pause you must leave between characters. The single biggest throughput lever. |
+| `SENSOR_FILTER_HEAVY` | `True` | `False` | Halves the sensor's hardware low-pass lag (~40–60 ms → ~20–30 ms) on **every** press and release. |
+| `DEBOUNCE_SAMPLES` | `3` | `2` | Saves ~13 ms confirming each edge (~27 ms per element). Don't go to `1` unless you have a very clean signal. |
+| `THRESH_SIP` / `THRESH_PUFF` | `2` | `2`, or lower | Lower thresholds trigger earlier in the breath. Only lower these if you are *not* getting false triggers; use `test_pressure.py` to check your headroom. |
+| `SENSOR_FILTER_ENABLED` | `True` | `False` | Last resort. Removes hardware smoothing entirely — lowest possible latency, but you will likely need to raise `THRESH_*` to stop false triggers. |
+
+Change **one setting at a time** and type a familiar paragraph after
+each. Latency changes are easy to misjudge by feel, and stacking three
+edits at once makes it impossible to tell which one helped.
+
+> **`POINTS_TO_AVERAGE` is not a speed knob.** It looks like the
+> obvious thing to lower, but it is not currently used in the
+> threshold path (see Appendix E) — changing it does nothing. Smoothing
+> lives in `SENSOR_FILTER_*` and `DEBOUNCE_SAMPLES`.
+
+**If you still can't get there:** consider `SWITCH_MODE = 3`
+(§"Input modes"). The third-switch Accept gesture commits the
+character **instantly**, so `ACCEPT_DELAY` stops being a speed limit
+altogether — you never wait on a timeout. It costs one extra gesture
+per character, which is a good trade for users who are fast enough
+that the inter-character pause dominates their typing time. This is
+also the closest match to Darci USB's end-of-character behaviour.
+
 ---
 
 ### Display
@@ -2426,10 +2474,32 @@ otherwise turn a single dot into dot-dot.
   already clean, so this value is ignored when `USE_SENSOR = False`.
 
 **`POINTS_TO_AVERAGE`** (default `8`). *Sensor mode only.*
-Number of pressure readings averaged before threshold comparison.
-Higher = more bounce immunity, slower response. Lower = faster but
-jitterier. `8` is a sensible default for sip-and-puff. Most users
-don't need to touch this.
+Reserved. A rolling average of this depth is maintained but the
+dot/dash threshold comparison uses the **raw** reading, so changing
+this value currently has **no effect** on responsiveness or on
+false-trigger rate. Smoothing is handled upstream by the sensor's own
+hardware low-pass filter (`SENSOR_FILTER_*` below) and downstream by
+`DEBOUNCE_SAMPLES`. Don't spend tuning time here.
+
+**`SENSOR_FILTER_ENABLED`** (default `True`). *Sensor mode only.*
+Enables the LPS33HW's built-in hardware low-pass filter. Leave it on
+unless you are chasing the absolute lowest latency and can tolerate a
+noisier signal (which usually means raising `THRESH_SIP` /
+`THRESH_PUFF` to compensate).
+
+**`SENSOR_FILTER_HEAVY`** (default `True`). *Sensor mode only.*
+Selects the filter's cutoff. `True` = ODR/20 (3.75 Hz at the 75 Hz
+sample rate) — quietest, but it costs roughly **40–60 ms of group
+delay on every press and every release**. `False` = ODR/9 (8.3 Hz),
+about half the lag for a modest increase in noise.
+
+> **This is one of the largest single levers on typing speed** and it
+> is easy to miss, because the delay is symmetric: it postpones both
+> the start and the end of every element, so the device feels
+> uniformly "behind" rather than obviously broken. Fast Morse users
+> coming from a switch-based device (where switch closure is read
+> with essentially zero latency) usually want `False` here. See
+> **"Typing feels slower than my previous Morse device"** in §12.
 
 **`BASELINE_DRIFT_S`** (default `30`). *Sensor mode only.*
 Time constant in seconds for auto-zero drift correction. The LPS33HW

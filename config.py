@@ -20,7 +20,10 @@ USE_SENSOR        = True      # True = LPS33HW sensor; False = AT switches on D5
 THRESH_SIP        = 2         # hPa below baseline = dot (raise if false triggers)
 THRESH_PUFF       = 2         # hPa above baseline = dash
 DEBOUNCE_SAMPLES  = 3         # consecutive agreeing samples to confirm a state change (~13 ms each)
-POINTS_TO_AVERAGE = 8         # pressure readings averaged before threshold compare
+POINTS_TO_AVERAGE = 8         # reserved — not currently used in the threshold path
+
+SENSOR_FILTER_ENABLED = True  # LPS33HW hardware low-pass. False = lowest latency, noisier
+SENSOR_FILTER_HEAVY   = True  # True = ODR/20 (~40-60 ms lag), False = ODR/9 (~half that)
 BASELINE_DRIFT_S  = 30        # auto-zero time constant; 0 disables, follows ambient pressure drift
 
 DOT_PIN           = board.D5  # switch-mode only — TIP of dot jack
@@ -42,8 +45,8 @@ THIRD_SWITCH_GESTURE = "long_dash"  # mode 3 only — "long_dash" or "long_dot" 
 #              and overrides LONG_PRESS_CYCLES_GROUP on that switch.
 # Set ACTION = "" to disable.
 
-STRONG_SIP_ACTION  = ""        # e.g. "group 2" to jump to Mouse on strong sip
-STRONG_PUFF_ACTION = ""        # e.g. "group 1" to jump to Keyboard on strong puff
+STRONG_SIP_ACTION  = "group 2"        # e.g. "group 2" to jump to Mouse on strong sip
+STRONG_PUFF_ACTION = "group 1"        # e.g. "group 1" to jump to Keyboard on strong puff
 THRESH_SIP_STRONG  = 15        # hPa — sensor mode only
 THRESH_PUFF_STRONG = 15        # hPa — sensor mode only
 

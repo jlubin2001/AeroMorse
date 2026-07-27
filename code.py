@@ -143,8 +143,12 @@ if USE_SENSOR:
     lps = adafruit_lps35hw.LPS35HW(i2c)
     lps.zero_pressure()
     lps.data_rate      = adafruit_lps35hw.DataRate.RATE_75_HZ
-    lps.filter_enabled = True
-    lps.filter_config  = True
+    # Hardware low-pass filter. filter_config True = ODR/20 (3.75 Hz cutoff at
+    # 75 Hz — quietest but ~40-60 ms of group delay on every press AND every
+    # release); False = ODR/9 (8.3 Hz, roughly half the lag). Both are on the
+    # critical path for typing speed — see Build Guide Appendix E.
+    lps.filter_enabled = SENSOR_FILTER_ENABLED
+    lps.filter_config  = SENSOR_FILTER_HEAVY
 else:
     _dot_btn  = digitalio.DigitalInOut(DOT_PIN)
     _dash_btn = digitalio.DigitalInOut(DASH_PIN)

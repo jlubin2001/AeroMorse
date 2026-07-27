@@ -613,7 +613,9 @@ explaining what it does. The same Key Settings table also appears in
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
 | `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip — e.g. `"group 2"` to jump to Mouse. Empty string = disabled. **Switch mode:** triggered by a long-press of the DIT-side switch instead of pressure peak; overrides `LONG_PRESS_CYCLES_GROUP` on that switch |
 | `STRONG_PUFF_ACTION` | `""` | Same as above but for puff / DAH-side switch in switch mode |
-| `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged before thresholding. Increase to reduce bounce; decrease if fast elements are missed |
+| `POINTS_TO_AVERAGE` | `8` | Reserved — the threshold path uses the raw reading, so this currently has no effect. Not a speed knob |
+| `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass filter. `False` = lowest latency, noisier signal |
+| `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag per edge), `False` = ODR/9 (about half). **Major typing-speed lever** — set `False` if you type fast |
 | `DOT_PIN` | `board.D5` | GPIO pin for dot switch (switch mode only) |
 | `DASH_PIN` | `board.D6` | GPIO pin for dash switch (switch mode only) |
 
