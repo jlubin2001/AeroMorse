@@ -87,6 +87,10 @@ MOUSE_SPEED_FAST   = 3         # toggled via `mfast`
 MOUSE_SPEED_FACTOR = 2         # overall scale
 MOUSE_REPEAT_DELAY = 0.040     # seconds between repeat ticks
 
+MOUSE_CLICK_MOD_DELAY = 0.030  # s to settle a modifier before/after a click
+MOUSE_CLICK_KEEPS_MODS = True  # True = armed mods survive a click (Ctrl+click
+                               # multi-select); False = one-shot, cleared after
+
 
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────
 

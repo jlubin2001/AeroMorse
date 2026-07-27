@@ -2600,6 +2600,39 @@ AirTalker feel that AeroMorse was originally tuned to).
 Seconds between repeat ticks when mouse-repeat is active (40 ms =
 25 ticks/sec).
 
+**`MOUSE_CLICK_MOD_DELAY`** (default `0.030`).
+Seconds to hold an armed modifier before and after a mouse click.
+The keyboard and the mouse are two **separate USB HID interfaces**, so
+the host is free to process their reports out of order. Without a
+settle delay the click frequently lands before the modifier registers
+and the host sees a plain click — the reason **Ctrl+click**,
+**Shift+click**, and **Alt+click** used to do nothing. If modified
+clicks are still unreliable on your host, raise this to `0.05`.
+
+**`MOUSE_CLICK_KEEPS_MODS`** (default `True`).
+Controls whether an armed modifier survives a mouse click.
+
+- `True` — the modifier stays armed after the click, so **Ctrl+click
+  multi-select** works the way it does for an able-bodied user: arm
+  Ctrl **once**, click each file you want, then toggle Ctrl back off
+  with the same pattern that armed it. The status line keeps showing
+  `RCtrl` the whole time so you can see it is still held.
+- `False` — one-shot behaviour: the modifier clears after a single
+  click, so every modified click costs two patterns (arm, then click).
+
+> **Selecting several files in Windows File Explorer.** In Group 2,
+> arm **Right Ctrl** (`-.-.`), then send **left click** (`.-`) once
+> per file — the modifier stays armed between clicks. When the
+> selection is complete, enter `-.-.` again to release Ctrl.
+>
+> Explorer also has a **mouse-only** alternative that needs no
+> modifier at all: turn on **View › Show › Item check boxes** (Windows
+> 11) or **View › Item check boxes** (Windows 10). Each item then gets
+> a checkbox, and plain single clicks on the checkboxes accumulate a
+> multi-selection. This is often far less effort than modified
+> clicking and it survives an accidental un-modified click, which
+> would otherwise collapse the whole selection.
+
 ### Display / wireless
 
 **`DISPLAY_ROTATION`** (default `0`).

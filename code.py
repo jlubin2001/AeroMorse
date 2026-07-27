@@ -537,12 +537,24 @@ def _exec_command(cmd):
                  Mouse.RIGHT_BUTTON  if side == 'right'  else
                  Mouse.MIDDLE_BUTTON)
         if _armed_mods:
+            # Keyboard and mouse are separate USB HID interfaces, so the host
+            # can process their reports out of order. Without a settle delay
+            # the click often lands before the modifier registers and the host
+            # sees a plain click — which is why Ctrl+click multi-select failed.
             kbd.press(*_armed_mods)
+            time.sleep(MOUSE_CLICK_MOD_DELAY)
         for _ in range(count):
             mouse.click(btn)
         if _armed_mods:
+            time.sleep(MOUSE_CLICK_MOD_DELAY)   # let the click land first
             kbd.release_all()
-            _armed_mods.clear()
+            # Modifiers normally auto-clear after one use, but Ctrl+click
+            # multi-select needs the modifier to survive click after click —
+            # otherwise every file costs two patterns instead of one. Keep it
+            # armed and let the user toggle it off with the same pattern that
+            # armed it. The status line keeps showing e.g. "RCtrl" throughout.
+            if not MOUSE_CLICK_KEEPS_MODS:
+                _armed_mods.clear()
         _last_mouse_vec  = (0, 0, 0)    # clicks are not repeatable
         _last_repeatable = None
 

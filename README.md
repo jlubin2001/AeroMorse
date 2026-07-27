@@ -659,6 +659,8 @@ explaining what it does. The same Key Settings table also appears in
 | `MOUSE_SPEED_FAST` | `3` | Fast speed multiplier |
 | `MOUSE_SPEED_FACTOR` | `2` | Additional scale applied to all mouse moves |
 | `MOUSE_REPEAT_DELAY` | `0.040` | Seconds between repeat ticks (40 ms) |
+| `MOUSE_CLICK_MOD_DELAY` | `0.030` | Seconds to let an armed modifier settle before and after a click. Keyboard and mouse are separate USB interfaces, so without this delay the host can see a plain click instead of Ctrl+click. Raise to `0.05` if modified clicks are unreliable |
+| `MOUSE_CLICK_KEEPS_MODS` | `True` | `True` = an armed modifier stays armed across mouse clicks, so **Ctrl+click multi-select** works — arm Ctrl once, click each file, then toggle Ctrl off. `False` = one-shot (modifier clears after a single click) |
 
 ### Display / wireless
 
