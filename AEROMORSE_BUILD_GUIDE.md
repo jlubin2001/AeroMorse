@@ -2006,13 +2006,28 @@ no longer resolve adjacent elements.
    between elements survives. Usually sufficient on its own.
 2. `DEBOUNCE_SAMPLES = 3` → `2` — fewer samples needed to confirm the
    brief IDLE.
-3. **Raise** `THRESH_SIP` / `THRESH_PUFF` slightly (e.g. `2` → `3`).
-   Counterintuitive, but correct here: the thresholds define the
-   *width of the idle band*, so raising them means pressure re-enters
-   idle **sooner** on the way back from each element, separating a
-   repeated pair more cleanly. The trade-off is that you must sip or
-   puff a little harder to trigger at all — check your headroom with
-   `test_pressure.py` first.
+3. Steps 1 and 2 are usually enough on their own. Only if they are
+   not, consider raising `THRESH_SIP` / `THRESH_PUFF` — but read the
+   warning below first, because on sip-and-puff this often makes
+   things **worse**, not better.
+
+> **Raising the thresholds is a trap for sip-and-puff users.** In
+> theory it should help: the thresholds set the *width of the idle
+> band*, so a wider band means pressure re-enters idle sooner on the
+> way back from each element, separating a repeated pair more
+> cleanly. In practice it backfires unless you have a lot of headroom,
+> because the same change also makes every element take **longer to
+> cross the threshold on the way up**, and marginal elements stop
+> registering at all. Breath pressure is modest and slow-changing
+> compared with a switch closure, so most sip-and-puff users have
+> little headroom to spend — the onset penalty outweighs the gap
+> benefit and the error rate climbs. Field result from the project's
+> primary user: steps 1 and 2 fixed the fault; raising the thresholds
+> from `2` to `3` made it noticeably worse.
+>
+> Only try this if `test_pressure.py` shows your peaks are **several
+> times** your current threshold, and change it back promptly if the
+> error rate does not improve.
 
 > Do **not** reach for `ACCEPT_DELAY` for this fault. That setting
 > governs the gap *between characters*; this failure happens *within*
