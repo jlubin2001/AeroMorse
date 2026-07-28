@@ -1967,6 +1967,57 @@ edits at once makes it impossible to tell which one helped.
 > threshold path (see Appendix E) — changing it does nothing. Smoothing
 > lives in `SENSOR_FILTER_*` and `DEBOUNCE_SAMPLES`.
 
+**Repeated elements collapse — `--` reads as `-`, `..` reads as `.`**
+
+A distinct fault with a distinct fix. The signature: the wrong
+character is always the intended one with a **run of identical
+elements shortened by one**, never a wrong element type and never a
+dropped isolated element. Examples from the default map:
+
+| Intended | Pattern | Received | Pattern | Collapse |
+|---|---|---|---|---|
+| `c` | `- - - .` | `g` | `- - .` | 3 dashes → 2 |
+| space | `. . - -` | `w` | `. - -` | 2 dots → 1 |
+| `LEFT_SHIFT` | `- - . . . -` | `+` | `- . . . -` | 2 dashes → 1 |
+
+**Cause.** To register two dots in a row the firmware must see
+`IDLE → DIT → IDLE → DIT`. Pressure has to fall back inside the idle
+band *between* the elements and stay there long enough for
+`DEBOUNCE_SAMPLES` to confirm it. Two things eat that brief dip:
+
+- the sensor's hardware low-pass, which at `SENSOR_FILTER_HEAVY =
+  True` adds ~40–60 ms of group delay and smooths a short
+  return-to-neutral away entirely, and
+- `DEBOUNCE_SAMPLES`, which needs that many consecutive agreeing
+  samples (~13 ms each) before it will believe the IDLE.
+
+Together they need roughly 80–100 ms of clean gap between same-type
+elements. Type faster and your inter-element gaps shrink below that,
+so the pair merges into one longer element.
+
+This is why the fault often **appears right after you lower
+`ACCEPT_DELAY`** — nothing is wrong with the new value, you simply
+started keying faster and crossed the threshold where the filter can
+no longer resolve adjacent elements.
+
+**Fix, in order:**
+
+1. `SENSOR_FILTER_HEAVY = False` — halves the group delay so the dip
+   between elements survives. Usually sufficient on its own.
+2. `DEBOUNCE_SAMPLES = 3` → `2` — fewer samples needed to confirm the
+   brief IDLE.
+3. **Raise** `THRESH_SIP` / `THRESH_PUFF` slightly (e.g. `2` → `3`).
+   Counterintuitive, but correct here: the thresholds define the
+   *width of the idle band*, so raising them means pressure re-enters
+   idle **sooner** on the way back from each element, separating a
+   repeated pair more cleanly. The trade-off is that you must sip or
+   puff a little harder to trigger at all — check your headroom with
+   `test_pressure.py` first.
+
+> Do **not** reach for `ACCEPT_DELAY` for this fault. That setting
+> governs the gap *between characters*; this failure happens *within*
+> a single character, and lowering or raising it will not help.
+
 **If you still can't get there:** consider `SWITCH_MODE = 3`
 (§"Input modes"). The third-switch Accept gesture commits the
 character **instantly**, so `ACCEPT_DELAY` stops being a speed limit
