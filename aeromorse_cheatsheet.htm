@@ -60,6 +60,7 @@
   cmd.mod { background: #fff3cd; color: #856404; border-color: #ffc107; }   /* modifier / lock — yellow */
   cmd.sys { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }   /* system / repeat — gray */
   cmd.ios { background: #ece6f8; color: #4b2e83; border-color: #d6c8ef; }   /* iOS Switch Control action — purple */
+  cmd.app { background: #d1f2eb; color: #0b5345; border-color: #a8e6d4; }   /* application launcher (AL_*) — teal */
 
   /* Keyboard */
   keybd {
@@ -288,6 +289,7 @@
     <span class="legend-item"><cmd class="grp">→ Group</cmd> group switch</span>
     <span class="legend-item"><cmd class="mse">&#x1F5B1;&#xFE0E; Mouse</cmd> mouse / move / click</span>
     <span class="legend-item"><cmd class="med">&#x1F3B5; Media</cmd> consumer controls</span>
+    <span class="legend-item"><cmd class="app">&#x1F5C2;&#xFE0E; App</cmd> application launcher</span>
     <span class="legend-item"><cmd class="mod">Mod</cmd> modifier / lock</span>
     <span class="legend-item"><cmd class="sys">System</cmd> repeat / system</span>
     <span class="legend-item"><cmd class="ios">iOS</cmd> iOS Switch Control action (Group 4)</span>
@@ -412,6 +414,45 @@
       'F12': 'Siri',
     };
 
+    /* ── ConsumerControlCode name → readable label ─────────────────────────
+       Covers both forms used in morse_map.py:
+         CC(ConsumerControlCode.PLAY_PAUSE)      — media keys
+         _cc('AL_CALCULATOR', 0x192)             — launchers, name + spec-ID
+                                                   fallback for old bundles
+       AL_* is the HID spec's "Application Launch" prefix; spelling those out
+       verbatim would read "Al Local Machine Browser", so the common ones get
+       a hand-written label. */
+    const CC_LABELS = {
+      'AL_CALCULATOR':            'Calculator',
+      'AL_LOCAL_MACHINE_BROWSER': 'File Explorer',
+      'AL_INTERNET_BROWSER':      'Web Browser',
+      'AL_EMAIL_READER':          'Mail',
+      'AL_CONSUMER_CONTROL_CONFIGURATION': 'Media Player',
+      'SCAN_NEXT_TRACK':          'Next Track',
+      'SCAN_PREVIOUS_TRACK':      'Prev Track',
+      'VOLUME_INCREMENT':         'Volume +',
+      'VOLUME_DECREMENT':         'Volume -',
+      'BRIGHTNESS_INCREMENT':     'Brightness +',
+      'BRIGHTNESS_DECREMENT':     'Brightness -',
+      'PLAY_PAUSE':               'Play / Pause',
+      'FAST_FORWARD':             'Fast Forward',
+    };
+
+    /* Turn a ConsumerControlCode constant name into { label, cls }. */
+    function formatConsumerCode(name) {
+      name = name.trim().replace(/^ConsumerControlCode\./, '').replace(/^['"]|['"]$/g, '');
+      const isLauncher = name.indexOf('AL_') === 0;
+      let label = CC_LABELS[name];
+      if (!label) {
+        /* Fall back to title-casing, dropping the AL_ prefix if present. */
+        label = name.replace(/^AL_/, '')
+                    .replace(/_/g, ' ')
+                    .toLowerCase()
+                    .replace(/\b\w/g, c => c.toUpperCase());
+      }
+      return { label: label, cls: isLauncher ? 'app' : 'med' };
+    }
+
     function processMorseData(dataStr) {
       const container = document.getElementById('pages-container');
       container.innerHTML = '';
@@ -423,7 +464,7 @@
         g2: "Group 2: Mouse & Windows",
         g3: "Group 3: Macros",
         g4: "Group 4: Scanning - F1-F12 (Switch Control)",
-        g5: "Group 5: Media (USB HID Consumer Controls)",
+        g5: "Group 5: Media + App Launchers (USB HID Consumer Controls)",
         g6: "Group 6 (placeholder)",
         g7: "Group 7 (placeholder)",
         g8: "Group 8 (placeholder)",
@@ -458,14 +499,20 @@
           const cmd = CMD_MAP[strVal];
           if (cmd) { key = cmd.label; cls = cmd.cls; }
           else     { key = strVal;     cls = null;    }
-        } else if (raw.startsWith('CC(')) {
-          /* Consumer Controls — Group 5 media keys. Render as 'med' badge. */
-          const inner = raw.split('#')[0].trim().slice(3, -1).trim();
-          key = inner.replace(/^ConsumerControlCode\./, '')
-                     .replace(/_/g, ' ')
-                     .toLowerCase()
-                     .replace(/\b\w/g, c => c.toUpperCase());
-          cls = 'med';
+        } else if (raw.startsWith('CC(') || raw.startsWith('_cc(')) {
+          /* Group 5 Consumer Controls. Two spellings in morse_map.py:
+               CC(ConsumerControlCode.PLAY_PAUSE)
+               _cc('AL_CALCULATOR', 0x192)
+             For _cc the first argument is the constant name; the second is a
+             raw usage-ID fallback for older adafruit_hid bundles and is not
+             shown. Media keys get a 'med' badge, AL_* launchers get 'app'. */
+          /* Strip must match BOTH spellings exactly — 'CC(' is uppercase and
+             '_cc(' is lowercase, so a case-sensitive /^_?cc\(/ silently misses
+             the CC( form and leaks the prefix into the label. */
+          const inner = raw.split('#')[0].trim().replace(/^(?:CC|_cc)\(/, '').replace(/\)\s*$/, '');
+          const info  = formatConsumerCode(inner.split(',')[0]);
+          key = info.label;
+          cls = info.cls;
         } else {
           const noComment = raw.split('#')[0].trim();
           key = noComment.split(',').map(formatKeyPart).filter(p => p).join(' + ');
@@ -498,17 +545,19 @@
 
       const sortKeys = (a, b) => {
         const arrowOrder = { '←': 1, '↑': 2, '↓': 3, '→': 4 };
-        /* Sort: badges (grp / sys / mod / mse / med) sink to the bottom of each
-           page so the printable keyboard rows on top stay clean. Within badge
-           classes, group them so all 'Move ↑/↓/←/→' land together. */
+        /* Sort: badges (grp / sys / mod / mse / med / app) sink to the bottom of
+           each page so the printable keyboard rows on top stay clean. Within
+           badge classes, group them so all 'Move ↑/↓/←/→' land together, and
+           so g5's launchers sit directly under its media keys. */
         const getRank = item => {
           const str = item.key;
           if (str === '' || str === undefined) return 99;
           if (item.cls === 'mse') return 50;
           if (item.cls === 'med') return 51;
-          if (item.cls === 'mod') return 52;
-          if (item.cls === 'sys') return 53;
-          if (item.cls === 'grp') return 54;
+          if (item.cls === 'app') return 52;
+          if (item.cls === 'mod') return 53;
+          if (item.cls === 'sys') return 54;
+          if (item.cls === 'grp') return 55;
           if (arrowOrder[str]) return 4;
           if (str.length === 1 && /[a-zA-Z]/.test(str)) return 1;
           if (str.length === 1 && /[0-9]/.test(str)) return 2;
@@ -567,6 +616,7 @@
             let prefix = '';
             if (item.cls === 'mse') prefix = '\u{1F5B1}\u{FE0E} ';   /* mouse */
             if (item.cls === 'med') prefix = '\u{1F3B5} ';            /* music note for media */
+            if (item.cls === 'app') prefix = '\u{1F5C2}\u{FE0E} ';    /* launcher */
             badge.textContent = prefix + item.key;
             keyDiv.appendChild(badge);
           } else {
