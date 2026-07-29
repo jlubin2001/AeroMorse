@@ -278,9 +278,12 @@ g2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..     (al)
 g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.      (ar)
 
 # ── Windows Shortcuts (tuples = all keys pressed simultaneously) ──────────────
-g2[6][0b110000]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --....  free mouse from VM
-g2[5][0b00000]=Keycode.ALT, Keycode.TAB    # .....   switch windows
-g2[5][0b11111]=Keycode.GUI, Keycode.TAB    # -----   task view
+g2[6][0b110011]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --..--  free mouse from VM
+g2[5][0b00000]=Keycode.GUI, Keycode.TAB    # .....   task view (Win+Tab)
+g2[5][0b11111]=Keycode.ALT, Keycode.TAB    # -----   switch windows (Alt+Tab)
+g2[7][0b1110010]=Keycode.TAB               # ---..-.  Tab                    (sf)
+g2[6][0b110000]=Keycode.ESCAPE             # --....   Escape                 (gs)
+g2[7][0b1100000]=Keycode.F5                # --.....  refresh / F5           (--5)
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
 g2[4][0b1010]=Keycode.RIGHT_CONTROL        # -.-.
