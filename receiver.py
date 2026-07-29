@@ -86,12 +86,29 @@ def _build_display():
     lbl_group  = _make_label(root, "[ AeroMorse ]", _GROUP_COLORS[1],  2)
     lbl_buf    = _make_label(root, "Waiting...",    0x00FFFF,          30)
     lbl_action = _make_label(root, " ",             0xFFFF00,          58)
+    # Orange "RPT" tag pinned to the LEFT of the action row, shown only while a
+    # repeat is active. Mirrors the main board: the RPT flag stands out in
+    # orange against the yellow repeated-action name on the same row.
+    lbl_rpt    = label.Label(terminalio.FONT, text=" ", color=0xFF8000, scale=2,
+                             anchor_point=(0.0, 0.0), anchored_position=(4, 58))
+    root.append(lbl_rpt)
     lbl_mods   = _make_label(root, " ",             0xFF8000,          86)
 
     display.root_group = root
-    return lbl_group, lbl_buf, lbl_action, lbl_mods
+    return lbl_group, lbl_buf, lbl_action, lbl_rpt, lbl_mods
 
-_lbl_group, _lbl_buf, _lbl_action, _lbl_mods = _build_display()
+_lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods = _build_display()
+
+def _set_action(text):
+    """Set the action row, splitting a leading 'RPT ' into the orange tag so
+    the RPT flag renders orange while the repeated action name stays yellow —
+    matching the main board TFT."""
+    if text.startswith("RPT "):
+        _lbl_rpt.text    = "RPT"
+        _lbl_action.text = text[4:]
+    else:
+        _lbl_rpt.text    = " "
+        _lbl_action.text = text
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -113,7 +130,7 @@ def _show_no_signal():
     _lbl_group.text  = "[ No signal ]"
     _lbl_group.color = 0x606060
     _lbl_buf.text    = " "
-    _lbl_action.text = "Out of range?"
+    _set_action("Out of range?")
     _lbl_mods.text   = " "
 
 # ── Main loop ──────────────────────────────────────────────────────────────────
@@ -168,7 +185,7 @@ while True:
                 _lbl_group.text  = _clip(parts[0])
                 _lbl_group.color = _group_color(parts[0])
                 _lbl_buf.text    = _clip(parts[1])
-                _lbl_action.text = _clip(parts[2])
+                _set_action(_clip(parts[2]))
                 _lbl_mods.text   = _clip(parts[3])
         except Exception:
             pass  # malformed packet — keep last good display
