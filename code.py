@@ -373,6 +373,9 @@ _mouse_start_t   = 0.0         # when current repeat session began
 _last_repeat_tick = 0.0        # when last key-repeat fired
 
 _last_action  = " "
+_repeat_label = ""    # display label of whatever `repeat` will re-fire, captured
+                      # when that action runs — so the status line can show
+                      # "RPT DOWN ARROW" instead of a bare "REPEAT".
 _display_pressure = 0.0
 
 # ── Morse lookup ───────────────────────────────────────────────────────────────
@@ -690,6 +693,7 @@ def _exec_consumer(cc_action):
 def execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
+    global _repeat_label
     if isinstance(action, CC):
         label = _CC_NAMES.get(action.code, f"CC {action.code}")
         _last_action     = label[:20]
@@ -706,6 +710,7 @@ def execute(action, pattern=""):
         label = " + ".join(_KEYCODE_NAMES.get(k, f"KEY {k}") for k in action)
         _last_action     = label[:20] if label else "COMBO"
         _last_repeatable = action
+        _repeat_label    = _last_action
         _last_mouse_vec  = (0, 0, 0)
         print(f"{pattern}  {label}")
         _exec_combo(action)
@@ -718,6 +723,7 @@ def execute(action, pattern=""):
         label = _KEYCODE_NAMES.get(action, f"KEY {action}")
         _last_action     = label[:20]
         _last_repeatable = action
+        _repeat_label    = _last_action
         _last_mouse_vec  = (0, 0, 0)
         print(f"{pattern}  {label}")
         _exec_keycode(action)
@@ -733,9 +739,30 @@ def execute(action, pattern=""):
             # MSLOW, MFAST, MRESET, and user-added commands also display
             # in the same all-caps style.
             display = _FRIENDLY_CMD.get(action, action.upper())
-            _last_action = display[:20]
-            print(f"{pattern}  {display}")
-            _exec_command(action)
+            verb    = action.split(' ')[0]
+            if verb == 'repeat':
+                # Toggle first, then describe the resulting state. Showing a
+                # bare "REPEAT" left no way to tell WHAT was repeating, which
+                # matters once the device is in daily use and the repeat may
+                # have been armed several actions ago.
+                was_on = _mouse_repeating
+                _exec_command(action)
+                if _mouse_repeating:
+                    display = f"RPT {_repeat_label}" if _repeat_label else "REPEAT"
+                elif was_on:
+                    display = "RPT OFF"
+                else:
+                    display = "NOTHING TO RPT"
+                _last_action = display[:20]
+                print(f"{pattern}  {display}")
+            else:
+                _last_action = display[:20]
+                print(f"{pattern}  {display}")
+                _exec_command(action)
+                # mmove is the only command that leaves something repeatable
+                # (via _last_mouse_vec); clicks and drags explicitly clear it.
+                if verb == 'mmove':
+                    _repeat_label = _last_action
             # commands (including "group 3") are NOT auto-returned — intentional
         else:
             # Single char: friendly word for punctuation, uppercase for letters/digits.
@@ -746,6 +773,7 @@ def execute(action, pattern=""):
                 label = f'"{action[:16]}"'
             _last_action     = label[:20]
             _last_repeatable = action
+            _repeat_label    = _last_action
             _last_mouse_vec  = (0, 0, 0)
             print(f"{pattern}  {label}")
             _exec_text(action)
