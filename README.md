@@ -51,7 +51,7 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
   Android Switch Control
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
-  explorer, browser, mail, and system power
+  explorer, browser, and mail
 - **Groups 6–9** — **Placeholders** seeded with g1's letters and numbers,
   ready for you to customise
 
@@ -511,8 +511,8 @@ Group 1 as a placeholder and can be customised.
 ### Group 5 — Media (USB HID Consumer Controls)
 
 Group 5 sends USB HID Consumer Control codes — media playback, volume,
-mute, track skip, brightness, eject, application launch, and system power
-controls. The codes route through a dedicated `ConsumerControl` HID device
+mute, track skip, brightness, eject, and application launch.
+The codes route through a dedicated `ConsumerControl` HID device
 (enabled in `boot.py`), so they reach the host as standard media-keyboard
 keys that every modern OS understands.
 
@@ -527,7 +527,7 @@ keys that every modern OS understands.
 | `-.` | Previous Track | `-..` | Brightness − |
 | `.-` | Next Track | `-.-` | Eject |
 
-**Application Launch + System (4-symbol patterns; first-letter mnemonics):**
+**Application Launch (4-symbol patterns; first-letter mnemonics):**
 
 | Pattern | ITU letter | Action |
 |---------|-----------|--------|
@@ -535,27 +535,28 @@ keys that every modern OS understands.
 | `..-.` | F | **F**ile explorer — `AL_LOCAL_MACHINE_BROWSER` |
 | `-...` | B | **B**rowser — `AL_INTERNET_BROWSER` |
 | `.-..` | L | mai-**L** — `AL_EMAIL_READER` |
-| `--..` | Z | Z-z-z — `SLEEP` |
-| `.--.` | P | **P**ower — `POWER` |
 
 The mnemonic letters above are **standard ITU** Morse. Note that g1's own
 `c` is the non-standard `---.` (because `-.-.` is freed there for
 `LEFT_CONTROL`), so `-.-.` = C applies to the ITU letter, not to g1's
 mapping.
 
-These six codes work on **any** `adafruit_hid` bundle. Older bundles don't
-define the `AL_*` / `SLEEP` / `POWER` constants, so `morse_map.py` resolves
-each one by name and falls back to its raw usage ID from the USB HID Usage
-Tables, Consumer Page (`0x0C`). Those IDs are fixed by the spec, so nothing
-is skipped and no warning is needed.
+These codes work on **any** `adafruit_hid` bundle. Older bundles don't
+define the `AL_*` constants, so `morse_map.py` resolves each one by name and
+falls back to its raw usage ID from the USB HID Usage Tables, Consumer Page
+(`0x0C`). Those IDs are fixed by the spec, so nothing is skipped and no
+warning is needed.
 
-> ⚠ **`.--.` sends `POWER`.** A 4-symbol pattern is easy to hit by accident
-> in a group whose 1–3 symbol patterns are routine media keys. If an
-> accidental shutdown would be costly, comment out the `POWER` line in
-> `morse_map.py` or move it to a longer pattern.
+> **System `SLEEP` and `POWER` are deliberately not mapped.** Their
+> mnemonic patterns would be `--..` (Z-z-z) and `.--.` (**P**ower), but a
+> 4-symbol pattern is too easy to hit by accident in a group whose 1–3
+> symbol patterns are routine media keys — and an unintended shutdown is
+> far more disruptive than a stray volume change. `--..` and `.--.`
+> therefore keep the placeholder letters `z` and `p`. Add them in
+> `morse_map.py` if you want them, ideally on a longer pattern.
 
 Whether each code actually does anything is up to the host OS — Windows
-generally honours all six; macOS and Linux desktops vary. The remaining
+generally honours all four; macOS and Linux desktops vary. The remaining
 letters and numbers in g5 are inherited from Group 1 as a placeholder and
 can be customised.
 

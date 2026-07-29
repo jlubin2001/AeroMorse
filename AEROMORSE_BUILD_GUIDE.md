@@ -69,7 +69,7 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
   Android Switch Control
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
-  explorer, browser, mail, and system power
+  explorer, browser, and mail
 - **Groups 6–9** — **Placeholders** seeded with g1's letters and numbers,
   ready for you to customise
 

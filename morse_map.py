@@ -430,14 +430,15 @@ for _gid in range(5, 10):
 #   ...  STOP               ..-  REWIND              .-.  FAST FORWARD
 #   .--  BRIGHTNESS +       -..  BRIGHTNESS -        -.-  EJECT
 #
-# The 4-symbol patterns add application launchers and system power, keyed to
-# first-letter mnemonics in STANDARD ITU Morse (note: g1's own 'c' is the
-# non-standard ---. because -.-. is freed there for LEFT_CONTROL; the
-# mnemonic below refers to the ITU letter, not to g1's mapping):
+# The 4-symbol patterns add application launchers, keyed to first-letter
+# mnemonics in STANDARD ITU Morse (note: g1's own 'c' is the non-standard
+# ---. because -.-. is freed there for LEFT_CONTROL; the mnemonics below
+# refer to the ITU letters, not to g1's mapping):
 #
-#   -.-.  C  Calculator        .-..  L  mai-L (email)
-#   ..-.  F  File explorer     --..  Z  Z-z-z (sleep)
-#   -...  B  Browser           .--.  P  Power
+#   -.-.  C  Calculator        -...  B  Browser
+#   ..-.  F  File explorer     .-..  L  mai-L (email)
+#
+# System SLEEP and POWER are intentionally not mapped — see the note below.
 
 g5 = groups[5]
 
@@ -455,14 +456,14 @@ g5[3][0b011] = CC(ConsumerControlCode.BRIGHTNESS_INCREMENT)  # .--
 g5[3][0b100] = CC(ConsumerControlCode.BRIGHTNESS_DECREMENT)  # -..
 g5[3][0b101] = CC(ConsumerControlCode.EJECT)                 # -.-
 
-# ── Application launch + system — 4-symbol patterns ───────────────────────
-# adafruit_hid only gained the AL_* / SLEEP / POWER names in recent bundles.
-# Rather than skip these entries on an older bundle, resolve each by name and
-# fall back to its raw usage ID from the USB HID Usage Tables, Consumer Page
-# (0x0C). Those IDs are fixed by the spec, so the fallback is always correct
-# and these codes work on every bundle version.
+# ── Application launch — 4-symbol patterns ────────────────────────────────
+# adafruit_hid only gained the AL_* names in recent bundles. Rather than skip
+# these entries on an older bundle, resolve each by name and fall back to its
+# raw usage ID from the USB HID Usage Tables, Consumer Page (0x0C). Those IDs
+# are fixed by the spec, so the fallback is always correct and these codes
+# work on every bundle version.
 #
-# These overwrite the placeholder letters b / f / l / z / p seeded from g1
+# These overwrite the placeholder letters b / f / l seeded from g1
 # (-.-. was already free here, since g1 uses it for LEFT_CONTROL).
 def _cc(name, usage_id):
     return CC(getattr(ConsumerControlCode, name, usage_id))
@@ -471,8 +472,9 @@ g5[4][0b1010] = _cc('AL_CALCULATOR',            0x192)   # -.-.  C  calculator
 g5[4][0b0010] = _cc('AL_LOCAL_MACHINE_BROWSER', 0x194)   # ..-.  F  file explorer
 g5[4][0b1000] = _cc('AL_INTERNET_BROWSER',      0x196)   # -...  B  web browser
 g5[4][0b0100] = _cc('AL_EMAIL_READER',          0x18A)   # .-..  L  mai-L
-g5[4][0b1100] = _cc('SLEEP',                    0x032)   # --..  Z  Z-z-z
-# NOTE: POWER on a 4-symbol pattern can be triggered by accident in a group
-# whose 1–3 symbol patterns are routine media keys. Comment this line out, or
-# move it to a longer pattern, if an accidental shutdown would be costly.
-g5[4][0b0110] = _cc('POWER',                    0x030)   # .--.  P  power
+
+# SLEEP (--.. Z) and POWER (.--. P) are deliberately NOT mapped. A 4-symbol
+# pattern is too easy to hit by accident in a group whose 1–3 symbol patterns
+# are routine media keys, and an unintended shutdown or sleep is far more
+# disruptive than a stray volume change. --.. and .--. therefore keep the
+# placeholder letters z and p seeded from g1.
