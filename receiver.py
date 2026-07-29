@@ -99,21 +99,26 @@ def _build_display():
 
 _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods = _build_display()
 
+_CHAR_W = 12   # terminalio.FONT advance at scale 2 (6 px glyph × 2)
+
 def _set_action(text):
     """Set the action row, splitting a leading 'RPT ' into the orange tag so
     the RPT flag renders orange while the repeated action name stays yellow —
     matching the main board TFT.
 
-    When the tag is shown the action name is LEFT-anchored right after it
-    (x=46) instead of centred, so a long label such as 'MMOVE DOWN-RIGHT'
-    can't slide left and overlap the tag. terminalio.FONT is 12 px/char at
-    scale 2, so the widest 16-char remainder (after 'RPT ') spans 46..238 —
-    inside the 240 px width."""
+    The tag + name are centred together as one unit: the combined string
+    would occupy len(text)*_CHAR_W px, so both labels are left-anchored from
+    that block's centred start (the tag at the start, the name one 'RPT '
+    width in). This looks like a normal centred row that just happens to be
+    two colours, instead of the tag being pinned to the far left."""
     if text.startswith("RPT "):
-        _lbl_rpt.text    = "RPT"
-        _lbl_action.text = text[4:]
+        left_x = max(0, (display.width - len(text) * _CHAR_W) // 2)
+        _lbl_rpt.text                 = "RPT"
+        _lbl_rpt.anchor_point         = (0.0, 0.0)
+        _lbl_rpt.anchored_position    = (left_x, 58)
+        _lbl_action.text              = text[4:]
         _lbl_action.anchor_point      = (0.0, 0.0)
-        _lbl_action.anchored_position = (46, 58)
+        _lbl_action.anchored_position = (left_x + 4 * _CHAR_W, 58)
     else:
         _lbl_rpt.text    = " "
         _lbl_action.text = text

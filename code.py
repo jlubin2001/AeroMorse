@@ -903,18 +903,22 @@ def _update_display(pressure=0.0):
     _lbl_group.color = _GROUP_COLORS[active_group]
     _lbl_buf.text    = buf_str
     # Split a leading "RPT " off the action line so the RPT flag renders in
-    # ORANGE (via the dedicated left-pinned _lbl_rpt tag) while the repeated
-    # action name stays YELLOW. action_str itself is left whole for the ESP-NOW
-    # broadcast below, so the wireless display still shows "RPT <action>".
-    # When the tag is shown the action name is LEFT-anchored right after it
-    # (x=46) rather than centred, so a wide label like "MMOVE DOWN-RIGHT"
-    # can't slide left into the tag. At 12 px/char (scale 2) the widest
-    # 16-char remainder spans 46..238, inside the 240 px width.
+    # ORANGE (via the dedicated _lbl_rpt tag) while the repeated action name
+    # stays YELLOW. action_str itself is left whole for the ESP-NOW broadcast
+    # below, so the wireless display still shows "RPT <action>".
+    # The tag + name are centred together as ONE unit: the combined string
+    # would span len*12 px (terminalio.FONT is 12 px/char at scale 2), so both
+    # labels are left-anchored from that block's centred start — the tag first,
+    # the name one "RPT " width in. Reads like a normal centred row that just
+    # happens to be two colours, rather than the tag pinned to the far left.
     if action_str.startswith("RPT "):
-        _lbl_rpt.text    = "RPT"
-        _lbl_action.text = action_str[4:]
+        _rpt_left = max(0, (display.width - len(action_str) * 12) // 2)
+        _lbl_rpt.text                 = "RPT"
+        _lbl_rpt.anchor_point         = (0.0, 0.0)
+        _lbl_rpt.anchored_position    = (_rpt_left, 58)
+        _lbl_action.text              = action_str[4:]
         _lbl_action.anchor_point      = (0.0, 0.0)
-        _lbl_action.anchored_position = (46, 58)
+        _lbl_action.anchored_position = (_rpt_left + 4 * 12, 58)
     else:
         _lbl_rpt.text    = " "
         _lbl_action.text = action_str
