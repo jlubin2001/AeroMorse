@@ -838,6 +838,13 @@ def _build_display():
     lbl_group  = _make_label(root, f"[ {_GROUP_NAMES[1]} ]", _GROUP_COLORS[1], 2,  2)
     lbl_buf    = _make_label(root, " ",             0x00FFFF,          2, 30)
     lbl_action = _make_label(root, " ",             0xFFFF00,          2, 58)
+    # Orange "RPT" tag pinned to the LEFT of the action row (row 3), shown only
+    # while a repeat is active. This lets the RPT flag stand out in orange
+    # against the yellow repeated-action name on the same row. Left-anchored
+    # (0.0) so its x position is fixed while lbl_action stays centred.
+    lbl_rpt    = label.Label(terminalio.FONT, text=" ", color=0xFF8000, scale=2,
+                             anchor_point=(0.0, 0.0), anchored_position=(4, 58))
+    root.append(lbl_rpt)
     lbl_mods   = _make_label(root, " ",             0xFF8000,          2, 86)
 
     bar_bg_bmp = displayio.Bitmap(display.width - 8, 8, 1)
@@ -855,9 +862,9 @@ def _build_display():
     root.append(displayio.TileGrid(bar_bmp, pixel_shader=bar_pal, x=4, y=126))
 
     display.root_group = root
-    return lbl_group, lbl_buf, lbl_action, lbl_mods, bar_pal, bar_bmp
+    return lbl_group, lbl_buf, lbl_action, lbl_rpt, lbl_mods, bar_pal, bar_bmp
 
-_lbl_group, _lbl_buf, _lbl_action, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
+_lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
 _BAR_WIDTH_PX = display.width - 8
 _last_bar_fill = 0    # tracks last frame's fill width for incremental updates
 
@@ -895,7 +902,16 @@ def _update_display(pressure=0.0):
     _lbl_group.text  = group_str
     _lbl_group.color = _GROUP_COLORS[active_group]
     _lbl_buf.text    = buf_str
-    _lbl_action.text = action_str
+    # Split a leading "RPT " off the action line so the RPT flag renders in
+    # ORANGE (via the dedicated left-pinned _lbl_rpt tag) while the repeated
+    # action name stays YELLOW. action_str itself is left whole for the ESP-NOW
+    # broadcast below, so the wireless display still shows "RPT <action>".
+    if action_str.startswith("RPT "):
+        _lbl_rpt.text    = "RPT"
+        _lbl_action.text = action_str[4:]
+    else:
+        _lbl_rpt.text    = " "
+        _lbl_action.text = action_str
     _lbl_mods.text   = mods_str
     if USE_SENSOR:
         # Pressure bar — direction colour + magnitude-encoded fill width.
