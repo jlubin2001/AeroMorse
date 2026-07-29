@@ -102,13 +102,23 @@ _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods = _build_display()
 def _set_action(text):
     """Set the action row, splitting a leading 'RPT ' into the orange tag so
     the RPT flag renders orange while the repeated action name stays yellow —
-    matching the main board TFT."""
+    matching the main board TFT.
+
+    When the tag is shown the action name is LEFT-anchored right after it
+    (x=46) instead of centred, so a long label such as 'MMOVE DOWN-RIGHT'
+    can't slide left and overlap the tag. terminalio.FONT is 12 px/char at
+    scale 2, so the widest 16-char remainder (after 'RPT ') spans 46..238 —
+    inside the 240 px width."""
     if text.startswith("RPT "):
         _lbl_rpt.text    = "RPT"
         _lbl_action.text = text[4:]
+        _lbl_action.anchor_point      = (0.0, 0.0)
+        _lbl_action.anchored_position = (46, 58)
     else:
         _lbl_rpt.text    = " "
         _lbl_action.text = text
+        _lbl_action.anchor_point      = (0.5, 0.0)
+        _lbl_action.anchored_position = (display.width // 2, 58)
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 

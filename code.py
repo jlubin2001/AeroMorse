@@ -906,12 +906,20 @@ def _update_display(pressure=0.0):
     # ORANGE (via the dedicated left-pinned _lbl_rpt tag) while the repeated
     # action name stays YELLOW. action_str itself is left whole for the ESP-NOW
     # broadcast below, so the wireless display still shows "RPT <action>".
+    # When the tag is shown the action name is LEFT-anchored right after it
+    # (x=46) rather than centred, so a wide label like "MMOVE DOWN-RIGHT"
+    # can't slide left into the tag. At 12 px/char (scale 2) the widest
+    # 16-char remainder spans 46..238, inside the 240 px width.
     if action_str.startswith("RPT "):
         _lbl_rpt.text    = "RPT"
         _lbl_action.text = action_str[4:]
+        _lbl_action.anchor_point      = (0.0, 0.0)
+        _lbl_action.anchored_position = (46, 58)
     else:
         _lbl_rpt.text    = " "
         _lbl_action.text = action_str
+        _lbl_action.anchor_point      = (0.5, 0.0)
+        _lbl_action.anchored_position = (display.width // 2, 58)
     _lbl_mods.text   = mods_str
     if USE_SENSOR:
         # Pressure bar — direction colour + magnitude-encoded fill width.
