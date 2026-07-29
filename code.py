@@ -662,6 +662,20 @@ def _build_int_name_map(cls):
 _KEYCODE_NAMES = _build_int_name_map(Keycode)
 _CC_NAMES      = _build_int_name_map(ConsumerControlCode)
 
+# adafruit_hid gives several aliases to the same integer — LEFT_GUI is also
+# GUI / WINDOWS / COMMAND, and LEFT_ALT is also ALT / OPTION. _build_int_name_map
+# keeps whichever alias dir() happens to return last, and CircuitPython's dir()
+# is not sorted, so the label picked was both arbitrary and Mac-flavoured
+# ("COMMAND + TAB", "OPTION + TAB"). Pin the Windows names explicitly.
+# RIGHT_* keycodes have no aliases, so they keep their auto-built names
+# ("RIGHT CONTROL" etc.) and stay clearly distinguishable from these.
+_KEYCODE_NAMES.update({
+    Keycode.LEFT_CONTROL: "CTRL",
+    Keycode.LEFT_SHIFT:   "SHIFT",
+    Keycode.LEFT_ALT:     "ALT",
+    Keycode.LEFT_GUI:     "WIN",
+})
+
 
 def _is_command(action):
     return action.split(' ')[0] in _CMD_VERBS
@@ -823,7 +837,7 @@ _MOD_NAMES = {
     Keycode.LEFT_CONTROL:  "Ctrl",  Keycode.RIGHT_CONTROL: "RCtrl",
     Keycode.LEFT_SHIFT:    "Shift", Keycode.RIGHT_SHIFT:   "RShft",
     Keycode.LEFT_ALT:      "Alt",   Keycode.RIGHT_ALT:     "RAlt",
-    Keycode.LEFT_GUI:      "GUI",   Keycode.RIGHT_GUI:     "RGUI",
+    Keycode.LEFT_GUI:      "Win",   Keycode.RIGHT_GUI:     "RWin",
 }
 
 def _update_display(pressure=0.0):
