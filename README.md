@@ -538,11 +538,26 @@ keys that every modern OS understands.
 | `--..` | Z | Z-z-z — `SLEEP` |
 | `.--.` | P | **P**ower — `POWER` |
 
-The application-launch and system codes require an `adafruit_hid` bundle
-recent enough to expose the corresponding `ConsumerControlCode` constants.
-If any are missing the firmware prints a warning at boot and skips just
-those entries. The remaining letters and numbers in g5 are inherited from
-Group 1 as a placeholder and can be customised.
+The mnemonic letters above are **standard ITU** Morse. Note that g1's own
+`c` is the non-standard `---.` (because `-.-.` is freed there for
+`LEFT_CONTROL`), so `-.-.` = C applies to the ITU letter, not to g1's
+mapping.
+
+These six codes work on **any** `adafruit_hid` bundle. Older bundles don't
+define the `AL_*` / `SLEEP` / `POWER` constants, so `morse_map.py` resolves
+each one by name and falls back to its raw usage ID from the USB HID Usage
+Tables, Consumer Page (`0x0C`). Those IDs are fixed by the spec, so nothing
+is skipped and no warning is needed.
+
+> ⚠ **`.--.` sends `POWER`.** A 4-symbol pattern is easy to hit by accident
+> in a group whose 1–3 symbol patterns are routine media keys. If an
+> accidental shutdown would be costly, comment out the `POWER` line in
+> `morse_map.py` or move it to a longer pattern.
+
+Whether each code actually does anything is up to the host OS — Windows
+generally honours all six; macOS and Linux desktops vary. The remaining
+letters and numbers in g5 are inherited from Group 1 as a placeholder and
+can be customised.
 
 ### Groups 6–9 — Placeholders
 
