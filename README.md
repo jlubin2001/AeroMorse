@@ -446,13 +446,27 @@ patterns as Group 1:
 | Keypad +  −  ×  ÷  .| same patterns as their Group 1 text equivalents |
 | Application (context menu) | `----..` |
 
+#### Page Scroll
+
+A scrollbar **track** click pages or line-scrolls depending on the app; these
+keys page in almost any app regardless of cursor position — usually the least
+effort for moving through a long document.
+
+| Action | Pattern | Effect |
+|--------|---------|--------|
+| Page Down | `-..` | Scroll down one full page |
+| Page Up | `-.-` | Scroll up one full page |
+
 #### Windows Shortcuts
 
 | Shortcut | Pattern | Action |
 |----------|---------|--------|
-| `.....` | Alt + Tab | Switch windows |
-| `-----` | Win + Tab | Task View |
-| `--....` | Ctrl + Alt + Left Arrow | Release mouse capture from VM |
+| `.....` | Win + Tab | Task View |
+| `-----` | Alt + Tab | Switch windows |
+| `--..--` | Ctrl + Alt + Left Arrow | Release mouse capture from VM |
+| `---..-.` | Tab | Tab |
+| `--....` | Escape | Escape |
+| `--.....` | F5 | Refresh |
 
 #### Modifier Keys (Right-side, Sticky)
 

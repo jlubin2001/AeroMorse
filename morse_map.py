@@ -277,6 +277,13 @@ g2[5][0b01100]=Keycode.DOWN_ARROW          # .--..      (ad)
 g2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..     (al)
 g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.      (ar)
 
+# ── Page scroll — a TRUE page, unlike a scrollbar-track click ─────────────────
+# A track click pages or line-scrolls depending on the app; these keys page in
+# almost any app regardless of cursor position. Short 3-symbol patterns that
+# differ only in the last symbol: dot = down, dash = up.
+g2[3][0b100]=Keycode.PAGE_DOWN             # -..     page down
+g2[3][0b101]=Keycode.PAGE_UP               # -.-     page up
+
 # ── Windows Shortcuts (tuples = all keys pressed simultaneously) ──────────────
 g2[6][0b110011]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --..--  free mouse from VM
 g2[5][0b00000]=Keycode.GUI, Keycode.TAB    # .....   task view (Win+Tab)
