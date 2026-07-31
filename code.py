@@ -550,8 +550,18 @@ def _exec_command(cmd):
             # sees a plain click — which is why Ctrl+click multi-select failed.
             kbd.press(*_armed_mods)
             time.sleep(MOUSE_CLICK_MOD_DELAY)
-        for _ in range(count):
-            mouse.click(btn)
+        # Press → hold → release, rather than mouse.click() which fires
+        # press and release in the same call microseconds apart. Windows
+        # scrollbar tracks and some controls ignore a zero-duration click;
+        # holding for MOUSE_CLICK_HOLD makes them register. (This is why a
+        # `mdrag` toggle scrolled but a click did not — the drag holds the
+        # button down, a click did not.)
+        for i in range(count):
+            mouse.press(btn)
+            time.sleep(MOUSE_CLICK_HOLD)
+            mouse.release(btn)
+            if i < count - 1:
+                time.sleep(MOUSE_CLICK_GAP)   # separate the clicks of a dbl-click
         if _armed_mods:
             time.sleep(MOUSE_CLICK_MOD_DELAY)   # let the click land first
             kbd.release_all()

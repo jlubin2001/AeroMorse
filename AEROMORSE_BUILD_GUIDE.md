@@ -2769,6 +2769,33 @@ Controls whether an armed modifier survives a mouse click.
 > clicking and it survives an accidental un-modified click, which
 > would otherwise collapse the whole selection.
 
+**`MOUSE_CLICK_HOLD`** (default `0.060`).
+Seconds the mouse button is held down for each `mclick`. The firmware
+does an explicit press → hold → release rather than a single
+instantaneous click, because a **zero-duration click is ignored by
+Windows scrollbar tracks** and a number of other controls — they need
+the button held for a few tens of milliseconds to register. This is
+the reason a `mdrag` toggle would scroll (it holds the button down)
+while a plain click on the same scrollbar did nothing. ~60 ms is
+reliable; raise it if scrollbar or button clicks still don't take,
+lower it toward `0.03` if clicks feel sluggish.
+
+> **Scrollbar tip.** Clicking the scrollbar **track** (the empty area
+> above or below the thumb) scrolls one page; clicking the little
+> **arrows** at the ends scrolls one line. Clicking the **thumb**
+> itself does *not* scroll — you drag it, which on AeroMorse is
+> `mdrag left` (`-.`) to grab, a few `mmove` steps, then `-.` to
+> release. The mouse wheel patterns (`mwheel up` / `mwheel down`) are
+> usually the least effort for scrolling and don't depend on cursor
+> position over the bar at all.
+
+**`MOUSE_CLICK_GAP`** (default `0.040`).
+Seconds between the two clicks of a double-click (`mclick left 2` /
+`mclick right 2`). Only used when the click count is 2. The full
+double-click therefore takes `HOLD + GAP + HOLD` ≈ 160 ms, well within
+Windows' default 500 ms double-click window. Raise it only if
+double-clicks are being seen as two single clicks.
+
 ### Display / wireless
 
 **`DISPLAY_ROTATION`** (default `0`).

@@ -53,7 +53,7 @@ THRESH_PUFF_STRONG = 15        # hPa — sensor mode only
 
 # ── TIMING ────────────────────────────────────────────────────────────────
 
-ACCEPT_DELAY      = 0.3        # idle seconds before pattern commits (sip-puff: 0.5–0.7)
+ACCEPT_DELAY      = 0.2        # idle seconds before pattern commits (sip-puff: 0.5–0.7)
 LONG_PRESS        = 1.0        # seconds to hold for cycle / Accept gesture
 
 
@@ -93,6 +93,10 @@ MOUSE_REPEAT_DELAY = 0.040     # seconds between repeat ticks
 MOUSE_CLICK_MOD_DELAY = 0.030  # s to settle a modifier before/after a click
 MOUSE_CLICK_KEEPS_MODS = True  # True = armed mods survive a click (Ctrl+click
                                # multi-select); False = one-shot, cleared after
+MOUSE_CLICK_HOLD = 0.060       # s to hold the button down per click. 0 = instant
+                               # press/release, which Windows scrollbar tracks &
+                               # some controls ignore; ~60 ms registers reliably
+MOUSE_CLICK_GAP  = 0.040       # s between the two clicks of a double-click
 
 
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────
