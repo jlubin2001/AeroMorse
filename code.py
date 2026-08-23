@@ -700,6 +700,22 @@ def _exec_consumer(cc_action):
         cc_device.send(cc_action.code)
 
 
+# Keycodes that must never arm the repeat (config NO_REPEAT_KEYS, by name).
+# Resolved to integer keycodes once at import. Guarded so an older config.py
+# without NO_REPEAT_KEYS still boots with a sane default instead of crashing.
+try:
+    _NO_REPEAT_NAMES = NO_REPEAT_KEYS
+except NameError:
+    _NO_REPEAT_NAMES = ("PAGE_UP", "PAGE_DOWN")
+_NO_REPEAT_KEYCODES = set()
+for _nm in _NO_REPEAT_NAMES:
+    _kc = getattr(Keycode, _nm, None)
+    if isinstance(_kc, int):
+        _NO_REPEAT_KEYCODES.add(_kc)
+    else:
+        print(f"WARNING: NO_REPEAT_KEYS entry {_nm!r} is not a valid Keycode — ignored")
+
+
 def execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
@@ -732,8 +748,15 @@ def execute(action, pattern=""):
     elif isinstance(action, int):
         label = _KEYCODE_NAMES.get(action, f"KEY {action}")
         _last_action     = label[:20]
-        _last_repeatable = action
-        _repeat_label    = _last_action
+        if action in _NO_REPEAT_KEYCODES:
+            # Excluded from repeat (e.g. PAGE_UP/PAGE_DOWN): an accidental
+            # repeat here scrolls far past where you were. Leave nothing armed
+            # so a following `repeat` is a no-op.
+            _last_repeatable = None
+            _repeat_label    = ""
+        else:
+            _last_repeatable = action
+            _repeat_label    = _last_action
         _last_mouse_vec  = (0, 0, 0)
         print(f"{pattern}  {label}")
         _exec_keycode(action)

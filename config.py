@@ -99,6 +99,16 @@ MOUSE_CLICK_HOLD = 0.060       # s to hold the button down per click. 0 = instan
 MOUSE_CLICK_GAP  = 0.040       # s between the two clicks of a double-click
 
 
+# ── REPEAT EXCLUSIONS ─────────────────────────────────────────────────────
+# Keys that must NEVER auto-repeat, listed by adafruit_hid Keycode name.
+# Pressing `repeat` right after one of these does nothing (repeat needs a
+# repeatable action first). Page keys are here because an accidental repeat
+# scrolls far past where you were and you lose your place. Add others you
+# don't want to repeat, e.g. "HOME", "END", "ESCAPE", "TAB". Arrow keys are
+# intentionally NOT here — arrow + repeat is the preferred way to scroll.
+NO_REPEAT_KEYS = ("PAGE_UP", "PAGE_DOWN")
+
+
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────
 
 DISPLAY_ROTATION     = 0        # degrees: 0 = USB left, 180 = USB right (also 90, 270)

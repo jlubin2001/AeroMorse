@@ -695,6 +695,7 @@ explaining what it does. The same Key Settings table also appears in
 | `MOUSE_CLICK_KEEPS_MODS` | `True` | `True` = an armed modifier stays armed across mouse clicks, so **Ctrl+click multi-select** works — arm Ctrl once, click each file, then toggle Ctrl off. `False` = one-shot (modifier clears after a single click) |
 | `MOUSE_CLICK_HOLD` | `0.060` | Seconds the button is held down per click. A zero-length click (press+release together) is ignored by **Windows scrollbar tracks** and some controls; ~60 ms registers reliably. Raise if scrollbar/track clicks still don't take |
 | `MOUSE_CLICK_GAP` | `0.040` | Seconds between the two clicks of a double-click |
+| `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that must never auto-repeat — pressing `repeat` right after one does nothing. Page keys are excluded so an accidental repeat doesn't scroll far past your place. Add e.g. `"HOME"`, `"END"`, `"ESCAPE"`, `"TAB"`. Arrow keys are intentionally omitted — arrow + repeat is a normal way to scroll |
 
 ### Display / wireless
 
