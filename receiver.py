@@ -1,5 +1,8 @@
 # receiver.py — AeroMorse wireless mirror display
 #
+# AeroMorse receiver.py — version 1.0 (released 2026-08-27)
+# Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
+#
 # Hardware
 #   Adafruit ESP32-S3 Reverse TFT Feather   https://www.adafruit.com/product/5691
 #   (same board as the main AeroMorse unit — no extra display hardware needed)

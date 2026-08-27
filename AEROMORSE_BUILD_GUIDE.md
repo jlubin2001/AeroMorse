@@ -1,6 +1,10 @@
 # AeroMorse — Complete Build Guide
 ### USB HID Keyboard & Mouse via Sip-and-Puff or Accessibility Switches
 
+> **Software & this guide live here:** https://github.com/jlubin2001/AeroMorse
+> — always download the firmware (`code.py`, `boot.py`, `morse_map.py`,
+> `config.py`) from that repo. See **§9.4** for the download steps.
+
 This guide walks a first-time, non-technical builder through every decision and
 every step needed to assemble a working AeroMorse device. Read the whole guide
 once before buying anything — your hardware choices affect each other.
@@ -348,8 +352,15 @@ https://www.adafruit.com/product/4414
 
 > **Adafruit learn guide — LPS33 sip-and-puff with CircuitPython:**
 > https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff
-> Recommended reading before your first use. Covers sensor calibration,
-> threshold tuning, and breath technique.
+> Useful **background reading** on the sensor — calibration, threshold
+> tuning, and breath technique.
+>
+> ⚠ **Read it for concepts only — do NOT install its code.** That Adafruit
+> project is built around a *different board* and ships its own example
+> software. AeroMorse does **not** use any of it. Your firmware is solely
+> the AeroMorse `code.py` / `boot.py` / `morse_map.py` / `config.py` from
+> https://github.com/jlubin2001/AeroMorse (see §9.4). Ignore any
+> "install this code" step in the Adafruit guide.
 
 **Tube options:**
 
@@ -1447,6 +1458,24 @@ neopixel.mpy
 adafruit_lps35hw.mpy
 ```
 
+> **The two libraries that are easy to miss in the bundle** — `neopixel.mpy`
+> and `adafruit_lps35hw.mpy`:
+> - **`adafruit_lps35hw.mpy`** — the tricky one. Your sensor is the
+>   **LPS33HW** (#4414), but the CircuitPython driver is named
+>   **`lps35hw`** — the same driver covers both the LPS33HW and LPS35HW,
+>   Adafruit just named it after the 35. So don't go looking for an
+>   "lps33" file; the correct one is `adafruit_lps35hw.mpy`. Library home
+>   page: https://github.com/adafruit/Adafruit_CircuitPython_LPS35HW
+> - **`neopixel.mpy`** — a **single bare file**, not a folder, and it has
+>   **no `adafruit_` prefix**, so it sorts to the bottom of the bundle's
+>   `lib/` folder away from everything else — easy to scroll right past.
+>   Library home page:
+>   https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel
+>
+> Both ship inside the library bundle `.zip` you already downloaded — look
+> in its `lib/` folder for the exact filenames above. You do not download
+> them separately.
+
 **Copy ONE of these only if you have an external display:**
 
 | Display | Additional driver file |
@@ -1577,6 +1606,34 @@ ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
 ---
 
 ### Step 9.4 — Copy the AeroMorse project files
+
+#### Step 9.4.0 — Download the AeroMorse software (do this first)
+
+The AeroMorse firmware (`code.py`, `boot.py`, `morse_map.py`, `config.py`
+and the wireless-receiver files) is **not** part of the Adafruit library
+bundle you downloaded in §9.2. It lives in one place — the official
+GitHub repository:
+
+> ### 👉 https://github.com/jlubin2001/AeroMorse
+
+**Always download from that repo.** Copies posted elsewhere on the web
+may be older or modified versions; the repo is the single source of the
+latest, correct files.
+
+**To download (no Git account or software needed):**
+
+1. Open **https://github.com/jlubin2001/AeroMorse** in a browser.
+2. Click the green **`< > Code`** button, then **Download ZIP**.
+3. Unzip the downloaded file. Everything you copy in the steps below
+   comes from the **root** of that unzipped folder.
+
+> **Which version do I have?** Every AeroMorse `.py` file has a version
+> and release date in its header comment near the top — e.g.
+> `AeroMorse code.py — version 1.0 (released 2026-08-27)`. Open the file
+> in Thonny (or any text editor) to check. If a file you found somewhere
+> else has no such header, or an older date than the repo, replace it
+> with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
+> `config.py` all at the **same** version.
 
 > **Filenames must be exact.** CircuitPython looks for `code.py`,
 > `boot.py`, `morse_map.py`, and `config.py` by *literal* name. If you

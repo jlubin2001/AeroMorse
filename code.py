@@ -1,5 +1,14 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
+# ════════════════════════════════════════════════════════════════════════════
+#  AeroMorse code.py   —   version 1.0   (released 2026-08-27)
+#
+#  OFFICIAL SOURCE — always download the latest, correct files from:
+#      https://github.com/jlubin2001/AeroMorse
+#  code.py, boot.py, morse_map.py and config.py must all come from that repo,
+#  at the same version. Copies found elsewhere on the web may be out of date.
+# ════════════════════════════════════════════════════════════════════════════
+#
 # Hardware reference — see AEROMORSE_BUILD_GUIDE.md for all options:
 #   Feather board       — Build Guide §3  (default: #5691 Reverse TFT Feather)
 #   Display             — Build Guide §5  (built-in TFT on #5691, or external OLED)

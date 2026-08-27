@@ -1,3 +1,7 @@
+# AeroMorse morse_map.py — version 1.0 (released 2026-08-27)
+# Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
+# This file defines every Morse pattern → action mapping. Edit it to remap keys.
+
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.consumer_control_code import ConsumerControlCode
 

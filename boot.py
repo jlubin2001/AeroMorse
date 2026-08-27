@@ -1,5 +1,8 @@
 # boot.py — single file for every AeroMorse board (sender + receivers).
 #
+# AeroMorse boot.py — version 1.0 (released 2026-08-27)
+# Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
+#
 # Behavior is auto-detected from the filesystem, so you can drop this same
 # file on any board (Reverse TFT Feather sender, Reverse TFT Feather
 # receiver, MagTag receiver) without editing.
