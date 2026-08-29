@@ -672,7 +672,7 @@ explaining what it does. The same Key Settings table also appears in
 
 | Constant | Default | Effect |
 |----------|---------|--------|
-| `ACCEPT_DELAY` | `0.5` | Idle pause (seconds) after the last element before the pattern fires. Lower (0.3) for fast users; higher (0.7) for sip-and-puff users with slower breath rhythm. In 3-switch mode this is a safety-net timeout |
+| `ACCEPT_DELAY` | `0.3` | Idle pause (seconds) after the last element before the pattern fires. Lower (0.2) for fast users; higher (0.7) for sip-and-puff users with slower breath rhythm. In 3-switch mode this is a safety-net timeout |
 | `LONG_PRESS` | `1.0` | Hold time (seconds) for the long-gesture (cycle / Accept). Raise if accidentally triggering |
 
 ### Audio (speaker pitches)

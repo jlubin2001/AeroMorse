@@ -1885,7 +1885,7 @@ it interact with other settings" explanation, jump to Appendix E.
 
 | Setting | Shipped | Hint |
 |---------|---------|------|
-| `ACCEPT_DELAY` | `0.2` | Idle seconds before a pattern commits. Sip-and-puff users often prefer `0.3`–`0.7` |
+| `ACCEPT_DELAY` | `0.3` | Idle seconds before a pattern commits. Lower (`0.2`) = faster; sip-and-puff users often land `0.3`–`0.7` |
 | `LONG_PRESS` | `1.0` | Seconds to hold for cycle / Accept gesture |
 
 **Code repeat (Darci-style hold-to-repeat)**
@@ -1935,7 +1935,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | Setting | Shipped | Hint |
 |---------|---------|------|
 | `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
-| `USE_WIRELESS_DISPLAY` | `True` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). `False` if you have no receiver |
+| `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
 | `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `_CHANNEL` in `receiver.py` |
 
 ### Input modes — what `SWITCH_MODE` does
@@ -2041,7 +2041,7 @@ Grouped by hardware option, in the same order as §4 – §6 (Input → Display
 ### Input — timing
 
 **Pattern fires too early (cuts off long patterns)**
-- Raise `ACCEPT_DELAY` from `0.2` to `0.3` or `0.4` in `code.py`.
+- Raise `ACCEPT_DELAY` (default `0.3`) to `0.4` or `0.5` in `config.py`.
 
 **Groups cycle when you did not mean to**
 - Raise `LONG_PRESS` from `1.0` to `1.5` or `2.0` to require a longer hold.
@@ -2197,8 +2197,9 @@ also the closest match to Darci USB's end-of-character behaviour.
 - Confirm both boards are powered and running CircuitPython 9.x or later.
 - Check the serial console on the main board. It should print
   `ESP-NOW: wireless display active (broadcast)` at startup.
-  - `ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False` → flip the
-    `USE_WIRELESS_DISPLAY` flag back to `True` in `code.py` (§10).
+  - `ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False` → set
+    `USE_WIRELESS_DISPLAY = True` in `config.py` (§10). It ships `False`
+    since most builds have no receiver.
   - `ESP-NOW: module not available on this board` → the board is not an
     ESP32-family chip. Wireless display requires ESP-NOW, which is
     ESP32-only.
@@ -2773,14 +2774,13 @@ normal sip can't accidentally trigger a strong gesture.
 
 ### Timing
 
-**`ACCEPT_DELAY`** (shipped `0.2`).
+**`ACCEPT_DELAY`** (default `0.3`).
 Idle pause (seconds) after the last element before the pattern
 commits.
-- Patterns committing before you finish? Raise to `0.3`, `0.5`, or `0.7`.
-- Patterns feeling sluggish? Lower toward `0.15`.
-- `0.2` is a fairly fast setting. Sip-and-puff users new to the device,
-  or with a comfortable unhurried breath rhythm, often prefer somewhere
-  in **0.3–0.7** — raise it if letters are running together.
+- Patterns committing before you finish? Raise to `0.5` or `0.7`.
+- Patterns feeling sluggish? Lower toward `0.2` or `0.15`.
+- Sip-and-puff users with a comfortable breath rhythm typically land
+  somewhere in **0.3–0.7**; fast, experienced users may prefer `0.2`.
 - In `SWITCH_MODE = 3` this is a safety-net timeout; the third-switch
   gesture commits instantly regardless of `ACCEPT_DELAY`.
 
@@ -2944,15 +2944,13 @@ the display, `180` = USB-C port on the RIGHT. `90` / `270` are also
 valid but place the text vertically — useful if you've mounted the
 Feather sideways.
 
-**`USE_WIRELESS_DISPLAY`** (shipped `True`).
-Enables the WiFi radio at boot and broadcasts the display state via
-ESP-NOW for an Option W1 / W2 receiver to mirror. **If you do NOT have
-a wireless receiver, set this to `False`** — it saves roughly
-80–100 mA of current draw and skips the radio setup you don't need.
-It's harmless to leave `True` (the broadcast just goes unheard), but
-`False` is the right choice for a single-board build. Has no effect on
-non-ESP32 boards — the `espnow` import fails there and the radio stays
-off regardless.
+**`USE_WIRELESS_DISPLAY`** (default `False`).
+`True` enables the WiFi radio at boot and broadcasts the display state
+via ESP-NOW for an Option W1 / W2 receiver to mirror. Default is
+`False` because most builds are a single board — **set it `True` only
+when you actually have a receiver paired.** Adds roughly 80–100 mA to
+the current draw while running. Has no effect on non-ESP32 boards — the
+`espnow` import fails there and the radio stays off regardless.
 
 **`ESPNOW_CHANNEL`** (default `1`).
 The 2.4 GHz WiFi channel (1–13) the sender broadcasts on. **It must

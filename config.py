@@ -56,7 +56,7 @@ THRESH_PUFF_STRONG = 15        # hPa — sensor mode only
 
 # ── TIMING ────────────────────────────────────────────────────────────────
 
-ACCEPT_DELAY      = 0.2        # idle seconds before pattern commits (sip-puff: 0.5–0.7)
+ACCEPT_DELAY      = 0.3        # idle seconds before pattern commits (sip-puff often 0.3–0.7; lower = faster)
 LONG_PRESS        = 1.0        # seconds to hold for cycle / Accept gesture
 
 
@@ -115,5 +115,5 @@ NO_REPEAT_KEYS = ("PAGE_UP", "PAGE_DOWN")
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────
 
 DISPLAY_ROTATION     = 0        # degrees: 0 = USB left, 180 = USB right (also 90, 270)
-USE_WIRELESS_DISPLAY = True    # True = ESP-NOW broadcast (adds ~80–100 mA). ESP32-only.
+USE_WIRELESS_DISPLAY = False   # True = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA, ESP32-only). Set True only if you have a receiver.
 ESPNOW_CHANNEL       = 1        # WiFi channel (1–13) — receiver.py _CHANNEL must match
