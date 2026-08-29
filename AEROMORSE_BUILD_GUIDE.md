@@ -1824,11 +1824,11 @@ copy them all from the CircuitPython 10.x library bundle. The
 
 All user-tunable settings live in **`config.py`** at the root of the
 CIRCUITPY drive (not in `code.py`). Open `config.py` in Thonny (§9.3) or
-any plain-text editor — it's a slim ~65-line file with one assignment
-per line, grouped into seven sub-sections (Input, Input mode, Strong
-sip/puff, Timing, Code repeat, Audio, Mouse, Display / wireless). Each
-line has a short trailing hint; for **full per-setting explanations
-including when and how to tune**, see **[Appendix E — Configuration
+any plain-text editor — one assignment per line, grouped into nine
+sub-sections (Input, Input mode, Strong sip/puff, Timing, Code repeat,
+Audio, Mouse, Repeat exclusions, Display / wireless). Each line has a
+short trailing hint; for **full per-setting explanations including when
+and how to tune**, see **[Appendix E — Configuration
 Reference](#appendix-e--configuration-reference)** at the end of this
 guide.
 
@@ -1843,37 +1843,99 @@ guide.
 
 ### Key settings — quick reference
 
-One row per setting with its shipped default and a one-line hint.
-For the full "what does this do / when do I change it / how does it
-interact with other settings" explanation, jump to Appendix E.
+One row per setting with the value shipped in `config.py` and a
+one-line hint. Tables below follow the same order and grouping as the
+file. For the full "what does this do / when do I change it / how does
+it interact with other settings" explanation, jump to Appendix E.
 
-| Setting | Default | Hint |
+**Input — sensor / switches / thresholds**
+
+| Setting | Shipped | Hint |
 |---------|---------|------|
 | `USE_SENSOR` | `True` | `False` = AT switches on D5/D6 instead of LPS33HW sensor |
 | `THRESH_SIP` | `2` | hPa below baseline = dot (raise if false triggers) |
 | `THRESH_PUFF` | `2` | hPa above baseline = dash |
-| `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing samples to confirm a state change |
-| `POINTS_TO_AVERAGE` | `8` | Pressure readings averaged before threshold compare |
-| `BASELINE_DRIFT_S` | `30` | Auto-zero time constant in seconds — baseline tracks ambient pressure drift while idle. `0` disables. |
+| `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing samples to confirm a state change (~13 ms each) |
+| `POINTS_TO_AVERAGE` | `8` | Reserved — not used in the threshold path; changing it does nothing |
+| `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass. `False` = lowest latency, noisier |
+| `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag), `False` = ODR/9 (~half). Major typing-speed lever |
+| `BASELINE_DRIFT_S` | `30` | Auto-zero time constant (s) — baseline tracks ambient pressure drift while idle. `0` disables |
+| `DOT_PIN` | `board.D5` | Switch mode only — GPIO for the dot switch |
+| `DASH_PIN` | `board.D6` | Switch mode only — GPIO for the dash switch |
+
+**Input mode — 1 / 2 / 3 switch**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
 | `SWITCH_MODE` | `2` | `1` = single-switch timed, `2` = paddle, `3` = paddle + explicit Accept |
 | `ONE_SWITCH_INPUT` | `"dot"` | Mode 1 only — `"dot"` or `"dash"` |
 | `ONE_SWITCH_DOT_MS` | `200` | Mode 1 only — press ≤ this ms = dot, longer = dash |
 | `THIRD_SWITCH_GESTURE` | `"long_dash"` | Mode 3 only — `"long_dash"` or `"long_dot"` = Accept |
-| `STRONG_SIP_ACTION` | `""` | e.g. `"group 2"` — empty = disabled |
-| `STRONG_PUFF_ACTION` | `""` | e.g. `"group 1"` — empty = disabled |
+
+**Strong sip / strong puff**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `STRONG_SIP_ACTION` | `"group 2"` | Action fired by a strong sip; `""` = disabled |
+| `STRONG_PUFF_ACTION` | `"group 1"` | Action fired by a strong puff; `""` = disabled |
 | `THRESH_SIP_STRONG` | `15` | Sensor mode — hPa for strong-sip detection |
 | `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
-| `ACCEPT_DELAY` | `0.3` | Idle seconds before pattern commits |
+
+**Timing**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `ACCEPT_DELAY` | `0.2` | Idle seconds before a pattern commits. Sip-and-puff users often prefer `0.3`–`0.7` |
 | `LONG_PRESS` | `1.0` | Seconds to hold for cycle / Accept gesture |
+
+**Code repeat (Darci-style hold-to-repeat)**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
 | `CODE_REPEAT` | `False` | `True` = Darci-style hold-to-repeat (mode 2 only) |
 | `DOT_REPEAT_MS` | `200` | ms per auto-repeated dot |
 | `DASH_REPEAT_MS` | `600` | ms per auto-repeated dash |
 | `CODE_REPEAT_MAX` | `8` | Cap on symbols per held stream |
 | `LONG_PRESS_CYCLES_GROUP` | `True` | `False` disables long-press group cycling |
+
+**Audio — speaker pitches (Hz) and blip durations (s)**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `AUDIO_PIN` | `board.A0` | GPIO the speaker is on |
 | `BEEP_DOT_FREQ` | `1200` | Hz — dot (sip) sidetone |
 | `BEEP_DASH_FREQ` | `800` | Hz — dash (puff) sidetone |
+| `CONFIRM_FREQ` | `1050` | Hz — short blip when an action fires |
+| `GROUP_FREQ` | `550` | Hz — short blip on group change |
+| `BEEP_CONFIRM_S` | `0.06` | Confirm-blip duration (s) |
+| `BEEP_GROUP_S` | `0.14` | Group-change blip duration (s) |
+
+**Mouse — Group 2 movement, speed, clicks**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `MOUSE_SPEED_NORMAL` | `2` | Default speed multiplier in Group 2 |
+| `MOUSE_SPEED_SLOW` | `1` | Speed after `mslow` |
+| `MOUSE_SPEED_FAST` | `3` | Speed after `mfast` |
+| `MOUSE_SPEED_FACTOR` | `2` | Overall scale on all mouse moves |
+| `MOUSE_REPEAT_DELAY` | `0.040` | Seconds between repeat ticks (40 ms) |
+| `MOUSE_CLICK_MOD_DELAY` | `0.030` | Seconds to settle an armed modifier before/after a click (Ctrl+click reliability) |
+| `MOUSE_CLICK_KEEPS_MODS` | `True` | `True` = modifier survives a click (Ctrl+click multi-select); `False` = one-shot |
+| `MOUSE_CLICK_HOLD` | `0.060` | Seconds the button is held per click — a zero-length click is ignored by Windows scrollbar tracks |
+| `MOUSE_CLICK_GAP` | `0.040` | Seconds between the two clicks of a double-click |
+
+**Repeat exclusions**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that never auto-repeat. Add e.g. `"HOME"`, `"END"`. Arrows deliberately omitted |
+
+**Display / wireless**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
 | `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
-| `USE_WIRELESS_DISPLAY` | `False` | `True` = enable ESP-NOW broadcast (adds ~80–100 mA) |
+| `USE_WIRELESS_DISPLAY` | `True` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). `False` if you have no receiver |
 | `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `_CHANNEL` in `receiver.py` |
 
 ### Input modes — what `SWITCH_MODE` does
@@ -2696,11 +2758,13 @@ DIT-side input fires `STRONG_SIP_ACTION`, DAH-side input fires
 `LONG_PRESS_CYCLES_GROUP` cycle-on-long-press behaviour for that
 switch. `THRESH_*_STRONG` values are ignored in switch mode.
 
-**`STRONG_SIP_ACTION`** / **`STRONG_PUFF_ACTION`** (defaults `""`).
+**`STRONG_SIP_ACTION`** / **`STRONG_PUFF_ACTION`** (shipped `"group 2"`
+/ `"group 1"`).
 Command strings fired when the gesture is detected. Same syntax as
 g0 toggle codes — most commonly `"group N"` to jump to a specific
-group. Empty string disables the gesture entirely (the default).
-Honoured only in `SWITCH_MODE = 2`.
+group. The shipped values jump a strong sip to Group 2 (Mouse) and a
+strong puff to Group 1 (Keyboard). Set either to `""` to disable that
+gesture. Honoured only in `SWITCH_MODE = 2`.
 
 **`THRESH_SIP_STRONG`** / **`THRESH_PUFF_STRONG`** (defaults `15`).
 *Sensor mode only.* hPa thresholds. Set noticeably higher than the
@@ -2709,13 +2773,14 @@ normal sip can't accidentally trigger a strong gesture.
 
 ### Timing
 
-**`ACCEPT_DELAY`** (default `0.3`).
+**`ACCEPT_DELAY`** (shipped `0.2`).
 Idle pause (seconds) after the last element before the pattern
 commits.
-- Patterns committing before you finish? Raise to `0.5` or `0.7`.
-- Patterns feeling sluggish? Lower to `0.2`.
-- Sip-and-puff users with comfortable breath rhythm typically land
-  somewhere in 0.3–0.7.
+- Patterns committing before you finish? Raise to `0.3`, `0.5`, or `0.7`.
+- Patterns feeling sluggish? Lower toward `0.15`.
+- `0.2` is a fairly fast setting. Sip-and-puff users new to the device,
+  or with a comfortable unhurried breath rhythm, often prefer somewhere
+  in **0.3–0.7** — raise it if letters are running together.
 - In `SWITCH_MODE = 3` this is a safety-net timeout; the third-switch
   gesture commits instantly regardless of `ACCEPT_DELAY`.
 
@@ -2853,6 +2918,24 @@ double-click therefore takes `HOLD + GAP + HOLD` ≈ 160 ms, well within
 Windows' default 500 ms double-click window. Raise it only if
 double-clicks are being seen as two single clicks.
 
+### Repeat exclusions
+
+**`NO_REPEAT_KEYS`** (default `("PAGE_UP", "PAGE_DOWN")`).
+A tuple of `Keycode` names (as strings) that must never auto-repeat.
+After you fire one of these, pressing `repeat` does nothing instead of
+re-firing the key. Page keys are excluded by default because an
+accidental repeat scrolls far past where you were and you lose your
+place. Add any others you don't want to repeat, e.g.
+`("PAGE_UP", "PAGE_DOWN", "HOME", "END", "ESCAPE", "TAB")`.
+
+- The **arrow keys are intentionally not** in this list — Up/Down arrow
+  held with `repeat` is a normal, fine-grained way to scroll, and you
+  stop it with any sip/puff.
+- Names are matched against `adafruit_hid.Keycode`. A name that isn't a
+  valid keycode is ignored with a warning at boot rather than crashing,
+  and an older `config.py` without this setting falls back to the
+  page-key default.
+
 ### Display / wireless
 
 **`DISPLAY_ROTATION`** (default `0`).
@@ -2861,14 +2944,23 @@ the display, `180` = USB-C port on the RIGHT. `90` / `270` are also
 valid but place the text vertically — useful if you've mounted the
 Feather sideways.
 
-**`USE_WIRELESS_DISPLAY`** (default `False`).
-`True` enables the WiFi radio at boot and broadcasts the display
-state via ESP-NOW for an Option W1 / W2 receiver to mirror.
-Default is `False` because most builds don't include a second board —
-flip to `True` only when you actually have a receiver paired. Adds
-roughly 80–100 mA to the current draw while running. Has no effect on
-non-ESP32 boards — the `espnow` import fails there and the radio
-stays off regardless.
+**`USE_WIRELESS_DISPLAY`** (shipped `True`).
+Enables the WiFi radio at boot and broadcasts the display state via
+ESP-NOW for an Option W1 / W2 receiver to mirror. **If you do NOT have
+a wireless receiver, set this to `False`** — it saves roughly
+80–100 mA of current draw and skips the radio setup you don't need.
+It's harmless to leave `True` (the broadcast just goes unheard), but
+`False` is the right choice for a single-board build. Has no effect on
+non-ESP32 boards — the `espnow` import fails there and the radio stays
+off regardless.
+
+**`ESPNOW_CHANNEL`** (default `1`).
+The 2.4 GHz WiFi channel (1–13) the sender broadcasts on. **It must
+match `_CHANNEL` at the top of `receiver.py`** or the receiver hears
+nothing. Only relevant when `USE_WIRELESS_DISPLAY = True`. Change it
+only if channel 1 is congested in your area. See §12 "How the ESP-NOW
+channel is selected" for the full mechanism and why the channel is
+pinned the way it is.
 
 ---
 
