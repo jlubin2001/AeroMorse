@@ -731,6 +731,38 @@ g1[<length>][<binary_pattern>] = <action>
 g3[3][0b010] = 'John Smith'   # .-.  (R pattern)
 ```
 
+### Storing passwords and secrets safely
+
+Group 3 macros are perfect for passwords and logins — but a password
+written directly into `morse_map.py` would be exposed the moment you
+share that file (for help, in the repo, or in a zip of your drive).
+
+AeroMorse keeps secrets in a **separate file that is never shared**:
+
+1. On the CIRCUITPY drive, copy **`macro_secrets.example.py`** to
+   **`macro_secrets.py`** and put your real values in it:
+   ```python
+   SECRETS = {
+       "password1": "my-real-password",
+       "wifi":      "my-wifi-key",
+   }
+   ```
+2. `morse_map.py` pulls them in by key with a harmless fallback:
+   ```python
+   g3[4][0b0110] = _secret('password1', '(set password1 in macro_secrets.py)')  # P
+   ```
+
+**Why this is safe:** if you ever share `morse_map.py` *without*
+`macro_secrets.py`, the secret macros type the placeholder text — never
+your real password. `macro_secrets.py` is listed in `.gitignore` so git
+won't commit it, and it's the **only** file that holds your secrets in
+plain text.
+
+> **If you send someone a copy of your whole CIRCUITPY drive, delete
+> `macro_secrets.py` from the copy first.** The `.gitignore` protects
+> git and one-file sharing; a full-drive copy still needs that one
+> manual step.
+
 ### Changing a Mouse Move Step
 
 ```python
@@ -748,6 +780,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `code.py` | Main firmware — Morse state machine, USB HID, display, ESP-NOW sender |
 | `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, audio pitches, timing, etc. Edit this file instead of `code.py`. |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
+| `macro_secrets.example.py` | Template for your **private** secret macros (passwords, personal details). Copy to `macro_secrets.py` on CIRCUITPY and fill in — see *Storing passwords and secrets safely* above. |
+| `macro_secrets.py` | **Your real passwords / secrets — never share, never committed** (git-ignored). Created by you from the `.example` template. If absent, secret macros type a placeholder. |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
 | `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |

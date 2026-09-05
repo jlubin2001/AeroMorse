@@ -61,6 +61,7 @@
   cmd.sys { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }   /* system / repeat — gray */
   cmd.ios { background: #ece6f8; color: #4b2e83; border-color: #d6c8ef; }   /* iOS Switch Control action — purple */
   cmd.app { background: #d1f2eb; color: #0b5345; border-color: #a8e6d4; }   /* application launcher (AL_*) — teal */
+  cmd.sec { background: #d6d8db; color: #1b1e21; border-color: #b9bcc0; }   /* private secret macro (macro_secrets.py) — slate */
 
   /* Keyboard */
   keybd {
@@ -290,6 +291,7 @@
     <span class="legend-item"><cmd class="mse">&#x1F5B1;&#xFE0E; Mouse</cmd> mouse / move / click</span>
     <span class="legend-item"><cmd class="med">&#x1F3B5; Media</cmd> consumer controls</span>
     <span class="legend-item"><cmd class="app">&#x1F5C2;&#xFE0E; App</cmd> application launcher</span>
+    <span class="legend-item"><cmd class="sec">&#x1F512; Secret</cmd> private macro (value hidden)</span>
     <span class="legend-item"><cmd class="mod">Mod</cmd> modifier / lock</span>
     <span class="legend-item"><cmd class="sys">System</cmd> repeat / system</span>
     <span class="legend-item"><cmd class="ios">iOS</cmd> iOS Switch Control action (Group 4)</span>
@@ -513,6 +515,15 @@
           const info  = formatConsumerCode(inner.split(',')[0]);
           key = info.label;
           cls = info.cls;
+        } else if (raw.startsWith('_secret(')) {
+          /* Private macro pulled from macro_secrets.py: _secret('key', 'ph').
+             The real value is NOT in this file, so the cheat sheet can only
+             ever show the KEY NAME — which is exactly what you want on a
+             printable sheet: it tells you which pattern types your password
+             without ever printing the password. Rendered as a lock badge. */
+          const mm = raw.match(/_secret\(\s*['"]([^'"]+)['"]/);
+          key = mm ? mm[1] : 'secret';
+          cls = 'sec';
         } else {
           const noComment = raw.split('#')[0].trim();
           key = noComment.split(',').map(formatKeyPart).filter(p => p).join(' + ');
@@ -555,9 +566,10 @@
           if (item.cls === 'mse') return 50;
           if (item.cls === 'med') return 51;
           if (item.cls === 'app') return 52;
-          if (item.cls === 'mod') return 53;
-          if (item.cls === 'sys') return 54;
-          if (item.cls === 'grp') return 55;
+          if (item.cls === 'sec') return 53;
+          if (item.cls === 'mod') return 54;
+          if (item.cls === 'sys') return 55;
+          if (item.cls === 'grp') return 56;
           if (arrowOrder[str]) return 4;
           if (str.length === 1 && /[a-zA-Z]/.test(str)) return 1;
           if (str.length === 1 && /[0-9]/.test(str)) return 2;
@@ -617,6 +629,7 @@
             if (item.cls === 'mse') prefix = '\u{1F5B1}\u{FE0E} ';   /* mouse */
             if (item.cls === 'med') prefix = '\u{1F3B5} ';            /* music note for media */
             if (item.cls === 'app') prefix = '\u{1F5C2}\u{FE0E} ';    /* launcher */
+            if (item.cls === 'sec') prefix = '\u{1F512} ';            /* lock — private secret */
             badge.textContent = prefix + item.key;
             keyDiv.appendChild(badge);
           } else {

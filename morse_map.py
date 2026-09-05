@@ -313,14 +313,35 @@ groups[2] = g2
 # Single-char values are typed as individual key presses;
 # longer strings are typed through the keyboard layout writer.
 # Fill the empty placeholders with the user's frequently needed phrases.
+#
+# ── KEEP PASSWORDS OUT OF THIS FILE ──────────────────────────────────────────
+# Do NOT write passwords, PINs, or personal details directly into g3 below.
+# Put them in a SEPARATE file, macro_secrets.py, which is git-ignored and must
+# NEVER be shared. The entries below pull each secret in by key with a harmless
+# fallback, so if you ever share morse_map.py *without* macro_secrets.py, the
+# secret macros type a placeholder instead of your real password — nothing
+# leaks. Set up: copy macro_secrets.example.py to macro_secrets.py on the
+# CIRCUITPY drive and fill in your own values. See README "Storing passwords
+# and secrets safely".
+try:
+    from macro_secrets import SECRETS
+except ImportError:
+    # macro_secrets.py not present (fresh checkout, or this file was shared on
+    # its own). Secret macros fall back to their placeholder text below.
+    SECRETS = {}
+
+def _secret(key, placeholder):
+    """Return the secret for `key` from macro_secrets.py, or a placeholder if
+    that file is absent or the key is unset — so shared copies never leak."""
+    return SECRETS.get(key, placeholder)
 
 g3 = init_group()
 
-# ── Named macros (reuse A B C E patterns) ────────────────────────────────────
-g3[2][0b01]='name'          # .-    A
-g3[4][0b1000]='address'     # -...  B
-g3[4][0b1110]='phone'       # ---.  C (non-standard pattern)
-g3[1][0b0]='email'          # .     E
+# ── Named macros — personal details, pulled from macro_secrets.py ─────────────
+g3[2][0b01]  = _secret('name',    'name')       # .-    A
+g3[4][0b1000]= _secret('address', 'address')    # -...  B
+g3[4][0b1110]= _secret('phone',   'phone')      # ---.  C (non-standard pattern)
+g3[1][0b0]   = _secret('email',   'email')      # .     E
 
 # ── Placeholders — fill with user phrases; pattern = Group 1 letter ───────────
 g3[3][0b100]='phrase'             # -..   D
@@ -334,17 +355,25 @@ g3[4][0b0100]='phrase'            # .-..  L
 g3[4][0b1111]='phrase'            # ----  M
 g3[2][0b10]='phrase'              # -.    N
 g3[3][0b111]='phrase'             # ---   O
-g3[4][0b0110]='phrase'            # .--.  P
+# .--.  P  → assigned in the Passwords / logins block below (_secret)
 g3[4][0b1101]='phrase'            # --.-  Q
 g3[3][0b010]='phrase'             # .-.   R
 g3[3][0b000]='phrase'             # ...   S
 g3[1][0b1]='phrase'               # -     T
 g3[3][0b001]='phrase'             # ..-   U
 g3[4][0b0001]='phrase'            # ...-  V
-g3[3][0b011]='phrase'             # .--   W
+# .--   W  → assigned in the Passwords / logins block below (_secret)
 g3[4][0b1001]='phrase'            # -..-  X
 g3[4][0b1011]='phrase'            # -.--  Y
 g3[4][0b1100]='phrase'            # --..  Z
+
+# ── Passwords / logins — values live ONLY in macro_secrets.py ─────────────────
+# These override the placeholder letters above. Add or rename keys to match
+# your macro_secrets.py. When that file is absent the pattern types the shown
+# placeholder text, so a shared morse_map.py never reveals a real password.
+# (Examples below reuse the P and W letter patterns — change to suit.)
+g3[4][0b0110]= _secret('password1', '(set password1 in macro_secrets.py)')  # .--.  P
+g3[3][0b011] = _secret('wifi',      '(set wifi in macro_secrets.py)')       # .--   W
 
 # ── Numbers (same patterns as Group 1) ───────────────────────────────────────
 g3[5][0b01111]='1'          # .----
