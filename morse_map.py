@@ -343,10 +343,13 @@ def _secret(key, placeholder):
 g3 = init_group()
 
 # ── Named macros — personal details, pulled from macro_secrets.py ─────────────
-g3[2][0b01]  = _secret('name',    'name')       # .-    A
-g3[4][0b1000]= _secret('address', 'address')    # -...  B
-g3[4][0b1110]= _secret('phone',   'phone')      # ---.  C (non-standard pattern)
-g3[1][0b0]   = _secret('email',   'email')      # .     E
+# The 2nd arg is the placeholder typed when macro_secrets.py is absent — set to
+# example values (matching macro_secrets.example.py) so a shared morse_map.py
+# never reveals real details.
+g3[2][0b01]  = _secret('name',    'Your Name')                    # .-    A
+g3[4][0b1000]= _secret('address', '123 Example St, City, ST 00000')  # -...  B
+g3[4][0b1110]= _secret('phone',   '555-555-0100')                # ---.  C (non-standard pattern)
+g3[1][0b0]   = _secret('email',   'you@example.com')             # .     E
 
 # ── Placeholders — fill with user phrases; pattern = Group 1 letter ───────────
 g3[3][0b100]='phrase'             # -..   D
