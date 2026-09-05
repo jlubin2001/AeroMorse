@@ -767,12 +767,31 @@ braces, so an editing slip can't break anything):
   shows its placeholder.
 
 **Format rules:**
-- One secret per line: `key=value`. No quotes needed; spaces in the value
-  are fine (`name=James Lubin`).
-- A line starting with `#` is a comment; blank lines are ignored.
+- One secret per line: `key=value`. No quotes needed; blank lines and
+  lines starting with `#` are ignored.
 - Save as **UTF-8** (in Notepad++: Encoding → **UTF-8**, *not*
   “UTF-8-BOM”). A stray byte-order mark is tolerated, but plain UTF-8 is
   cleanest.
+
+**What the value (password) may contain:**
+- ✅ Almost anything, with **no escaping** — `=`, `#`, quotes `' "`,
+  backslash `\`, and symbols like `@ ! $ % & * ( ) + / ?` all work
+  literally. Only the *first* `=` on the line splits key from value, so a
+  value may contain further `=` signs (`k=a=b` → value `a=b`). A `#` is
+  only special at the very start of a line.
+- ✅ Interior spaces are kept (`name=James Lubin`).
+- ⚠ **Leading and trailing spaces are trimmed.** `pw=  x  ` stores `x`.
+  (The trim is deliberate — it removes the invisible carriage-return
+  Windows adds to each line.) So a value that must *begin or end with a
+  space* can't be stored as-is.
+- ⚠ **No newlines** — a value is a single line, so it can't span lines.
+
+**What the key (the name before `=`) may contain:**
+- ✅ Letters, digits, and `_` (e.g. `email_pw`, `bank_pin`, `wifi2`).
+  The key must match the `_secret('key', …)` spelling in `morse_map.py`
+  exactly.
+- ❌ **No `=`** (the first `=` ends the key), and a key **can't start with
+  `#`** (that line is read as a comment). Avoid spaces in keys.
 
 **Works in any group, not just Group 3.** `_secret()` reads from the same
 `macro_secrets.txt` no matter which group calls it, so you can use
