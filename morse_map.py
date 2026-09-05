@@ -325,9 +325,17 @@ groups[2] = g2
 # and secrets safely".
 try:
     from macro_secrets import SECRETS
-except ImportError:
-    # macro_secrets.py not present (fresh checkout, or this file was shared on
-    # its own). Secret macros fall back to their placeholder text below.
+except Exception as _e:
+    # macro_secrets.py absent (fresh checkout / this file shared alone) OR it
+    # has an error in it (a typo is easy to introduce when editing via Morse).
+    # EITHER WAY morse_map.py must still load — for many users it is their only
+    # means of computer access — so fall back to placeholders and print a note
+    # instead of letting the failure propagate and stop code.py.
+    print("morse_map: macro_secrets not loaded (%s) - using placeholders" % _e)
+    SECRETS = {}
+if not isinstance(SECRETS, dict):
+    # A malformed SECRETS (e.g. not a dict) would crash _secret() later. Guard.
+    print("morse_map: macro_secrets SECRETS is not a dict - ignoring")
     SECRETS = {}
 
 def _secret(key, placeholder):
