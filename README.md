@@ -779,7 +779,7 @@ braces, so an editing slip can't break anything):
   literally. Only the *first* `=` on the line splits key from value, so a
   value may contain further `=` signs (`k=a=b` → value `a=b`). A `#` is
   only special at the very start of a line.
-- ✅ Interior spaces are kept (`name=First Last`).
+- ✅ Interior spaces are kept (`name=Your Name`).
 - ⚠ **Leading and trailing spaces are trimmed.** `pw=  x  ` stores `x`.
   (The trim is deliberate — it removes the invisible carriage-return
   Windows adds to each line.) So a value that must *begin or end with a

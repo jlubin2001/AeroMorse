@@ -29,6 +29,61 @@ def init_group():
     return {1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}}
 
 ############################################
+# Secret macros (passwords / personal details) — loaded FIRST, usable in ANY group
+############################################
+# Never write a password, PIN, or personal detail directly into this file.
+# Put each one in a SEPARATE plain-text file, macro_secrets.txt — git-ignored,
+# NEVER shared — ONE PER LINE in the form  key=value :
+#
+#     name=Your Name
+#     email_pw=hunter2
+#
+# Then in ANY group (g1-g9) pull it in by key, with a safe fallback:
+#     g3[2][0b01] = _secret('name', 'Your Name')   # types the real name, or the
+#                                                   # placeholder if it isn't set
+# No quotes, commas, colons or braces — so an editing slip cannot break Python
+# syntax. If ONE line is malformed it is simply skipped (only that entry is
+# lost, everything else keeps working); a missing or unreadable file just means
+# every secret falls back to its placeholder. This ALWAYS loads — for many users
+# morse_map.py is their only means of computer access, so it must never be
+# brickable by a typo in the secrets file. Defined here at the top so _secret()
+# is available to every group below. See README "Storing passwords and secrets
+# safely".
+def _load_secrets():
+    d = {}
+    for _path in ("macro_secrets.txt", "/macro_secrets.txt"):
+        try:
+            _f = open(_path)
+        except OSError:
+            continue                    # file not on this board — try next path
+        try:
+            for _line in _f:
+                _line = _line.strip().replace("\ufeff", "")   # tolerate a BOM
+                if not _line or _line[0] == "#" or "=" not in _line:
+                    continue            # skip blanks, comments, and junk lines
+                _k, _v = _line.split("=", 1)                   # value may contain '='
+                _k = _k.strip()
+                if _k:
+                    d[_k] = _v.strip()
+        except Exception as _e:
+            print("morse_map: error reading macro_secrets.txt (%s)" % _e)
+        _f.close()
+        break
+    return d
+
+SECRETS = _load_secrets()
+
+def _secret(key, placeholder):
+    """Return the secret for `key` from macro_secrets.txt, or the placeholder if
+    that file is absent or the key is unset — so shared copies never leak.
+
+    Usable on ANY group's assignment (g1–g9). In g4–g9 the letter patterns are
+    pre-seeded with g1's letters, so a _secret() assignment there overrides the
+    seed. Keys are shared file-wide: the same key in two groups reads the same
+    value."""
+    return SECRETS.get(key, placeholder)
+
+############################################
 # Begin Group 0
 # ALWAYS AVAILABLE (System / Group toggles)
 ############################################
@@ -314,54 +369,10 @@ groups[2] = g2
 # longer strings are typed through the keyboard layout writer.
 # Fill the empty placeholders with the user's frequently needed phrases.
 #
-# ── KEEP PASSWORDS OUT OF THIS FILE ──────────────────────────────────────────
-# Do NOT write passwords, PINs, or personal details directly into g3 below.
-# Put them in a SEPARATE plain-text file, macro_secrets.txt, which is git-ignored
-# and must NEVER be shared. It is ONE SECRET PER LINE, in the form  key=value :
-#
-#     name=First Last
-#     email_pw=hunter2
-#
-# No quotes, commas, colons or braces — so an editing slip cannot break Python
-# syntax. If ONE line is malformed it is simply skipped (only that entry is
-# lost, everything else keeps working), and a missing or unreadable file just
-# means every secret falls back to its placeholder. This file ALWAYS loads —
-# for many users morse_map.py is their only means of computer access, so it must
-# never be brickable by a typo in the secrets file. See README "Storing
-# passwords and secrets safely".
-def _load_secrets():
-    d = {}
-    for _path in ("macro_secrets.txt", "/macro_secrets.txt"):
-        try:
-            _f = open(_path)
-        except OSError:
-            continue                    # file not on this board — try next path
-        try:
-            for _line in _f:
-                _line = _line.strip().replace("\ufeff", "")   # tolerate a BOM
-                if not _line or _line[0] == "#" or "=" not in _line:
-                    continue            # skip blanks, comments, and junk lines
-                _k, _v = _line.split("=", 1)                   # value may contain '='
-                _k = _k.strip()
-                if _k:
-                    d[_k] = _v.strip()
-        except Exception as _e:
-            print("morse_map: error reading macro_secrets.txt (%s)" % _e)
-        _f.close()
-        break
-    return d
-
-SECRETS = _load_secrets()
-
-def _secret(key, placeholder):
-    """Return the secret for `key` from macro_secrets.txt, or the placeholder if
-    that file is absent or the key is unset — so shared copies never leak.
-
-    Usable on ANY group's assignment (g1–g9), not just g3 — SECRETS and this
-    helper are module-level. In g4–g9 the letter patterns are pre-seeded with
-    g1's letters, so a _secret() assignment there overrides the seed. Keys are
-    shared file-wide: the same key in two groups reads the same value."""
-    return SECRETS.get(key, placeholder)
+# ── Passwords / personal details ────────────────────────────────────────────
+# Use  _secret('key', 'placeholder')  for anything private (see the Secret
+# macros section at the TOP of this file). Real values live in
+# macro_secrets.txt, never inline here — so a shared morse_map.py leaks nothing.
 
 g3 = init_group()
 
@@ -425,13 +436,13 @@ g3[2][0b11]=Keycode.BACKSPACE    # --
 groups[3] = g3
 
 ############################################
-# Placeholder group seed (g4–g9)
+# Group-seed helper (used by g4, g5, and the g6–9 placeholder groups)
 ############################################
 # Builds a fresh group pre-loaded with g1's A–Z (1–4 symbol patterns) and
 # 0–9 (5-symbol patterns). Punctuation, function keys, navigation, and
-# modifiers are intentionally NOT copied, so placeholder groups start
-# minimal and are easy to customise. Switch between groups any time using
-# the 8-symbol Group 0 toggle codes documented at the top of this file.
+# modifiers are intentionally NOT copied, so seeded groups start minimal and
+# are easy to customise. Switch between groups any time using the 8-symbol
+# Group 0 toggle codes documented at the top of this file.
 
 def _seed_letters_numbers():
     g = init_group()
@@ -477,16 +488,14 @@ g4[3][0b101] = Keycode.F12    # -.-
 groups[4] = g4
 
 ############################################
-# Begin Groups 5–9
-# PLACEHOLDERS — copy of g1 letters + numbers
+# Seed Group 5 (its media overrides follow next)
 ############################################
-# Identical letter/number layout to Group 1 so existing muscle memory works
-# while you decide what each group is for. Replace the entries with your own
-# keycodes, macros, or command strings. Reach each group with its Group 0
-# toggle code (see top of file).
+# g5 starts as a copy of g1's letters + numbers, then the Media block below
+# overrides the shortest patterns. Groups 6-9 are seeded and given example
+# entries at the very END of this file, in the "Groups 6-9" section — that's
+# where you customise them.
 
-for _gid in range(5, 10):
-    groups[_gid] = _seed_letters_numbers()
+groups[5] = _seed_letters_numbers()
 
 ############################################
 # Group 5 — MEDIA (USB HID Consumer Controls)
@@ -552,3 +561,41 @@ g5[4][0b0100] = _cc('AL_EMAIL_READER',          0x18A)   # .-..  L  mai-L
 # are routine media keys, and an unintended shutdown or sleep is far more
 # disruptive than a stray volume change. --.. and .--. therefore keep the
 # placeholder letters z and p seeded from g1.
+
+groups[5] = g5
+
+############################################
+# Groups 6–9 — YOUR placeholder groups (customise these)
+############################################
+# g6–g9 are yours to fill. Each starts as a copy of Group 1's letters + numbers
+# (so your muscle memory works right away); overwrite any pattern with your own
+# entry. Reach a group with its Group 0 toggle code (see top of this file):
+#     g6  .....---      g8  ..------
+#     g7  ...-----      g9  .-------
+#
+# An entry can be any of:
+#   * a macro string   g7[3][0b010] = 'My favourite string here'
+#   * a private login  g6[3][0b010] = _secret('bank_login', '(set in macro_secrets.txt)')
+#   * a Keycode        g8[4][0b0101] = Keycode.ENTER
+#   * a command string g9[2][0b01]  = 'mclick left 1'    (see Group 2 for the verbs)
+# The pattern in [ ] is the same Morse code as the matching Group 1 letter, so
+# 0b010 = R (.-.), 0b000 = S (...), etc. Delete or change the examples freely.
+
+for _gid in (6, 7, 8, 9):
+    groups[_gid] = _seed_letters_numbers()
+
+g6 = groups[6]
+g7 = groups[7]
+g8 = groups[8]
+g9 = groups[9]
+
+# ── Group 6 example — a private login (its value lives in macro_secrets.txt) ──
+g6[3][0b010] = _secret('bank_login', '(set bank_login in macro_secrets.txt)')  # .-.  R
+
+# ── Groups 7–9 examples — frequently typed phrases (plain text, typed as-is) ──
+g7[3][0b010] = 'My favourite string here'   # .-.  R
+g7[3][0b000] = 'Frequently typed phrase'    # ...  S
+g8[3][0b010] = 'My favourite string here'   # .-.  R
+g8[3][0b000] = 'Frequently typed phrase'    # ...  S
+g9[3][0b010] = 'My favourite string here'   # .-.  R
+g9[3][0b000] = 'Frequently typed phrase'    # ...  S
