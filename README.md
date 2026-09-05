@@ -758,6 +758,25 @@ your real password. `macro_secrets.py` is listed in `.gitignore` so git
 won't commit it, and it's the **only** file that holds your secrets in
 plain text.
 
+**Works in any group, not just Group 3.** `_secret()` and the `SECRETS`
+dict are defined once at the top of `morse_map.py`, so you can use
+`_secret('key', 'placeholder')` on any assignment in **g1–g9** — e.g.
+dedicate a placeholder group like g6 to logins:
+
+```python
+g6[4][0b0110] = _secret('bank_login', '(set bank_login in macro_secrets.py)')  # P
+```
+
+- **Keys are shared across the whole file** — `_secret('email', …)` in
+  g3 and in g7 both read the same `SECRETS["email"]`. Use distinct key
+  names (`email`, `work_email`) if you want different values.
+- In **g4–g9** the letter patterns are pre-seeded with g1's letters, so
+  put your `_secret(...)` assignment *after* the group is created (it
+  already is) and it overrides the seeded letter — same as the g5 media
+  keys do.
+- The cheat sheet shows a 🔒 lock badge with the key name for
+  `_secret(...)` in **any** group, so secrets stay hidden when printed.
+
 > **If you send someone a copy of your whole CIRCUITPY drive, delete
 > `macro_secrets.py` from the copy first.** The `.gitignore` protects
 > git and one-file sharing; a full-drive copy still needs that one

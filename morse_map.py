@@ -332,7 +332,12 @@ except ImportError:
 
 def _secret(key, placeholder):
     """Return the secret for `key` from macro_secrets.py, or a placeholder if
-    that file is absent or the key is unset — so shared copies never leak."""
+    that file is absent or the key is unset — so shared copies never leak.
+
+    Usable on ANY group's assignment (g1–g9), not just g3 — SECRETS and this
+    helper are module-level. In g4–g9 the letter patterns are pre-seeded with
+    g1's letters, so a _secret() assignment there overrides the seed. Keys are
+    shared file-wide: the same key in two groups reads the same value."""
     return SECRETS.get(key, placeholder)
 
 g3 = init_group()
