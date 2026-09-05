@@ -319,7 +319,7 @@ groups[2] = g2
 # Put them in a SEPARATE plain-text file, macro_secrets.txt, which is git-ignored
 # and must NEVER be shared. It is ONE SECRET PER LINE, in the form  key=value :
 #
-#     name=James Lubin
+#     name=First Last
 #     email_pw=hunter2
 #
 # No quotes, commas, colons or braces — so an editing slip cannot break Python
