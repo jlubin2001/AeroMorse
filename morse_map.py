@@ -316,30 +316,45 @@ groups[2] = g2
 #
 # ── KEEP PASSWORDS OUT OF THIS FILE ──────────────────────────────────────────
 # Do NOT write passwords, PINs, or personal details directly into g3 below.
-# Put them in a SEPARATE file, macro_secrets.py, which is git-ignored and must
-# NEVER be shared. The entries below pull each secret in by key with a harmless
-# fallback, so if you ever share morse_map.py *without* macro_secrets.py, the
-# secret macros type a placeholder instead of your real password — nothing
-# leaks. Set up: copy macro_secrets.example.py to macro_secrets.py on the
-# CIRCUITPY drive and fill in your own values. See README "Storing passwords
-# and secrets safely".
-try:
-    from macro_secrets import SECRETS
-except Exception as _e:
-    # macro_secrets.py absent (fresh checkout / this file shared alone) OR it
-    # has an error in it (a typo is easy to introduce when editing via Morse).
-    # EITHER WAY morse_map.py must still load — for many users it is their only
-    # means of computer access — so fall back to placeholders and print a note
-    # instead of letting the failure propagate and stop code.py.
-    print("morse_map: macro_secrets not loaded (%s) - using placeholders" % _e)
-    SECRETS = {}
-if not isinstance(SECRETS, dict):
-    # A malformed SECRETS (e.g. not a dict) would crash _secret() later. Guard.
-    print("morse_map: macro_secrets SECRETS is not a dict - ignoring")
-    SECRETS = {}
+# Put them in a SEPARATE plain-text file, macro_secrets.txt, which is git-ignored
+# and must NEVER be shared. It is ONE SECRET PER LINE, in the form  key=value :
+#
+#     name=James Lubin
+#     email_pw=hunter2
+#
+# No quotes, commas, colons or braces — so an editing slip cannot break Python
+# syntax. If ONE line is malformed it is simply skipped (only that entry is
+# lost, everything else keeps working), and a missing or unreadable file just
+# means every secret falls back to its placeholder. This file ALWAYS loads —
+# for many users morse_map.py is their only means of computer access, so it must
+# never be brickable by a typo in the secrets file. See README "Storing
+# passwords and secrets safely".
+def _load_secrets():
+    d = {}
+    for _path in ("macro_secrets.txt", "/macro_secrets.txt"):
+        try:
+            _f = open(_path)
+        except OSError:
+            continue                    # file not on this board — try next path
+        try:
+            for _line in _f:
+                _line = _line.strip().replace("\ufeff", "")   # tolerate a BOM
+                if not _line or _line[0] == "#" or "=" not in _line:
+                    continue            # skip blanks, comments, and junk lines
+                _k, _v = _line.split("=", 1)                   # value may contain '='
+                _k = _k.strip()
+                if _k:
+                    d[_k] = _v.strip()
+        except Exception as _e:
+            print("morse_map: error reading macro_secrets.txt (%s)" % _e)
+        _f.close()
+        break
+    return d
+
+SECRETS = _load_secrets()
 
 def _secret(key, placeholder):
-    """Return the secret for `key` from macro_secrets.py, or a placeholder if
+    """Return the secret for `key` from macro_secrets.txt, or the placeholder if
     that file is absent or the key is unset — so shared copies never leak.
 
     Usable on ANY group's assignment (g1–g9), not just g3 — SECRETS and this
@@ -350,9 +365,9 @@ def _secret(key, placeholder):
 
 g3 = init_group()
 
-# ── Named macros — personal details, pulled from macro_secrets.py ─────────────
-# The 2nd arg is the placeholder typed when macro_secrets.py is absent — set to
-# example values (matching macro_secrets.example.py) so a shared morse_map.py
+# ── Named macros — personal details, pulled from macro_secrets.txt ─────────────
+# The 2nd arg is the placeholder typed when macro_secrets.txt is absent — set to
+# example values (matching macro_secrets.example.txt) so a shared morse_map.py
 # never reveals real details.
 g3[2][0b01]  = _secret('name',    'Your Name')                    # .-    A
 g3[4][0b1000]= _secret('address', '123 Example St, City, ST 00000')  # -...  B
@@ -383,13 +398,13 @@ g3[4][0b1001]='phrase'            # -..-  X
 g3[4][0b1011]='phrase'            # -.--  Y
 g3[4][0b1100]='phrase'            # --..  Z
 
-# ── Passwords / logins — values live ONLY in macro_secrets.py ─────────────────
+# ── Passwords / logins — values live ONLY in macro_secrets.txt ─────────────────
 # These override the placeholder letters above. Add or rename keys to match
-# your macro_secrets.py. When that file is absent the pattern types the shown
+# your macro_secrets.txt. When that file is absent the pattern types the shown
 # placeholder text, so a shared morse_map.py never reveals a real password.
 # (Examples below reuse the P and W letter patterns — change to suit.)
-g3[4][0b0110]= _secret('password1', '(set password1 in macro_secrets.py)')  # .--.  P
-g3[3][0b011] = _secret('wifi',      '(set wifi in macro_secrets.py)')       # .--   W
+g3[4][0b0110]= _secret('password1', '(set password1 in macro_secrets.txt)')  # .--.  P
+g3[3][0b011] = _secret('wifi',      '(set wifi in macro_secrets.txt)')       # .--   W
 
 # ── Numbers (same patterns as Group 1) ───────────────────────────────────────
 g3[5][0b01111]='1'          # .----

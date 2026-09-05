@@ -27,10 +27,10 @@ Desktop.ini
 # CircuitPython device files that shouldn't be in the repo
 boot_out.txt
 
-# Secret macros — real passwords / personal details. NEVER commit or share.
+# Secret macros â€” real passwords / personal details. NEVER commit or share.
 # (The committed template is macro_secrets.example.py; the real file is not.)
 macro_secrets.py
-
+macro_secrets.txt
 # PyInstaller build artifacts
 build/
 *.spec

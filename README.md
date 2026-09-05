@@ -737,48 +737,63 @@ Group 3 macros are perfect for passwords and logins — but a password
 written directly into `morse_map.py` would be exposed the moment you
 share that file (for help, in the repo, or in a zip of your drive).
 
-AeroMorse keeps secrets in a **separate file that is never shared**:
+AeroMorse keeps secrets in a **separate plain-text file that is never
+shared**, `macro_secrets.txt`, using a deliberately foolproof format —
+**one secret per line, `key=value`** (no quotes, commas, colons or
+braces, so an editing slip can't break anything):
 
-1. On the CIRCUITPY drive, copy **`macro_secrets.example.py`** to
-   **`macro_secrets.py`** and put your real values in it:
-   ```python
-   SECRETS = {
-       "password1": "my-real-password",
-       "wifi":      "my-wifi-key",
-   }
+1. On the CIRCUITPY drive, copy **`macro_secrets.example.txt`** to
+   **`macro_secrets.txt`** and put your real values in it:
    ```
-2. `morse_map.py` pulls them in by key with a harmless fallback:
+   password1=my-real-password
+   wifi=my-wifi-key
+   ```
+2. In `morse_map.py`, a pattern pulls a value in by key, with a harmless
+   fallback:
    ```python
-   g3[4][0b0110] = _secret('password1', '(set password1 in macro_secrets.py)')  # P
+   g3[4][0b0110] = _secret('password1', '(set password1 in macro_secrets.txt)')  # P
    ```
 
-**Why this is safe:** if you ever share `morse_map.py` *without*
-`macro_secrets.py`, the secret macros type the placeholder text — never
-your real password. `macro_secrets.py` is listed in `.gitignore` so git
-won't commit it, and it's the **only** file that holds your secrets in
-plain text.
+**Why this is safe:**
+- If you ever share `morse_map.py` *without* `macro_secrets.txt`, the
+  secret macros type the placeholder text — never your real password.
+  `macro_secrets.txt` is `.gitignore`d and is the **only** file holding
+  your secrets in plain text.
+- **A typo can't take the device down.** If one line in
+  `macro_secrets.txt` is malformed, only *that* secret falls back to its
+  placeholder — every other secret keeps working, and `morse_map.py`
+  always loads. (This matters: `morse_map.py` may be your only means of
+  computer access.) A missing or unreadable file just means every secret
+  shows its placeholder.
 
-**Works in any group, not just Group 3.** `_secret()` and the `SECRETS`
-dict are defined once at the top of `morse_map.py`, so you can use
+**Format rules:**
+- One secret per line: `key=value`. No quotes needed; spaces in the value
+  are fine (`name=James Lubin`).
+- A line starting with `#` is a comment; blank lines are ignored.
+- Save as **UTF-8** (in Notepad++: Encoding → **UTF-8**, *not*
+  “UTF-8-BOM”). A stray byte-order mark is tolerated, but plain UTF-8 is
+  cleanest.
+
+**Works in any group, not just Group 3.** `_secret()` reads from the same
+`macro_secrets.txt` no matter which group calls it, so you can use
 `_secret('key', 'placeholder')` on any assignment in **g1–g9** — e.g.
 dedicate a placeholder group like g6 to logins:
 
 ```python
-g6[4][0b0110] = _secret('bank_login', '(set bank_login in macro_secrets.py)')  # P
+g6[4][0b0110] = _secret('bank_login', '(set bank_login in macro_secrets.txt)')  # P
 ```
 
 - **Keys are shared across the whole file** — `_secret('email', …)` in
-  g3 and in g7 both read the same `SECRETS["email"]`. Use distinct key
-  names (`email`, `work_email`) if you want different values.
-- In **g4–g9** the letter patterns are pre-seeded with g1's letters, so
-  put your `_secret(...)` assignment *after* the group is created (it
-  already is) and it overrides the seeded letter — same as the g5 media
-  keys do.
+  g3 and in g7 both read the same `email=` line. Use distinct key names
+  (`email`, `work_email`) if you want different values.
+- In **g4–g9** the letter patterns are pre-seeded with g1's letters, so a
+  `_secret(...)` assignment there overrides the seeded letter — same as
+  the g5 media keys do.
 - The cheat sheet shows a 🔒 lock badge with the key name for
   `_secret(...)` in **any** group, so secrets stay hidden when printed.
 
 > **If you send someone a copy of your whole CIRCUITPY drive, delete
-> `macro_secrets.py` from the copy first.** The `.gitignore` protects
+> `macro_secrets.txt` from the copy first.** The `.gitignore` protects
 > git and one-file sharing; a full-drive copy still needs that one
 > manual step.
 
@@ -799,8 +814,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `code.py` | Main firmware — Morse state machine, USB HID, display, ESP-NOW sender |
 | `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, audio pitches, timing, etc. Edit this file instead of `code.py`. |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
-| `macro_secrets.example.py` | Template for your **private** secret macros (passwords, personal details). Copy to `macro_secrets.py` on CIRCUITPY and fill in — see *Storing passwords and secrets safely* above. |
-| `macro_secrets.py` | **Your real passwords / secrets — never share, never committed** (git-ignored). Created by you from the `.example` template. If absent, secret macros type a placeholder. |
+| `macro_secrets.example.txt` | Template for your **private** secret macros (passwords, personal details). Copy to `macro_secrets.txt` on CIRCUITPY and fill in `key=value` lines — see *Storing passwords and secrets safely* above. |
+| `macro_secrets.txt` | **Your real passwords / secrets — never share, never committed** (git-ignored). Plain `key=value` lines. Created by you from the `.example` template. If absent or a line is bad, that secret macro just types a placeholder. |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
 | `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
