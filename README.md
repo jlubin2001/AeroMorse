@@ -149,6 +149,7 @@ connected to a computer.
 | `code.py` | Main program. Reads input, runs the state machine, executes actions, drives the display. You should not need to open this file — all tunable settings live in `config.py`. |
 | `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, strong sip/puff, audio pitches, timing, etc. Edit this file (in Thonny) to change behaviour. The Feather auto-reloads on save. |
 | `morse_map.py` | All Morse code assignments for every group. Edit this file to remap keys, add macros, or change which Consumer Control codes g5 sends. |
+| `macro_secrets.txt` | **Optional, private.** Holds the real values (passwords, phone, address, etc.) for any `_secret()` entries in `morse_map.py`, one `key=value` per line. Not required for the device to run — if absent, those patterns type their placeholder text. Keep it out of any copy you share. See [Storing passwords and secrets safely](#storing-passwords-and-secrets-safely). |
 
 ### Required Libraries (in `lib/` folder on CIRCUITPY)
 
@@ -172,7 +173,7 @@ listed items from its `lib/` folder.
 1. Install the **latest stable CircuitPython** on the feather by following
    [Adafruit's guide](https://learn.adafruit.com/esp32-s3-reverse-tft-feather).
 2. Copy the required libraries (listed above) into the `lib/` folder on CIRCUITPY.
-3. Copy `boot.py`, `code.py`, and `morse_map.py` to the root of CIRCUITPY.
+3. Copy `boot.py`, `code.py`, `config.py`, and `morse_map.py` to the root of CIRCUITPY.
 4. Eject / safely remove the drive and press the Reset button (or unplug and
    replug).
 5. On power-up the device will calibrate for one second (hold the tube still
@@ -857,6 +858,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | File | Purpose |
 |------|---------|
 | `aeromorse_cheatsheet.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |
+| `aeromorse_validator.py` / `aeromorse_validator.exe` | **Safety check — run this before trusting edited device files on the device.** Checks every required file the device needs to boot: **`boot.py`, `code.py`, `config.py`, `morse_map.py`** (plus optional `macro_secrets.txt`). For each it catches the things CircuitPython is fussy about that desktop editors hide: a **UTF-8 BOM** (the classic "lost all access" cause) and a Python **syntax error**. For `config.py` and `morse_map.py` it also reproduces the device's actual import (catching an **import error**), sanity-checks `config.py` settings (missing settings, out-of-range values), and confirms every `_secret()` pattern finds its value in `macro_secrets.txt`. Reports a plain-language **PASS** (safe) or **FAIL** (fix before relying on it — don't replace your working files yet), pointing at the exact line. A file that isn't in the folder shows **SKIP**, not FAIL. **Never prints secret values** — key names and counts only. Put it in the same folder as the file(s) you edited and double-click the `.exe`, or run `python aeromorse_validator.py`. Accepts an optional folder/file argument (e.g. `aeromorse_validator.exe F:\`) to check the device directly. |
+| `Check my AeroMorse files.bat` | **One-click** wrapper for the validator. Keep it in your edit folder next to `aeromorse_validator.exe` and the files you edited (`boot.py`, `code.py`, `config.py`, `morse_map.py`, `macro_secrets.txt`); double-click it to run the safety check on that folder and see PASS/FAIL. |
 | `morse_map_analyzer.py` | Python 3 script that reads `morse_map.py` and reports duplicate codes, conflicts with the always-on Group 0 patterns, and unused code slots for lengths 2–7. Run with `python morse_map_analyzer.py`; output is saved to `morse_map_report.txt`. |
 | `morse_map_report.txt` | Latest output from `morse_map_analyzer.py` |
 | `test_pressure.py` | Diagnostic script — copy to CIRCUITPY; press Ctrl-C to reach the `>>>` REPL prompt (do **not** reset — that re-runs `code.py`), then `import test_pressure`. To run again: `exec(open('test_pressure.py').read())` (`importlib` is not available in CircuitPython). Prints a live pressure-delta bar chart for 30 s and suggests `THRESH_SIP` / `THRESH_PUFF` values for `config.py`. |
