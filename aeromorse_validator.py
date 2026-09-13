@@ -679,6 +679,33 @@ def _already_running():
 
 
 # ── Runner ───────────────────────────────────────────────────────────────────
+def check_pattern_lengths():
+    """Every  gN[len][0b....]  must have exactly `len` binary digits - the file's
+    rule is one digit per Morse symbol, zero-padded. If they disagree (e.g.
+    g0[7][0b00000001] - 8 digits under length 7) the entry lands under the wrong
+    length and the pattern can NEVER trigger it. It is valid Python and builds
+    fine, so nothing else catches it - this does."""
+    src = open(MORSE_MAP_PATH, 'r', encoding='utf-8-sig').read()
+    rx = re.compile(r'\bg\d\[(\d+)\]\[0[bB]([01]+)\]')
+    bad = 0
+    for lineno, raw in enumerate(src.split('\n'), 1):
+        code = raw.split('#', 1)[0]
+        for m in rx.finditer(code):
+            length, digits = int(m.group(1)), m.group(2)
+            if len(digits) != length:
+                bad += 1
+                warn("morse_map.py line %d: %s has %d binary digit(s) but the "
+                     "length index is %d. They must match (one digit per Morse "
+                     "symbol), so as written this pattern is stored under the wrong "
+                     "length and a %d-symbol input can never reach it. FIX: make "
+                     "the index [%d] to match the %d digits (or change the digits)."
+                     % (lineno, m.group(0), len(digits), length, len(digits),
+                        len(digits), len(digits)))
+    check_warn('morse_map.py: pattern lengths', not bad,
+               'length index matches digit count' if not bad
+               else '%d mismatch(es) - see warnings' % bad)
+
+
 def run_morse_map_checks():
     section('morse_map.py')
     if not os.path.exists(MORSE_MAP_PATH):
@@ -694,6 +721,7 @@ def run_morse_map_checks():
     if m is None:
         return
     check_secrets(m)
+    check_pattern_lengths()
     collect_warnings(m)
 
 
