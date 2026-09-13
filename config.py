@@ -46,9 +46,9 @@ DASH_PIN          = board.D6  # switch-mode only — TIP of dash jack
 # 1 = single-switch timed,  2 = paddle (default),  3 = paddle + explicit Accept
 
 SWITCH_MODE          = 2
-ONE_SWITCH_INPUT     = "dot"        # mode 1 only — "dot" or "dash"
+ONE_SWITCH_INPUT     = "dot"        # mode 1 only — "dot" or "dash" (any case)
 ONE_SWITCH_DOT_MS    = 200          # mode 1 only — press ≤ this ms = dot, longer = dash
-THIRD_SWITCH_GESTURE = "long_dash"  # mode 3 only — "long_dash" or "long_dot" = Accept
+THIRD_SWITCH_GESTURE = "long_dash"  # mode 3 only — "long_dash" or "long_dot" = Accept (any case)
 
 
 # ── STRONG SIP / STRONG PUFF — distinct gesture for group jumps or actions ─
@@ -57,8 +57,8 @@ THIRD_SWITCH_GESTURE = "long_dash"  # mode 3 only — "long_dash" or "long_dot" 
 #              and overrides LONG_PRESS_CYCLES_GROUP on that switch.
 # Set ACTION = "" to disable.
 
-STRONG_SIP_ACTION  = "group 2"        # e.g. "group 2" to jump to Mouse on strong sip
-STRONG_PUFF_ACTION = "group 1"        # e.g. "group 1" to jump to Keyboard on strong puff
+STRONG_SIP_ACTION  = "group 2"        # e.g. "group 2" to jump to Mouse on strong sip (any case)
+STRONG_PUFF_ACTION = "group 1"        # e.g. "group 1" to jump to Keyboard on strong puff (any case)
 THRESH_SIP_STRONG  = 15        # hPa — sensor mode only
 THRESH_PUFF_STRONG = 15        # hPa — sensor mode only
 

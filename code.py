@@ -125,12 +125,20 @@ if USE_SENSOR and not _LPS_AVAILABLE:
 if SWITCH_MODE not in (1, 2, 3):
     print(f"SWITCH_MODE = {SWITCH_MODE} is not 1, 2, or 3 — falling back to 2")
     SWITCH_MODE = 2
+# Accept any capitalisation / stray spaces (e.g. "Dot", "LONG_DASH ").
+ONE_SWITCH_INPUT     = str(ONE_SWITCH_INPUT).strip().lower()
+THIRD_SWITCH_GESTURE = str(THIRD_SWITCH_GESTURE).strip().lower()
 if ONE_SWITCH_INPUT not in ("dot", "dash"):
     print(f"ONE_SWITCH_INPUT = {ONE_SWITCH_INPUT!r} invalid — falling back to 'dot'")
     ONE_SWITCH_INPUT = "dot"
 if THIRD_SWITCH_GESTURE not in ("long_dot", "long_dash"):
     print(f"THIRD_SWITCH_GESTURE = {THIRD_SWITCH_GESTURE!r} invalid — falling back to 'long_dash'")
     THIRD_SWITCH_GESTURE = "long_dash"
+
+# The strong-sip/puff actions are commands (e.g. "group 2") or "" to disable,
+# never typed text, so make them case-insensitive too: "Group 2" -> "group 2".
+STRONG_SIP_ACTION  = str(STRONG_SIP_ACTION).strip().lower()
+STRONG_PUFF_ACTION = str(STRONG_PUFF_ACTION).strip().lower()
 
 # Derived constants (kept once, used in the main loop hot path)
 _ONE_SWITCH_DOT_S    = ONE_SWITCH_DOT_MS / 1000.0

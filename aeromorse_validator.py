@@ -542,9 +542,11 @@ def check_config_settings(c):
         want(n, is_num, "should be a number.")
 
     want('SWITCH_MODE',          lambda v: v in (1, 2, 3), "should be 1, 2, or 3.")
-    want('ONE_SWITCH_INPUT',     lambda v: v in ('dot', 'dash'), "should be \"dot\" or \"dash\".")
-    want('THIRD_SWITCH_GESTURE', lambda v: v in ('long_dash', 'long_dot'),
-         "should be \"long_dash\" or \"long_dot\".")
+    _ci = lambda v: str(v).strip().lower()   # code.py accepts these in any case
+    want('ONE_SWITCH_INPUT',     lambda v: _ci(v) in ('dot', 'dash'),
+         "should be \"dot\" or \"dash\" (any case).")
+    want('THIRD_SWITCH_GESTURE', lambda v: _ci(v) in ('long_dash', 'long_dot'),
+         "should be \"long_dash\" or \"long_dot\" (any case).")
     want('DISPLAY_ROTATION',     lambda v: v in (0, 90, 180, 270), "should be 0, 90, 180, or 270.")
     want('ESPNOW_CHANNEL',       lambda v: is_num(v) and 1 <= v <= 13, "should be 1-13.")
     want('NO_REPEAT_KEYS',       lambda v: isinstance(v, (tuple, list)),
