@@ -851,7 +851,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `MORSE_DEVICES_COMPARISON.md` | Side-by-side comparison of AeroMorse vs Adap2U, Darci USB, and morAce — including 1/2/3-switch mode support |
 | `AEROMORSE_SWITCH_CONTROL_GUIDE.md` | How to use AeroMorse's Group 4 (F1–F12) with **iOS Switch Control**, **Android Switch Access**, and **Samsung Universal Switch** — Morse-pattern → F-key → OS action tables, with step-by-step OS setup for each platform |
 | `TOOLS_AND_GUIDES.md` | Reference for development tools: Thonny, CircuitPython installer |
-| `Morse Code Cheat Sheet.pdf` | Printable one-page reference card for all AeroMorse patterns |
+| `AeroMorse Cheat Sheet.pdf` | Printable cheat sheet — one page per group, showing every pattern as dots/dashes next to its key or action, with a legend on the first page. Printed from `aeromorse_cheatsheet.htm` (load `morse_map.py` and use the browser's Print). |
 
 ### Development tools (run on your PC, not on the device)
 

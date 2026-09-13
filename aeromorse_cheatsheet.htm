@@ -261,6 +261,39 @@
     .audio-hint { display: none !important; }
   }
 
+  /* Legend badge key — a print-only copy is appended to the bottom of the
+     first printed page so the colour codes are explained on paper. The on-
+     screen .legend at the top of the page stays hidden in print (below). */
+  .legend-print { display: none; }
+  @media print {
+    .legend-print {
+      display: block;
+      margin-top: 22px;
+      padding-top: 12px;
+      border-top: 2px solid #ccc;
+      page-break-inside: avoid;
+    }
+    .legend-print h3 {
+      text-align: center;
+      margin: 0 0 10px;
+      color: #2c3e50;
+      font-size: 1em;
+    }
+    .legend-print-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      justify-content: center;
+    }
+    .legend-print-strip .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8em;
+      color: #333;
+    }
+  }
+
   /* Responsive fallback */
   @media screen and (max-width: 768px) {
     .cols-3 { column-count: 2; }
@@ -453,6 +486,26 @@
                     .replace(/\b\w/g, c => c.toUpperCase());
       }
       return { label: label, cls: isLauncher ? 'app' : 'med' };
+    }
+
+    /* ── Print-only legend copy ────────────────────────────────────────────
+       Clones the on-screen legend strip (the badge colour key) so the same
+       key can be appended to the bottom of the first printed page. The on-
+       screen original is hidden in print, so the two never both appear. */
+    function buildLegendForPrint() {
+      const src = document.getElementById('legend');
+      const wrap = document.createElement('div');
+      wrap.className = 'legend-print';
+
+      const h = document.createElement('h3');
+      h.textContent = 'Legend';
+      wrap.appendChild(h);
+
+      const strip = document.createElement('div');
+      strip.className = 'legend-print-strip';
+      strip.innerHTML = src ? src.innerHTML : '';
+      wrap.appendChild(strip);
+      return wrap;
     }
 
     function processMorseData(dataStr) {
@@ -666,6 +719,10 @@
 
       if (pagesGenerated) {
         document.getElementById('print-btn').style.display = 'inline-block';
+        /* Attach the legend key to the bottom of the first page so the badge
+           colour codes are explained on the printout. */
+        const firstPage = container.firstElementChild;
+        if (firstPage) firstPage.appendChild(buildLegendForPrint());
       }
     }
 
