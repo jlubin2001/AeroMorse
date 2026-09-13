@@ -227,9 +227,42 @@ def check_encoding():
     return check('morse_map.py: no UTF-8 BOM', True, '')
 
 
+# ── Look-alike binary-literal detector ───────────────────────────────────────
+# A pattern like 0b0000000l uses a LETTER (l/I/i/L look like the digit 1,
+# O/o look like the digit 0) where a binary digit belongs. Python only says
+# "invalid binary literal"; this pinpoints the exact character and shows the
+# corrected pattern, for every occurrence at once.
+_BINLIT_RE = re.compile(r'(?<![A-Za-z0-9_])0[bB][01]*[A-Za-z][0-9A-Za-z]*')
+_BIN_LOOKALIKE = {'O': '0', 'o': '0', 'l': '1', 'I': '1', 'i': '1', 'L': '1'}
+
+def _binary_literal_detail(src):
+    """Friendly detail string if any 0b… literal contains letters, else None.
+    Looks at code only - a '0b' inside a comment is ignored."""
+    found = []
+    for lineno, raw in enumerate(src.split('\n'), 1):
+        code = raw.split('#', 1)[0]
+        for m in _BINLIT_RE.finditer(code):
+            lit  = m.group(0)
+            body = lit[2:]
+            if all(ch in '01' for ch in body):
+                continue
+            fixed = '0b' + ''.join(_BIN_LOOKALIKE.get(ch, ch) for ch in body)
+            found.append((lineno, lit, fixed))
+    if not found:
+        return None
+    rows = ["line %d:  %s   should be   %s" % (ln, lit, fx) for ln, lit, fx in found]
+    return ("a binary pattern uses letters where digits belong.\n"
+            "      The letters O/o look like 0, and l/I/i/L look like 1:\n"
+            "        " + "\n        ".join(rows) + "\n"
+            "      FIX: inside a 0b... pattern use only the digits 0 and 1.")
+
+
 # ── Check 2: Python syntax ───────────────────────────────────────────────────
 def check_syntax():
     src = open(MORSE_MAP_PATH, 'r', encoding='utf-8-sig').read()  # tolerate BOM here; Check 1 already flagged it
+    _bd = _binary_literal_detail(src)
+    if _bd:
+        return check('morse_map.py: Python syntax', False, _bd)
     try:
         compile(src, 'morse_map.py', 'exec')
     except SyntaxError as e:
@@ -434,6 +467,9 @@ def check_config_encoding():
 
 def check_config_syntax():
     src = open(CONFIG_PATH, 'r', encoding='utf-8-sig').read()
+    _bd = _binary_literal_detail(src)
+    if _bd:
+        return check('config.py: Python syntax', False, _bd)
     try:
         compile(src, 'config.py', 'exec')
     except SyntaxError as e:
@@ -604,6 +640,10 @@ def run_pyfile_checks(path, name):
     check('%s: no UTF-8 BOM' % name, True, '')
 
     src = open(path, 'r', encoding='utf-8-sig').read()
+    _bd = _binary_literal_detail(src)
+    if _bd:
+        check('%s: Python syntax' % name, False, _bd)
+        return
     try:
         compile(src, name, 'exec')
     except SyntaxError as e:
