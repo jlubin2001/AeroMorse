@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroMorse — Keycode Reference</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 20px;
+    background: #e9ecef;
+    color: #222;
+  }
+  .page {
+    background: #fff;
+    max-width: 1000px;
+    margin: 0 auto 24px;
+    padding: 32px 36px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  }
+  h1 { text-align: center; color: #2c3e50; margin: 0 0 4px; font-size: 1.6em; }
+  .sub { text-align: center; color: #6c757d; margin: 0 0 20px; font-size: 0.9em; }
+  h2 {
+    color: #2c3e50; font-size: 1.02em; margin: 0 0 8px;
+    border-bottom: 2px solid #e6e8eb; padding-bottom: 4px;
+  }
+
+  /* keyboard pill */
+  kbd {
+    display: inline-block;
+    font-family: Consolas, "Lucida Console", Monaco, monospace;
+    font-size: 0.9em; font-weight: bold; color: #000;
+    background: #f8f9fa;
+    border: 1px solid #ccc; border-radius: 4px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2), 0 0 0 2px #fff inset;
+    padding: 0.12em 0.5em; margin: 2px 3px 2px 0;
+    white-space: nowrap;
+  }
+  .alias { color: #6c757d; font-weight: normal; font-size: 0.82em; }
+
+  .cols { column-count: 3; column-gap: 26px; }
+  .cat { break-inside: avoid; margin-bottom: 16px; }
+
+  .usage {
+    background: #f0f4ff; border: 1px solid #d6e0ff; border-radius: 6px;
+    padding: 12px 16px; margin-bottom: 22px; font-size: 0.9em;
+  }
+  .usage code, code.inline {
+    background: #eef1f4; border-radius: 3px; padding: 0.05em 0.35em;
+    font-family: Consolas, monospace; font-size: 0.92em;
+  }
+  pre {
+    background: #2b2f36; color: #e6e6e6; border-radius: 6px;
+    padding: 10px 14px; overflow-x: auto; font-size: 0.85em; margin: 8px 0 0;
+  }
+  pre .c { color: #7fb37f; }   /* comment */
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.9em; margin-top: 6px; }
+  th, td { border: 1px solid #e0e3e7; padding: 5px 9px; text-align: left; }
+  th { background: #f3f5f7; }
+  td code { font-family: Consolas, monospace; }
+  .sym { font-weight: bold; font-family: Consolas, monospace; }
+
+  .note {
+    background: #fff8e1; border: 1px solid #ffe08a; border-radius: 6px;
+    padding: 10px 14px; margin: 18px 0; font-size: 0.9em;
+  }
+  ul.gotchas { font-size: 0.9em; margin: 6px 0 0; padding-left: 20px; }
+  ul.gotchas li { margin-bottom: 5px; }
+
+  @media print {
+    body { background: #fff; margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .page { box-shadow: none; margin: 0; max-width: 100%; padding: 0; border-radius: 0; }
+    .cat, table, pre, .note, .usage { page-break-inside: avoid; }
+    pre { background: #f2f2f2; color: #111; border: 1px solid #ccc; }
+    pre .c { color: #2e7d32; }
+  }
+  @media screen and (max-width: 820px) { .cols { column-count: 2; } }
+  @media screen and (max-width: 520px) { .cols { column-count: 1; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>AeroMorse — Keycode Reference</h1>
+  <p class="sub">Every valid <code class="inline">Keycode.NAME</code> for <code class="inline">morse_map.py</code> · from <code class="inline">adafruit_hid</code> (CircuitPython 9.x)</p>
+
+  <div class="usage">
+    <strong>Names are case-sensitive</strong> — <kbd>PAGE_UP</kbd> works, <code class="inline">Page_Up</code> does not. The AeroMorse validator warns on any name not listed here.
+    <pre><span class="c"># one key</span>
+g1[3][0b101] = Keycode.K
+<span class="c"># a chord (Ctrl+C) — use a tuple</span>
+g2[4][0b0001] = (Keycode.LEFT_CONTROL, Keycode.C)
+<span class="c"># to TYPE a character, use a string instead of a Keycode</span>
+g3[2][0b01]  = "hello"</pre>
+  </div>
+
+  <div class="cols">
+
+    <div class="cat">
+      <h2>Letters</h2>
+      <kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd><kbd>E</kbd><kbd>F</kbd><kbd>G</kbd><kbd>H</kbd><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>M</kbd><kbd>N</kbd><kbd>O</kbd><kbd>P</kbd><kbd>Q</kbd><kbd>R</kbd><kbd>S</kbd><kbd>T</kbd><kbd>U</kbd><kbd>V</kbd><kbd>W</kbd><kbd>X</kbd><kbd>Y</kbd><kbd>Z</kbd>
+    </div>
+
+    <div class="cat">
+      <h2>Number keys <span class="alias">(words, not digits)</span></h2>
+      <kbd>ONE</kbd><kbd>TWO</kbd><kbd>THREE</kbd><kbd>FOUR</kbd><kbd>FIVE</kbd><kbd>SIX</kbd><kbd>SEVEN</kbd><kbd>EIGHT</kbd><kbd>NINE</kbd><kbd>ZERO</kbd>
+      <div class="alias"><kbd>ONE</kbd> presses the “1” key. To type “1”, use the string <code>"1"</code>.</div>
+    </div>
+
+    <div class="cat">
+      <h2>Whitespace &amp; editing</h2>
+      <kbd>ENTER</kbd><kbd>RETURN</kbd><kbd>ESCAPE</kbd><kbd>BACKSPACE</kbd><kbd>TAB</kbd><kbd>SPACEBAR</kbd><kbd>SPACE</kbd><kbd>DELETE</kbd><kbd>INSERT</kbd><kbd>CAPS_LOCK</kbd>
+    </div>
+
+    <div class="cat">
+      <h2>Navigation</h2>
+      <kbd>UP_ARROW</kbd><kbd>DOWN_ARROW</kbd><kbd>LEFT_ARROW</kbd><kbd>RIGHT_ARROW</kbd><kbd>HOME</kbd><kbd>END</kbd><kbd>PAGE_UP</kbd><kbd>PAGE_DOWN</kbd>
+    </div>
+
+    <div class="cat">
+      <h2>Punctuation keys</h2>
+      <kbd>MINUS</kbd> <span class="alias">-</span><br>
+      <kbd>EQUALS</kbd> <span class="alias">=</span><br>
+      <kbd>LEFT_BRACKET</kbd> <span class="alias">[</span><br>
+      <kbd>RIGHT_BRACKET</kbd> <span class="alias">]</span><br>
+      <kbd>BACKSLASH</kbd> <span class="alias">\</span><br>
+      <kbd>SEMICOLON</kbd> <span class="alias">;</span><br>
+      <kbd>QUOTE</kbd> <span class="alias">'</span><br>
+      <kbd>GRAVE_ACCENT</kbd> <span class="alias">`</span><br>
+      <kbd>COMMA</kbd> <span class="alias">,</span><br>
+      <kbd>PERIOD</kbd> <span class="alias">.</span><br>
+      <kbd>FORWARD_SLASH</kbd> <span class="alias">/</span><br>
+      <kbd>POUND</kbd> <span class="alias"># (non-US)</span>
+    </div>
+
+    <div class="cat">
+      <h2>Locks &amp; system</h2>
+      <kbd>CAPS_LOCK</kbd><kbd>SCROLL_LOCK</kbd><kbd>PRINT_SCREEN</kbd><kbd>PAUSE</kbd><kbd>APPLICATION</kbd> <span class="alias">(menu key)</span><kbd>POWER</kbd>
+    </div>
+
+    <div class="cat">
+      <h2>Function keys</h2>
+      <kbd>F1</kbd><kbd>F2</kbd><kbd>F3</kbd><kbd>F4</kbd><kbd>F5</kbd><kbd>F6</kbd><kbd>F7</kbd><kbd>F8</kbd><kbd>F9</kbd><kbd>F10</kbd><kbd>F11</kbd><kbd>F12</kbd>
+      <kbd>F13</kbd><kbd>F14</kbd><kbd>F15</kbd><kbd>F16</kbd><kbd>F17</kbd><kbd>F18</kbd><kbd>F19</kbd><kbd>F20</kbd><kbd>F21</kbd><kbd>F22</kbd><kbd>F23</kbd><kbd>F24</kbd>
+      <div class="alias">Group 4 uses F1–F12. F13–F24 exist but most PCs ignore them.</div>
+    </div>
+
+    <div class="cat">
+      <h2>Number-pad (keypad)</h2>
+      <kbd>KEYPAD_NUMLOCK</kbd><kbd>KEYPAD_ONE</kbd><kbd>KEYPAD_TWO</kbd><kbd>KEYPAD_THREE</kbd><kbd>KEYPAD_FOUR</kbd><kbd>KEYPAD_FIVE</kbd><kbd>KEYPAD_SIX</kbd><kbd>KEYPAD_SEVEN</kbd><kbd>KEYPAD_EIGHT</kbd><kbd>KEYPAD_NINE</kbd><kbd>KEYPAD_ZERO</kbd><kbd>KEYPAD_PERIOD</kbd><kbd>KEYPAD_PLUS</kbd><kbd>KEYPAD_MINUS</kbd><kbd>KEYPAD_ASTERISK</kbd><kbd>KEYPAD_FORWARD_SLASH</kbd><kbd>KEYPAD_ENTER</kbd><kbd>KEYPAD_EQUALS</kbd><kbd>KEYPAD_BACKSLASH</kbd>
+    </div>
+
+    <div class="cat">
+      <h2>Modifiers <span class="alias">(for chords)</span></h2>
+      <kbd>LEFT_CONTROL</kbd> <span class="alias">= CONTROL</span><br>
+      <kbd>RIGHT_CONTROL</kbd><br>
+      <kbd>LEFT_SHIFT</kbd> <span class="alias">= SHIFT</span><br>
+      <kbd>RIGHT_SHIFT</kbd><br>
+      <kbd>LEFT_ALT</kbd> <span class="alias">= ALT = OPTION</span><br>
+      <kbd>RIGHT_ALT</kbd><br>
+      <kbd>LEFT_GUI</kbd> <span class="alias">= GUI = WINDOWS = COMMAND</span><br>
+      <kbd>RIGHT_GUI</kbd>
+      <div class="alias">GUI = the ⊞ Windows key (⌘ Command on Mac).</div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <strong>Shifted symbols have no Keycode of their own.</strong> Characters like
+    <span class="sym">: { } " ? &lt; &gt; + _ ! @ #</span> aren’t separate keys — they’re
+    <strong>Shift + another key</strong>. So there is no <code class="inline">COLON</code> or
+    <code class="inline">LEFT_BRACE</code> — nothing is missing. Easiest fix: just
+    <strong>type the character as a string</strong> (<code class="inline">= ":"</code>) and
+    <code class="inline">code.py</code> presses Shift for you. Or use a Shift chord, e.g.
+    <code class="inline">(Keycode.LEFT_SHIFT, Keycode.SEMICOLON)</code> for <span class="sym">:</span>.
+  </div>
+
+  <table>
+    <tr><th>Symbol</th><th>Shift +</th><th>Symbol</th><th>Shift +</th><th>Symbol</th><th>Shift +</th></tr>
+    <tr><td class="sym">:</td><td><code>SEMICOLON</code></td><td class="sym">_</td><td><code>MINUS</code></td><td class="sym">!</td><td><code>ONE</code></td></tr>
+    <tr><td class="sym">"</td><td><code>QUOTE</code></td><td class="sym">+</td><td><code>EQUALS</code></td><td class="sym">@</td><td><code>TWO</code></td></tr>
+    <tr><td class="sym">{</td><td><code>LEFT_BRACKET</code></td><td class="sym">|</td><td><code>BACKSLASH</code></td><td class="sym">#</td><td><code>THREE</code></td></tr>
+    <tr><td class="sym">}</td><td><code>RIGHT_BRACKET</code></td><td class="sym">~</td><td><code>GRAVE_ACCENT</code></td><td class="sym">$</td><td><code>FOUR</code></td></tr>
+    <tr><td class="sym">&lt;</td><td><code>COMMA</code></td><td class="sym">?</td><td><code>FORWARD_SLASH</code></td><td class="sym">%</td><td><code>FIVE</code></td></tr>
+    <tr><td class="sym">&gt;</td><td><code>PERIOD</code></td><td class="sym">^</td><td><code>SIX</code></td><td class="sym">&amp;</td><td><code>SEVEN</code></td></tr>
+    <tr><td class="sym">*</td><td><code>EIGHT</code></td><td class="sym">(</td><td><code>NINE</code></td><td class="sym">)</td><td><code>ZERO</code></td></tr>
+  </table>
+
+  <div class="note" style="background:#eefaf0;border-color:#bfe6c8;">
+    <strong>Gotchas</strong>
+    <ul class="gotchas">
+      <li>The space key is <kbd>SPACEBAR</kbd> (<kbd>SPACE</kbd> also works).</li>
+      <li>Number keys are words: <kbd>ONE</kbd>…<kbd>ZERO</kbd>, never <code class="inline">Keycode.1</code>.</li>
+      <li><kbd>ENTER</kbd> = <kbd>RETURN</kbd>; the modifier aliases above are the same key.</li>
+      <li>Case-sensitive and all-caps: it’s <code class="inline">LEFT_CONTROL</code>, never <code class="inline">Left_Control</code>.</li>
+      <li>To <em>type text</em> (letters, digits, words, passwords) use a <strong>string</strong> value — Keycodes are for <em>pressing keys</em> (Enter, arrows, F-keys, chords).</li>
+    </ul>
+  </div>
+
+  <p class="sub" style="margin-top:20px;">Source: <code class="inline">adafruit_hid/keycode.py</code> — CircuitPython 9.x bundle, the version on the AeroMorse devices. Regenerate if you upgrade <code class="inline">adafruit_hid</code>.</p>
+</div>
+</body>
+</html>
