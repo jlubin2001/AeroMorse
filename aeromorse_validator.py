@@ -469,6 +469,42 @@ def check_config_import():
     check('config.py: loads on the device', True, '')
     return c
 
+# The on/off settings. config.py aliases true/false/TRUE/FALSE, so any of
+# those (and Python's True/False, or 1/0) are valid; anything else is flagged.
+_BOOL_SETTINGS = ("USE_SENSOR SENSOR_FILTER_ENABLED SENSOR_FILTER_HEAVY CODE_REPEAT "
+                  "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY").split()
+_VALID_BOOL_TOKENS = {'True', 'False', 'true', 'false', 'TRUE', 'FALSE', '1', '0'}
+
+def check_config_bool_source():
+    """Source-level pass for the case-sensitivity trap the user hit: an on/off
+    setting written as lowercase text, mixed case, or in quotes. Warnings only;
+    a genuinely undefined name (e.g. yes) is also caught harder by the import
+    check, but this gives a clearer, earlier message."""
+    try:
+        src = open(CONFIG_PATH, 'r', encoding='utf-8-sig').read()
+    except OSError:
+        return
+    for name in _BOOL_SETTINGS:
+        m = re.search(r'(?m)^\s*' + name + r'\s*=\s*([^\s#]+)', src)
+        if not m:
+            continue
+        tok = m.group(1).rstrip(',')
+        if tok in _VALID_BOOL_TOKENS:
+            continue
+        low = tok.strip('\'"').lower()
+        intended = 'False' if low in ('false', 'no', 'off', '0', '') else 'True'
+        if tok[:1] in ('"', "'"):
+            warn("config.py: %s = %s is in QUOTES, so it is text, not a switch - "
+                 "and any non-empty text counts as ON. Remove the quotes: use %s."
+                 % (name, tok, intended))
+        elif low in ('true', 'false'):
+            warn("config.py: %s = %s has odd capitalisation. True/False, true/false, "
+                 "and TRUE/FALSE all work - a mix like that does not." % (name, tok))
+        elif low in ('yes', 'no', 'on', 'off'):
+            warn("config.py: %s = %s is not a valid on/off value. Use %s "
+                 "(True/False or true/false)." % (name, tok, intended))
+        # A number or expression is left for the import + sanity checks to judge.
+
 def check_config_settings(c):
     """Light sanity pass. Anything odd is a WARNING, never a hard fail — a bad
     value usually misbehaves rather than bricking, and we don't want to block a
@@ -493,8 +529,7 @@ def check_config_settings(c):
     is_num  = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
     is_bool = lambda v: isinstance(v, bool)
 
-    for n in ("USE_SENSOR SENSOR_FILTER_ENABLED SENSOR_FILTER_HEAVY CODE_REPEAT "
-              "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY").split():
+    for n in _BOOL_SETTINGS:
         want(n, is_bool, "should be True or False.")
 
     for n in ("THRESH_SIP THRESH_PUFF THRESH_SIP_STRONG THRESH_PUFF_STRONG "
@@ -528,6 +563,7 @@ def run_config_checks():
         return
     if not check_config_syntax():
         return
+    check_config_bool_source()   # friendly on/off (case) warnings, source-level
     c = check_config_import()
     if c is None:
         return

@@ -17,6 +17,15 @@
 import board   # board.D5 / D6 / A0 referenced below
 
 
+# ── True/False are case-insensitive ───────────────────────────────────────
+# Python normally only accepts True / False (capitalised). These aliases let
+# you also write true, false, TRUE, or FALSE for any on/off setting below, so
+# a value like  USE_WIRELESS_DISPLAY = false  works instead of crashing the
+# board. (Do NOT put quotes around it — "false" in quotes is text, not off.)
+true  = TRUE  = True
+false = FALSE = False
+
+
 # ── INPUT — sensor / switches / thresholds ────────────────────────────────
 
 USE_SENSOR        = True      # True = LPS33HW sensor; False = AT switches on D5/D6
