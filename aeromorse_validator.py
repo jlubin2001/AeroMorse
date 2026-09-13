@@ -33,6 +33,11 @@ folder/file argument (e.g.  aeromorse_validator.exe F:\) checks that location.
 import sys, os, re, types, traceback, io
 from datetime import date
 
+# Never write .pyc files. Without this, importing morse_map.py / config.py
+# straight off the CIRCUITPY drive would leave a __pycache__ folder on it.
+# CircuitPython ignores __pycache__, but we keep the drive clean anyway.
+sys.dont_write_bytecode = True
+
 # ── Colour output (green PASS / red FAIL / yellow WARN / grey SKIP) ──────────
 # Enabled only when writing to a real terminal, so redirected or captured
 # output stays plain text with no escape-code clutter.
