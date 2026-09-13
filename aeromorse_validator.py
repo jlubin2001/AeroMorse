@@ -503,6 +503,13 @@ def check_config_bool_source():
         elif low in ('yes', 'no', 'on', 'off'):
             warn("config.py: %s = %s is not a valid on/off value. Use %s "
                  "(True/False or true/false)." % (name, tok, intended))
+        elif (re.match(r'^[A-Za-z_]\w*$', tok)
+              and not re.search(r'(?m)^\s*' + re.escape(tok) + r'\s*=', src)):
+            # A bareword that isn't a valid boolean and isn't defined anywhere
+            # in config.py - almost always a typo like  fals / flase / tru.
+            # The import check will also FAIL on it, but this says why clearly.
+            warn("config.py: %s = %s is not a valid on/off value (looks like a "
+                 "typo). Use True or False (or true/false)." % (name, tok))
         # A number or expression is left for the import + sanity checks to judge.
 
 def check_config_settings(c):
