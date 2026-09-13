@@ -1,6 +1,6 @@
 # boot.py — single file for every AeroMorse board (sender + receivers).
 #
-# AeroMorse boot.py — version 1.0 (released 2026-08-27)
+# AeroMorse boot.py — version 1.1 (released 2026-09-13)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Behavior is auto-detected from the filesystem, so you can drop this same
