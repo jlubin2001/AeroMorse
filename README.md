@@ -170,15 +170,69 @@ listed items from its `lib/` folder.
 
 ## Setup
 
-1. Install the **latest stable CircuitPython** on the feather by following
-   [Adafruit's guide](https://learn.adafruit.com/esp32-s3-reverse-tft-feather).
-2. Copy the required libraries (listed above) into the `lib/` folder on CIRCUITPY.
-3. Copy `boot.py`, `code.py`, `config.py`, and `morse_map.py` to the root of CIRCUITPY.
-4. Eject / safely remove the drive and press the Reset button (or unplug and
-   replug).
-5. On power-up the device will calibrate for one second (hold the tube still
-   and do not sip or puff), then the TFT display will show **[ Keyboard ]** and
-   the device is ready.
+The **[Build Guide](AEROMORSE_BUILD_GUIDE.md) §9** has the full walk-through
+(with Thonny, the serial console, and troubleshooting). Here's the short
+version:
+
+### 1. Install CircuitPython on the Feather
+
+1. Go to **https://circuitpython.org/downloads**
+2. Search for your Feather board name (e.g. "ESP32-S3 Reverse TFT").
+3. Download the latest **stable** `.uf2` file — **not** a pre-release / "absolute
+   newest" build. (An older Feather bootloader may fail to flash a much newer
+   CircuitPython; if the drive won't switch to CIRCUITPY, try the previous
+   stable major version.)
+4. Plug the Feather into your computer with the USB-C **data** cable (a
+   charge-only cable won't show a drive).
+5. **Double-tap** the small **Reset** button quickly (two taps within about half
+   a second).
+   - The NeoPixel LED on the Feather turns **green**.
+   - A drive named **FTHRS3BOOT** (or similar) appears on your computer.
+6. **Drag** the `.uf2` file you downloaded onto that drive.
+7. The Feather reboots automatically. After a few seconds a drive named
+   **CIRCUITPY** appears. Done.
+
+> If **CIRCUITPY** already appears when you plug in (without double-tapping),
+> CircuitPython is already installed — skip to step 2. If you see
+> **FTHRS3BOOT** every time you plug in without double-tapping, the board just
+> has no code loaded yet — that's normal, continue.
+
+### 2. Install the required libraries
+
+1. Go to **https://circuitpython.org/libraries**
+2. Download the **Bundle** that matches your CircuitPython version. To find your
+   version, open `boot_out.txt` on the CIRCUITPY drive — it says something like
+   `Adafruit CircuitPython 10.2.0`, so download the matching major version
+   (9.x or 10.x).
+3. Open the `.zip`; inside is a folder called `lib`.
+4. On the CIRCUITPY drive, open (or create) the `lib` folder, and copy in the
+   items from the **Required Libraries** table above (from the bundle's `lib`
+   folder — you don't need the whole bundle).
+   - **Two are easy to miss:** `neopixel.mpy` (a bare file with no `adafruit_`
+     prefix, so it sorts to the bottom of the bundle's `lib`) and
+     `adafruit_lps35hw.mpy` (your sensor is the **LPS33HW**, but the driver is
+     named **`lps35hw`** — the same file covers both).
+
+### 3. Copy the AeroMorse software
+
+Download the four AeroMorse files from the repo — **green `< > Code` button →
+Download ZIP**, then unzip. Copy these from the ZIP's **root** to the **root**
+of CIRCUITPY:
+
+```
+boot.py   code.py   config.py   morse_map.py
+```
+
+> Always get these from **https://github.com/jlubin2001/AeroMorse** — copies
+> posted elsewhere may be older. Each file's header comment shows its version
+> and release date; keep all four at the same version.
+
+### 4. Restart and go
+
+Safely eject the drive and press the **Reset** button (or unplug and replug).
+On power-up the device calibrates for one second (hold the tube still — do not
+sip or puff), then the TFT display shows **[ Keyboard ]** and the device is
+ready.
 
 ---
 
