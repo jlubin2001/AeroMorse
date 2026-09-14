@@ -582,6 +582,11 @@ Group 1 as a placeholder and can be customised.
 | F4 | `.-` | F8 | `..-` | F12 | `-.-` |
 | Home (`h`) | `....` | | | | |
 
+> **Setting it up on a device:** see the
+> **[AeroMorse Switch Control Guide](AEROMORSE_SWITCH_CONTROL_GUIDE.md)** for
+> which OS action each F-key triggers and step-by-step setup for **iOS Switch
+> Control**, **Android Switch Access**, and **Samsung Universal Switch**.
+
 ### Group 5 — Media (USB HID Consumer Controls)
 
 Group 5 sends USB HID Consumer Control codes — media playback, volume,
