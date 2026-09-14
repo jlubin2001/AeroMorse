@@ -547,18 +547,23 @@ Macro patterns mirror the Group 1 alphabet so the same muscle memory that
 types a letter also fires a macro phrase.  Strings are typed through the
 keyboard layout writer; the host sees ordinary keystrokes.
 
-Edit the placeholder entries in `morse_map.py` to set your own phrases.
-Some example entries are pre-filled:
+Edit the placeholder entries in `morse_map.py` to set your own phrases. Six
+letter patterns come pre-filled as examples. The personal ones pull their real
+value from `macro_secrets.txt` via `_secret()` (see
+[Storing passwords and secrets safely](#storing-passwords-and-secrets-safely)),
+so a shared copy of `morse_map.py` never leaks them:
 
-| Pattern | Letter equivalent | Default macro |
-|---------|------------------|---------------|
-| `.-` | A | `name` |
-| `-...` | B | `address` |
-| `---.` | C | `phone` |
-| `.` | E | `email` |
-| All other letter patterns | D, F–Z | *(empty — fill in)* |
+| Pattern | Letter | Default macro (as shipped in `morse_map.py`) |
+|---------|--------|----------------------------------------------|
+| `.-`   | A | `name`      — `_secret('name', 'Your Name')` |
+| `-...` | B | `address`   — `_secret('address', …)` |
+| `---.` | C | `phone`     — `_secret('phone', …)` |
+| `.`    | E | `email`     — `_secret('email', …)` |
+| `.--.` | P | `password1` — `_secret('password1', …)` |
+| `.--`  | W | `wifi`      — `_secret('wifi', …)` |
+| All other letters (D, F–O, Q–V, X–Z) | | `'phrase'` placeholder — fill in your own |
 
-Numbers 0–9 and Enter / Backspace work the same as in Group 1.
+Digits `0`–`9` type the number; `.-.-` = Enter, `--` = Backspace.
 
 ### Group 4 — Scanning (Switch Control on iOS / Android)
 
