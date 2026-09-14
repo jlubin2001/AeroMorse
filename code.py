@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.1   (released 2026-09-13)
+#  AeroMorse code.py   —   version 1.2   (released 2026-09-14)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -145,6 +145,15 @@ _ONE_SWITCH_DOT_S    = ONE_SWITCH_DOT_MS / 1000.0
 _ONE_SWITCH_USES_DIT = (ONE_SWITCH_INPUT == "dot")     # True = DIT-side input wins
 _THIRD_SWITCH_IS_DAH = (THIRD_SWITCH_GESTURE == "long_dash")
 print(f"Input mode: {SWITCH_MODE}-switch  (1-sw input = {ONE_SWITCH_INPUT}, 3-sw accept = {THIRD_SWITCH_GESTURE})")
+
+# Mouse group (Group 2) can commit patterns sooner than keyboard typing, so
+# clicks feel snappier. Guarded for an older config.py that predates the
+# setting — it then falls back to ACCEPT_DELAY (no behaviour change).
+_MOUSE_GROUP = 2
+try:
+    _MOUSE_ACCEPT_DELAY = MOUSE_ACCEPT_DELAY
+except NameError:
+    _MOUSE_ACCEPT_DELAY = ACCEPT_DELAY
 
 # Code-repeat derived constants and warnings
 _DOT_REPEAT_S  = DOT_REPEAT_MS  / 1000.0
@@ -1220,8 +1229,10 @@ while True:
         _last_trans_at = now
         _last_state    = new_state
 
-    elif _last_state == IDLE and _num_shifts > 0 and (now - _last_trans_at) >= ACCEPT_DELAY:
-        # Been idle long enough — look up and fire the accumulated pattern
+    elif _last_state == IDLE and _num_shifts > 0 and (now - _last_trans_at) >= (
+            _MOUSE_ACCEPT_DELAY if active_group == _MOUSE_GROUP else ACCEPT_DELAY):
+        # Been idle long enough — look up and fire the accumulated pattern.
+        # Mouse group (2) uses the shorter MOUSE_ACCEPT_DELAY so clicks fire sooner.
         pattern = _pending_to_str(_num_shifts, _pending_char)
         action  = lookup_action(_num_shifts, _pending_char)
         if action is not None:

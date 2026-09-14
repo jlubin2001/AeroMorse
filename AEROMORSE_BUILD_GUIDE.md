@@ -1629,7 +1629,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.1 (released 2026-09-13)`. Open the file
+> `AeroMorse code.py — version 1.2 (released 2026-09-14)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1886,6 +1886,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | Setting | Shipped | Hint |
 |---------|---------|------|
 | `ACCEPT_DELAY` | `0.3` | Idle seconds before a pattern commits. Lower (`0.2`) = faster; sip-and-puff users often land `0.3`–`0.7` |
+| `MOUSE_ACCEPT_DELAY` | `0.15` | Same as `ACCEPT_DELAY` but **only in Group 2 (mouse)**, so clicks fire sooner while keyboard typing keeps the longer, safer `ACCEPT_DELAY`. Must stay above the gap *between the symbols of a pattern* or mouse patterns split. Lower = snappier clicks. Delete the line to disable (mouse then uses `ACCEPT_DELAY`). |
 | `LONG_PRESS` | `1.0` | Seconds to hold for cycle / Accept gesture |
 
 **Code repeat (Darci-style hold-to-repeat)**

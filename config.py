@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.1 (released 2026-09-13)
+# AeroMorse config.py — version 1.2 (released 2026-09-14)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -66,6 +66,12 @@ THRESH_PUFF_STRONG = 15        # hPa — sensor mode only
 # ── TIMING ────────────────────────────────────────────────────────────────
 
 ACCEPT_DELAY      = 0.3        # idle seconds before pattern commits (sip-puff often 0.3–0.7; lower = faster)
+MOUSE_ACCEPT_DELAY = 0.15      # like ACCEPT_DELAY but ONLY in Group 2 (mouse): shorter
+                              # so clicks fire sooner, while keyboard typing keeps
+                              # ACCEPT_DELAY. Must stay above your gap BETWEEN the
+                              # symbols of a pattern or mouse patterns split. Lower =
+                              # snappier clicks. Delete this line to disable (mouse
+                              # then uses ACCEPT_DELAY like everything else).
 LONG_PRESS        = 1.0        # seconds to hold for cycle / Accept gesture
 
 
