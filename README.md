@@ -660,6 +660,13 @@ The 240 × 135 px display shows four text rows and a pressure bar:
 | 4 | Status: armed modifiers, or SLOW / FAST / RPT / DRAG | Orange |
 | Bar | Pressure level — green for puff, red for sip | Green / Red |
 
+> **No screen on your board?** Set `USE_DISPLAY = False` in `config.py`. The
+> device then skips this local display but keeps typing over USB and keeps
+> broadcasting these same four rows to a wireless receiver (see
+> `USE_WIRELESS_DISPLAY`). A missing screen is auto-detected too, so a screenless
+> board won't crash even if the flag is left on. Handy for a screenless ESP-NOW
+> *sender* that mirrors to a #5691 (or MagTag) *receiver*.
+
 ---
 
 ## REPL Output
@@ -766,6 +773,7 @@ explaining what it does. The same Key Settings table also appears in
 
 | Constant | Default | Effect |
 |----------|---------|--------|
+| `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender): the device still types over USB and still broadcasts to a wireless receiver — only the local screen is skipped. A missing `board.DISPLAY` is also **auto-detected**, so a screenless board won't crash even if this is left `True` |
 | `DISPLAY_ROTATION` | `0` | Display orientation in degrees — `0` = USB on left, `180` = USB on right; also `90`, `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
 
