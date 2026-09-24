@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.2 (released 2026-09-14)
+# AeroMorse config.py — version 1.3 (released 2026-09-23)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -129,6 +129,13 @@ NO_REPEAT_KEYS = ("PAGE_UP", "PAGE_DOWN")
 
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────
 
+USE_DISPLAY          = True    # True = this board has a built-in screen (the default
+                              # #5691 Reverse TFT). Set False for a board with NO
+                              # screen (e.g. an ESP-NOW sender): the device still
+                              # types and still broadcasts to a wireless receiver;
+                              # only the local screen is skipped. (A missing screen
+                              # is also auto-detected, so a screenless board won't
+                              # crash even if this is left True.)
 DISPLAY_ROTATION     = 0        # degrees: 0 = USB left, 180 = USB right (also 90, 270)
 USE_WIRELESS_DISPLAY = False   # True = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA, ESP32-only). Set True only if you have a receiver.
 ESPNOW_CHANNEL       = 1        # WiFi channel (1–13) — receiver.py _CHANNEL must match

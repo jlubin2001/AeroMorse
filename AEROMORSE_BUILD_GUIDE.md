@@ -1629,7 +1629,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.2 (released 2026-09-14)`. Open the file
+> `AeroMorse code.py — version 1.3 (released 2026-09-23)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1935,6 +1935,7 @@ it interact with other settings" explanation, jump to Appendix E.
 
 | Setting | Shipped | Hint |
 |---------|---------|------|
+| `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender) — the device still types over USB and still broadcasts to a wireless receiver; only the local screen is skipped. A missing screen is also auto-detected, so a screenless board won't crash even if this is left `True`. |
 | `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
 | `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `_CHANNEL` in `receiver.py` |

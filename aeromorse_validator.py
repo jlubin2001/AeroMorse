@@ -508,7 +508,8 @@ def check_config_import():
 # The on/off settings. config.py aliases true/false/TRUE/FALSE, so any of
 # those (and Python's True/False, or 1/0) are valid; anything else is flagged.
 _BOOL_SETTINGS = ("USE_SENSOR SENSOR_FILTER_ENABLED SENSOR_FILTER_HEAVY CODE_REPEAT "
-                  "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY").split()
+                  "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY "
+                  "USE_DISPLAY").split()
 _VALID_BOOL_TOKENS = {'True', 'False', 'true', 'false', 'TRUE', 'FALSE', '1', '0'}
 
 def check_config_bool_source():

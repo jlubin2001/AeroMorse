@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.2   (released 2026-09-14)
+#  AeroMorse code.py   —   version 1.3   (released 2026-09-23)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -868,11 +868,29 @@ _GROUP_NAMES  = ("BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
-display = board.DISPLAY
+# Local display (built-in TFT). A screenless board (e.g. an ESP-NOW sender with
+# no screen) sets USE_DISPLAY = False in config.py: the device still types over
+# USB and still broadcasts to a wireless receiver — only the local screen is off.
+# Also auto-detects a missing board.DISPLAY so such a board can't crash here even
+# if the flag was left on.
 try:
-    display.rotation = DISPLAY_ROTATION
-except AttributeError:
-    print("WARNING: display rotation not settable — upgrade CircuitPython to 9.x")
+    _USE_DISPLAY = USE_DISPLAY
+except NameError:
+    _USE_DISPLAY = True   # older config.py without the setting: assume a screen
+
+display = None
+if _USE_DISPLAY:
+    try:
+        display = board.DISPLAY
+    except AttributeError:
+        _USE_DISPLAY = False
+        print("No board.DISPLAY on this board — running screenless. Set USE_DISPLAY = False in config.py to silence this.")
+
+if _USE_DISPLAY:
+    try:
+        display.rotation = DISPLAY_ROTATION
+    except AttributeError:
+        print("WARNING: display rotation not settable — upgrade CircuitPython to 9.x")
 
 def _make_label(root, text, color, scale, y):
     lbl = label.Label(
@@ -923,9 +941,13 @@ def _build_display():
     display.root_group = root
     return lbl_group, lbl_buf, lbl_action, lbl_rpt, lbl_mods, bar_pal, bar_bmp
 
-_lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
-_BAR_WIDTH_PX = display.width - 8
+_lbl_group = _lbl_buf = _lbl_action = _lbl_rpt = _lbl_mods = None
+_bar_pal = _bar_bmp = None
+_BAR_WIDTH_PX = 0
 _last_bar_fill = 0    # tracks last frame's fill width for incremental updates
+if _USE_DISPLAY:
+    _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
+    _BAR_WIDTH_PX = display.width - 8
 
 _MOD_NAMES = {
     Keycode.LEFT_CONTROL:  "Ctrl",  Keycode.RIGHT_CONTROL: "RCtrl",
@@ -957,56 +979,57 @@ def _update_display(pressure=0.0):
         _pieces.append("DRAG")
     mods_str = " ".join(_pieces) if _pieces else " "
 
-    # Update the local TFT.
-    _lbl_group.text  = group_str
-    _lbl_group.color = _GROUP_COLORS[active_group]
-    _lbl_buf.text    = buf_str
-    # Split a leading "RPT " off the action line so the RPT flag renders in
-    # ORANGE (via the dedicated _lbl_rpt tag) while the repeated action name
-    # stays YELLOW. action_str itself is left whole for the ESP-NOW broadcast
-    # below, so the wireless display still shows "RPT <action>".
-    # The tag + name are centred together as ONE unit: the combined string
-    # would span len*12 px (terminalio.FONT is 12 px/char at scale 2), so both
-    # labels are left-anchored from that block's centred start — the tag first,
-    # the name one "RPT " width in. Reads like a normal centred row that just
-    # happens to be two colours, rather than the tag pinned to the far left.
-    if action_str.startswith("RPT "):
-        _rpt_left = max(0, (display.width - len(action_str) * 12) // 2)
-        _lbl_rpt.text                 = "RPT"
-        _lbl_rpt.anchor_point         = (0.0, 0.0)
-        _lbl_rpt.anchored_position    = (_rpt_left, 58)
-        _lbl_action.text              = action_str[4:]
-        _lbl_action.anchor_point      = (0.0, 0.0)
-        _lbl_action.anchored_position = (_rpt_left + 4 * 12, 58)
-    else:
-        _lbl_rpt.text    = " "
-        _lbl_action.text = action_str
-        _lbl_action.anchor_point      = (0.5, 0.0)
-        _lbl_action.anchored_position = (display.width // 2, 58)
-    _lbl_mods.text   = mods_str
-    if USE_SENSOR:
-        # Pressure bar — direction colour + magnitude-encoded fill width.
-        # pressure is delta-from-baseline (hPa): negative = sip, positive = puff.
-        # Bar fills to 100% at the trigger threshold (THRESH_SIP / THRESH_PUFF)
-        # and saturates beyond that.
-        _bar_pal[1] = 0x00FF00 if pressure >= 0 else 0xFF4000
-        if pressure >= 0:
-            ratio = min(pressure / THRESH_PUFF, 1.0) if THRESH_PUFF else 0
+    if _USE_DISPLAY:
+        # Update the local TFT.
+        _lbl_group.text  = group_str
+        _lbl_group.color = _GROUP_COLORS[active_group]
+        _lbl_buf.text    = buf_str
+        # Split a leading "RPT " off the action line so the RPT flag renders in
+        # ORANGE (via the dedicated _lbl_rpt tag) while the repeated action name
+        # stays YELLOW. action_str itself is left whole for the ESP-NOW broadcast
+        # below, so the wireless display still shows "RPT <action>".
+        # The tag + name are centred together as ONE unit: the combined string
+        # would span len*12 px (terminalio.FONT is 12 px/char at scale 2), so both
+        # labels are left-anchored from that block's centred start — the tag first,
+        # the name one "RPT " width in. Reads like a normal centred row that just
+        # happens to be two colours, rather than the tag pinned to the far left.
+        if action_str.startswith("RPT "):
+            _rpt_left = max(0, (display.width - len(action_str) * 12) // 2)
+            _lbl_rpt.text                 = "RPT"
+            _lbl_rpt.anchor_point         = (0.0, 0.0)
+            _lbl_rpt.anchored_position    = (_rpt_left, 58)
+            _lbl_action.text              = action_str[4:]
+            _lbl_action.anchor_point      = (0.0, 0.0)
+            _lbl_action.anchored_position = (_rpt_left + 4 * 12, 58)
         else:
-            ratio = min(-pressure / THRESH_SIP, 1.0) if THRESH_SIP else 0
-        fill_px = int(ratio * _BAR_WIDTH_PX)
-        global _last_bar_fill
-        if fill_px != _last_bar_fill:
-            # Only repaint the columns that changed between last frame and this
-            # frame. Keeps display refresh cheap (avoids painting 232x8 every
-            # 100 ms).
-            lo = min(fill_px, _last_bar_fill)
-            hi = max(fill_px, _last_bar_fill)
-            for x in range(lo, hi):
-                v = 1 if x < fill_px else 0
-                for y in range(8):
-                    _bar_bmp[x, y] = v
-            _last_bar_fill = fill_px
+            _lbl_rpt.text    = " "
+            _lbl_action.text = action_str
+            _lbl_action.anchor_point      = (0.5, 0.0)
+            _lbl_action.anchored_position = (display.width // 2, 58)
+        _lbl_mods.text   = mods_str
+        if USE_SENSOR:
+            # Pressure bar — direction colour + magnitude-encoded fill width.
+            # pressure is delta-from-baseline (hPa): negative = sip, positive = puff.
+            # Bar fills to 100% at the trigger threshold (THRESH_SIP / THRESH_PUFF)
+            # and saturates beyond that.
+            _bar_pal[1] = 0x00FF00 if pressure >= 0 else 0xFF4000
+            if pressure >= 0:
+                ratio = min(pressure / THRESH_PUFF, 1.0) if THRESH_PUFF else 0
+            else:
+                ratio = min(-pressure / THRESH_SIP, 1.0) if THRESH_SIP else 0
+            fill_px = int(ratio * _BAR_WIDTH_PX)
+            global _last_bar_fill
+            if fill_px != _last_bar_fill:
+                # Only repaint the columns that changed between last frame and this
+                # frame. Keeps display refresh cheap (avoids painting 232x8 every
+                # 100 ms).
+                lo = min(fill_px, _last_bar_fill)
+                hi = max(fill_px, _last_bar_fill)
+                for x in range(lo, hi):
+                    v = 1 if x < fill_px else 0
+                    for y in range(8):
+                        _bar_bmp[x, y] = v
+                _last_bar_fill = fill_px
 
     # Mirror to wireless OLED (no-op if ESP-NOW not initialised).
     _espnow_send(group_str, buf_str, action_str, mods_str)
