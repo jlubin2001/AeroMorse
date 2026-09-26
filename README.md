@@ -136,6 +136,21 @@ ESP32-S3 Reverse TFT Feather   ←—— STEMMA QT cable ——→   LPS33HW sen
 No soldering required.  The STEMMA QT cable carries power, ground, and I²C
 data.  Plug the sip-and-puff tubing into the small port on top of the LPS33HW.
 
+**Board without a STEMMA QT port?** (e.g. the Feather nRF52840 Express.) Wire
+the sensor to the board's I²C pins instead — use a STEMMA QT to male-header
+cable ([#4209](https://www.adafruit.com/product/4209)) or solder wires:
+
+| LPS33HW (STEMMA QT wire) | Feather pin |
+|--------------------------|-------------|
+| Red — power | **3V** |
+| Black — ground | **GND** |
+| Blue — SDA (data) | **SDA** |
+| Yellow — SCL (clock) | **SCL** |
+
+No config change is needed: `code.py` uses the STEMMA QT port when the board
+has one and otherwise falls back to `board.I2C()` on the SDA/SCL pins
+(firmware v1.4+). The serial console notes when it does.
+
 ---
 
 ## Files on the Device (CIRCUITPY drive)
@@ -952,7 +967,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | Multi-element patterns too slow | `ACCEPT_DELAY` too long | Decrease `ACCEPT_DELAY` (try `0.15`) |
 | Pattern commits before finished | `ACCEPT_DELAY` too short | Increase `ACCEPT_DELAY` |
 | Pattern shows `?` on display | Pattern not mapped in current group | Check `morse_map.py`; REPL shows the exact pattern received |
-| Calibration message at startup then hangs | Sensor not found on I²C | Check STEMMA QT cable connection |
+| Calibration message at startup then hangs | Sensor not found on I²C | Check the STEMMA QT cable connection — or, on a board without a STEMMA QT port, the 3V / GND / SDA / SCL wires |
 
 ## Credits
 
