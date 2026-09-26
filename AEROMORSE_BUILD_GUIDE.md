@@ -1249,6 +1249,23 @@ Step 8A. No extra wiring needed.
 
 The sensor I²C address is 0x5C — it will not conflict with any display.
 
+**If your board has no STEMMA QT port** (e.g. the Feather nRF52840 Express),
+wire the sensor to the board's I²C pins instead. Use a **STEMMA QT to
+male-header cable** ([#4209](https://www.adafruit.com/product/4209)) or solder
+wires:
+
+| LPS33HW (STEMMA QT wire) | Feather pin |
+|--------------------------|-------------|
+| Red — power | **3V** |
+| Black — ground | **GND** |
+| Blue — SDA (data) | **SDA** |
+| Yellow — SCL (clock) | **SCL** |
+
+No config change is needed. From firmware **v1.4**, `code.py` uses
+`board.STEMMA_I2C()` when the board has a STEMMA QT port and otherwise falls
+back to `board.I2C()` on the SDA/SCL pins — the serial console prints a note
+when it does. (Earlier firmware crashed at startup on such boards.)
+
 **Attach the sip-and-puff tube:**
 
 Push one end of the aquarium airline tubing over the small raised nipple on the
