@@ -139,13 +139,18 @@ fixed in 10.3.0), but on CircuitPython 10.3.1 a BLE keyboard still does not
 stay connected to an Android phone.
 
 > **Tested 2026-09-26** — #5691 with TinyUF2 0.35.0 + CircuitPython 10.3.1,
-> host a Samsung Galaxy A15 (Android), using `test_ble.py` from this repo:
+> host a Samsung Galaxy A15 (Android 16), using `test_ble.py` from this repo:
 > - The board advertises and the phone pairs (`paired=True`).
+> - **No keystrokes ever reached the phone** — not on any connection, even
+>   while the board reported it was paired — although CircuitPython raised no
+>   error when sending them.
 > - The link then **drops about 6.5 s after every connection**, and every
 >   reconnect starts **unpaired** again — the board doesn't keep the pairing —
 >   so it loops connect → pair → drop.
 >
-> **Result: not usable yet.** An iPad or Windows host has not been tested.
+> **Result: not usable yet.** Reported upstream on
+> [adafruit/circuitpython #10739](https://github.com/adafruit/circuitpython/issues/10739).
+> An iPad or Windows host has not been tested.
 > Run `test_ble.py` to check a newer CircuitPython or a different host. For a
 > phone or tablet today, use a **USB-C cable** — AeroMorse works as a wired
 > keyboard/mouse.
