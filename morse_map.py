@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.4 (released 2026-09-26)
+# AeroMorse morse_map.py — version 1.5 (released 2026-09-26)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -32,56 +32,43 @@ def init_group():
 # Secret macros (passwords / personal details) — loaded FIRST, usable in ANY group
 ############################################
 # Never write a password, PIN, or personal detail directly into this file.
-# Put each one in a SEPARATE plain-text file, macro_secrets.txt — git-ignored,
-# NEVER shared — ONE PER LINE in the form  key=value :
+# Keep the real values in a SEPARATE file, never shared, as  key=value  lines:
 #
 #     name=Your Name
 #     email_pw=hunter2
 #
-# Then in ANY group (g1-g9) pull it in by key, with a safe fallback:
+# Two ways to store that file on the device (code.py reads it, not this file):
+#   macro_secrets.enc  — ENCRYPTED, made with the "AeroMorse Secrets" PC tool.
+#                        Locked at every power-up; the first secret you use asks
+#                        for your PIN (typed in Morse, then ENTER). Recommended.
+#   macro_secrets.txt  — plain text, no PIN. Simple, but anyone who opens the
+#                        CIRCUITPY drive can read it.
+#
+# Then in ANY group (g1-g9) pull a value in by key, with a safe fallback:
 #     g3[2][0b01] = _secret('name', 'Your Name')   # types the real name, or the
 #                                                   # placeholder if it isn't set
-# No quotes, commas, colons or braces — so an editing slip cannot break Python
-# syntax. If ONE line is malformed it is simply skipped (only that entry is
-# lost, everything else keeps working); a missing or unreadable file just means
-# every secret falls back to its placeholder. This ALWAYS loads — for many users
-# morse_map.py is their only means of computer access, so it must never be
-# brickable by a typo in the secrets file. Defined here at the top so _secret()
-# is available to every group below. See README "Storing passwords and secrets
-# safely".
-def _load_secrets():
-    d = {}
-    for _path in ("macro_secrets.txt", "/macro_secrets.txt"):
-        try:
-            _f = open(_path)
-        except OSError:
-            continue                    # file not on this board — try next path
-        try:
-            for _line in _f:
-                _line = _line.strip().replace("\ufeff", "")   # tolerate a BOM
-                if not _line or _line[0] == "#" or "=" not in _line:
-                    continue            # skip blanks, comments, and junk lines
-                _k, _v = _line.split("=", 1)                   # value may contain '='
-                _k = _k.strip()
-                if _k:
-                    d[_k] = _v.strip()
-        except Exception as _e:
-            print("morse_map: error reading macro_secrets.txt (%s)" % _e)
-        _f.close()
-        break
-    return d
-
-SECRETS = _load_secrets()
+# A missing, malformed or unreadable secrets file never stops the device — the
+# secret just types its placeholder. For many users morse_map.py is their only
+# means of computer access, so it must never be brickable by the secrets file.
+# Defined here at the top so _secret() is available to every group below. See
+# README "Storing passwords and secrets safely".
+class Secret:
+    """Marker for a private value. code.py looks up `key` when the pattern is
+    used, so the value is never stored in (or shown from) this file."""
+    __slots__ = ('key', 'placeholder')
+    def __init__(self, key, placeholder):
+        self.key = key
+        self.placeholder = placeholder
 
 def _secret(key, placeholder):
-    """Return the secret for `key` from macro_secrets.txt, or the placeholder if
-    that file is absent or the key is unset — so shared copies never leak.
+    """Pattern types the secret stored under `key`, or `placeholder` if it isn't
+    set — so shared copies never leak.
 
     Usable on ANY group's assignment (g1–g9). In g4–g9 the letter patterns are
     pre-seeded with g1's letters, so a _secret() assignment there overrides the
     seed. Keys are shared file-wide: the same key in two groups reads the same
     value."""
-    return SECRETS.get(key, placeholder)
+    return Secret(key, placeholder)
 
 ############################################
 # Begin Group 0
@@ -372,7 +359,8 @@ groups[2] = g2
 # ── Passwords / personal details ────────────────────────────────────────────
 # Use  _secret('key', 'placeholder')  for anything private (see the Secret
 # macros section at the TOP of this file). Real values live in
-# macro_secrets.txt, never inline here — so a shared morse_map.py leaks nothing.
+# macro_secrets.enc (PIN-locked) or macro_secrets.txt, never inline here — so a
+# shared morse_map.py leaks nothing. U = unlock, L = lock (PIN file only).
 
 g3 = init_group()
 
@@ -393,7 +381,7 @@ g3[4][0b0000]='phrase'            # ....  H
 g3[2][0b00]='phrase'              # ..    I
 g3[4][0b0111]='phrase'            # .---  J
 g3[3][0b101]='phrase'             # -.-   K
-g3[4][0b0100]='phrase'            # .-..  L
+g3[4][0b0100]='lock'              # .-..  L  lock secrets now (PIN file only)
 g3[4][0b1111]='phrase'            # ----  M
 g3[2][0b10]='phrase'              # -.    N
 g3[3][0b111]='phrase'             # ---   O
@@ -402,7 +390,8 @@ g3[4][0b1101]='phrase'            # --.-  Q
 g3[3][0b010]='phrase'             # .-.   R
 g3[3][0b000]='phrase'             # ...   S
 g3[1][0b1]='phrase'               # -     T
-g3[3][0b001]='phrase'             # ..-   U
+g3[3][0b001]='unlock'             # ..-   U  enter PIN to unlock secrets (optional —
+                                  #          using any secret while locked asks too)
 g3[4][0b0001]='phrase'            # ...-  V
 # .--   W  → assigned in the Passwords / logins block below (_secret)
 g3[4][0b1001]='phrase'            # -..-  X

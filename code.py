@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.4   (released 2026-09-26)
+#  AeroMorse code.py   —   version 1.5   (released 2026-09-26)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -60,8 +60,10 @@ try:
     import wifi as _wifi_mod
     import espnow as _espnow_mod
     _ESPNOW_IMPORTABLE = True
-except ImportError:
-    _ESPNOW_IMPORTABLE = False
+except Exception as _e:   # ImportError, or MemoryError "Failed to allocate Wifi
+    _ESPNOW_IMPORTABLE = False   # memory" — never let the radio stop typing
+    if not isinstance(_e, ImportError):
+        print("WARNING: wifi unavailable (%s) — wireless display off" % _e)
 
 try:
     import pwmio
@@ -78,6 +80,17 @@ from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode
 
 from morse_map import groups, CC
+try:
+    from morse_map import Secret as _Secret   # v1.5+ morse_map: secrets resolved here
+except ImportError:
+    _Secret = None                           # older morse_map resolves its own secrets
+
+try:
+    import aesio                             # AES for PIN-locked macro_secrets.enc
+    _AES_OK = True
+except ImportError:
+    _AES_OK = False
+import gc
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 # All user-tunable settings live in config.py. Edit that file (not this one)
@@ -636,6 +649,17 @@ def _exec_command(cmd):
                         if _mouse_speed == MOUSE_SPEED_FAST
                         else MOUSE_SPEED_FAST)
 
+    elif verb == 'unlock':
+        if _SECRETS_ENC is None:
+            _last_action_set("NO PIN FILE")
+        elif not _secrets_locked:
+            _last_action_set("ALREADY UNLOCKED")
+        else:
+            _pin_start(None)
+
+    elif verb == 'lock':
+        _secrets_lock()
+
     elif verb == 'mreset':
         _mouse_speed    = MOUSE_SPEED_NORMAL
         _last_mouse_vec = (0, 0, 0)
@@ -646,7 +670,13 @@ def _exec_command(cmd):
             _drag_active = False
 
 
-_CMD_VERBS = {'group', 'mmove', 'mclick', 'mdrag', 'repeat', 'mslow', 'mfast', 'mreset'}
+def _last_action_set(text):
+    global _last_action
+    _last_action = text
+
+
+_CMD_VERBS = {'group', 'mmove', 'mclick', 'mdrag', 'repeat', 'mslow', 'mfast', 'mreset',
+              'unlock', 'lock'}
 
 # Human-friendly display labels for mouse commands — matches the
 # aeromorse_cheatsheet.htm substitutions so the OLED/TFT last-action
@@ -749,10 +779,265 @@ for _nm in _NO_REPEAT_NAMES:
         print(f"WARNING: NO_REPEAT_KEYS entry {_nm!r} is not a valid Keycode — ignored")
 
 
+# ── Secret macros (passwords) — plain or PIN-locked ─────────────────────────────
+#
+# morse_map.py marks private values with _secret('key', 'placeholder'), which
+# returns a Secret marker; the real value is looked up HERE when it is typed:
+#
+#   macro_secrets.enc  (made by the "AeroMorse Secrets" PC tool) — encrypted.
+#       Starts LOCKED at every power-up. Pressing a secret pattern while locked
+#       asks for the PIN: type it in Morse (Group 1 letters/digits), then ENTER.
+#       Right PIN -> unlocks and types the secret you asked for. Wrong PIN ->
+#       stays locked. ESC or BACKSPACE-on-empty cancels. Nothing typed during
+#       PIN entry is sent to the computer. `lock` locks again; power-off always
+#       does. Optional auto-lock: SECRETS_AUTOLOCK_MIN in config.py.
+#   macro_secrets.txt  — plain key=value lines, always available (no PIN).
+#
+# If both exist the .enc wins. A missing/unreadable file never stops the
+# device — secrets just type their placeholder. Secret VALUES are never shown
+# on the screen, the wireless display or the USB serial log — only "SECRET key".
+
+_ENC_MAGIC  = b"AMSEC1"
+_ENC_HEADER = 58          # magic 6 + rounds 4 + salt 16 + nonce 16 + check 16
+
+def _parse_secrets(text):
+    d = {}
+    for line in text.split("\n"):
+        line = line.strip().replace("\ufeff", "")
+        if not line or line[0] == "#" or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        k = k.strip()
+        if k:
+            d[k] = v.strip()
+    return d
+
+_SECRETS       = {}
+_SECRETS_ENC   = None     # raw bytes of macro_secrets.enc (None = no PIN lock)
+_secrets_locked = False
+if _Secret is not None:
+    try:
+        with open("/macro_secrets.enc", "rb") as _f:
+            _blob = _f.read()
+        if len(_blob) >= _ENC_HEADER and _blob[:6] == _ENC_MAGIC:
+            _SECRETS_ENC    = _blob
+            _secrets_locked = True
+            print("Secrets: macro_secrets.enc found — LOCKED until PIN is entered")
+        else:
+            print("Secrets: macro_secrets.enc is not a valid AeroMorse secrets file — ignored")
+        _blob = None
+    except OSError:
+        pass
+    try:
+        with open("/macro_secrets.txt") as _f:
+            _txt = _f.read()
+        if _SECRETS_ENC is None:
+            _SECRETS = _parse_secrets(_txt)
+        else:
+            print("Secrets: WARNING plain macro_secrets.txt is ALSO on the device — delete it (the .enc is used)")
+        _txt = None
+    except OSError:
+        pass
+    except Exception as _e:
+        print("Secrets: error reading macro_secrets.txt (%s)" % _e)
+    if _SECRETS_ENC is not None and not _AES_OK:
+        print("Secrets: this CircuitPython has no aesio — macro_secrets.enc can't be unlocked")
+    gc.collect()
+
+try:
+    _AUTOLOCK_S = float(SECRETS_AUTOLOCK_MIN) * 60
+except NameError:
+    _AUTOLOCK_S = 0       # older config.py: never auto-lock
+
+# SHA-256 in plain Python — CircuitPython's hashlib on the ESP32-S3 has no
+# sha256. Only a few blocks are hashed per unlock, so speed doesn't matter.
+_K256 = (
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2)
+
+def _sha256(data):
+    M = 0xFFFFFFFF
+    h = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+         0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]
+    n = len(data)
+    data = bytes(data) + b"\x80" + bytes((55 - n) % 64) + (n * 8).to_bytes(8, "big")
+    for off in range(0, len(data), 64):
+        w = [int.from_bytes(data[off + i * 4:off + i * 4 + 4], "big") for i in range(16)]
+        for i in range(16, 64):
+            x = w[i - 15]
+            y = w[i - 2]
+            s0 = ((x >> 7 | x << 25) ^ (x >> 18 | x << 14) ^ (x >> 3)) & M
+            s1 = ((y >> 17 | y << 15) ^ (y >> 19 | y << 13) ^ (y >> 10)) & M
+            w.append((w[i - 16] + s0 + w[i - 7] + s1) & M)
+        a, b, c, d, e, f, g, hh = h
+        for i in range(64):
+            S1 = ((e >> 6 | e << 26) ^ (e >> 11 | e << 21) ^ (e >> 25 | e << 7)) & M
+            t1 = (hh + S1 + ((e & f) ^ (~e & g)) + _K256[i] + w[i]) & M
+            S0 = ((a >> 2 | a << 30) ^ (a >> 13 | a << 19) ^ (a >> 22 | a << 10)) & M
+            t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) & M
+            hh, g, f, e, d, c, b, a = g, f, e, (d + t1) & M, c, b, a, (t1 + t2) & M
+        h = [(p + q) & M for p, q in zip(h, (a, b, c, d, e, f, g, hh))]
+    return b"".join(x.to_bytes(4, "big") for x in h)
+
+def _derive_keys(pin, salt, rounds):
+    """PIN -> (AES-256 key, 16-byte check). Must match aeromorse_secrets.py.
+    The AES chain is the deliberate slow part (~1.5 s) that makes guessing
+    PINs from a copied file expensive."""
+    k = bytearray(_sha256(b"AeroMorse secrets v1\x00" + salt + pin.encode("utf-8")))
+    o = bytearray(16)
+    z0 = bytes(16)
+    z1 = b"\x01" * 16
+    for _ in range(rounds):
+        c = aesio.AES(bytes(k), aesio.MODE_ECB)
+        c.encrypt_into(z0, o)
+        k[0:16] = o
+        c.encrypt_into(z1, o)
+        k[16:32] = o
+    k = bytes(k)
+    return _sha256(b"enc\x00" + k), _sha256(b"chk\x00" + k)[:16]
+
+def _decrypt_secrets(blob, pin):
+    """Return the secrets dict, or None if the PIN is wrong."""
+    rounds = int.from_bytes(blob[6:10], "big")
+    salt, nonce, chk = blob[10:26], blob[26:42], blob[42:58]
+    key, check = _derive_keys(pin, salt, rounds)
+    if check != chk:
+        return None
+    ct = blob[_ENC_HEADER:]
+    pt = bytearray(len(ct))
+    aesio.AES(key, aesio.MODE_CTR, nonce).decrypt_into(ct, pt)
+    return _parse_secrets(bytes(pt).decode("utf-8"))
+
+# PIN entry state
+_pin_active  = False
+_pin_buf     = []
+_pin_pending = None       # Secret to type once unlocked (None = plain `unlock`)
+_pin_last_t  = 0.0
+_PIN_TIMEOUT = 60         # s of no PIN input before entry is cancelled
+
+def _pin_start(pending):
+    global _pin_active, _pin_buf, _pin_pending, _pin_last_t, active_group, _last_action
+    if not _AES_OK:
+        _last_action = "NO AES - CANT UNLOCK"
+        return
+    _pin_active  = True
+    _pin_buf     = []
+    _pin_pending = pending
+    _pin_last_t  = time.monotonic()
+    _armed_mods.clear()
+    active_group = 1      # PIN is typed with the Group 1 letters / digits
+    _last_action = "ENTER PIN + ENTER"
+    print("Secrets LOCKED — type PIN in Morse, then ENTER (ESC cancels)")
+    _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
+
+def _pin_end(msg):
+    global _pin_active, _pin_buf, _pin_pending, _last_action
+    _pin_active  = False
+    _pin_buf     = []
+    _pin_pending = None
+    _last_action = msg
+    print(msg)
+
+def _pin_finish():
+    global _SECRETS, _secrets_locked, _last_action, _pin_buf
+    pin = "".join(_pin_buf).strip().lower()
+    _pin_buf = []
+    _last_action = "UNLOCKING..."
+    _update_display()
+    try:
+        result = _decrypt_secrets(_SECRETS_ENC, pin)
+    except Exception as e:
+        print("Secrets: unlock error (%s)" % e)
+        result = None
+    pin = None
+    gc.collect()
+    pending = _pin_pending
+    if result is None:
+        _pin_end("WRONG PIN")
+        _beep_notify(duration=0.4, freq=300)
+        return
+    _SECRETS        = result
+    _secrets_locked = False
+    _pin_end("UNLOCKED")
+    _beep_notify(duration=BEEP_GROUP_S, freq=CONFIRM_FREQ)
+    if pending is not None:
+        time.sleep(0.2)
+        _exec_secret(pending, "")
+
+def _pin_input(action):
+    """Called instead of execute() while the PIN is being typed. Nothing
+    reaches the computer; only letters/digits/punctuation are collected."""
+    global _pin_last_t, _last_action
+    _pin_last_t = time.monotonic()
+    if isinstance(action, str) and _is_command(action):
+        if action.split(' ')[0] == 'group':
+            _exec_command(action)          # still allowed (e.g. a strong sip/puff)
+        return
+    if action in (Keycode.ENTER, Keycode.KEYPAD_ENTER) or action == "\n":
+        _pin_finish()
+        return
+    if action == Keycode.ESCAPE or (action == Keycode.BACKSPACE and not _pin_buf):
+        _pin_end("PIN CANCELLED")
+        return
+    if action == Keycode.BACKSPACE:
+        _pin_buf.pop()
+    elif isinstance(action, str) and len(action) == 1 and action not in "\t":
+        _pin_buf.append(action)
+    else:
+        return                             # anything else: ignored, not sent
+    _beep_notify()
+    _last_action = ("PIN " + "*" * len(_pin_buf))[:20]
+
+def _secrets_lock(reason="LOCKED"):
+    global _SECRETS, _secrets_locked, _last_action
+    if _SECRETS_ENC is None:
+        _last_action = "NO PIN FILE"
+        return
+    _SECRETS        = {}
+    _secrets_locked = True
+    gc.collect()
+    _last_action = reason
+    print("Secrets: " + reason)
+
+def _exec_secret(sec, pattern):
+    global _last_action, _last_repeatable, _repeat_label, _last_mouse_vec, active_group
+    if _secrets_locked:
+        _pin_start(sec)
+        return
+    value = _SECRETS.get(sec.key)
+    if value is None:
+        value = sec.placeholder
+        label = f'"{value[:16]}"'
+    else:
+        label = f"SECRET {sec.key}"
+    _last_action     = label[:20]
+    _last_repeatable = None               # never auto-repeat a password
+    _repeat_label    = ""
+    _last_mouse_vec  = (0, 0, 0)
+    print(f"{pattern}  {label}")
+    _exec_text(value)
+    _beep_notify()
+    if active_group == 3:                                   # auto-return after macro
+        active_group = 1
+        print(f"GROUP -> 1 ({_GROUP_NAMES[1]})  [auto-return from Macro]")
+
+
 def execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
     global _repeat_label
+    if _pin_active:
+        _pin_input(action)
+        return
+    if _Secret is not None and isinstance(action, _Secret):
+        _exec_secret(action, pattern)
+        return
     if isinstance(action, CC):
         label = _CC_NAMES.get(action.code, f"CC {action.code}")
         _last_action     = label[:20]
@@ -984,6 +1269,10 @@ def _update_display(pressure=0.0):
         _pieces.append("RPT")
     if _drag_active:
         _pieces.append("DRAG")
+    if _pin_active:
+        _pieces.append("PIN")
+    elif _SECRETS_ENC is not None and not _secrets_locked:
+        _pieces.append("UNLOCKED")        # reminder: secrets are open
     mods_str = " ".join(_pieces) if _pieces else " "
 
     if _USE_DISPLAY:
@@ -1038,7 +1327,11 @@ def _update_display(pressure=0.0):
                         _bar_bmp[x, y] = v
                 _last_bar_fill = fill_px
 
-    # Mirror to wireless OLED (no-op if ESP-NOW not initialised).
+    # Mirror to wireless OLED (no-op if ESP-NOW not initialised). While a PIN is
+    # being typed the dots/dashes are hidden there — the remote screen may be
+    # visible to others; the local screen keeps them so you can see your input.
+    if _pin_active:
+        buf_str = "*" * _num_shifts if _num_shifts else " "
     _espnow_send(group_str, buf_str, action_str, mods_str)
 
 # ── Main loop ──────────────────────────────────────────────────────────────────
@@ -1276,6 +1569,13 @@ while True:
 
     elif _mouse_repeating:
         _mouse_repeat_tick()
+
+    # ── Secrets: PIN-entry timeout and optional auto-lock ───────────────────
+    if _pin_active and now - _pin_last_t > _PIN_TIMEOUT:
+        _pin_end("PIN TIMED OUT")
+    elif (_AUTOLOCK_S and not _secrets_locked and _SECRETS_ENC is not None
+          and _last_state == IDLE and now - _last_trans_at > _AUTOLOCK_S):
+        _secrets_lock("AUTO-LOCKED")
 
     # ── Display refresh (capped at 10 Hz) ───────────────────────────────────
     if now - _last_display >= _DISPLAY_RATE:

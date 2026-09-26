@@ -576,7 +576,9 @@ so a shared copy of `morse_map.py` never leaks them:
 | `.`    | E | `email`     — `_secret('email', …)` |
 | `.--.` | P | `password1` — `_secret('password1', …)` |
 | `.--`  | W | `wifi`      — `_secret('wifi', …)` |
-| All other letters (D, F–O, Q–V, X–Z) | | `'phrase'` placeholder — fill in your own |
+| `..-`  | U | `unlock` — type your PIN to unlock PIN-locked secrets ([details](#pin-locked-secrets-macro_secretsenc)) |
+| `.-..` | L | `lock` — lock PIN-locked secrets again |
+| All other letters (D, F–K, M–O, Q–T, V, X–Z) | | `'phrase'` placeholder — fill in your own |
 
 Digits `0`–`9` type the number; `.-.-` = Enter, `--` = Backspace.
 
@@ -904,6 +906,56 @@ g6[4][0b0110] = _secret('bank_login', '(set bank_login in macro_secrets.txt)')  
 > git and one-file sharing; a full-drive copy still needs that one
 > manual step.
 
+#### PIN-locked secrets (`macro_secrets.enc`)
+
+`macro_secrets.txt` is plain text: anyone who plugs the device into a
+computer can open it. From **v1.5** you can instead keep your secrets
+**encrypted**, like a password manager, and unlock them with a PIN you
+type in Morse.
+
+**Set it up (on your PC):**
+1. Double-click **`AeroMorse Secrets.exe`** in your edit folder (or run
+   `python aeromorse_secrets.py`). It opens the secrets in that folder —
+   your existing `macro_secrets.txt` is imported automatically.
+2. Edit the `key=value` lines (same rules as above), type a **PIN** twice,
+   and click **Save (encrypt)**. This writes `macro_secrets.enc` and offers
+   to delete the plain `macro_secrets.txt` (recommended). It also warns you
+   about any `_secret()` key in `morse_map.py` that has no value.
+3. Click **Copy to device**. It copies the file to the CIRCUITPY drive and
+   offers to delete the plain `macro_secrets.txt` there too.
+
+**Use it (on the device):**
+- The device starts **locked** at every power-up.
+- Use any secret pattern (e.g. Macro `P`) and the screen shows
+  **ENTER PIN + ENTER**. Type the PIN with the normal **Group 1**
+  letters/digits, then **Enter** (`.-.-`). The screen shows `PIN ****`;
+  **nothing you type while entering the PIN reaches the computer**.
+- Right PIN → **UNLOCKED** (about 1.5 s) and it types the secret you asked
+  for. The status line shows `UNLOCKED` while secrets are open.
+- Wrong PIN → **WRONG PIN**, stays locked; just use the pattern again.
+- **Esc**, or **Backspace** with nothing typed, cancels. Entry also
+  cancels itself after 60 s of no input.
+- Macro **`U`** (`..-`) unlocks without typing anything; Macro **`L`**
+  (`.-..`) locks again. Unplugging or restarting always locks.
+- Optional idle auto-lock: `SECRETS_AUTOLOCK_MIN` in `config.py`
+  (0 = off).
+
+**Good to know:**
+- The PIN is **not case-sensitive**. Use **8 or more** letters/digits: the
+  file is strongly encrypted, but a short PIN could be guessed by someone
+  who copies the file and tries PINs on a computer.
+- **Forgot the PIN?** Only the secrets are affected — keyboard, mouse and
+  everything else keep working. Make a new file with the tool.
+- Secret values are never shown on the screen, the wireless display or the
+  USB log — only `SECRET name`. (Before v1.5 the first 16 characters were
+  shown.) While a PIN is typed, the wireless display shows `*` instead of
+  dots and dashes.
+- If both files are on the device, the encrypted one is used and the USB log
+  warns that the plain file should be deleted; the validator warns too.
+- Needs CircuitPython's built-in `aesio` module (present on the ESP32-S3
+  Feathers). `morse_map.py`, `code.py`, `config.py` and `boot.py` must all be
+  **v1.5 or later**.
+
 ### Changing a Mouse Move Step
 
 ```python
@@ -923,6 +975,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
 | `macro_secrets.example.txt` | Template for your **private** secret macros (passwords, personal details). Copy to `macro_secrets.txt` on CIRCUITPY and fill in `key=value` lines — see *Storing passwords and secrets safely* above. |
 | `macro_secrets.txt` | **Your real passwords / secrets — never share, never committed** (git-ignored). Plain `key=value` lines. Created by you from the `.example` template. If absent or a line is bad, that secret macro just types a placeholder. |
+| `macro_secrets.enc` | **Optional, recommended instead of `macro_secrets.txt`** — the same secrets **encrypted**, unlocked with a PIN typed in Morse. Made with `AeroMorse Secrets.exe` (git-ignored). See [PIN-locked secrets](#pin-locked-secrets-macro_secretsenc). |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
 | `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
@@ -947,6 +1000,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `aeromorse_cheatsheet.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |
 | `KEYCODE_REFERENCE.md` / `keycode_reference.htm` / `AeroMorse — Keycode Reference.pdf` | Reference of every valid `Keycode.NAME` for `morse_map.py` (letters, number keys, navigation, punctuation, F-keys, keypad, modifiers), plus how to produce shifted symbols (`:` `{` `}` …). The `.pdf` is the ready-to-print 2-page sheet; the `.htm` is the same styled for the browser; the `.md` opens in the Markdown viewer. Extracted from the `adafruit_hid` 9.x library on the devices. |
 | `aeromorse_validator.py` / `aeromorse_validator.exe` | **Safety check — run this before trusting edited device files on the device.** Checks every required file the device needs to boot: **`boot.py`, `code.py`, `config.py`, `morse_map.py`** (plus optional `macro_secrets.txt`). For each it catches the things CircuitPython is fussy about that desktop editors hide: a **UTF-8 BOM** (the classic "lost all access" cause) and a Python **syntax error**. For `config.py` and `morse_map.py` it also reproduces the device's actual import (catching an **import error**), sanity-checks `config.py` settings (missing settings, out-of-range values), and confirms every `_secret()` pattern finds its value in `macro_secrets.txt`. Reports a plain-language **PASS** (safe) or **FAIL** (fix before relying on it — don't replace your working files yet), pointing at the exact line. A file that isn't in the folder shows **SKIP**, not FAIL. **Never prints secret values** — key names and counts only. Put it in the same folder as the file(s) you edited and double-click the `.exe`, or run `python aeromorse_validator.py`. Accepts an optional folder/file argument (e.g. `aeromorse_validator.exe F:\`) to check the device directly. |
+| `aeromorse_secrets.py` / `AeroMorse Secrets.exe` | **Edit your passwords and save them PIN-locked.** Opens `macro_secrets.enc` (asks the PIN) or imports `macro_secrets.txt`, lets you edit the `key=value` lines, saves them encrypted with a PIN you choose, warns about `_secret()` keys in `morse_map.py` with no value, and can copy the file to the CIRCUITPY drive and remove the plain-text file. See [PIN-locked secrets](#pin-locked-secrets-macro_secretsenc). The `.py` needs `pip install cryptography`; the `.exe` needs nothing. |
+| `Edit my AeroMorse secrets.bat` | **One-click** launcher for AeroMorse Secrets. Keep it in your edit folder next to `AeroMorse Secrets.exe` and `morse_map.py`; double-click it to open the secrets in that folder. |
 | `Check my AeroMorse files.bat` | **One-click** wrapper for the validator. Keep it in your edit folder next to `aeromorse_validator.exe` and the files you edited (`boot.py`, `code.py`, `config.py`, `morse_map.py`, `macro_secrets.txt`); double-click it to run the safety check on that folder and see PASS/FAIL. |
 | `build_pdfs.py` / `Build PDFs.bat` | **Regenerate the three printable PDFs** (`AEROMORSE_BUILD_GUIDE.pdf`, `AeroMorse Cheat Sheet.pdf`, `AeroMorse — Keycode Reference.pdf`) from their sources. Double-click `Build PDFs.bat` after editing the Build Guide, cheat sheet, `morse_map.py`, or the Keycode reference. Rebuilds all three; add `guide`, `cheatsheet`, or `keycode` to rebuild just one. Needs Microsoft Edge and Python. |
 | `morse_map_analyzer.py` | Python 3 script that reads `morse_map.py` and reports duplicate codes, conflicts with the always-on Group 0 patterns, and unused code slots for lengths 2–7. Run with `python morse_map_analyzer.py`; output is saved to `morse_map_report.txt`. |

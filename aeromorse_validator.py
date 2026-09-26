@@ -14,6 +14,9 @@ It checks every required file the device needs to boot and run:
     config.py     - BOM + syntax + imports cleanly + settings sanity
     morse_map.py  - BOM + syntax + imports cleanly + groups build + secrets
     macro_secrets.txt (optional) - parses, and every _secret() key resolves
+    macro_secrets.enc (optional) - is a valid PIN-locked secrets file (its
+                                   contents can't be read without the PIN; the
+                                   AeroMorse Secrets tool checks key names on Save)
 
 For config.py and morse_map.py it reproduces exactly what the device does when
 it powers up and imports them. For all files it also catches the things
@@ -93,6 +96,7 @@ CONFIG_PATH    = os.path.join(_BASE, 'config.py')
 BOOT_PATH      = os.path.join(_BASE, 'boot.py')
 CODE_PATH      = os.path.join(_BASE, 'code.py')
 SECRETS_PATH   = os.path.join(_BASE, 'macro_secrets.txt')
+SECRETS_ENC_PATH = os.path.join(_BASE, 'macro_secrets.enc')
 
 # Files whose presence we probe for the "nothing to check" guard.
 _ALL_PATHS = (MORSE_MAP_PATH, CONFIG_PATH, BOOT_PATH, CODE_PATH)
@@ -328,11 +332,44 @@ def check_import():
 def _secret_keys_used():
     """All keys referenced by _secret('key', ...) in morse_map.py — names only."""
     src = open(MORSE_MAP_PATH, 'r', encoding='utf-8-sig').read()
-    return re.findall(r"_secret\(\s*['\"]([^'\"]+)['\"]", src)
+    code = '\n'.join(line.split('#', 1)[0] for line in src.split('\n'))   # skip comments
+    return re.findall(r"_secret\(\s*['\"]([^'\"]+)['\"]", code)
+
+def _parse_secret_names(raw):
+    """Key names from macro_secrets.txt, parsed like the device does (values discarded)."""
+    names = set()
+    for line in io.StringIO(raw.decode('utf-8-sig', 'replace')):
+        s = line.strip().replace('\ufeff', '')
+        if s and s[0] != '#' and '=' in s:
+            k = s.split('=', 1)[0].strip()
+            if k:
+                names.add(k)
+    return names
 
 def check_secrets(m):
     used = _secret_keys_used()
     have_file = os.path.exists(SECRETS_PATH)
+
+    if os.path.exists(SECRETS_ENC_PATH):
+        blob = open(SECRETS_ENC_PATH, 'rb').read()
+        if len(blob) < 58 or blob[:6] != b'AMSEC1':
+            warn("macro_secrets.enc is not a valid AeroMorse secrets file, so the device "
+                 "ignores it and every secret types its placeholder. (This does not crash "
+                 "the device.) FIX: re-save it with the AeroMorse Secrets tool.")
+            return check_warn('macro_secrets.enc: valid file', False, 'not an AeroMorse secrets file')
+        if not hasattr(m, 'Secret'):
+            warn("macro_secrets.enc is here but this morse_map.py is older than v1.5, so it "
+                 "can't use the PIN-locked file (secrets will type their placeholder). FIX: "
+                 "update the top 'Secret macros' block of morse_map.py from the v1.5 repo copy.")
+            return check_warn('macro_secrets.enc: valid file', False, 'morse_map.py too old for .enc')
+        if have_file:
+            warn("BOTH macro_secrets.enc and a plain macro_secrets.txt are here. The device "
+                 "uses the encrypted file, but the plain one can still be read by anyone. "
+                 "FIX: delete macro_secrets.txt.")
+            return check_warn('macro_secrets.enc: valid file', False, 'plain macro_secrets.txt still present')
+        return check_warn('macro_secrets.enc: valid file', True,
+                          'PIN-locked; %d _secret() pattern(s) - key names are checked by '
+                          'AeroMorse Secrets when you save' % len(set(used)))
 
     # Report malformed lines in the secrets file (the loader skips them).
     bad_lines = 0
@@ -350,9 +387,9 @@ def check_secrets(m):
                 warn("macro_secrets.txt line %d has no '=' and will be ignored "
                      "(each entry must be  key=value)." % i)
 
-    # What actually loaded (names only — SECRETS values are never printed).
-    loaded = getattr(m, 'SECRETS', {}) or {}
-    loaded_names = sorted(loaded.keys())
+    # Key names only — secret values are never kept or printed.
+    loaded = _parse_secret_names(open(SECRETS_PATH, 'rb').read()) if have_file else set()
+    loaded_names = sorted(loaded)
 
     if not used:
         # No _secret() patterns at all - nothing to resolve.
@@ -580,7 +617,7 @@ def check_config_settings(c):
               "DEBOUNCE_SAMPLES POINTS_TO_AVERAGE BASELINE_DRIFT_S ONE_SWITCH_DOT_MS "
               "DOT_REPEAT_MS DASH_REPEAT_MS CODE_REPEAT_MAX MOUSE_SPEED_NORMAL "
               "MOUSE_SPEED_SLOW MOUSE_SPEED_FAST MOUSE_SPEED_FACTOR ACCEPT_DELAY "
-              "MOUSE_ACCEPT_DELAY "
+              "MOUSE_ACCEPT_DELAY SECRETS_AUTOLOCK_MIN "
               "LONG_PRESS MOUSE_REPEAT_DELAY MOUSE_CLICK_MOD_DELAY MOUSE_CLICK_HOLD "
               "MOUSE_CLICK_GAP BEEP_DOT_FREQ BEEP_DASH_FREQ CONFIRM_FREQ GROUP_FREQ "
               "BEEP_CONFIRM_S BEEP_GROUP_S ESPNOW_CHANNEL DISPLAY_ROTATION").split():
@@ -744,7 +781,7 @@ def main():
     print('=' * 68)
     print('  AeroMorse  -  Device File Safety Validator')
     print('  Checks the required files before you trust them on the device:')
-    print('  boot.py, code.py, config.py, morse_map.py (+ macro_secrets.txt)')
+    print('  boot.py, code.py, config.py, morse_map.py (+ macro_secrets .txt/.enc)')
     print('  %s' % date.today())
     print('  Folder: %s' % _BASE)
     print('=' * 68)

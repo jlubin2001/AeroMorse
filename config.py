@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.4 (released 2026-09-26)
+# AeroMorse config.py — version 1.5 (released 2026-09-26)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -125,6 +125,14 @@ MOUSE_CLICK_GAP  = 0.040       # s between the two clicks of a double-click
 # don't want to repeat, e.g. "HOME", "END", "ESCAPE", "TAB". Arrow keys are
 # intentionally NOT here — arrow + repeat is the preferred way to scroll.
 NO_REPEAT_KEYS = ("PAGE_UP", "PAGE_DOWN")
+
+
+# ── SECRETS — PIN-locked passwords (macro_secrets.enc) ────────────────────
+# Only used when macro_secrets.enc (made with the AeroMorse Secrets PC tool) is
+# on the device. It is always locked at power-up; this adds an idle auto-lock.
+
+SECRETS_AUTOLOCK_MIN = 0       # minutes with no sip/puff before secrets re-lock;
+                               # 0 = stay unlocked until power-off or `lock` (Macro L)
 
 
 # ── DISPLAY / WIRELESS ────────────────────────────────────────────────────

@@ -31,6 +31,7 @@ boot_out.txt
 # (The committed template is macro_secrets.example.py; the real file is not.)
 macro_secrets.py
 macro_secrets.txt
+macro_secrets.enc
 # PyInstaller build artifacts
 build/
 *.spec

@@ -1683,7 +1683,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.4 (released 2026-09-26)`. Open the file
+> `AeroMorse code.py — version 1.5 (released 2026-09-26)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1984,6 +1984,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | Setting | Shipped | Hint |
 |---------|---------|------|
 | `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that never auto-repeat. Add e.g. `"HOME"`, `"END"`. Arrows deliberately omitted |
+| `SECRETS_AUTOLOCK_MIN` | `0` | Only matters with a PIN-locked `macro_secrets.enc` (see README *PIN-locked secrets*). Minutes with no sip/puff before unlocked secrets lock again. `0` = stay unlocked until power-off or Macro `L` (`lock`). Secrets are always locked at power-up |
 
 **Display / wireless**
 
