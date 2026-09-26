@@ -153,6 +153,14 @@ def run_gui(folder):
     tk.Label(pinf, text="Confirm PIN:", font=font).grid(row=1, column=0, sticky="e")
     pin2 = tk.Entry(pinf, show="*", font=font, width=24)
     pin2.grid(row=1, column=1, padx=6, pady=2, sticky="w")
+    show_var = tk.BooleanVar(value=False)
+
+    def toggle_show():
+        ch = "" if show_var.get() else "*"
+        pin1.config(show=ch)
+        pin2.config(show=ch)
+    tk.Checkbutton(pinf, text="Show PIN", font=font, variable=show_var,
+                   command=toggle_show).grid(row=0, column=2, padx=10, sticky="w")
     tk.Label(root, font=("Segoe UI", 10), fg="#444", justify="left",
              text="Letters and digits you can type in Group 1. Not case-sensitive. "
                   "8 or more characters recommended.\n"
@@ -161,6 +169,36 @@ def run_gui(folder):
 
     status = tk.StringVar()
     tk.Label(root, textvariable=status, font=font, fg="#0a5", anchor="w").pack(fill="x", padx=10, pady=(6, 0))
+
+    def ask_pin(prompt):
+        """PIN dialog with a Show PIN checkbox. Returns the text, or None if cancelled."""
+        dlg = tk.Toplevel(root)
+        dlg.title("AeroMorse Secrets")
+        dlg.transient(root)
+        dlg.resizable(False, False)
+        result = {"pin": None}
+        tk.Label(dlg, text=prompt, font=font).pack(anchor="w", padx=12, pady=(12, 4))
+        ent = tk.Entry(dlg, show="*", font=font, width=28)
+        ent.pack(padx=12, fill="x")
+        sv = tk.BooleanVar(value=show_var.get())
+        ent.config(show="" if sv.get() else "*")
+        tk.Checkbutton(dlg, text="Show PIN", font=font, variable=sv,
+                       command=lambda: ent.config(show="" if sv.get() else "*")
+                       ).pack(anchor="w", padx=12, pady=4)
+
+        def ok(_e=None):
+            result["pin"] = ent.get()
+            dlg.destroy()
+        bf = tk.Frame(dlg)
+        bf.pack(pady=(4, 12))
+        tk.Button(bf, text="OK", font=font, width=8, command=ok).pack(side="left", padx=4)
+        tk.Button(bf, text="Cancel", font=font, width=8, command=dlg.destroy).pack(side="left", padx=4)
+        dlg.bind("<Return>", ok)
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
+        ent.focus_set()
+        dlg.grab_set()
+        root.wait_window(dlg)
+        return result["pin"]
 
     def set_text(s):
         txt.delete("1.0", "end")
@@ -176,8 +214,7 @@ def run_gui(folder):
         if os.path.exists(enc):
             blob = open(enc, "rb").read()
             while True:
-                pin = simpledialog.askstring("AeroMorse Secrets",
-                                             "Enter the PIN for macro_secrets.enc:", show="*", parent=root)
+                pin = ask_pin("Enter the PIN for macro_secrets.enc:")
                 if pin is None:
                     set_text("")
                     status.set("Not opened. Choose another folder, or type new secrets and save with a new PIN.")
