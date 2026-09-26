@@ -131,10 +131,24 @@ serial chip that cannot emulate a keyboard. Those boards will not work.
 
 ### BLE HID note — CircuitPython 10.x
 
-**The chip is fine — the BLE limits were in CircuitPython, and 10.x resolves
-them.** The ESP32-S3 fully supports Bluetooth LE. BLE HID was unreliable in
-CircuitPython 9.x because of two firmware bugs (issues #9430 and #9669), fixed
-in late 2024 and carried through CircuitPython 10.x.
+**The chip supports it, but CircuitPython's BLE keyboard support on the
+ESP32-S3 is still not reliable — tested, see below.** The ESP32-S3 hardware
+fully supports Bluetooth LE; the problems are in CircuitPython's ESP32 BLE
+code. Several were fixed (issues #9430, #9669, and #10739, the last marked
+fixed in 10.3.0), but on CircuitPython 10.3.1 a BLE keyboard still does not
+stay connected to an Android phone.
+
+> **Tested 2026-09-26** — #5691 with TinyUF2 0.35.0 + CircuitPython 10.3.1,
+> host a Samsung Galaxy A15 (Android), using `test_ble.py` from this repo:
+> - The board advertises and the phone pairs (`paired=True`).
+> - The link then **drops about 6.5 s after every connection**, and every
+>   reconnect starts **unpaired** again — the board doesn't keep the pairing —
+>   so it loops connect → pair → drop.
+>
+> **Result: not usable yet.** An iPad or Windows host has not been tested.
+> Run `test_ble.py` to check a newer CircuitPython or a different host. For a
+> phone or tablet today, use a **USB-C cable** — AeroMorse works as a wired
+> keyboard/mouse.
 
 **4 MB flash boards include BLE on 10.x.** Earlier builds sometimes left the
 BLE stack out of 4 MB firmware images to save space. As of **CircuitPython
@@ -151,11 +165,11 @@ BLE stack out of 4 MB firmware images to save space. As of **CircuitPython
   TinyUF2 bootloader first, then flash 10.x.
 - **Use the matching 10.x library bundle** in `lib/`.
 
-**AeroMorse status:** `code.py` currently sends **USB HID only** — BLE HID
-(pairing with a phone or iPad) is not implemented yet. Running the ESP-NOW
-wireless display and BLE at the same time shares one 2.4 GHz radio and has not
-been tested in CircuitPython. Note that iPads and phones with USB-C already
-accept AeroMorse as a **wired** USB keyboard/mouse today.
+**AeroMorse status:** `code.py` sends **USB HID only**. BLE HID (pairing with
+a phone or iPad) is not implemented, and won't be until the CircuitPython
+problem above is resolved. Running the ESP-NOW wireless display and BLE at the
+same time shares one 2.4 GHz radio and has not been tested either. iPads and
+phones with USB-C already accept AeroMorse as a **wired** USB keyboard/mouse.
 
 ---
 
@@ -169,8 +183,9 @@ accept AeroMorse as a **wired** USB keyboard/mouse today.
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
 
 ※ BLE is included in CircuitPython 10.3.1 for these boards (needs 10.x and a
-bootloader that can flash it — see the BLE HID note above). AeroMorse firmware
-does not use BLE yet. The ESP32-S2 (#5300) has no Bluetooth hardware.
+bootloader that can flash it), but a BLE keyboard does **not** stay connected
+reliably yet — see the tested result in the BLE HID note above. AeroMorse
+firmware does not use BLE. The ESP32-S2 (#5300) has no Bluetooth hardware.
 
 ### Metro form factor boards
 
@@ -269,10 +284,10 @@ https://www.adafruit.com/product/5477
 **If you want the most memory (Metro form factor):**
 
 The **Metro ESP32-S3 #5500** has the most memory in this guide (8 MB PSRAM,
-16 MB flash). Like the Feathers above, it supports USB HID and — on
-CircuitPython 10.x — BLE. (BLE HID lets you control a phone, iPad, or PC
-without a USB cable, but AeroMorse firmware does not implement it yet; see the
-BLE HID note in §3.)
+16 MB flash). Like the Feathers above, it supports USB HID and includes BLE on
+CircuitPython 10.x. The extra memory does not fix the BLE keyboard problem —
+that's in CircuitPython's ESP32 BLE code (see the tested result in the BLE HID
+note in §3), and AeroMorse firmware does not use BLE.
 
 The #5500 has no built-in display — connect the STEMMA QT OLED or a standalone
 TFT breakout. The ESP-NOW wireless display (Section 5) works on it identically
@@ -300,7 +315,7 @@ fits comfortably.
 |---------|--------|
 | Simplest build, colour TFT included, USB only | #5691 Reverse TFT Feather |
 | Same but screen faces up | #5483 TFT Feather |
-| BLE HID (in addition to USB HID) | Any ESP32-S3 board above on CircuitPython 10.x — **AeroMorse BLE firmware not written yet** |
+| BLE HID (in addition to USB HID) | **Not reliable yet** on ESP32-S3 / CircuitPython (see the BLE HID note in §3) — use a USB-C cable to phones/tablets for now |
 | Most memory (8 MB PSRAM) | #5500 Metro ESP32-S3 |
 
 ---

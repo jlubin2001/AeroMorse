@@ -937,6 +937,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `morse_map_analyzer.py` | Python 3 script that reads `morse_map.py` and reports duplicate codes, conflicts with the always-on Group 0 patterns, and unused code slots for lengths 2–7. Run with `python morse_map_analyzer.py`; output is saved to `morse_map_report.txt`. |
 | `morse_map_report.txt` | Latest output from `morse_map_analyzer.py` |
 | `test_pressure.py` | Diagnostic script — copy to CIRCUITPY; press Ctrl-C to reach the `>>>` REPL prompt (do **not** reset — that re-runs `code.py`), then `import test_pressure`. To run again: `exec(open('test_pressure.py').read())` (`importlib` is not available in CircuitPython). Prints a live pressure-delta bar chart for 30 s and suggests `THRESH_SIP` / `THRESH_PUFF` values for `config.py`. |
+| `test_ble.py` | **Bluetooth keyboard test** (CircuitPython 10.x, needs `adafruit_ble/` in `lib/`). Copy to CIRCUITPY, stop `code.py` (Ctrl-C, then Enter for `>>>`), and run `import test_ble`. It advertises as "AeroMorse Blue"; pair from the phone's Bluetooth settings and it types a few test lines, printing whether it connected, paired, and stayed connected. Doesn't touch `code.py`. **On ESP32-S3 + CircuitPython 10.3.1 a BLE keyboard does not stay connected yet** — see Build Guide §3 BLE HID note. |
 
 ---
 
