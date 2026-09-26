@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.3   (released 2026-09-23)
+#  AeroMorse code.py   —   version 1.4   (released 2026-09-26)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -115,7 +115,14 @@ except Exception as _ex:
     _CC_AVAILABLE = False
     print(f"WARNING: ConsumerControl HID not available ({_ex}) — CC codes will no-op. Re-flash boot.py with usb_hid.Device.CONSUMER_CONTROL enabled.")
 
-i2c = board.STEMMA_I2C()
+# Sensor bus. Boards with a STEMMA QT socket expose board.STEMMA_I2C(); boards
+# without one (e.g. the nRF52840 Feather) only have board.I2C() on the SDA/SCL
+# pins — wire the sensor there instead.
+try:
+    i2c = board.STEMMA_I2C()
+except AttributeError:
+    i2c = board.I2C()
+    print("No STEMMA QT port on this board — using board.I2C() on SDA/SCL")
 
 if USE_SENSOR and not _LPS_AVAILABLE:
     print("adafruit_lps35hw missing — switching to USE_SENSOR = False")
