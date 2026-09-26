@@ -126,7 +126,8 @@ def run_gui(folder):
 
     root = tk.Tk()
     root.title("AeroMorse Secrets")
-    root.geometry("760x600")
+    root.geometry("760x640")
+    root.minsize(640, 520)
     font = ("Segoe UI", 12)
     mono = ("Consolas", 12)
     state = {"folder": folder, "pin": None}
@@ -152,10 +153,11 @@ def run_gui(folder):
     tk.Label(pinf, text="Confirm PIN:", font=font).grid(row=1, column=0, sticky="e")
     pin2 = tk.Entry(pinf, show="*", font=font, width=24)
     pin2.grid(row=1, column=1, padx=6, pady=2, sticky="w")
-    tk.Label(pinf, font=("Segoe UI", 10), fg="#444", justify="left",
-             text="Letters and digits you can type in Group 1. Not case-sensitive.\n"
-                  "8 or more characters recommended. Leave blank to keep the current PIN."
-             ).grid(row=0, column=2, rowspan=2, padx=10, sticky="w")
+    tk.Label(root, font=("Segoe UI", 10), fg="#444", justify="left",
+             text="Letters and digits you can type in Group 1. Not case-sensitive. "
+                  "8 or more characters recommended.\n"
+                  "Leave both blank to keep the current PIN."
+             ).pack(anchor="w", padx=10, pady=(2, 0))
 
     status = tk.StringVar()
     tk.Label(root, textvariable=status, font=font, fg="#0a5", anchor="w").pack(fill="x", padx=10, pady=(6, 0))
