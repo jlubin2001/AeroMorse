@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.7   (released 2026-09-27)
+#  AeroMorse code.py   —   version 1.8   (released 2026-09-27)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -1279,11 +1279,33 @@ _MOD_NAMES = {
     Keycode.LEFT_GUI:      "Win",   Keycode.RIGHT_GUI:     "RWin",
 }
 
+# Start-up screen: the device name (config.py DEVICE_NAME) and firmware version
+# until the first sip / puff / switch press, then the normal group display.
+# The version is read from this file's own header line, so it can't go stale.
+try:
+    _SPLASH_NAME = str(DEVICE_NAME).strip()[:20] or "AeroMorse"
+except NameError:
+    _SPLASH_NAME = "AeroMorse"   # older config.py without DEVICE_NAME
+_SPLASH_VERSION = ""
+try:
+    with open("/code.py") as _f:
+        _head = _f.read(600)
+    _i = _head.find("version ")
+    if _i >= 0:
+        _SPLASH_VERSION = "v" + _head[_i + 8:].split()[0]
+    _head = None
+except Exception:
+    pass
+_show_splash = True
+
 def _update_display(pressure=0.0):
     # Build strings first so they can be shared with the wireless display.
     group_str  = f"[ {_GROUP_NAMES[active_group]} ]"
     buf_str    = _pending_to_str(_num_shifts, _pending_char)
     action_str = _last_action[:20] if _last_action else " "
+    if _show_splash:
+        group_str  = _SPLASH_NAME
+        action_str = _SPLASH_VERSION or " "
 
     # Build the status line by concatenating whatever is active. Previously
     # this was an if/elif chain, which meant DRAG stayed invisible whenever
@@ -1309,7 +1331,7 @@ def _update_display(pressure=0.0):
     if _USE_DISPLAY:
         # Update the local TFT.
         _lbl_group.text  = group_str
-        _lbl_group.color = _GROUP_COLORS[active_group]
+        _lbl_group.color = 0xFFFFFF if _show_splash else _GROUP_COLORS[active_group]
         _lbl_buf.text    = buf_str
         # Split a leading "RPT " off the action line so the RPT flag renders in
         # ORANGE (via the dedicated _lbl_rpt tag) while the repeated action name
@@ -1474,6 +1496,7 @@ while True:
         elif _last_state == IDLE:
             # IDLE → DIT/DAH: record when the press started, begin sidetone,
             # reset the code-repeat stream counter and strong-press tracking
+            _show_splash    = False       # first input ends the start-up screen
             _press_start    = now
             _stream_count   = 0
             _peak_delta     = 0.0

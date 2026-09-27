@@ -677,6 +677,11 @@ The 240 × 135 px display shows four text rows and a pressure bar:
 | 4 | Status: armed modifiers, or SLOW / FAST / RPT / DRAG | Orange |
 | Bar | Pressure level — green for puff, red for sip | Green / Red |
 
+**At start-up** row 1 shows the device's name (`DEVICE_NAME` in `config.py`,
+e.g. `AeroMorse Green`) in white and row 3 the firmware version (e.g. `v1.8`),
+so you can see at a glance which device it is and whether it's up to date. The
+first sip, puff or switch press switches to the normal display above.
+
 > **No screen on your board?** Set `USE_DISPLAY = False` in `config.py`. The
 > device then skips this local display but keeps typing over USB and keeps
 > broadcasting these same four rows to a wireless receiver (see
@@ -790,6 +795,7 @@ explaining what it does. The same Key Settings table also appears in
 
 | Constant | Default | Effect |
 |----------|---------|--------|
+| `DEVICE_NAME` | `"AeroMorse"` | Name the computer shows for this device over USB (e.g. `"AeroMorse Green"` in Windows *Bluetooth & devices*, instead of "Feather ESP32-S3 Reverse TFT"), also shown on the screen at start-up. Up to 40 plain characters, in quotes. Applies after an unplug/replug. (It sits at the top of `config.py`.) |
 | `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender): the device still types over USB and still broadcasts to a wireless receiver — only the local screen is skipped. A missing `board.DISPLAY` is also **auto-detected**, so a screenless board won't crash even if this is left `True` |
 | `DISPLAY_ROTATION` | `0` | Display orientation in degrees — `0` = USB on left, `180` = USB on right; also `90`, `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
