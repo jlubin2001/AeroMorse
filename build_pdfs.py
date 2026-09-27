@@ -8,7 +8,8 @@ build_pdfs.py — regenerate the three AeroMorse printables from their sources.
 
 Run it after editing any of those sources (double-click Build PDFs.bat, or
 `python build_pdfs.py`). Pass one of  guide | cheatsheet | keycode  to rebuild
-just one. Needs Microsoft Edge (for headless PDF printing) and the `markdown`
+just one. `python build_pdfs.py --folder <dir>` prints a PERSONAL cheat sheet
+from the morse_map.py in <dir> (see "Build my cheat sheet.bat"). Needs Microsoft Edge (for headless PDF printing) and the `markdown`
 package (auto-installed on first run if missing).
 
 Nothing here is loaded on the device — these are PC-side documents.
@@ -127,7 +128,29 @@ def build_keycode():
 
 TARGETS = {"guide": build_guide, "cheatsheet": build_cheatsheet, "keycode": build_keycode}
 
+def build_my_cheatsheet(folder):
+    """Personal cheat sheet: print from the morse_map.py in `folder` (e.g. your
+    edit folder) instead of the repo's default map. The latest cheat-sheet page
+    is copied in from the repo first; the PDF is written to `folder`."""
+    global REPO
+    import shutil
+    if not os.path.exists(os.path.join(folder, "morse_map.py")):
+        sys.exit("ERROR: no morse_map.py in %s" % folder)
+    shutil.copyfile(os.path.join(REPO, "aeromorse_cheatsheet.htm"),
+                    os.path.join(folder, "aeromorse_cheatsheet.htm"))
+    REPO = folder
+    return build_cheatsheet()
+
 def main():
+    if len(sys.argv) >= 3 and sys.argv[1] == "--folder":
+        folder = os.path.abspath(sys.argv[2])
+        print("Building your cheat sheet from %s\\morse_map.py ...\n" % folder)
+        out, ok = build_my_cheatsheet(folder)
+        if ok:
+            print("  OK  %s  (%s pages)" % (out, _pages(out)))
+        else:
+            print("  FAILED - is the PDF open in another program? Close it and try again.")
+        sys.exit(0 if ok else 1)
     which = sys.argv[1:] or list(TARGETS)
     bad = [w for w in which if w not in TARGETS]
     if bad:
