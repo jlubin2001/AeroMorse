@@ -280,14 +280,17 @@ enough.
 - Give each its own **`DEVICE_NAME`** in `config.py` (e.g.
   `"AeroMorse Green"`), so the computer lists them by name instead of two
   identical "Feather ESP32-S3 Reverse TFT" entries. It applies after an
-  unplug/replug.
+  unplug/replug. (If you leave it as the default "AeroMorse", the label file
+  is used instead. A wireless display board has no `config.py`; give it a
+  label file such as `AeroMorse-Display.txt` and it shows as
+  "AeroMorse Display".)
 - `code.py` and `boot.py` should be the **same version** on every device.
   `morse_map.py` can be shared if you want the same patterns everywhere.
   `config.py` usually differs.
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.8 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.9 …`); keep all four at the same version.
 
 ---
 

@@ -1,6 +1,6 @@
 # boot.py — single file for every AeroMorse board (sender + receivers).
 #
-# AeroMorse boot.py — version 1.8 (released 2026-09-27)
+# AeroMorse boot.py — version 1.9 (released 2026-09-27)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Behavior is auto-detected from the filesystem, so you can drop this same
@@ -19,6 +19,13 @@
 # │ RECEIVER    │ /morse_map.py absent       │ Hides CIRCUITPY drive and  │
 # │ (hidden)    │ AND /hide present          │ serial port from host PC.  │
 # └─────────────────────────────────────────────────────────────────────┘
+#
+# ── Device name shown by the computer ────────────────────────────────────
+# Sender: DEVICE_NAME from config.py (e.g. "AeroMorse Green"). If that is
+# missing or still the default "AeroMorse", a label file on the drive is used
+# instead: AeroMorse-Green.txt -> "AeroMorse Green".
+# Receiver: its label file (AeroMorse-Display.txt -> "AeroMorse Display"),
+# or "AeroMorse Display" if there is none. Applies after unplug/replug.
 #
 # ── Switching a receiver to "hidden" mode ────────────────────────────────
 # Create an empty file called /hide on the receiver and reboot. The PC
@@ -65,6 +72,32 @@ def _device_name():
     return None
 
 
+def _label_name():
+    """Name from a label file on the drive, e.g. AeroMorse-Display.txt ->
+    "AeroMorse Display". Used when config.py has no DEVICE_NAME (a display
+    board has no config.py at all)."""
+    try:
+        for fn in os.listdir("/"):
+            if fn.startswith("AeroMorse-") and fn.endswith(".txt"):
+                tag = fn[10:-4].replace("-", " ").replace("_", " ").strip()
+                if tag:
+                    return ("AeroMorse " + tag)[:40]
+    except Exception:
+        pass
+    return None
+
+
+def _set_usb_name(name):
+    """Tell the computer this device's name (shown in e.g. Windows Bluetooth
+    & devices). Must run in boot.py, before the USB connection starts."""
+    try:
+        import supervisor
+        supervisor.set_usb_identification(product=name)
+        print("boot.py: USB device name = %s" % name)
+    except Exception as e:
+        print("boot.py: could not set USB device name (%s)" % e)
+
+
 # ── Role detection ───────────────────────────────────────────────────────
 # morse_map.py is the sender's keyboard/mouse/macro lookup table.
 # Receivers never carry it, so its presence is a reliable role signal.
@@ -78,16 +111,16 @@ if IS_SENDER:
                     usb_hid.Device.MOUSE,
                     usb_hid.Device.CONSUMER_CONTROL))
     print("boot.py: sender — USB HID enabled.")
-    # ── Name shown by the computer (config.py DEVICE_NAME) ──────────────
+    # ── Name shown by the computer: config.py DEVICE_NAME, else label file
+    # (a label file wins over the unchanged default "AeroMorse").
     _name = _device_name()
+    if not _name or _name == "AeroMorse":
+        _name = _label_name() or _name
     if _name:
-        try:
-            import supervisor
-            supervisor.set_usb_identification(product=_name)
-            print("boot.py: USB device name = %s" % _name)
-        except Exception as _e:
-            print("boot.py: could not set USB device name (%s)" % _e)
+        _set_usb_name(_name)
 else:
+    # ── Receiver: name it (label file, else "AeroMorse Display") ────────
+    _set_usb_name(_label_name() or "AeroMorse Display")
     # ── Receiver: hide drive/serial only if /hide flag is present ───────
     if _exists("/hide"):
         import storage
