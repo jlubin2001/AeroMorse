@@ -75,6 +75,13 @@ def decrypt(blob, pin):
     return Cipher(algorithms.AES(key), modes.CTR(nonce)).decryptor().update(blob[HEADER:]).decode("utf-8")
 
 
+def strip_hidden(text):
+    """Remove invisible control/format characters (keeps tab and newlines)."""
+    import unicodedata
+    return "".join(ch for ch in text
+                   if ch in "\t\n\r" or unicodedata.category(ch) not in ("Cc", "Cf"))
+
+
 def parse(text):
     """key=value lines -> (dict, list of bad line numbers). Same rules as code.py."""
     d, bad = {}, []
@@ -244,6 +251,14 @@ def run_gui(folder):
 
     def save():
         text = txt.get("1.0", "end-1c")
+        # Invisible control characters (e.g. a stray Ctrl+E) would crash the
+        # device when that secret is typed, and can't be seen or checked once
+        # encrypted - so strip them here.
+        clean = strip_hidden(text)
+        n_hidden = len(text) - len(clean)
+        if n_hidden:
+            text = clean
+            set_text(text)
         secrets, bad = parse(text)
         p1, p2 = pin1.get(), pin2.get()
         if p1 or p2:
@@ -265,6 +280,9 @@ def run_gui(folder):
             messagebox.showerror("AeroMorse Secrets", "Choose a PIN (type it twice).")
             return
         notes = []
+        if n_hidden:
+            notes.append("Removed %d hidden (invisible) character(s) that would have "
+                         "stopped the device when typed." % n_hidden)
         if bad:
             notes.append("Lines with no '=' will be ignored: %s" % ", ".join(map(str, bad)))
         used = keys_used_in_map(state["folder"])
@@ -335,6 +353,25 @@ def run_gui(folder):
     root.mainloop()
 
 
+_INSTANCE_MUTEX = None
+
+
+def _already_running():
+    """True if another AeroMorse Secrets window is open (named mutex, Windows)."""
+    if os.name != "nt":
+        return False
+    try:
+        import ctypes
+        k = ctypes.windll.kernel32
+        k.CreateMutexW.restype = ctypes.c_void_p
+        k.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_wchar_p]
+        global _INSTANCE_MUTEX
+        _INSTANCE_MUTEX = k.CreateMutexW(None, 0, "AeroMorseSecrets_SingleInstance")
+        return k.GetLastError() == 183          # ERROR_ALREADY_EXISTS
+    except Exception:
+        return False
+
+
 def _base_folder():
     if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
         return os.path.abspath(sys.argv[1])
@@ -356,5 +393,13 @@ def _selftest(out_path):
 if __name__ == "__main__":
     if len(sys.argv) > 2 and sys.argv[1] == "--selftest":
         _selftest(sys.argv[2])
+    elif _already_running():
+        import tkinter as tk
+        from tkinter import messagebox
+        r = tk.Tk()
+        r.withdraw()
+        messagebox.showinfo("AeroMorse Secrets",
+                            "AeroMorse Secrets is already open in another window.")
+        r.destroy()
     else:
         run_gui(_base_folder())
