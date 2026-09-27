@@ -694,6 +694,104 @@ def run_pyfile_checks(path, name):
     check('%s: Python syntax' % name, True, '')
 
 
+# ── Hidden characters (auto-fix with permission) ─────────────────────────────
+# Editing with an on-screen or Morse keyboard can slip an invisible control
+# character into a file (e.g. U+0005 from a stray Ctrl+E). Python refuses the
+# whole file ("invalid non-printable character"), and in macro_secrets.txt it
+# would crash the device the moment that secret is typed. They are never
+# meaningful in these files, so offer to strip them - backup first.
+import unicodedata
+
+def _is_hidden(ch, pos):
+    if ch in '\t\n\r':
+        return False
+    if ch == '﻿' and pos == 0:
+        return False          # a leading BOM has its own check + message
+    return unicodedata.category(ch) in ('Cc', 'Cf')
+
+def _hidden_chars(text):
+    """[(line, col, char)] of every invisible control/format character."""
+    found, line, col = [], 1, 0
+    for pos, ch in enumerate(text):
+        if ch == '\n':
+            line, col = line + 1, 0
+            continue
+        col += 1
+        if _is_hidden(ch, pos):
+            found.append((line, col, ch))
+    return found
+
+def _char_name(ch):
+    return 'U+%04X %s' % (ord(ch), unicodedata.name(ch, 'control character'))
+
+_hidden_declined = []
+
+def fix_hidden_chars():
+    targets = [(BOOT_PATH, 'boot.py'), (CODE_PATH, 'code.py'), (CONFIG_PATH, 'config.py'),
+               (MORSE_MAP_PATH, 'morse_map.py'), (SECRETS_PATH, 'macro_secrets.txt')]
+    hits = []                 # (path, name, text, found)
+    for path, name in targets:
+        if not os.path.exists(path):
+            continue
+        try:
+            text = open(path, 'rb').read().decode('utf-8')
+        except UnicodeDecodeError:
+            continue          # not UTF-8 - the normal checks report it
+        found = _hidden_chars(text)
+        if found:
+            hits.append((path, name, text, found))
+    if not hits:
+        return
+    total = sum(len(f) for _, _, _, f in hits)
+    print()
+    print('  %s  Found %d hidden (invisible) character(s) that will stop the device:'
+          % (_c('FIX?', 'WARN'), total))
+    for path, name, text, found in hits:
+        lines = text.split('\n')
+        for ln, col, ch in found:
+            if name == 'macro_secrets.txt':
+                key = lines[ln - 1].split('=', 1)[0].strip() if '=' in lines[ln - 1] else '?'
+                where = 'key "%s"' % key            # never print a secret value
+            else:
+                where = lines[ln - 1].strip().replace(ch, '?')[:60]
+            print('     %s line %d, position %d: %s' % (name, ln, col, _char_name(ch)))
+            print('        %s' % where)
+    print()
+    print('  These are never needed in AeroMorse files - removing them is safe.')
+    print('  A backup copy of each file is saved first.')
+    ans = ''
+    if not sys.stdin or not sys.stdin.isatty():
+        print('  (Not asked - no keyboard input. Nothing changed.)')
+    else:
+        try:
+            ans = input('  Remove them now?  Type Y then Enter (anything else = leave): ')
+        except EOFError:
+            ans = ''
+    if ans.strip().lower() not in ('y', 'yes'):
+        print('  Left unchanged.')
+        for path, name, text, found in hits:
+            if name == 'macro_secrets.txt':
+                check('macro_secrets.txt: no hidden characters', False,
+                      "%d hidden character(s) - the device would STOP the moment that\n"
+                      "      secret is typed. FIX: run this check again and answer Y."
+                      % len(found))
+        _hidden_declined.append(True)
+        return
+    stamp = __import__('time').strftime('%Y%m%d-%H%M%S')
+    for path, name, text, found in hits:
+        backup = '%s.before-fix-%s.bak' % (path, stamp)
+        with open(backup, 'wb') as f:
+            f.write(text.encode('utf-8'))
+        clean = ''.join(ch for pos, ch in enumerate(text) if not _is_hidden(ch, pos))
+        with open(path, 'wb') as f:
+            f.write(clean.encode('utf-8'))
+        print('  %s %s: removed %d (backup: %s)'
+              % (_c('FIXED', 'PASS'), name, len(found), os.path.basename(backup)))
+        warn('%s had %d hidden character(s) removed. The original is saved as %s.'
+             % (name, len(found), os.path.basename(backup)))
+    print()
+
+
 # ── Single-instance guard ────────────────────────────────────────────────────
 # Double-clicking the icon a few times used to open several windows at once.
 # A named mutex lets only the first window run; extra clicks see it's already
@@ -795,6 +893,7 @@ def main():
               % _BASE)
         return finish()
 
+    fix_hidden_chars()
     run_pyfile_checks(BOOT_PATH, 'boot.py')
     run_pyfile_checks(CODE_PATH, 'code.py')
     run_config_checks()
@@ -833,6 +932,9 @@ def finish():
               % _c('FAIL', 'FAIL'))
         print('           rely on these files. Do NOT unplug or replace your')
         print('           working files on the device until this reports PASS.')
+        if _hidden_declined:
+            print('           Hidden characters: run this check again and answer Y')
+            print('           to remove them automatically.')
     print('=' * 68)
 
     # A pause so the window doesn't vanish when double-clicked as an .exe.
