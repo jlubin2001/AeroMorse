@@ -1023,6 +1023,8 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | Pattern commits before finished | `ACCEPT_DELAY` too short | Increase `ACCEPT_DELAY` |
 | Pattern shows `?` on display | Pattern not mapped in current group | Check `morse_map.py`; REPL shows the exact pattern received |
 | Calibration message at startup then hangs | Sensor not found on I²C | Check the STEMMA QT cable connection — or, on a board without a STEMMA QT port, the 3V / GND / SDA / SCL wires |
+| Dashes go missing (e.g. `x` `-..-` types `u` `..-`, `q` types `k`) | A quick puff right before a sip doesn't reach `THRESH_PUFF` on this sensor | Lower `THRESH_PUFF` a little (e.g. `2` → `1.5`); leave `THRESH_SIP` alone if dots are fine |
+| Screen shows `ERROR - SEE LOG` | One action hit an unexpected problem (v1.6+ keeps running instead of stopping) | Keep using the device; the USB serial log shows which pattern and why. Fix that entry in `morse_map.py` and run the validator |
 
 ## Credits
 

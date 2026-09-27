@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.5   (released 2026-09-26)
+#  AeroMorse code.py   —   version 1.6   (released 2026-09-26)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -554,8 +554,17 @@ def _exec_text(text):
             _armed_mods.clear()
             return
     _armed_mods.clear()
-    if text:
-        layout.write(text)
+    # One character at a time, so a character the US layout can't type (e.g. an
+    # invisible control character that slipped into a macro) is skipped instead
+    # of stopping the device. layout.write() would raise part-way through.
+    skipped = 0
+    for ch in text:
+        try:
+            layout.write(ch)
+        except ValueError:
+            skipped += 1
+    if skipped:
+        print("WARNING: skipped %d character(s) the keyboard can't type" % skipped)
 
 
 def _exec_command(cmd):
@@ -1029,6 +1038,28 @@ def _exec_secret(sec, pattern):
 
 
 def execute(action, pattern=""):
+    """Run one action, never letting an error in it stop the device.
+
+    For many users this is their only way to use the computer, so an
+    unexpected problem in a single action (a bad value in morse_map.py, a
+    hiccup in a USB report) must not end the program. The error is printed to
+    the USB log and shown on screen, all keys and buttons are released, and
+    the device carries on."""
+    global _last_action, _drag_active
+    try:
+        _execute(action, pattern)
+    except Exception as e:           # not KeyboardInterrupt: Ctrl-C still stops it
+        print("ERROR in action %r: %s: %s" % (pattern, type(e).__name__, e))
+        _last_action = "ERROR - SEE LOG"
+        try:
+            kbd.release_all()
+            mouse.release_all()
+            _drag_active = False
+        except Exception:
+            pass
+
+
+def _execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
     global _repeat_label
