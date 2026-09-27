@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.9   (released 2026-09-27)
+#  AeroMorse code.py   —   version 1.10   (released 2026-09-27)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -1214,6 +1214,14 @@ if _USE_DISPLAY:
         display.rotation = DISPLAY_ROTATION
     except AttributeError:
         print("WARNING: display rotation not settable — upgrade CircuitPython to 9.x")
+    # Backlight level from config.py (0.1–1.0). Never below 0.1, so a typo
+    # can't black out the screen; older config.py without it keeps full.
+    try:
+        display.brightness = min(1.0, max(0.1, float(DISPLAY_BRIGHTNESS)))
+    except NameError:
+        pass
+    except Exception as _e:
+        print("WARNING: display brightness not set (%s)" % _e)
 
 def _make_label(root, text, color, scale, y):
     lbl = label.Label(

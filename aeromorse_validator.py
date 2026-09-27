@@ -630,6 +630,9 @@ def check_config_settings(c):
     want('THIRD_SWITCH_GESTURE', lambda v: _ci(v) in ('long_dash', 'long_dot'),
          "should be \"long_dash\" or \"long_dot\" (any case).")
     want('DISPLAY_ROTATION',     lambda v: v in (0, 90, 180, 270), "should be 0, 90, 180, or 270.")
+    want('DISPLAY_BRIGHTNESS',   lambda v: is_num(v) and 0.1 <= v <= 1.0,
+         "should be a number from 0.1 (dim) to 1.0 (full). (Values outside that are "
+         "clamped, so the screen never goes fully dark.)")
     want('ESPNOW_CHANNEL',       lambda v: is_num(v) and 1 <= v <= 13, "should be 1-13.")
     want('DEVICE_NAME',
          lambda v: isinstance(v, str) and 0 < len(v.strip()) <= 40
