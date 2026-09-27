@@ -1687,7 +1687,11 @@ latest, correct files.
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
-> `config.py` all at the **same** version.
+> `config.py` all at the **same** version. The wireless-display programs
+> (`receiver.py`, `receiver_magtag.py`) share the same version number, so
+> every AeroMorse file from one release says the same version. The main
+> device's startup screen shows its version (e.g. `v1.9`) until the first
+> sip, puff or switch press.
 
 > **Filenames must be exact.** CircuitPython looks for `code.py`,
 > `boot.py`, `morse_map.py`, and `config.py` by *literal* name. If you
