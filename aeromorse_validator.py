@@ -631,6 +631,12 @@ def check_config_settings(c):
          "should be \"long_dash\" or \"long_dot\" (any case).")
     want('DISPLAY_ROTATION',     lambda v: v in (0, 90, 180, 270), "should be 0, 90, 180, or 270.")
     want('ESPNOW_CHANNEL',       lambda v: is_num(v) and 1 <= v <= 13, "should be 1-13.")
+    want('DEVICE_NAME',
+         lambda v: isinstance(v, str) and 0 < len(v.strip()) <= 40
+         and all(32 <= ord(ch) < 127 for ch in v),
+         "should be a name in quotes, up to 40 plain characters, e.g. "
+         "\"AeroMorse Green\". (The device still works; it just keeps the "
+         "default name.)")
     want('NO_REPEAT_KEYS',       lambda v: isinstance(v, (tuple, list)),
          "should be a tuple of key names, e.g. (\"PAGE_UP\", \"PAGE_DOWN\").")
 

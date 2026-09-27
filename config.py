@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.6 (released 2026-09-26)
+# AeroMorse config.py — version 1.7 (released 2026-09-27)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -24,6 +24,17 @@ import board   # board.D5 / D6 / A0 referenced below
 # board. (Do NOT put quotes around it — "false" in quotes is text, not off.)
 true  = TRUE  = True
 false = FALSE = False
+
+
+# ── DEVICE NAME — what the computer calls this AeroMorse ─────────────────
+# Shown in Windows Settings > Bluetooth & devices (and similar lists on
+# other computers) instead of "Feather ESP32-S3 Reverse TFT". Handy when you
+# have more than one, e.g. "AeroMorse Green" and "AeroMorse Blue".
+# Letters, digits, spaces and basic punctuation, up to 40 characters, in quotes.
+# Takes effect after you UNPLUG and replug the device (not on save). If
+# Windows still shows the old name, remove the device in that list and replug.
+
+DEVICE_NAME = "AeroMorse"
 
 
 # ── INPUT — sensor / switches / thresholds ────────────────────────────────

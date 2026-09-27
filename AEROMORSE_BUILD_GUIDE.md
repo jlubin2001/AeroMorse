@@ -1683,7 +1683,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.6 (released 2026-09-26)`. Open the file
+> `AeroMorse code.py — version 1.7 (released 2026-09-27)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1901,6 +1901,12 @@ One row per setting with the value shipped in `config.py` and a
 one-line hint. Tables below follow the same order and grouping as the
 file. For the full "what does this do / when do I change it / how does
 it interact with other settings" explanation, jump to Appendix E.
+
+**Device name**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `DEVICE_NAME` | `"AeroMorse"` | Name the computer shows for this device (e.g. Windows *Bluetooth & devices*) instead of "Feather ESP32-S3 Reverse TFT" — e.g. `"AeroMorse Green"`. Up to 40 plain characters, in quotes. Applied by `boot.py` after an **unplug/replug**; if Windows still shows the old name, remove the device there and replug |
 
 **Input — sensor / switches / thresholds**
 

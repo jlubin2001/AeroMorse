@@ -1,6 +1,6 @@
 # boot.py — single file for every AeroMorse board (sender + receivers).
 #
-# AeroMorse boot.py — version 1.6 (released 2026-09-26)
+# AeroMorse boot.py — version 1.7 (released 2026-09-27)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Behavior is auto-detected from the filesystem, so you can drop this same
@@ -42,6 +42,29 @@ def _exists(path):
         return False
 
 
+def _device_name():
+    """DEVICE_NAME from config.py — the name the computer shows for this
+    device (e.g. "AeroMorse Green" in Windows Bluetooth & devices). Read as
+    plain text, NOT imported, so a mistake in config.py can never stop the
+    board from starting; anything unexpected just keeps the default name."""
+    try:
+        with open("/config.py") as f:
+            for line in f:
+                s = line.strip()
+                if not (s.startswith("DEVICE_NAME") and "=" in s):
+                    continue
+                v = s.split("=", 1)[1].strip()
+                if v[:1] in ("'", '"'):
+                    end = v.find(v[0], 1)
+                    if end > 1:
+                        name = "".join(c for c in v[1:end] if 32 <= ord(c) < 127).strip()
+                        return name[:40] or None
+                return None
+    except Exception:
+        pass
+    return None
+
+
 # ── Role detection ───────────────────────────────────────────────────────
 # morse_map.py is the sender's keyboard/mouse/macro lookup table.
 # Receivers never carry it, so its presence is a reliable role signal.
@@ -55,6 +78,15 @@ if IS_SENDER:
                     usb_hid.Device.MOUSE,
                     usb_hid.Device.CONSUMER_CONTROL))
     print("boot.py: sender — USB HID enabled.")
+    # ── Name shown by the computer (config.py DEVICE_NAME) ──────────────
+    _name = _device_name()
+    if _name:
+        try:
+            import supervisor
+            supervisor.set_usb_identification(product=_name)
+            print("boot.py: USB device name = %s" % _name)
+        except Exception as _e:
+            print("boot.py: could not set USB device name (%s)" % _e)
 else:
     # ── Receiver: hide drive/serial only if /hide flag is present ───────
     if _exists("/hide"):
