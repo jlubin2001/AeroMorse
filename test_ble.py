@@ -10,7 +10,9 @@
 #   1. Press Ctrl-C to stop code.py, then press Enter to get the >>> prompt.
 #   2. Type:   import test_ble
 #   3. On the phone/iPad: open a notes app, then Settings > Bluetooth and tap
-#      "AeroMorse Blue". Once connected it types a few test lines by itself.
+#      this device's name - DEVICE_NAME from config.py, e.g. "AeroMorse Blue".
+#      Once connected it types a few test lines by itself. On Android also turn
+#      on the device's "Text input" switch (Bluetooth > gear icon).
 #   4. Press Ctrl-C to stop. Press RESET (or Ctrl-D) to go back to AeroMorse.
 #
 # Status messages print to the serial console and on the board's own screen.
@@ -25,7 +27,24 @@ from adafruit_ble.services.standard.device_info import DeviceInfoService
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 
-NAME  = "AeroMorse Blue"   # what shows up in the phone's Bluetooth list
+def _device_name(default="AeroMorse"):
+    """DEVICE_NAME from config.py (the same name the computer shows over USB),
+    read as plain text like boot.py does. Falls back to "AeroMorse"."""
+    try:
+        with open("/config.py") as f:
+            for line in f:
+                s = line.strip()
+                if s.startswith("DEVICE_NAME") and "=" in s:
+                    v = s.split("=", 1)[1].strip()
+                    if v[:1] in ("'", '"'):
+                        end = v.find(v[0], 1)
+                        if end > 1:
+                            return v[1:end].strip()[:40] or default
+    except OSError:
+        pass
+    return default
+
+NAME  = _device_name()     # what shows up in the phone's Bluetooth list
 LINES = 5                  # test lines typed after each (re)connection
 GAP_S = 3.0                # seconds between test lines
 CLEAR_BONDS = True         # forget old pairings on this board at start, so a
