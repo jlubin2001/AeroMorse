@@ -832,7 +832,8 @@ shared**, `macro_secrets.txt`, using a deliberately foolproof format —
 **one secret per line, `key=value`** (no quotes, commas, colons or
 braces, so an editing slip can't break anything):
 
-1. On the CIRCUITPY drive, copy **`macro_secrets.example.txt`** to
+1. In your work folder (see the [Usage Guide](AEROMORSE_USAGE_GUIDE.md) for
+   the full first-time steps), copy **`macro_secrets.example.txt`** to
    **`macro_secrets.txt`** and put your real values in it:
    ```
    password1=my-real-password
@@ -973,7 +974,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `code.py` | Main firmware — Morse state machine, USB HID, display, ESP-NOW sender |
 | `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, audio pitches, timing, etc. Edit this file instead of `code.py`. |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
-| `macro_secrets.example.txt` | Template for your **private** secret macros (passwords, personal details). Copy to `macro_secrets.txt` on CIRCUITPY and fill in `key=value` lines — see *Storing passwords and secrets safely* above. |
+| `macro_secrets.example.txt` | Template for your **private** secret macros (passwords, personal details), with a line for every key the standard `morse_map.py` uses. Copy it to `macro_secrets.txt` in your work folder, fill in `key=value` lines, then encrypt it with AeroMorse Secrets — step by step in the [Usage Guide](AEROMORSE_USAGE_GUIDE.md). |
 | `macro_secrets.txt` | **Your real passwords / secrets — never share, never committed** (git-ignored). Plain `key=value` lines. Created by you from the `.example` template. If absent or a line is bad, that secret macro just types a placeholder. |
 | `macro_secrets.enc` | **Optional, recommended instead of `macro_secrets.txt`** — the same secrets **encrypted**, unlocked with a PIN typed in Morse. Made with `AeroMorse Secrets.exe` (git-ignored). See [PIN-locked secrets](#pin-locked-secrets-macro_secretsenc). |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
@@ -985,6 +986,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 
 | File | Purpose |
 |------|---------|
+| `AEROMORSE_USAGE_GUIDE.md` / `.pdf` | **Start here once your device works.** How to change it safely: setting up a work folder, what each helper tool does (backup, validator, AeroMorse Secrets, cheat sheet, analyzer), and the recommended step-by-step order for any edit, with a one-page checklist |
 | `AEROMORSE_BUILD_GUIDE.md` | Full build guide covering hardware options, wiring, soldering, wireless display setup, library installation, troubleshooting, and parts lists |
 | `CAREGIVER_SETUP_GUIDE.md` | Plain-English step-by-step assembly guide for a non-technical caregiver, using a specific recommended parts set |
 | `AEROMORSE_VS_DARCI.md` | Feature-by-feature comparison vs. the WesTest Darci USB, with migration guide for Darci users |
@@ -1002,6 +1004,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `aeromorse_validator.py` / `aeromorse_validator.exe` | **Safety check — run this before trusting edited device files on the device.** Checks every required file the device needs to boot: **`boot.py`, `code.py`, `config.py`, `morse_map.py`** (plus optional `macro_secrets.txt`). For each it catches the things CircuitPython is fussy about that desktop editors hide: a **UTF-8 BOM** (the classic "lost all access" cause) and a Python **syntax error**. For `config.py` and `morse_map.py` it also reproduces the device's actual import (catching an **import error**), sanity-checks `config.py` settings (missing settings, out-of-range values), and confirms every `_secret()` pattern finds its value in `macro_secrets.txt`. Reports a plain-language **PASS** (safe) or **FAIL** (fix before relying on it — don't replace your working files yet), pointing at the exact line. A file that isn't in the folder shows **SKIP**, not FAIL. **Never prints secret values** — key names and counts only. Put it in the same folder as the file(s) you edited and double-click the `.exe`, or run `python aeromorse_validator.py`. Accepts an optional folder/file argument (e.g. `aeromorse_validator.exe F:\`) to check the device directly. |
 | `aeromorse_secrets.py` / `AeroMorse Secrets.exe` | **Edit your passwords and save them PIN-locked.** Opens `macro_secrets.enc` (asks the PIN) or imports `macro_secrets.txt`, lets you edit the `key=value` lines, saves them encrypted with a PIN you choose, warns about `_secret()` keys in `morse_map.py` with no value, and can copy the file to the CIRCUITPY drive and remove the plain-text file. See [PIN-locked secrets](#pin-locked-secrets-macro_secretsenc). The `.py` needs `pip install cryptography`; the `.exe` needs nothing. |
 | `Edit my AeroMorse secrets.bat` | **One-click** launcher for AeroMorse Secrets. Keep it in your edit folder next to `AeroMorse Secrets.exe` and `morse_map.py`; double-click it to open the secrets in that folder. |
+| `Back up my AeroMorse.bat` | **One-click dated backup.** Keep it in your work folder and double-click with the device plugged in: copies everything on every AeroMorse (CIRCUITPY) drive into `Backups\<name>-<YYYY-MM-DD_HHMM>`, named from a label file such as `AeroMorse-Green.txt` on the device. Read-only on the device. |
 | `Check my AeroMorse files.bat` | **One-click** wrapper for the validator. Keep it in your edit folder next to `aeromorse_validator.exe` and the files you edited (`boot.py`, `code.py`, `config.py`, `morse_map.py`, `macro_secrets.txt`); double-click it to run the safety check on that folder and see PASS/FAIL. |
 | `build_pdfs.py` / `Build PDFs.bat` | **Regenerate the three printable PDFs** (`AEROMORSE_BUILD_GUIDE.pdf`, `AeroMorse Cheat Sheet.pdf`, `AeroMorse — Keycode Reference.pdf`) from their sources. Double-click `Build PDFs.bat` after editing the Build Guide, cheat sheet, `morse_map.py`, or the Keycode reference. Rebuilds all three; add `guide`, `cheatsheet`, or `keycode` to rebuild just one. **Personal cheat sheet:** `python build_pdfs.py --folder <your edit folder>` prints `AeroMorse Cheat Sheet.pdf` from *your* `morse_map.py` into that folder (a one-click `Build my cheat sheet.bat` in the edit folder does this). Needs Microsoft Edge and Python. |
 | `morse_map_analyzer.py` | Python 3 script that reads `morse_map.py` and reports duplicate codes, conflicts with the always-on Group 0 patterns, and unused code slots for lengths 2–7. Run with `python morse_map_analyzer.py`; output is saved to `morse_map_report.txt`. |

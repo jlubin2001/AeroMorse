@@ -79,22 +79,23 @@ ul, ol { padding-left: 1.5em; }
 .toc-box a { color: #33506e; }
 """
 
-def build_guide():
+def build_guide(name="AEROMORSE_BUILD_GUIDE", title="AeroMorse Build Guide", toc=True):
     try:
         import markdown
     except ImportError:
         print("  installing 'markdown' (one-time)...")
         subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "markdown"])
         import markdown
-    md_path = os.path.join(REPO, "AEROMORSE_BUILD_GUIDE.md")
-    out = os.path.join(REPO, "AEROMORSE_BUILD_GUIDE.pdf")
+    md_path = os.path.join(REPO, name + ".md")
+    out = os.path.join(REPO, name + ".pdf")
     md = markdown.Markdown(extensions=["extra", "toc", "sane_lists"])
     body = md.convert(open(md_path, encoding="utf-8").read())
-    html = ("<!DOCTYPE html><html><head><meta charset='utf-8'><title>AeroMorse Build Guide</title>"
-            "<style>%s</style></head><body><div class='toc-box'>"
-            "<div class='toctitle'>Contents</div>%s</div>%s</body></html>"
-            % (_CSS, md.toc, body))
-    tmp = os.path.join(REPO, "_build_guide.tmp.html")
+    toc_html = ("<div class='toc-box'><div class='toctitle'>Contents</div>%s</div>" % md.toc
+                if toc else "")
+    html = ("<!DOCTYPE html><html><head><meta charset='utf-8'><title>%s</title>"
+            "<style>%s</style></head><body>%s%s</body></html>"
+            % (title, _CSS, toc_html, body))
+    tmp = os.path.join(REPO, "_%s.tmp.html" % name)
     open(tmp, "w", encoding="utf-8").write(html)
     ok = _print_to_pdf("file:///%s" % tmp.replace("\\", "/"), out)
     try: os.remove(tmp)
@@ -126,7 +127,11 @@ def build_keycode():
     ok = _print_to_pdf("file:///%s" % htm.replace("\\", "/"), out)
     return out, ok
 
-TARGETS = {"guide": build_guide, "cheatsheet": build_cheatsheet, "keycode": build_keycode}
+def build_usage():
+    return build_guide("AEROMORSE_USAGE_GUIDE", "AeroMorse Usage Guide", toc=False)
+
+TARGETS = {"guide": build_guide, "usage": build_usage,
+           "cheatsheet": build_cheatsheet, "keycode": build_keycode}
 
 def build_my_cheatsheet(folder):
     """Personal cheat sheet: print from the morse_map.py in `folder` (e.g. your
