@@ -97,6 +97,7 @@ BOOT_PATH      = os.path.join(_BASE, 'boot.py')
 CODE_PATH      = os.path.join(_BASE, 'code.py')
 SECRETS_PATH   = os.path.join(_BASE, 'macro_secrets.txt')
 SECRETS_ENC_PATH = os.path.join(_BASE, 'macro_secrets.enc')
+RECEIVER_CONFIG_PATH = os.path.join(_BASE, 'receiver_config.py')   # display board only
 
 # Files whose presence we probe for the "nothing to check" guard.
 _ALL_PATHS = (MORSE_MAP_PATH, CONFIG_PATH, BOOT_PATH, CODE_PATH)
@@ -907,6 +908,8 @@ def main():
     run_pyfile_checks(CODE_PATH, 'code.py')
     run_config_checks()
     run_morse_map_checks()
+    if os.path.exists(RECEIVER_CONFIG_PATH):     # wireless display settings
+        run_pyfile_checks(RECEIVER_CONFIG_PATH, 'receiver_config.py')
     return finish()
 
 

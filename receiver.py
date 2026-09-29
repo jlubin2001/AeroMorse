@@ -1,6 +1,6 @@
 # receiver.py — AeroMorse wireless mirror display
 #
-# AeroMorse receiver.py — version 1.10 (released 2026-09-27)
+# AeroMorse receiver.py — version 1.11 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Hardware
@@ -20,7 +20,9 @@
 #      morse_map.py is copied here in step 4).
 #   4. Copy this file to the board as code.py. Do NOT copy morse_map.py
 #      — its absence is what tells boot.py this is a receiver.
-#   5. Power on — the display shows "Waiting" until the main board comes up.
+#   5. Copy receiver_config.py to the board (settings: channel, brightness,
+#      rotation, timeouts). Optional — without it the defaults are used.
+#   6. Power on — the display shows "Waiting" until the main board comes up.
 #
 # Protocol
 #   The main AeroMorse board broadcasts a pipe-separated UTF-8 string over
@@ -39,13 +41,29 @@ import microcontroller
 
 from adafruit_display_text import label
 
+# ── Settings (receiver_config.py) ─────────────────────────────────────────────
+# User settings live in receiver_config.py on this board. A missing file or a
+# bad value falls back to the default below, so the display always starts.
+try:
+    import receiver_config as _cfg
+except Exception as _e:
+    _cfg = None
+    print("receiver_config.py not loaded (%s) - using defaults" % _e)
+
+def _setting(name, default):
+    try:
+        return type(default)(getattr(_cfg, name, default))
+    except Exception:
+        print("receiver_config.py: bad %s - using %r" % (name, default))
+        return default
+
 # ── ESP-NOW ────────────────────────────────────────────────────────────────────
 # Channel-lock dance: start_ap then immediately stop_ap pins the radio to a
 # known channel without leaving WiFi associated (which would enable power-save
-# and break ESP-NOW). Both boards must use the SAME channel — keep this in
-# sync with ESPNOW_CHANNEL in the sender's config.py.
+# and break ESP-NOW). Both boards must use the SAME channel — ESPNOW_CHANNEL
+# in receiver_config.py must match ESPNOW_CHANNEL in the sender's config.py.
 
-_CHANNEL = 1
+_CHANNEL = _setting("ESPNOW_CHANNEL", 1)
 
 wifi.radio.start_ap(" ", "", channel=_CHANNEL, max_connections=0)
 wifi.radio.stop_ap()
@@ -68,6 +86,15 @@ _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
 display = board.DISPLAY
+_BRIGHTNESS = min(1.0, max(0.1, _setting("DISPLAY_BRIGHTNESS", 1.0)))
+try:
+    display.rotation = _setting("DISPLAY_ROTATION", 0)
+except Exception as _e:
+    print("DISPLAY_ROTATION not applied (%s)" % _e)
+try:
+    display.brightness = _BRIGHTNESS
+except Exception:
+    pass
 
 def _make_label(root, text, color, y):
     lbl = label.Label(
@@ -154,8 +181,8 @@ def _show_no_signal():
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 _last_rx     = time.monotonic()
-_NO_SIGNAL   = 10.0    # seconds before showing "No signal"
-_AUTO_RESET  = 30.0    # seconds of no signal before soft-resetting this board.
+_NO_SIGNAL   = _setting("NO_SIGNAL_S", 10.0)    # seconds before showing "No signal"
+_AUTO_RESET  = _setting("AUTO_RESET_S", 30.0)   # seconds of no signal before soft-resetting this board.
                        # The ESP32-S3 WiFi radio occasionally wedges — a soft
                        # reset re-inits it without anyone having to unplug the
                        # receiver. Only fires once signal has actually been
@@ -163,7 +190,7 @@ _AUTO_RESET  = 30.0    # seconds of no signal before soft-resetting this board.
                        # is simply off — e.g. the host laptop is powered down
                        # overnight — the receiver stays quiet instead of
                        # rebooting every 30 s all night.
-_SLEEP_AFTER = 300.0   # seconds with no packet before blanking the screen
+_SLEEP_AFTER = _setting("SLEEP_AFTER_S", 300.0)  # seconds with no packet before blanking the screen
 _signal_ok   = False
 _ever_had_signal = False   # True once at least one packet arrives this boot;
                            # gates the auto-reset so a never-present sender
@@ -175,7 +202,7 @@ def _set_backlight(on):
     exposes brightness instead of a backlight pin (or neither)."""
     global _screen_on
     try:
-        display.brightness = 1.0 if on else 0.0
+        display.brightness = _BRIGHTNESS if on else 0.0
     except (AttributeError, NotImplementedError):
         pass
     _screen_on = on

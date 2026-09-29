@@ -1683,7 +1683,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.10 (released 2026-09-27)`. Open the file
+> `AeroMorse code.py — version 1.11 (released 2026-09-29)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1786,6 +1786,7 @@ act as a keyboard or mouse; you do not load `morse_map.py` or
 |----------------------|------------------------|
 | `boot.py` | `boot.py` (same file used on the sender) |
 | `receiver.py` (W1) **or** `receiver_magtag.py` (W2) | `code.py` (rename when copying) |
+| `receiver_config.py` | `receiver_config.py` — the display's own settings: wireless channel, screen brightness and rotation, no-signal / sleep / auto-restart times. Optional (defaults are built in), but copy it so you can change them. The main device does **not** use it |
 
 > **One `boot.py` for every board.** The same `boot.py` from the sender
 > works unchanged on every receiver — it inspects the filesystem at
@@ -2004,7 +2005,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight `0.1` (dim) – `1.0` (full); applies on save; never below `0.1` |
 | `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
-| `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `_CHANNEL` in `receiver.py` |
+| `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `ESPNOW_CHANNEL` in the display's `receiver_config.py` |
 
 ### Input modes — what `SWITCH_MODE` does
 
@@ -2321,7 +2322,7 @@ espnow.ESPNow()
 ```
 
 The channel is controlled by `ESPNOW_CHANNEL` in `config.py` (sender)
-and `_CHANNEL` at the top of `receiver.py` — these **must match**.
+and `ESPNOW_CHANNEL` in `receiver_config.py` (display) — these **must match**.
 Default is channel 1.
 
 > Do **not** use `wifi.radio.connect()` to join a network for channel
@@ -2349,8 +2350,8 @@ fire the receive callback regardless of peer registration.
 **To change the channel** (e.g., heavy 2.4 GHz interference on
 channel 1, common ones to try are 6 and 11):
 1. Edit `ESPNOW_CHANNEL` in `config.py` on the main board.
-2. Edit `_CHANNEL` near the top of `receiver.py` to the same value.
-3. Reflash and reboot both boards. Valid 2.4 GHz channels are 1 – 13
+2. Edit `ESPNOW_CHANNEL` in `receiver_config.py` on the display to the same value.
+3. Save both — each board restarts by itself. Valid 2.4 GHz channels are 1 – 13
    (1, 6, 11 are the non-overlapping ones).
 
 **Wireless display is frozen / not updating**
@@ -3022,7 +3023,7 @@ the current draw while running. Has no effect on non-ESP32 boards — the
 
 **`ESPNOW_CHANNEL`** (default `1`).
 The 2.4 GHz WiFi channel (1–13) the sender broadcasts on. **It must
-match `_CHANNEL` at the top of `receiver.py`** or the receiver hears
+match `ESPNOW_CHANNEL` in the display's `receiver_config.py`** or the receiver hears
 nothing. Only relevant when `USE_WIRELESS_DISPLAY = True`. Change it
 only if channel 1 is congested in your area. See §12 "How the ESP-NOW
 channel is selected" for the full mechanism and why the channel is

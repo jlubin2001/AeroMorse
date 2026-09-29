@@ -1,6 +1,6 @@
 # receiver_magtag.py — AeroMorse wireless e-ink remote display (Option W2)
 #
-# AeroMorse receiver_magtag.py — version 1.10 (released 2026-09-27)
+# AeroMorse receiver_magtag.py — version 1.11 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # ════════════════════════════════════════════════════════════════════════════
@@ -40,7 +40,10 @@
 #   4. Copy this file to the MagTag as code.py. Do NOT copy
 #      morse_map.py — its absence is what tells boot.py this is a
 #      receiver.
-#   5. Power on. The e-ink display shows "[ WAITING ]" until the main
+#   5. Copy receiver_config.py to the MagTag (channel + timeouts; the
+#      colour-screen settings in it are ignored). Optional — without it
+#      the defaults are used.
+#   6. Power on. The e-ink display shows "[ WAITING ]" until the main
 #      AeroMorse board comes up, then mirrors the group / last action /
 #      modifier status.
 #
@@ -76,6 +79,23 @@ import microcontroller
 from adafruit_display_text import label
 from adafruit_magtag.magtag import MagTag
 
+# ── Settings (receiver_config.py) ────────────────────────────────────────────
+# User settings live in receiver_config.py on this board (shared with the
+# colour-TFT receiver; screen-brightness/rotation/sleep lines are ignored here).
+# A missing file or a bad value falls back to the default, so it always starts.
+try:
+    import receiver_config as _cfg
+except Exception as _e:
+    _cfg = None
+    print("receiver_config.py not loaded (%s) - using defaults" % _e)
+
+def _setting(name, default):
+    try:
+        return type(default)(getattr(_cfg, name, default))
+    except Exception:
+        print("receiver_config.py: bad %s - using %r" % (name, default))
+        return default
+
 # ── Group palette (mirrors code.py / receiver.py) ────────────────────────────
 _GROUP_NAMES  = ("BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
                  "MEDIA", "GROUP 6", "GROUP 7", "GROUP 8", "GROUP 9")
@@ -93,8 +113,9 @@ def _group_idx(group_str):
 # ── ESP-NOW ──────────────────────────────────────────────────────────────────
 # Channel-lock dance: start_ap then immediately stop_ap pins the radio to a
 # known channel without leaving WiFi associated (which would enable power-save
-# and break ESP-NOW). Must match ESPNOW_CHANNEL in the sender's config.py.
-_CHANNEL = 1
+# and break ESP-NOW). ESPNOW_CHANNEL in receiver_config.py must match
+# ESPNOW_CHANNEL in the sender's config.py.
+_CHANNEL = _setting("ESPNOW_CHANNEL", 1)
 
 wifi.radio.start_ap(" ", "", channel=_CHANNEL, max_connections=0)
 wifi.radio.stop_ap()
@@ -164,9 +185,10 @@ def _force_refresh():
 # panel. Throttling to once every REFRESH_MIN_INTERVAL seconds means a fast
 # stream of letters won't queue 50 refreshes — only the LAST state at the
 # moment the throttle expires gets drawn.
-REFRESH_MIN_INTERVAL = 2.0       # seconds — never refresh more often
-NO_SIGNAL_TIMEOUT    = 10.0      # seconds before showing "[ NO SIGNAL ]"
-AUTO_RESET_TIMEOUT   = 30.0      # seconds of no signal before soft-resetting.
+# (All three are set in receiver_config.py: REFRESH_MIN_S, NO_SIGNAL_S, AUTO_RESET_S.)
+REFRESH_MIN_INTERVAL = _setting("REFRESH_MIN_S", 2.0)   # seconds — never refresh more often
+NO_SIGNAL_TIMEOUT    = _setting("NO_SIGNAL_S", 10.0)    # seconds before showing "[ NO SIGNAL ]"
+AUTO_RESET_TIMEOUT   = _setting("AUTO_RESET_S", 30.0)   # seconds of no signal before soft-resetting.
                                  # The ESP32-S2 WiFi radio occasionally wedges;
                                  # a soft reset re-inits it without anyone
                                  # having to unplug the MagTag. Only fires once

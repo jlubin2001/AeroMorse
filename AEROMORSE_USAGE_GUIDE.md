@@ -284,13 +284,17 @@ enough.
   is used instead. A wireless display board has no `config.py`; give it a
   label file such as `AeroMorse-Display.txt` and it shows as
   "AeroMorse Display".)
+- A **wireless display** keeps its own settings in **`receiver_config.py`**
+  on the display board (channel, brightness, rotation, timeouts). Its
+  `ESPNOW_CHANNEL` must match the main device's `config.py`. Back it up and
+  edit it the same way as the main device's files.
 - `code.py` and `boot.py` should be the **same version** on every device.
   `morse_map.py` can be shared if you want the same patterns everywhere.
   `config.py` usually differs.
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.10 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.11 …`); keep all four at the same version.
 
 ---
 

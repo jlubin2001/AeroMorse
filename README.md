@@ -988,6 +988,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
 | `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
 | `receiver_magtag.py` | Wireless display mirror firmware — Option W2 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** Copy as `code.py` to the MagTag. |
+| `receiver_config.py` | **Settings for the wireless display board only** (either type): `ESPNOW_CHANNEL` (must match the main device's `config.py`), and for the colour display `DISPLAY_BRIGHTNESS`, `DISPLAY_ROTATION`, `SLEEP_AFTER_S`; for both `NO_SIGNAL_S`, `AUTO_RESET_S`; for the MagTag `REFRESH_MIN_S`. Copy it next to the display's `code.py`. If it's missing or a value is wrong, the built-in default is used and the display keeps working. |
 
 ### Documentation
 
