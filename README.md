@@ -501,7 +501,8 @@ to release it.  The TFT status row shows **DRAG** while drag is active.
 | Action | Pattern | Effect |
 |--------|---------|--------|
 | `mslow` | `--..` | Toggle slow-step mouse speed |
-| `mreset` | `-.-..-. ` | Release drag, stop repeat, restore normal speed |
+| `version` | `...-` | Show the start-up screen again — device name, AeroMorse version, CircuitPython version — until the next sip/puff |
+| `devicereset` | `-.-..-.` | Restart the device (same as unplug/replug). Switches to Group 1 and asks **CONFIRM RESET Y/N?** — type `y` (`-.--`) to restart; anything else, or 30 s with no input, cancels and returns to Mouse. Nothing is typed to the computer while it asks |
 
 #### Arrow & Keypad Keys
 
@@ -821,7 +822,8 @@ g1[<length>][<binary_pattern>] = <action>
   - A `Keycode` constant — pressed and released as a hardware key
   - A tuple of `Keycode` constants — all pressed simultaneously (combo)
   - A command string — `group N`, `mmove dx dy scroll`, `mclick left N`,
-    `mdrag left`, `repeat`, `mslow`, `mfast`, `mreset`
+    `mdrag left`, `repeat`, `mslow`, `mfast`, `unlock`, `lock`, `version`,
+    `devicereset` (`mreset` was removed in v1.12 — use `devicereset`)
 
 ### Adding a Macro (Group 3 example)
 

@@ -853,6 +853,23 @@ def check_pattern_lengths():
                else '%d mismatch(es) - see warnings' % bad)
 
 
+_REMOVED_COMMANDS = {
+    'mreset': 'removed in v1.12 (use "devicereset" to restart the device)',
+}
+
+def check_removed_commands():
+    """A command string that code.py no longer knows isn't an error to Python -
+    the device would TYPE it as text (e.g. the word "mreset"). Warn."""
+    src = open(MORSE_MAP_PATH, 'r', encoding='utf-8-sig').read()
+    for lineno, raw in enumerate(src.split('\n'), 1):
+        code = raw.split('#', 1)[0]
+        for cmd, why in _REMOVED_COMMANDS.items():
+            if re.search(r"=\s*['\"]%s['\"]" % cmd, code):
+                warn("morse_map.py line %d uses the command \"%s\", %s. As written "
+                     "the device would TYPE the word \"%s\" instead. FIX: change or "
+                     "delete that line." % (lineno, cmd, why, cmd))
+
+
 def run_morse_map_checks():
     section('morse_map.py')
     if not os.path.exists(MORSE_MAP_PATH):
@@ -869,6 +886,7 @@ def run_morse_map_checks():
         return
     check_secrets(m)
     check_pattern_lengths()
+    check_removed_commands()
     collect_warnings(m)
 
 

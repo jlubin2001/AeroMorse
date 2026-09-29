@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.11   (released 2026-09-29)
+#  AeroMorse code.py   —   version 1.12   (released 2026-09-29)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -47,6 +47,7 @@ import displayio
 import terminalio
 import digitalio
 import usb_hid
+import microcontroller      # devicereset command
 
 from adafruit_display_text import label
 try:
@@ -568,8 +569,8 @@ def _exec_text(text):
 
 
 def _exec_command(cmd):
-    """Execute a device command: group / mmove / mclick / mdrag /
-    mrepeat / mslow / mfast / mreset
+    """Execute a device command: group / mmove / mclick / mdrag / repeat /
+    mslow / mfast / unlock / lock / version / devicereset
     """
     global active_group, _mouse_speed, _drag_active
     global _last_mouse_vec, _last_repeatable, _mouse_repeating, _armed_mods
@@ -669,14 +670,11 @@ def _exec_command(cmd):
     elif verb == 'lock':
         _secrets_lock()
 
-    elif verb == 'mreset':
-        _mouse_speed    = MOUSE_SPEED_NORMAL
-        _last_mouse_vec = (0, 0, 0)
-        _stop_mouse_repeat()
-        if _drag_active:
-            mouse.release(Mouse.LEFT_BUTTON)
-            mouse.release(Mouse.RIGHT_BUTTON)
-            _drag_active = False
+    elif verb == 'version':
+        _show_version()
+
+    elif verb == 'devicereset':
+        _reset_confirm_start()
 
 
 def _last_action_set(text):
@@ -684,8 +682,60 @@ def _last_action_set(text):
     _last_action = text
 
 
-_CMD_VERBS = {'group', 'mmove', 'mclick', 'mdrag', 'repeat', 'mslow', 'mfast', 'mreset',
-              'unlock', 'lock'}
+def _show_version():
+    """`version` command: show the start-up screen (device name, AeroMorse
+    version, CircuitPython version) again until the next sip / puff / press."""
+    global _show_splash
+    _show_splash = True
+
+
+# ── devicereset — restart the device, after a y/n confirmation ────────────────
+# Switches to Group 1 and shows "CONFIRM RESET Y/N?". The next pattern decides:
+# "y" restarts (same as unplugging and replugging); anything else — or
+# _RESET_TIMEOUT seconds with no input — cancels and returns to the group you
+# were in. Nothing is sent to the computer while it is asking.
+_reset_confirm    = False
+_reset_prev_group = 1
+_reset_t          = 0.0
+_RESET_TIMEOUT    = 30
+
+def _reset_confirm_start():
+    global _reset_confirm, _reset_prev_group, _reset_t, active_group, _last_action
+    _reset_confirm    = True
+    _reset_prev_group = active_group
+    _reset_t          = time.monotonic()
+    _armed_mods.clear()
+    active_group = 1                     # so "y" / "n" are the Group 1 letters
+    _last_action = "CONFIRM RESET Y/N?"
+    print("Device reset requested - type y to restart, anything else cancels")
+    _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
+
+def _reset_cancel(msg="RESET CANCELLED"):
+    global _reset_confirm, active_group, _last_action
+    _reset_confirm = False
+    active_group   = _reset_prev_group
+    _last_action   = msg
+    print(msg)
+
+def _reset_confirm_input(action):
+    """Called instead of execute() while waiting for y/n."""
+    global _last_action
+    if isinstance(action, str) and action.strip().lower() == "y":
+        _last_action = "RESTARTING..."
+        print("Device reset confirmed - restarting")
+        _update_display()
+        try:
+            kbd.release_all()
+            mouse.release_all()
+        except Exception:
+            pass
+        time.sleep(0.5)
+        microcontroller.reset()
+    _reset_cancel()
+
+
+_CMD_VERBS = {'group', 'mmove', 'mclick', 'mdrag', 'repeat', 'mslow', 'mfast',
+              'unlock', 'lock', 'version', 'devicereset'}
 
 # Human-friendly display labels for mouse commands — matches the
 # aeromorse_cheatsheet.htm substitutions so the OLED/TFT last-action
@@ -1063,6 +1113,9 @@ def _execute(action, pattern=""):
     """Dispatch an action value from morse_map to the appropriate executor."""
     global _last_action, _last_repeatable, _last_mouse_vec, active_group
     global _repeat_label
+    if _reset_confirm:
+        _reset_confirm_input(action)
+        return
     if _pin_active:
         _pin_input(action)
         return
@@ -1643,6 +1696,8 @@ while True:
         _mouse_repeat_tick()
 
     # ── Secrets: PIN-entry timeout and optional auto-lock ───────────────────
+    if _reset_confirm and now - _reset_t > _RESET_TIMEOUT:
+        _reset_cancel("RESET TIMED OUT")
     if _pin_active and now - _pin_last_t > _PIN_TIMEOUT:
         _pin_end("PIN TIMED OUT")
     elif (_AUTOLOCK_S and not _secrets_locked and _SECRETS_ENC is not None

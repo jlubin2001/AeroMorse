@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.11 (released 2026-09-29)
+# AeroMorse morse_map.py — version 1.12 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -306,7 +306,8 @@ g2[3][0b011] = "mclick right 1"    # .--     right click
 g2[3][0b001] = "mclick left 2"     # ..-     double-click left
 g2[4][0b0011] = "mclick right 2"   # ..--    double-click right
 g2[2][0b10] = "mdrag left"         # -.      toggle left-button drag
-g2[7][0b1010010] = "mreset"        # -.-..-. reset all mouse state
+g2[7][0b1010010] = "devicereset"   # -.-..-. restart the device (asks "CONFIRM RESET Y/N?", type y)
+g2[4][0b0001] = "version"          # ...-    show start-up screen (name, version, CircuitPython)
 
 # ── Keypad & Arrow Keys ───────────────────────────────────────────────────────
 g2[5][0b10001]=Keycode.KEYPAD_PLUS         # -...-
