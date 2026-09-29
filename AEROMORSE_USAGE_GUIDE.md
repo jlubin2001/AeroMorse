@@ -294,7 +294,7 @@ enough.
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.12 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.13 …`); keep all four at the same version.
 
 ---
 

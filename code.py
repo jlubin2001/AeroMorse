@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.12   (released 2026-09-29)
+#  AeroMorse code.py   —   version 1.13   (released 2026-09-29)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -1567,11 +1567,17 @@ while True:
         elif _last_state == IDLE:
             # IDLE → DIT/DAH: record when the press started, begin sidetone,
             # reset the code-repeat stream counter and strong-press tracking
-            _show_splash    = False       # first input ends the start-up screen
             _press_start    = now
             _stream_count   = 0
             _peak_delta     = 0.0
             _strong_handled = False
+            if _show_splash:
+                # The first press on the start-up screen only dismisses it:
+                # swallow it entirely (no dot/dash, no strong-gesture action,
+                # no group cycle) so nothing reaches the computer.
+                _show_splash     = False
+                _consuming_press = True
+                _strong_handled  = True
             _beep_start(new_state)
 
         elif new_state == IDLE:
