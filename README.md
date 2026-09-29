@@ -678,8 +678,9 @@ The 240 × 135 px display shows four text rows and a pressure bar:
 | Bar | Pressure level — green for puff, red for sip | Green / Red |
 
 **At start-up** row 1 shows the device's name (`DEVICE_NAME` in `config.py`,
-e.g. `AeroMorse Green`) in white and row 3 the firmware version (e.g. `v1.8`),
-so you can see at a glance which device it is and whether it's up to date. The
+e.g. `AeroMorse Green`) in white, row 3 the firmware version (e.g. `v1.11`) and
+row 4 the CircuitPython version (e.g. `CP 9.2.9`), so you can see at a glance
+which device it is and whether it's up to date. A wireless display mirrors it. The
 first sip, puff or switch press switches to the normal display above.
 
 > **No screen on your board?** Set `USE_DISPLAY = False` in `config.py`. The

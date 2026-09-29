@@ -1287,8 +1287,9 @@ _MOD_NAMES = {
     Keycode.LEFT_GUI:      "Win",   Keycode.RIGHT_GUI:     "RWin",
 }
 
-# Start-up screen: the device name (config.py DEVICE_NAME) and firmware version
-# until the first sip / puff / switch press, then the normal group display.
+# Start-up screen: the device name (config.py DEVICE_NAME), firmware version and
+# CircuitPython version until the first sip / puff / switch press, then the
+# normal group display.
 # The version is read from this file's own header line, so it can't go stale.
 try:
     _SPLASH_NAME = str(DEVICE_NAME).strip()[:20] or "AeroMorse"
@@ -1304,6 +1305,13 @@ try:
     _head = None
 except Exception:
     pass
+try:                                   # CircuitPython version, e.g. "CP 9.2.9"
+    import os as _os
+    # uname().version is e.g. "11.0.0-alpha.1 on 2026-09-24"; .release would
+    # drop the "-alpha.1", which matters when a board runs a test build.
+    _SPLASH_CP = ("CP " + _os.uname().version.split(" on ")[0])[:20]
+except Exception:
+    _SPLASH_CP = ""
 _show_splash = True
 
 def _update_display(pressure=0.0):
@@ -1335,6 +1343,8 @@ def _update_display(pressure=0.0):
     elif _SECRETS_ENC is not None and not _secrets_locked:
         _pieces.append("UNLOCKED")        # reminder: secrets are open
     mods_str = " ".join(_pieces) if _pieces else " "
+    if _show_splash and not _pieces:
+        mods_str = _SPLASH_CP or " "     # start-up screen, row 4
 
     if _USE_DISPLAY:
         # Update the local TFT.
