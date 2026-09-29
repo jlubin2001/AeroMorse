@@ -169,7 +169,9 @@ def _group_color(group_str):
     for idx, name in enumerate(_GROUP_NAMES):
         if name in group_str:
             return _GROUP_COLORS[idx]
-    return _GROUP_COLORS[0]
+    # Not a group name - e.g. the start-up screen's device name ("AeroMorse
+    # Green"). White, like the main board shows it (grey is for BASE / no signal).
+    return 0xFFFFFF
 
 def _show_no_signal():
     _lbl_group.text  = "[ No signal ]"
