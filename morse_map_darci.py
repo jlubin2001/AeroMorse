@@ -51,7 +51,7 @@ g0 = init_group()
 g0[8][0b00000000] = "group 1"   # ........  → Keyboard
 g0[8][0b11111111] = "group 2"   # --------  → Mouse Mode
 g0[8][0b00001111] = "group 3"   # ....----  → Number Mode
-g0[8][0b11110000] = "group 2"   # ----....  → Mouse Mode (alt)
+g0[8][0b11110000] = "group 4"   # ----....  → Scanning / Switch Control (alt)
 groups[0] = g0
 
 

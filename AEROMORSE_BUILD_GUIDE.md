@@ -69,8 +69,8 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
 - **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
   shortcuts
 - **Group 3** — **Macro**: user-defined text strings
-- **Group 4** — **Scanning**: F1–F12 on the 12 shortest codes — for iOS /
-  Android Switch Control
+- **Group 4** — **Scanning**: Space, Enter and F3–F12 on the 12 shortest
+  codes — for iOS / Android Switch Control
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
   explorer, browser, and mail
@@ -541,9 +541,7 @@ All three have the display soldered onto the board and accessed via
 All three are functionally identical for AeroMorse.
 
 > **Code file:** #5483, #5691, and #5300 all use the **repo root**
-> `code.py` (which drives the built-in TFT via `board.DISPLAY`). The
-> deprecated `legacy_v2/` build is for an external 128×64 SSD1306 OLED
-> and is no longer recommended — see `legacy_v2/DEPRECATED.md`.
+> `code.py` (which drives the built-in TFT via `board.DISPLAY`).
 
 ---
 
@@ -1683,7 +1681,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.13 (released 2026-09-29)`. Open the file
+> `AeroMorse code.py — version 1.14 (released 2026-09-29)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1720,11 +1718,6 @@ morse_map.py
 > switch mode, code repeat, audio pitches, etc. You edit `config.py`
 > to change behaviour, not `code.py`. See §10 for the full settings
 > reference.
-
-> **The legacy `legacy_v2/` build** (128×64 SSD1306 OLED variant) is
-> **deprecated and frozen**. It lacks most features added since early
-> 2026 — see `legacy_v2/DEPRECATED.md` for the gap list and migration
-> options.
 
 > **If you are a Darci USB user starting from `morse_map_darci.py`:**
 > Copy `morse_map_darci.py` to the CIRCUITPY drive, then **rename it to
@@ -1894,11 +1887,6 @@ guide.
 > **Save in Thonny → the Feather auto-reloads** with the new values.
 > Press **Ctrl+D** in the Shell panel any time to force a fresh restart
 > with full boot output (§9.3.5).
-
-> The deprecated `legacy_v2/` build keeps its config inline at the top
-> of `legacy_v2/code.py` and lacks most of the settings listed below.
-> New builds should ignore `legacy_v2/` entirely — see
-> `legacy_v2/DEPRECATED.md`.
 
 ### Key settings — quick reference
 
@@ -2476,7 +2464,7 @@ to any group with its 8-symbol Group 0 toggle code.
 | 1 | Letters, numbers, punctuation, function keys | `........` | Power-on default |
 | 2 | Mouse movement, clicks, Windows shortcuts | `--------` | Long-puff cycling |
 | 3 | Macro text strings | `....----` | Long-puff cycling |
-| 4 | Scanning — F1–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` | Long-puff cycling |
+| 4 | Scanning — Space, Enter and F3–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` or `----....` | Long-puff cycling |
 | 5 | Media — USB HID Consumer Controls (volume / play-pause / mute / track / brightness / eject) on the 12 shortest codes | `......--` | Long-puff cycling |
 | 6 | Placeholder | `.....---` | Long-puff cycling |
 | 7 | Placeholder | `...-----` | Long-puff cycling |

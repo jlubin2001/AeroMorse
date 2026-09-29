@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.13   (released 2026-09-29)
+#  AeroMorse code.py   —   version 1.14   (released 2026-09-29)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -30,7 +30,7 @@
 #   Group 1  keyboard  — letters, numbers, punctuation, function keys
 #   Group 2  mouse + Windows shortcuts
 #   Group 3  macro strings
-#   Group 4  scanning — F1–F12 on the 12 shortest codes (Switch Control)
+#   Group 4  scanning — Space, Enter, F3–F12 on the 12 shortest codes (Switch Control)
 #   Group 5–9  placeholders (copy of g1 letters + numbers — customise)
 #   Reach any group directly with its 8-symbol Group 0 toggle code.
 #

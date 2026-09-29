@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.13 (released 2026-09-29)
+# AeroMorse config.py — version 1.14 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -10,9 +10,6 @@
 # does, what other values mean, when to change it) see the Key Settings
 # table in **Build Guide §10 Configuration** — every setting in this file
 # has a row in that table, with the same name.
-#
-# The deprecated legacy_v2/ build keeps its own inline config — see
-# legacy_v2/DEPRECATED.md.
 
 import board   # board.D5 / D6 / A0 referenced below
 

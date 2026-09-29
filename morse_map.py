@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.13 (released 2026-09-29)
+# AeroMorse morse_map.py — version 1.14 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -90,7 +90,7 @@ def _secret(key, placeholder):
 #   ..------  (6 dashes)  → g8
 #   .-------  (7 dashes)  → g9
 #   --------  (8 dashes)  → g2  Mouse / Shortcuts
-#   ----....  (alias)     → g2  Mouse / Shortcuts (second shortcut)
+#   ----....  (alias)     → g4  Scanning / Switch Control (second shortcut)
 
 g0 = init_group()
 
@@ -103,7 +103,7 @@ g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 (placeholder)
 g0[8][0b00111111] = "group 8"   # ..------  → Group 8 (placeholder)
 g0[8][0b01111111] = "group 9"   # .-------  → Group 9 (placeholder)
 g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
-g0[8][0b11110000] = "group 2"   # ----....  → Mouse/Shortcuts (second shortcut)
+g0[8][0b11110000] = "group 4"   # ----....  → Scanning / Switch Control (second shortcut)
 
 groups[0] = g0
 
@@ -450,20 +450,23 @@ def _seed_letters_numbers():
 # SCANNING (Switch Control on iOS / Android)
 ############################################
 # iOS and Android "Switch Control" accessibility scanning can be driven by
-# function keys acting as switch actions. The 12 SHORTEST Morse patterns
-# are mapped to F1–F12 so the most-used scan actions take the least effort.
+# keyboard keys acting as switch actions. The 12 SHORTEST Morse patterns
+# are mapped to Space, Enter and F3–F12, so the two most-used scan actions
+# (Select = Space, Next = Enter) take a single sip or puff. (Before v1.14
+# those two were F1 and F2 — re-assign them in the phone/tablet's switch
+# settings if it was set up with F1/F2.)
 # The remaining letters / numbers are inherited from g1 as a placeholder
 # and can be customised.
 #
-#   F1  .      F5  -.     F9   .-.
-#   F2  -      F6  --     F10  .--
+#   Space .    F5  -.     F9   .-.
+#   Enter -    F6  --     F10  .--
 #   F3  ..     F7  ...    F11  -..
 #   F4  .-     F8  ..-    F12  -.-
 
 g4 = _seed_letters_numbers()
 
-g4[1][0b0]   = Keycode.F1     # .
-g4[1][0b1]   = Keycode.F2     # -
+g4[1][0b0]   = Keycode.SPACE     # .
+g4[1][0b1]   = Keycode.ENTER     # -
 g4[2][0b00]  = Keycode.F3     # ..
 g4[2][0b01]  = Keycode.F4     # .-
 g4[2][0b10]  = Keycode.F5     # -.

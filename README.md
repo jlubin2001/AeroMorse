@@ -47,8 +47,8 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
 - **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
   shortcuts
 - **Group 3** — **Macro**: user-defined text strings
-- **Group 4** — **Scanning**: F1–F12 on the 12 shortest codes — for iOS /
-  Android Switch Control
+- **Group 4** — **Scanning**: Space, Enter and F3–F12 on the 12 shortest
+  codes — for iOS / Android Switch Control
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
   explorer, browser, and mail
@@ -313,7 +313,7 @@ add trailing dashes to reach the higher groups.
 | `..------` | 6 | Group 8 — placeholder |
 | `.-------` | 7 | Group 9 — placeholder |
 | `--------` | 8 | Group 2 — Mouse / Shortcuts |
-| `----....` | (alias) | Group 2 — Mouse / Shortcuts (second shortcut) |
+| `----....` | (alias) | Group 4 — Scanning / Switch Control (second shortcut) |
 
 ### Group 1 — Keyboard
 
@@ -585,17 +585,20 @@ Digits `0`–`9` type the number; `.-.-` = Enter, `--` = Backspace.
 
 ### Group 4 — Scanning (Switch Control on iOS / Android)
 
-Group 4 maps the **12 shortest Morse patterns** to F1–F12, so the
-least-effort codes drive the most-used scan actions. This makes AeroMorse
-usable as a **Switch Control** scanning input on iOS and Android, where
-function keys act as switch actions. The `....` pattern is set to `h`
+Group 4 maps the **12 shortest Morse patterns** to Space, Enter and
+F3–F12, so the least-effort codes drive the most-used scan actions — a
+single sip is **Space** (Select) and a single puff is **Enter** (Next).
+This makes AeroMorse usable as a **Switch Control** scanning input on iOS
+and Android, where these keys act as switch actions. (Before v1.14 the
+single sip / puff were F1 / F2 — re-assign Select and Next in the
+device's switch settings if it was set up that way.) The `....` pattern is set to `h`
 (labelled "Home"); the remaining letters and numbers are inherited from
 Group 1 as a placeholder and can be customised.
 
 | Key | Pattern | Key | Pattern | Key | Pattern |
 |-----|---------|-----|---------|-----|---------|
-| F1 | `.` | F5 | `-.` | F9 | `.-.` |
-| F2 | `-` | F6 | `--` | F10 | `.--` |
+| Space | `.` | F5 | `-.` | F9 | `.-.` |
+| Enter | `-` | F6 | `--` | F10 | `.--` |
 | F3 | `..` | F7 | `...` | F11 | `-..` |
 | F4 | `.-` | F8 | `..-` | F12 | `-.-` |
 | Home (`h`) | `....` | | | | |
@@ -727,9 +730,6 @@ auto-reloads with the new value. Each setting has a comment block above it
 explaining what it does. The same Key Settings table also appears in
 **§10 Configuration** of `AEROMORSE_BUILD_GUIDE.md` — all three sources
 (table below, build guide §10, and `config.py` itself) are kept in sync.
-
-> The deprecated `legacy_v2/` build (frozen SSD1306 OLED variant) does
-> not use `config.py`. See `legacy_v2/DEPRECATED.md`.
 
 ### Input — sensor / switches / thresholds
 
