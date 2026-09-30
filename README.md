@@ -985,6 +985,9 @@ type in Morse.
 - Wrong PIN → **WRONG PIN**, stays locked; just use the pattern again.
 - **Esc**, or **Backspace** with nothing typed, cancels. Entry also
   cancels itself after 60 s of no input.
+- While the PIN is being typed you **stay in Group 1**: a strong sip/puff
+  counts as a normal dot/dash, and long presses and group codes don't change
+  group. (The same applies to the `devicereset` "CONFIRM RESET Y/N?" prompt.)
 - Macro **`U`** (`..-`) unlocks without typing anything; Macro **`L`**
   (`.-..`) locks again. Unplugging or restarting always locks.
 - Optional idle auto-lock: `SECRETS_AUTOLOCK_MIN` in `config.py`

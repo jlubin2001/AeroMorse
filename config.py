@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.16 (released 2026-09-29)
+# AeroMorse config.py — version 1.17 (released 2026-09-30)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to

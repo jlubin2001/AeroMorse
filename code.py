@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.16   (released 2026-09-29)
+#  AeroMorse code.py   —   version 1.17   (released 2026-09-30)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -1099,9 +1099,8 @@ def _pin_input(action):
     global _pin_last_t, _last_action
     _pin_last_t = time.monotonic()
     if isinstance(action, str) and _is_command(action):
-        if action.split(' ')[0] == 'group':
-            _exec_command(action)          # still allowed (e.g. a strong sip/puff)
-        return
+        return                             # no commands - not even group changes -
+                                           # until the PIN is finished or cancelled
     if action in (Keycode.ENTER, Keycode.KEYPAD_ENTER) or action == "\n":
         _pin_finish()
         return
@@ -1291,6 +1290,8 @@ def cycle_group(direction):
     on purpose with its Group 0 code. The 8-symbol Group 0 toggle codes are the
     direct-jump fast path to any group."""
     global active_group, _last_action, _last_repeatable
+    if _pin_active or _reset_confirm:
+        return                  # PIN entry / reset confirm stay in Group 1
     active_group     = (active_group - 1 + direction) % 9 + 1
     if _SWITCH_GROUP and active_group == _SWITCH_GROUP:
         active_group = (active_group - 1 + direction) % 9 + 1
@@ -1594,8 +1595,11 @@ while True:
     # the STRONG threshold, fire the configured STRONG_*_ACTION exactly once
     # per press. The press is then "claimed" — no dot/dash is emitted, no
     # auto-repeat fires, no cycle/accept on release. Sensor mode only.
+    # Off in STRONG_OFF_IN_GROUPS, in the Switch group, and while a PIN or the
+    # devicereset y/n is being typed (a hard sip/puff there is a normal dot/dash).
     if (USE_SENSOR and not _strong_handled and _last_state in (DIT, DAH)
-            and active_group not in _STRONG_OFF and active_group != _SWITCH_GROUP):
+            and active_group not in _STRONG_OFF and active_group != _SWITCH_GROUP
+            and not _pin_active and not _reset_confirm):
         abs_delta = abs(_display_pressure)
         if abs_delta > _peak_delta:
             _peak_delta = abs_delta
