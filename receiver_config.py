@@ -1,6 +1,6 @@
 # AeroMorse — Wireless Display (receiver) settings
 #
-# AeroMorse receiver_config.py — version 1.15 (released 2026-09-29)
+# AeroMorse receiver_config.py — version 1.16 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Copy this file to the WIRELESS DISPLAY board only (next to its code.py, which

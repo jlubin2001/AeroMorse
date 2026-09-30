@@ -1684,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.15 (released 2026-09-29)`. Open the file
+> `AeroMorse code.py — version 1.16 (released 2026-09-29)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -2477,7 +2477,7 @@ to any group with its 8-symbol Group 0 toggle code.
 | 4 | Scanning — Enter, Space and F3–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` or `----....` | Long-puff cycling |
 | 5 | Media — USB HID Consumer Controls (volume / play-pause / mute / track / brightness / eject) on the 12 shortest codes | `......--` | Long-puff cycling |
 | 6 | Placeholder | `.....---` | Long-puff cycling |
-| 7 | **Switch** — sip holds Enter, puff holds Space (games / switch apps; see `AEROMORSE_SWITCH_MODE_GUIDE.md`). Returns to Keyboard after 20 s idle | `...-----` | Long-puff cycling *into* it; leaves by itself |
+| 7 | **Switch** — sip holds Enter, puff holds Space (games / switch apps; see `AEROMORSE_SWITCH_MODE_GUIDE.md`). Returns to Keyboard after 20 s idle | `...-----` | Only with `...-----` — long-press cycling skips it; leaves by itself |
 | 8 | Placeholder | `..------` | Long-puff cycling |
 | 9 | Placeholder | `.-------` | Long-puff cycling |
 

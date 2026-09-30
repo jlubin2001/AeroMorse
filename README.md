@@ -249,8 +249,16 @@ boot.py   code.py   config.py   morse_map.py
 
 Safely eject the drive and press the **Reset** button (or unplug and replug).
 On power-up the device calibrates for one second (hold the tube still — do not
-sip or puff), then the TFT display shows **[ Keyboard ]** and the device is
-ready.
+sip or puff), then the TFT display shows the **start screen**:
+
+- the device's name (`DEVICE_NAME` in `config.py`, e.g. **AeroMorse Green**),
+- the AeroMorse version (e.g. **v1.15**),
+- the CircuitPython version (e.g. **CP 9.2.9**).
+
+The device is now ready. Your **first** sip, puff or switch press only closes
+the start screen — it types nothing — and the display changes to
+**[ KEYBOARD ]**. From then on every sip/puff counts. (To see the start screen
+again later, use the Mouse-group `version` command, `...-`.)
 
 ---
 
@@ -284,8 +292,12 @@ remain available in the background at all times):
 
 | Long press | Effect |
 |------------|--------|
-| Long sip | Cycle groups **backward** (… 3 → 2 → 1 → 9 → 8 …) |
-| Long puff | Cycle groups **forward**  (1 → 2 → 3 → … → 9 → 1 …) |
+| Long sip | Cycle groups **backward** (… 3 → 2 → 1 → 9 → 8 → 6 …) |
+| Long puff | Cycle groups **forward**  (1 → 2 → … → 6 → 8 → 9 → 1 …) |
+
+The **Switch group (Group 7) is skipped** when cycling: long presses don't
+change group inside Switch mode (games need long holds), so cycling into it
+would leave you stuck. Enter Switch mode on purpose with `...-----`.
 
 With ten groups, cycling all the way around is slow — use the 8-symbol
 **Group 0 jump codes** below to go straight to any group from anywhere.

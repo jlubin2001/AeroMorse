@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.15   (released 2026-09-29)
+#  AeroMorse code.py   —   version 1.16   (released 2026-09-29)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -1286,9 +1286,14 @@ def _execute(action, pattern=""):
 
 def cycle_group(direction):
     """direction: +1 = forward, -1 = backward through groups 1–9 (group 0 skipped).
-    The 8-symbol Group 0 toggle codes are the direct-jump fast path to any group."""
+    The Switch group is skipped too: long presses don't cycle out of it (games
+    need long holds), so landing there by cycling would strand you. Enter it
+    on purpose with its Group 0 code. The 8-symbol Group 0 toggle codes are the
+    direct-jump fast path to any group."""
     global active_group, _last_action, _last_repeatable
     active_group     = (active_group - 1 + direction) % 9 + 1
+    if _SWITCH_GROUP and active_group == _SWITCH_GROUP:
+        active_group = (active_group - 1 + direction) % 9 + 1
     _last_repeatable = None     # reset repeat on group change — must mmove first
     _last_action     = f"-> group {active_group}"
     print(f"GROUP -> {active_group} ({_GROUP_NAMES[active_group]})")

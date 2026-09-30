@@ -29,7 +29,8 @@ need a key **held down**, which Morse groups can't do.
 ## Quick start
 
 1. **Enter Switch mode:** type the Group 0 code **`...-----`**
-   (3 sips, 5 puffs). The screen shows **[ SWITCH ]**.
+   (3 sips, 5 puffs). The screen shows **[ SWITCH ]**. (Long-press group
+   cycling skips Switch mode, so you never land in it by accident.)
 2. **Sip** to hold **Enter**, **puff** to hold **Space**. While a key is held
    the screen shows `HOLD RETURN` or `HOLD SPACEBAR`.
 3. **Leave Switch mode:** just **stop** — after **20 seconds** with no sip or
