@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.14 (released 2026-09-29)
+# AeroMorse config.py — version 1.15 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -69,6 +69,28 @@ STRONG_SIP_ACTION  = "group 2"        # e.g. "group 2" to jump to Mouse on stron
 STRONG_PUFF_ACTION = "group 1"        # e.g. "group 1" to jump to Keyboard on strong puff (any case)
 THRESH_SIP_STRONG  = 15        # hPa — sensor mode only
 THRESH_PUFF_STRONG = 15        # hPa — sensor mode only
+STRONG_OFF_IN_GROUPS = (4,)    # groups where strong sip/puff is OFF — a hard sip/puff
+                               # there is just a normal dot/dash. (4,) = Scanning, so a
+                               # hard sip/puff can't knock you out of Switch Control.
+                               # e.g. (4, 3) for several groups, () = on everywhere.
+
+
+# ── SWITCH GROUP — sip / puff act like two plain switches ─────────────────
+# In this group there is no Morse: a sip presses SWITCH_SIP_KEY and a puff
+# presses SWITCH_PUFF_KEY the moment it starts, and HOLDS the key down until
+# the sip/puff ends — for switch-accessible games and scanning apps (e.g.
+# Benny's Hub: Space = move, Enter = select) that need a key held.
+# Get there with its Group 0 code (Group 7: ...-----). It goes back to
+# SWITCH_EXIT_GROUP BY ITSELF after SWITCH_IDLE_EXIT_S seconds with no sip or
+# puff — just stop and wait when you're done. (Or hold one puff for
+# SWITCH_EXIT_PUFF_S seconds.) Hard or long sips/puffs never leave it otherwise.
+
+SWITCH_GROUP      = 7          # group number to use as the Switch group; 0 = none
+SWITCH_SIP_KEY    = "ENTER"    # key held while sipping  (a Keycode name)
+SWITCH_PUFF_KEY   = "SPACE"    # key held while puffing  (a Keycode name)
+SWITCH_IDLE_EXIT_S = 20        # seconds with no sip/puff before leaving by itself (0 = never)
+SWITCH_EXIT_PUFF_S = 5.0       # or hold one puff this many seconds to leave
+SWITCH_EXIT_GROUP = 1          # group to go to when leaving (1 = Keyboard)
 
 
 # ── TIMING ────────────────────────────────────────────────────────────────

@@ -69,12 +69,15 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
 - **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
   shortcuts
 - **Group 3** — **Macro**: user-defined text strings
-- **Group 4** — **Scanning**: Space, Enter and F3–F12 on the 12 shortest
+- **Group 4** — **Scanning**: Enter, Space and F3–F12 on the 12 shortest
   codes — for iOS / Android Switch Control
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
   explorer, browser, and mail
-- **Groups 6–9** — **Placeholders** seeded with g1's letters and numbers,
+- **Group 7** — **Switch**: no Morse — a sip holds Enter and a puff holds
+  Space for as long as you keep going, like two real switches (games and
+  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md)
+- **Groups 6, 8, 9** — **Placeholders** seeded with g1's letters and numbers,
   ready for you to customise
 
 Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
@@ -1681,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.14 (released 2026-09-29)`. Open the file
+> `AeroMorse code.py — version 1.15 (released 2026-09-29)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1933,6 +1936,13 @@ it interact with other settings" explanation, jump to Appendix E.
 | `STRONG_PUFF_ACTION` | `"group 1"` | Action fired by a strong puff; `""` = disabled |
 | `THRESH_SIP_STRONG` | `15` | Sensor mode — hPa for strong-sip detection |
 | `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
+| `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is off — a hard sip/puff there is just a normal dot/dash. Default Scanning (4), so hard presses can't knock you out of Switch Control. `()` = on everywhere |
+| `SWITCH_GROUP` | `7` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
+| `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
+| `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
+| `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before the Switch group returns to `SWITCH_EXIT_GROUP` by itself. `0` = never |
+| `SWITCH_EXIT_PUFF_S` | `5.0` | Or hold one puff this many seconds to leave the Switch group |
+| `SWITCH_EXIT_GROUP` | `1` | Group you return to when leaving the Switch group (1 = Keyboard) |
 
 **Timing**
 
@@ -2464,10 +2474,10 @@ to any group with its 8-symbol Group 0 toggle code.
 | 1 | Letters, numbers, punctuation, function keys | `........` | Power-on default |
 | 2 | Mouse movement, clicks, Windows shortcuts | `--------` | Long-puff cycling |
 | 3 | Macro text strings | `....----` | Long-puff cycling |
-| 4 | Scanning — Space, Enter and F3–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` or `----....` | Long-puff cycling |
+| 4 | Scanning — Enter, Space and F3–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` or `----....` | Long-puff cycling |
 | 5 | Media — USB HID Consumer Controls (volume / play-pause / mute / track / brightness / eject) on the 12 shortest codes | `......--` | Long-puff cycling |
 | 6 | Placeholder | `.....---` | Long-puff cycling |
-| 7 | Placeholder | `...-----` | Long-puff cycling |
+| 7 | **Switch** — sip holds Enter, puff holds Space (games / switch apps; see `AEROMORSE_SWITCH_MODE_GUIDE.md`). Returns to Keyboard after 20 s idle | `...-----` | Long-puff cycling *into* it; leaves by itself |
 | 8 | Placeholder | `..------` | Long-puff cycling |
 | 9 | Placeholder | `.-------` | Long-puff cycling |
 

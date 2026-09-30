@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.14   (released 2026-09-29)
+#  AeroMorse code.py   —   version 1.15   (released 2026-09-29)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -30,8 +30,11 @@
 #   Group 1  keyboard  — letters, numbers, punctuation, function keys
 #   Group 2  mouse + Windows shortcuts
 #   Group 3  macro strings
-#   Group 4  scanning — Space, Enter, F3–F12 on the 12 shortest codes (Switch Control)
-#   Group 5–9  placeholders (copy of g1 letters + numbers — customise)
+#   Group 4  scanning — Enter, Space, F3–F12 on the 12 shortest codes (Switch Control)
+#   Group 5    media keys
+#   Group 6–9  placeholders (copy of g1 letters + numbers — customise)
+#   Group 7    SWITCH by default (config SWITCH_GROUP): sip/puff HOLD Enter/Space
+#              like two plain switches — see AEROMORSE_SWITCH_MODE_GUIDE.md
 #   Reach any group directly with its 8-symbol Group 0 toggle code.
 #
 # Group switching
@@ -160,6 +163,67 @@ if THIRD_SWITCH_GESTURE not in ("long_dot", "long_dash"):
 # never typed text, so make them case-insensitive too: "Group 2" -> "group 2".
 STRONG_SIP_ACTION  = str(STRONG_SIP_ACTION).strip().lower()
 STRONG_PUFF_ACTION = str(STRONG_PUFF_ACTION).strip().lower()
+
+# Groups where strong sip / strong puff is switched off (config.py
+# STRONG_OFF_IN_GROUPS, e.g. (4,) for Scanning): there a hard sip/puff is just
+# a normal dot/dash, so it can't accidentally jump to another group. Older
+# config.py without the setting: strong gestures work in every group.
+try:
+    _STRONG_OFF = STRONG_OFF_IN_GROUPS
+    if isinstance(_STRONG_OFF, int):
+        _STRONG_OFF = (_STRONG_OFF,)
+    _STRONG_OFF = tuple(int(_g) for _g in _STRONG_OFF)
+except NameError:
+    _STRONG_OFF = ()
+except Exception as _e:
+    print("STRONG_OFF_IN_GROUPS not understood (%s) - strong sip/puff on in all groups" % _e)
+    _STRONG_OFF = ()
+
+# Switch group (config.py SWITCH_GROUP, e.g. 7): in that group AeroMorse acts
+# like two plain switches instead of Morse — a sip presses SWITCH_SIP_KEY and a
+# puff presses SWITCH_PUFF_KEY the moment it starts, and HOLDS it until the
+# sip/puff ends (for switch games and scanning apps that need a held key).
+# Leave the group with a strong sip/puff. 0 or missing = no Switch group.
+def _keycode_named(name, default):
+    kc = getattr(Keycode, str(name).strip().upper(), None)
+    if isinstance(kc, int):
+        return kc
+    print("Switch group: unknown key name %r - using %s" % (name, default))
+    return getattr(Keycode, default)
+
+try:
+    _SWITCH_GROUP = int(SWITCH_GROUP)
+    if not 1 <= _SWITCH_GROUP <= 9:
+        _SWITCH_GROUP = 0
+except NameError:
+    _SWITCH_GROUP = 0
+except Exception as _e:
+    print("SWITCH_GROUP not understood (%s) - no Switch group" % _e)
+    _SWITCH_GROUP = 0
+try:
+    _SW_SIP_KEY = _keycode_named(SWITCH_SIP_KEY, "ENTER")
+except NameError:
+    _SW_SIP_KEY = Keycode.ENTER
+try:
+    _SW_PUFF_KEY = _keycode_named(SWITCH_PUFF_KEY, "SPACE")
+except NameError:
+    _SW_PUFF_KEY = Keycode.SPACE
+try:
+    _SW_EXIT_S = max(2.0, float(SWITCH_EXIT_PUFF_S))
+except Exception:
+    _SW_EXIT_S = 5.0
+try:
+    _SW_IDLE_S = max(0.0, float(SWITCH_IDLE_EXIT_S))    # 0 = off
+except Exception:
+    _SW_IDLE_S = 20.0
+try:
+    _SW_EXIT_GROUP = int(SWITCH_EXIT_GROUP)
+    if not 1 <= _SW_EXIT_GROUP <= 9 or _SW_EXIT_GROUP == _SWITCH_GROUP:
+        _SW_EXIT_GROUP = 1
+except Exception:
+    _SW_EXIT_GROUP = 1
+_sw_key  = None        # key currently held down by the Switch group (or None)
+_sw_skip = False       # this press only dismissed the start-up screen
 
 # Derived constants (kept once, used in the main loop hot path)
 _ONE_SWITCH_DOT_S    = ONE_SWITCH_DOT_MS / 1000.0
@@ -1239,8 +1303,10 @@ def cycle_group(direction):
 #   Row 4  armed modifiers / speed  (orange)
 #   Bottom pressure bar             (green = puff, red = sip)
 
-_GROUP_NAMES  = ("BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
-                 "MEDIA", "GROUP 6", "GROUP 7", "GROUP 8", "GROUP 9")
+_GROUP_NAMES  = ["BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
+                 "MEDIA", "GROUP 6", "GROUP 7", "GROUP 8", "GROUP 9"]
+if _SWITCH_GROUP:
+    _GROUP_NAMES[_SWITCH_GROUP] = "SWITCH"
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
@@ -1523,7 +1589,8 @@ while True:
     # the STRONG threshold, fire the configured STRONG_*_ACTION exactly once
     # per press. The press is then "claimed" — no dot/dash is emitted, no
     # auto-repeat fires, no cycle/accept on release. Sensor mode only.
-    if USE_SENSOR and not _strong_handled and _last_state in (DIT, DAH):
+    if (USE_SENSOR and not _strong_handled and _last_state in (DIT, DAH)
+            and active_group not in _STRONG_OFF and active_group != _SWITCH_GROUP):
         abs_delta = abs(_display_pressure)
         if abs_delta > _peak_delta:
             _peak_delta = abs_delta
@@ -1538,12 +1605,20 @@ while True:
             _num_shifts     = 0
             _strong_handled = True
 
+    # ── Switch group: release a held key whenever we are no longer in it ────
+    # (e.g. a strong sip/puff just changed group while the key was down).
+    in_switch = bool(_SWITCH_GROUP) and active_group == _SWITCH_GROUP
+    if _sw_key is not None and not in_switch:
+        kbd.release(_sw_key)
+        _sw_key = None
+
     # ── Code-repeat auto-emit (Darci-style hold-to-repeat) ──────────────────
     # While DIT/DAH is held in SWITCH_MODE = 2 with CODE_REPEAT on, emit one
     # symbol per repeat interval — 1 at press, +1 every DOT/DASH_REPEAT_MS.
     # Cap at CODE_REPEAT_MAX to prevent buffer overflow on a forgotten hold.
     # Skipped if a strong gesture has already fired for this press.
-    if _CODE_REPEAT_ACTIVE and _last_state in (DIT, DAH) and not _mouse_repeating and not _strong_handled:
+    if (_CODE_REPEAT_ACTIVE and _last_state in (DIT, DAH) and not _mouse_repeating
+            and not _strong_handled and not in_switch):
         interval = _DOT_REPEAT_S if _last_state == DIT else _DASH_REPEAT_S
         held_duration = now - _press_start
         expected_count = 1 + int(held_duration / interval)
@@ -1552,8 +1627,60 @@ while True:
             _num_shifts  += 1
             _stream_count += 1
 
+    # ── Switch group: sip / puff hold a key, like two real switches ─────────
+    # No Morse here: the key goes down the moment a sip/puff starts and comes
+    # up when it ends. Short/long/hard sips and puffs do nothing else (games
+    # need them). The group is left automatically after SWITCH_IDLE_EXIT_S
+    # seconds with no sip/puff, or by holding one puff SWITCH_EXIT_PUFF_S s.
+    if in_switch:
+        if (_SW_IDLE_S and _last_state == IDLE and new_state == IDLE
+                and now - _last_trans_at >= _SW_IDLE_S):
+            active_group   = _SW_EXIT_GROUP
+            _last_action   = "-> " + _GROUP_NAMES[_SW_EXIT_GROUP]
+            _last_trans_at = now
+            print("SWITCH exit (idle %.0f s) -> group %d" % (_SW_IDLE_S, _SW_EXIT_GROUP))
+            _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
+        elif (_last_state == DAH and new_state == DAH and not _sw_skip
+                and now - _press_start >= _SW_EXIT_S):
+            # Exit gesture: very long puff. Let go of the key and switch group
+            # now; the rest of this puff is swallowed (no cycle, no strong).
+            if _sw_key is not None:
+                kbd.release(_sw_key)
+                _sw_key = None
+            active_group     = _SW_EXIT_GROUP
+            _consuming_press = True
+            _strong_handled  = True
+            _last_action     = "-> " + _GROUP_NAMES[_SW_EXIT_GROUP]
+            print("SWITCH exit (%.0f s puff) -> group %d" % (_SW_EXIT_S, _SW_EXIT_GROUP))
+            _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
+        elif new_state != _last_state:
+            if _sw_key is not None:                 # press ended (or sip<->puff)
+                kbd.release(_sw_key)
+                _sw_key = None
+                _last_action = " "
+            if new_state == IDLE:
+                _beep_stop()
+                _sw_skip = False
+            else:
+                if _last_state == IDLE:             # a new press starts
+                    _press_start    = now
+                    _peak_delta     = 0.0
+                    _strong_handled = False
+                    _beep_start(new_state)
+                    _sw_skip = _show_splash         # first press only dismisses it
+                    _show_splash = False
+                if not _sw_skip and not _strong_handled:
+                    _armed_mods.clear()
+                    _sw_key = _SW_SIP_KEY if new_state == DIT else _SW_PUFF_KEY
+                    kbd.press(_sw_key)
+                    _last_action = ("HOLD " + _KEYCODE_NAMES.get(_sw_key, "KEY"))[:20]
+            _pending_char  = 0
+            _num_shifts    = 0
+            _last_trans_at = now
+            _last_state    = new_state
+
     # ── State machine ───────────────────────────────────────────────────────
-    if new_state != _last_state:
+    elif new_state != _last_state:
 
         if _mouse_repeating:
             # New input cancels mouse repeat. Mark this press as consumed so
@@ -1652,7 +1779,7 @@ while True:
                 # precedence over LONG_PRESS_CYCLES_GROUP. Sensor mode
                 # uses the peak-pressure detector above instead, so this
                 # block intentionally fires only when USE_SENSOR is False.
-                if long_held and not USE_SENSOR:
+                if long_held and not USE_SENSOR and active_group not in _STRONG_OFF:
                     strong_action = STRONG_SIP_ACTION if _last_state == DIT else STRONG_PUFF_ACTION
                     if strong_action:
                         execute(strong_action,

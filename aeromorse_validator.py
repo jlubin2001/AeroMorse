@@ -587,6 +587,11 @@ def check_config_bool_source():
                  "typo). Use True or False (or true/false)." % (name, tok))
         # A number or expression is left for the import + sanity checks to judge.
 
+def _STRONG_OFF_LIST(v):
+    if isinstance(v, int):
+        return (v,)
+    return tuple(v) if isinstance(v, (tuple, list)) else ()
+
 def check_config_settings(c):
     """Light sanity pass. Anything odd is a WARNING, never a hard fail — a bad
     value usually misbehaves rather than bricking, and we don't want to block a
@@ -631,6 +636,23 @@ def check_config_settings(c):
     want('THIRD_SWITCH_GESTURE', lambda v: _ci(v) in ('long_dash', 'long_dot'),
          "should be \"long_dash\" or \"long_dot\" (any case).")
     want('DISPLAY_ROTATION',     lambda v: v in (0, 90, 180, 270), "should be 0, 90, 180, or 270.")
+    want('STRONG_OFF_IN_GROUPS',
+         lambda v: isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 9
+         or isinstance(v, (tuple, list)) and all(isinstance(g, int) and 0 <= g <= 9 for g in v),
+         "should be group numbers in brackets, e.g. (4,) or (4, 3), or () for none. "
+         "(Note the comma in (4,).)")
+    want('SWITCH_GROUP', lambda v: isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 9,
+         "should be a group number 1-9, or 0 for no Switch group.")
+    want('SWITCH_IDLE_EXIT_S', lambda v: is_num(v) and (v == 0 or 5 <= v <= 600),
+         "should be 0 (never) or 5-600 seconds with no sip/puff before the Switch group "
+         "returns to SWITCH_EXIT_GROUP by itself.")
+    want('SWITCH_EXIT_PUFF_S', lambda v: is_num(v) and 2 <= v <= 30,
+         "should be 2-30 (seconds to hold one puff to leave the Switch group).")
+    want('SWITCH_EXIT_GROUP', lambda v: isinstance(v, int) and not isinstance(v, bool) and 1 <= v <= 9,
+         "should be the group number to go to when leaving the Switch group (1 = Keyboard).")
+    for _k in ('SWITCH_SIP_KEY', 'SWITCH_PUFF_KEY'):
+        want(_k, lambda v: isinstance(v, str) and v.strip().upper() in _KC_NAMES,
+             "should be a Keycode name in quotes, e.g. \"SPACE\" or \"ENTER\".")
     want('DISPLAY_BRIGHTNESS',   lambda v: is_num(v) and 0.1 <= v <= 1.0,
          "should be a number from 0.1 (dim) to 1.0 (full). (Values outside that are "
          "clamped, so the screen never goes fully dark.)")

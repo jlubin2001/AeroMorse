@@ -214,6 +214,11 @@ lists:
 - **Build Guide** (PDF) — hardware, wiring, every `config.py` setting (§10) and
   troubleshooting (§12).
 - **README** — group-by-group pattern tables and the full secrets guide.
+- **Switch Mode Guide** — Group 7, where a sip holds Enter and a puff holds
+  Space like two plain switches (switch games such as
+  [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)).
+- **Switch Control Guide** — Group 4 with iOS Switch Control, Android Switch
+  Access and Samsung Universal Switch.
 
 ---
 
@@ -294,7 +299,7 @@ enough.
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.14 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.15 …`); keep all four at the same version.
 
 ---
 

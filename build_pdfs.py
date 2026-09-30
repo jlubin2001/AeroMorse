@@ -130,7 +130,10 @@ def build_keycode():
 def build_usage():
     return build_guide("AEROMORSE_USAGE_GUIDE", "AeroMorse Usage Guide", toc=False)
 
-TARGETS = {"guide": build_guide, "usage": build_usage,
+def build_switchmode():
+    return build_guide("AEROMORSE_SWITCH_MODE_GUIDE", "AeroMorse Switch Mode Guide", toc=False)
+
+TARGETS = {"guide": build_guide, "usage": build_usage, "switchmode": build_switchmode,
            "cheatsheet": build_cheatsheet, "keycode": build_keycode}
 
 def build_my_cheatsheet(folder):

@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.14 (released 2026-09-29)
+# AeroMorse morse_map.py — version 1.15 (released 2026-09-29)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -86,7 +86,7 @@ def _secret(key, placeholder):
 #   ......--  (2 dashes)  → g5
 #   .....---  (3 dashes)  → g6
 #   ....----  (4 dashes)  → g3  Macros
-#   ...-----  (5 dashes)  → g7
+#   ...-----  (5 dashes)  → g7  Switch (2-button hold — config SWITCH_GROUP)
 #   ..------  (6 dashes)  → g8
 #   .-------  (7 dashes)  → g9
 #   --------  (8 dashes)  → g2  Mouse / Shortcuts
@@ -99,7 +99,7 @@ g0[8][0b00000001] = "group 4"   # .......-  → Scanning / Switch Control
 g0[8][0b00000011] = "group 5"   # ......--  → Group 5 (placeholder)
 g0[8][0b00000111] = "group 6"   # .....---  → Group 6 (placeholder)
 g0[8][0b00001111] = "group 3"   # ....----  → Macros
-g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 (placeholder)
+g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 — Switch (sip/puff hold Enter/Space)
 g0[8][0b00111111] = "group 8"   # ..------  → Group 8 (placeholder)
 g0[8][0b01111111] = "group 9"   # .-------  → Group 9 (placeholder)
 g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
@@ -451,22 +451,22 @@ def _seed_letters_numbers():
 ############################################
 # iOS and Android "Switch Control" accessibility scanning can be driven by
 # keyboard keys acting as switch actions. The 12 SHORTEST Morse patterns
-# are mapped to Space, Enter and F3–F12, so the two most-used scan actions
-# (Select = Space, Next = Enter) take a single sip or puff. (Before v1.14
+# are mapped to Enter, Space and F3–F12, so the two most-used scan actions
+# (Select = Enter on a sip, Next = Space on a puff) take a single sip or puff. (Before v1.14
 # those two were F1 and F2 — re-assign them in the phone/tablet's switch
 # settings if it was set up with F1/F2.)
 # The remaining letters / numbers are inherited from g1 as a placeholder
 # and can be customised.
 #
-#   Space .    F5  -.     F9   .-.
-#   Enter -    F6  --     F10  .--
+#   Enter .    F5  -.     F9   .-.
+#   Space -    F6  --     F10  .--
 #   F3  ..     F7  ...    F11  -..
 #   F4  .-     F8  ..-    F12  -.-
 
 g4 = _seed_letters_numbers()
 
-g4[1][0b0]   = Keycode.SPACE     # .
-g4[1][0b1]   = Keycode.ENTER     # -
+g4[1][0b0]   = Keycode.ENTER     # .
+g4[1][0b1]   = Keycode.SPACE     # -
 g4[2][0b00]  = Keycode.F3     # ..
 g4[2][0b01]  = Keycode.F4     # .-
 g4[2][0b10]  = Keycode.F5     # -.
@@ -559,7 +559,13 @@ groups[5] = g5
 
 ############################################
 # Groups 6–9 — YOUR placeholder groups (customise these)
+# (Group 7 is the SWITCH group by default — see below)
 ############################################
+# Group 7 is the SWITCH group when config.py has SWITCH_GROUP = 7 (the default):
+# there sip/puff hold Enter/Space directly and no Morse patterns are used, so
+# anything assigned to g7 below is ignored. Set SWITCH_GROUP = 0 to make g7 an
+# ordinary placeholder again. See AEROMORSE_SWITCH_MODE_GUIDE.md.
+#
 # g6–g9 are yours to fill. Each starts as a copy of Group 1's letters + numbers
 # (so your muscle memory works right away); overwrite any pattern with your own
 # entry. Reach a group with its Group 0 toggle code (see top of this file):
@@ -567,7 +573,7 @@ groups[5] = g5
 #     g7  ...-----      g9  .-------
 #
 # An entry can be any of:
-#   * a macro string   g7[3][0b010] = 'My favourite string here'
+#   * a macro string   g8[3][0b010] = 'My favourite string here'
 #   * a private login  g6[3][0b010] = _secret('bank_login', '(set in macro_secrets.txt)')
 #   * a Keycode        g8[4][0b0101] = Keycode.ENTER
 #   * a command string g9[2][0b01]  = 'mclick left 1'    (see Group 2 for the verbs)
@@ -585,9 +591,7 @@ g9 = groups[9]
 # ── Group 6 example — a private login (its value lives in macro_secrets.txt) ──
 g6[3][0b010] = _secret('bank_login', '(set bank_login in macro_secrets.txt)')  # .-.  R
 
-# ── Groups 7–9 examples — frequently typed phrases (plain text, typed as-is) ──
-g7[3][0b010] = 'My favourite string here'   # .-.  R
-g7[3][0b000] = 'Frequently typed phrase'    # ...  S
+# ── Groups 8–9 examples — frequently typed phrases (plain text, typed as-is) ──
 g8[3][0b010] = 'My favourite string here'   # .-.  R
 g8[3][0b000] = 'Frequently typed phrase'    # ...  S
 g9[3][0b010] = 'My favourite string here'   # .-.  R

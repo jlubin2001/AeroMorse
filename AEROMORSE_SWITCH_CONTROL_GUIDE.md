@@ -15,7 +15,7 @@ keyboard, and the OS performs the assigned action (Select, Next,
 Previous, Home, Back, …).
 
 AeroMorse already appears to the host as a standard USB HID keyboard.
-**Group 4 ("Scanning") sends Space, Enter and F3–F12 on the 12 shortest
+**Group 4 ("Scanning") sends Enter, Space and F3–F12 on the 12 shortest
 Morse patterns**,
 so a sip-and-puff user can drive Switch Control as if they were pressing
 twelve real switches — but in practice it's two breath movements
@@ -24,6 +24,12 @@ twelve real switches — but in practice it's two breath movements
 This guide explains the recommended mapping on each platform and walks
 through the OS-side setup.
 
+> **Need a key *held*, or instant presses with no Morse at all?** Some
+> switch games and apps (for example
+> [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)) want
+> two plain switches that hold Space and Enter. Use the **Switch group**
+> (Group 7) instead — see [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
+
 ---
 
 ## How AeroMorse fits in
@@ -31,7 +37,7 @@ through the OS-side setup.
 | | Conventional 12-switch user | AeroMorse user |
 |---|---|---|
 | Input hardware | 12 physical jacks / pads | 1 sip-and-puff tube *(or 2 AT switches)* |
-| What the OS sees | 12 keyboard keys | The same 12 keyboard keys (Space, Enter, F3–F12) |
+| What the OS sees | 12 keyboard keys | The same 12 keyboard keys (Enter, Space, F3–F12) |
 | What the user does | Presses one of 12 switches | Sips/puffs a 1–3-symbol Morse pattern |
 
 The OS cannot tell the difference. Anywhere this guide says "switch N"
@@ -49,14 +55,14 @@ groups; or jump straight there with the Group 0 pattern `.......-` or
 
 ## AeroMorse Group 4 — Morse patterns for the 12 switch keys
 
-The 12 shortest possible Morse patterns are assigned to Space, Enter and
+The 12 shortest possible Morse patterns are assigned to Enter, Space and
 F3–F12 in priority order so the most-used switches are the fastest to
 enter:
 
 | Key | Morse pattern | iOS action | Android action | Samsung action |
 |----:|:--------------|:-----------|:---------------|:---------------|
-| **Space** | **·**     | Select Item     | Select           | Activate            |
-| **Enter** | **−**     | Next Item       | Next             | Next Item           |
+| **Enter** | **·**     | Select Item     | Select           | Activate            |
+| **Space** | **−**     | Next Item       | Next             | Next Item           |
 | **F3**  | **· ·**     | Previous Item   | Previous         | Previous Item       |
 | **F4**  | **· −**     | Scanner Menu    | Back             | Action Menu         |
 | **F5**  | **− ·**     | Home            | Home             | Back                |
@@ -69,7 +75,7 @@ enter:
 | **F12** | **− · −**   | Siri            | Auto-scan Toggle | Quick Settings      |
 
 > A single dot or single dash is the entire input for the two
-> most-used actions (Select = **Space**, Next = **Enter**). Even the
+> most-used actions (Select = **Enter**, Next = **Space**). Even the
 > slowest key takes only three symbols.
 >
 > **Upgrading from before v1.14?** The single dot and dash used to send
@@ -83,14 +89,14 @@ enter:
 Switch Control is configurable — you only need to map as many F-keys as
 you want to use. Two recommended layouts:
 
-### Minimal — 5 actions (Space, Enter, F3–F5)
+### Minimal — 5 actions (Enter, Space, F3–F5)
 
 For users new to Switch Control, or where 12 distinct OS-mapped actions
 feels overwhelming. Covers the core scan-and-select loop plus one
 escape route. **The first five are intentionally identical between the 5-action
 and 12-action layouts — muscle memory carries over.**
 
-### Full — 12 actions (Space, Enter, F3–F12)
+### Full — 12 actions (Enter, Space, F3–F12)
 
 Every common Switch Control action gets its own Morse pattern, with no
 menu-diving for routine gestures. Recommended once the user is fluent.
@@ -103,8 +109,8 @@ menu-diving for routine gestures. Recommended once the user is fluent.
 
 | Morse | Key | iOS action | What it does |
 |:------|:---:|:-----------|:-------------|
-| ·     | Space | Select Item     | Activate the highlighted item |
-| −     | Enter | Move to Next Item | Highlight the next focusable item |
+| ·     | Enter | Select Item     | Activate the highlighted item |
+| −     | Space | Move to Next Item | Highlight the next focusable item |
 | · ·   | F3  | Move to Previous Item | Step back |
 | · −   | F4  | Scanner Menu    | Open the contextual menu (tap, long press, scroll, drag…) |
 | − ·   | F5  | Home Button     | Return to the Home Screen |
@@ -116,8 +122,8 @@ gesture on demand — 5 actions covers nearly every scenario.
 
 | Morse | Key | Android action | What it does |
 |:------|:---:|:---------------|:-------------|
-| ·     | Space | Select          | Activate the highlighted item |
-| −     | Enter | Next            | Highlight the next item |
+| ·     | Enter | Select          | Activate the highlighted item |
+| −     | Space | Next            | Highlight the next item |
 | · ·   | F3  | Previous        | Step back |
 | · −   | F4  | Back            | Android's system Back |
 | − ·   | F5  | Home            | Return to the Home screen |
@@ -129,8 +135,8 @@ and Home stays on F5.
 
 | Morse | Key | Samsung action | What it does |
 |:------|:---:|:---------------|:-------------|
-| ·     | Space | Activate         | Select the highlighted item |
-| −     | Enter | Move to Next Item | Highlight the next item |
+| ·     | Enter | Activate         | Select the highlighted item |
+| −     | Space | Move to Next Item | Highlight the next item |
 | · ·   | F3  | Move to Previous Item | Step back |
 | · −   | F4  | Show Action Menu | Open the contextual menu (long press, scroll, notifications, drag…) |
 | − ·   | F5  | Back             | Samsung/Android Back |
@@ -147,8 +153,8 @@ full 12-action layout.
 
 | Morse | Key | Action |
 |:------|:---:|:-------|
-| ·       | Space | Select Item |
-| −       | Enter | Move to Next Item |
+| ·       | Enter | Select Item |
+| −       | Space | Move to Next Item |
 | · ·     | F3  | Move to Previous Item |
 | · −     | F4  | Scanner Menu |
 | − ·     | F5  | Home |
@@ -160,7 +166,7 @@ full 12-action layout.
 | − · ·   | F11 | Notification / Control Center |
 | − · −   | F12 | Siri |
 
-Space, Enter and F3–F5 cover the core scan-and-select loop, F6–F9 cover the gestures
+Enter, Space and F3–F5 cover the core scan-and-select loop, F6–F9 cover the gestures
 most people otherwise dig out of the Scanner Menu, and F10–F12 reach
 the system destinations directly. Siri on F12 is a catch-all for
 anything not mapped.
@@ -169,8 +175,8 @@ anything not mapped.
 
 | Morse | Key | Action |
 |:------|:---:|:-------|
-| ·       | Space | Select |
-| −       | Enter | Next |
+| ·       | Enter | Select |
+| −       | Space | Next |
 | · ·     | F3  | Previous |
 | · −     | F4  | Back |
 | − ·     | F5  | Home |
@@ -189,8 +195,8 @@ mid-session.
 
 | Morse | Key | Action |
 |:------|:---:|:-------|
-| ·       | Space | Activate |
-| −       | Enter | Move to Next Item |
+| ·       | Enter | Activate |
+| −       | Space | Move to Next Item |
 | · ·     | F3  | Move to Previous Item |
 | · −     | F4  | Show Action Menu |
 | − ·     | F5  | Back |
@@ -217,9 +223,9 @@ mapped.
 3. Tap **Switches › Add New Switch… › External**.
 4. On AeroMorse, switch to **Group 4** (long sip/puff to cycle, or
    the Group 0 direct-jump pattern).
-5. Enter **·** (a single sip) — iOS detects Space. Name it ("Select")
+5. Enter **·** (a single sip) — iOS detects Enter. Name it ("Select")
    and choose the action **Select Item**.
-6. Tap **Add New Switch** again. Enter **−** (a single puff) for Enter,
+6. Tap **Add New Switch** again. Enter **−** (a single puff) for Space,
    assign **Move to Next Item**.
 7. Repeat for each pattern in the table above through F5 (minimal)
    or F12 (full).
@@ -258,7 +264,7 @@ assistant needs to interact with the screen normally.
    Universal switch**.
 3. Toggle **Universal switch ON** and accept the permission prompt.
 4. Tap **Add switch › Keyboard**.
-5. On AeroMorse, in Group 4, enter **·** for Space. Name it ("Activate")
+5. On AeroMorse, in Group 4, enter **·** for Enter. Name it ("Activate")
    and under **Action** choose **Activate**.
 6. Tap **Add switch** again for each key in the layout.
 7. Set **Scanning method** (Auto / Manual) and **Scan speed** under
@@ -271,7 +277,7 @@ assistant needs to interact with the screen normally.
 
 ## Cross-platform notes
 
-- **Space, Enter and F3 are identical on every platform** (Select, Next,
+- **Enter, Space and F3 are identical on every platform** (Select, Next,
   Previous).
   If the user only ever switches between platforms, those three
   patterns never need to be re-learned.

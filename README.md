@@ -47,12 +47,15 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
 - **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
   shortcuts
 - **Group 3** — **Macro**: user-defined text strings
-- **Group 4** — **Scanning**: Space, Enter and F3–F12 on the 12 shortest
+- **Group 4** — **Scanning**: Enter, Space and F3–F12 on the 12 shortest
   codes — for iOS / Android Switch Control
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
   explorer, browser, and mail
-- **Groups 6–9** — **Placeholders** seeded with g1's letters and numbers,
+- **Group 7** — **Switch**: no Morse — a sip holds Enter and a puff holds
+  Space for as long as you keep going, like two real switches (games and
+  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md)
+- **Groups 6, 8, 9** — **Placeholders** seeded with g1's letters and numbers,
   ready for you to customise
 
 Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
@@ -309,7 +312,7 @@ add trailing dashes to reach the higher groups.
 | `......--` | 2 | Group 5 — Media (USB HID Consumer Controls) |
 | `.....---` | 3 | Group 6 — placeholder |
 | `....----` | 4 | Group 3 — Macros |
-| `...-----` | 5 | Group 7 — placeholder |
+| `...-----` | 5 | Group 7 — **Switch** (sip holds Enter, puff holds Space) |
 | `..------` | 6 | Group 8 — placeholder |
 | `.-------` | 7 | Group 9 — placeholder |
 | `--------` | 8 | Group 2 — Mouse / Shortcuts |
@@ -585,9 +588,9 @@ Digits `0`–`9` type the number; `.-.-` = Enter, `--` = Backspace.
 
 ### Group 4 — Scanning (Switch Control on iOS / Android)
 
-Group 4 maps the **12 shortest Morse patterns** to Space, Enter and
+Group 4 maps the **12 shortest Morse patterns** to Enter, Space and
 F3–F12, so the least-effort codes drive the most-used scan actions — a
-single sip is **Space** (Select) and a single puff is **Enter** (Next).
+single sip is **Enter** (Select) and a single puff is **Space** (Next).
 This makes AeroMorse usable as a **Switch Control** scanning input on iOS
 and Android, where these keys act as switch actions. (Before v1.14 the
 single sip / puff were F1 / F2 — re-assign Select and Next in the
@@ -597,8 +600,8 @@ Group 1 as a placeholder and can be customised.
 
 | Key | Pattern | Key | Pattern | Key | Pattern |
 |-----|---------|-----|---------|-----|---------|
-| Space | `.` | F5 | `-.` | F9 | `.-.` |
-| Enter | `-` | F6 | `--` | F10 | `.--` |
+| Enter | `.` | F5 | `-.` | F9 | `.-.` |
+| Space | `-` | F6 | `--` | F10 | `.--` |
 | F3 | `..` | F7 | `...` | F11 | `-..` |
 | F4 | `.-` | F8 | `..-` | F12 | `-.-` |
 | Home (`h`) | `....` | | | | |
@@ -660,9 +663,23 @@ generally honours all four; macOS and Linux desktops vary. The remaining
 letters and numbers in g5 are inherited from Group 1 as a placeholder and
 can be customised.
 
-### Groups 6–9 — Placeholders
+### Group 7 — Switch (two-button hold mode)
 
-Groups 6–9 are seeded with a copy of Group 1's letters and numbers so the
+In Group 7 AeroMorse stops decoding Morse and behaves like **two plain
+switches**: a **sip holds Enter** and a **puff holds Space** from the moment
+you start until you stop — the way switch-accessible games and apps expect
+(e.g. [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html):
+Space = move, Enter = select, and games like NARBE Kart that need a key
+*held*). Hard or long sips/puffs never change group here. It returns to
+Keyboard **by itself after 20 s** with no sip or puff (or hold one puff for
+5 s). Settings: `SWITCH_GROUP`, `SWITCH_SIP_KEY`, `SWITCH_PUFF_KEY`,
+`SWITCH_IDLE_EXIT_S`, `SWITCH_EXIT_PUFF_S`, `SWITCH_EXIT_GROUP` in
+`config.py`. Full guide: [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
+
+### Groups 6, 8, 9 — Placeholders
+
+Groups 6, 8 and 9 (and 7, if `SWITCH_GROUP = 0`) are seeded with a copy of
+Group 1's letters and numbers so the
 same muscle memory works while you decide what each group is for. Replace
 the entries in `morse_map.py` with your own keycodes, macros, or command
 strings. Reach each group with its Group 0 jump code (table above).
@@ -740,6 +757,13 @@ explaining what it does. The same Key Settings table also appears in
 | `THRESH_PUFF` | `5` | hPa above baseline required to detect a puff (dash). Same tuning rule |
 | `THRESH_SIP_STRONG` | `15` | **Sensor mode only.** hPa below baseline at which a strong sip is detected; fires `STRONG_SIP_ACTION` once per press. Ignored in switch mode |
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
+| `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is switched off: a hard sip/puff there counts as a normal dot/dash. Default `(4,)` = Scanning, so a hard sip/puff (Enter/Space) never jumps you out of Switch Control. List several like `(4, 3)`; `()` = strong gestures on in every group |
+| `SWITCH_GROUP` | `7` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
+| `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
+| `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
+| `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before the Switch group returns to `SWITCH_EXIT_GROUP` by itself. `0` = never |
+| `SWITCH_EXIT_PUFF_S` | `5.0` | Or hold one puff this many seconds to leave the Switch group |
+| `SWITCH_EXIT_GROUP` | `1` | Group you return to when leaving the Switch group (1 = Keyboard) |
 | `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip — e.g. `"group 2"` to jump to Mouse. Empty string = disabled. **Switch mode:** triggered by a long-press of the DIT-side switch instead of pressure peak; overrides `LONG_PRESS_CYCLES_GROUP` on that switch |
 | `STRONG_PUFF_ACTION` | `""` | Same as above but for puff / DAH-side switch in switch mode |
 | `POINTS_TO_AVERAGE` | `8` | Reserved — the threshold path uses the raw reading, so this currently has no effect. Not a speed knob |
@@ -1005,6 +1029,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `CAREGIVER_SETUP_GUIDE.md` | Plain-English step-by-step assembly guide for a non-technical caregiver, using a specific recommended parts set |
 | `AEROMORSE_VS_DARCI.md` | Feature-by-feature comparison vs. the WesTest Darci USB, with migration guide for Darci users |
 | `MORSE_DEVICES_COMPARISON.md` | Side-by-side comparison of AeroMorse vs Adap2U, Darci USB, and morAce — including 1/2/3-switch mode support |
+| `AEROMORSE_SWITCH_MODE_GUIDE.md` / `.pdf` | **Switch mode (Group 7)** — AeroMorse as two plain switches: sip holds Enter, puff holds Space, for switch games and apps that need a key held (e.g. [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)). How to enter/leave, settings, Benny's Hub walkthrough, troubleshooting |
 | `AEROMORSE_SWITCH_CONTROL_GUIDE.md` | How to use AeroMorse's Group 4 (F1–F12) with **iOS Switch Control**, **Android Switch Access**, and **Samsung Universal Switch** — Morse-pattern → F-key → OS action tables, with step-by-step OS setup for each platform |
 | `TOOLS_AND_GUIDES.md` | Reference for development tools: Thonny, CircuitPython installer |
 | `AeroMorse Cheat Sheet.pdf` | Printable cheat sheet — one page per group, showing every pattern as dots/dashes next to its key or action, with a legend on the first page. Printed from `aeromorse_cheatsheet.htm` (load `morse_map.py` and use the browser's Print). |

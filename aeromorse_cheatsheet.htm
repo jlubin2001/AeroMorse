@@ -399,7 +399,7 @@
       'group 4':  { label: '→ Group 4',  cls: 'grp' },
       'group 5':  { label: '→ Group 5',  cls: 'grp' },
       'group 6':  { label: '→ Group 6',  cls: 'grp' },
-      'group 7':  { label: '→ Group 7',  cls: 'grp' },
+      'group 7':  { label: '→ Switch',   cls: 'grp' },
       'group 8':  { label: '→ Group 8',  cls: 'grp' },
       'group 9':  { label: '→ Group 9',  cls: 'grp' },
 
@@ -439,8 +439,8 @@
        sheet doubles as a reference card for the iOS user. Source: the
        Cross-Platform Comparison table from 12-Switch Recommended Mapping.md. */
     const IOS_F_KEY_LABELS = {
-      'SPACE': 'Select Item',   /* single sip  (was F1 before v1.14) */
-      '⏎':     'Next Item',     /* single puff (was F2 before v1.14) */
+      '⏎':     'Select Item',   /* single sip  = Enter (was F1 before v1.14) */
+      'SPACE': 'Next Item',     /* single puff = Space (was F2 before v1.14) */
       'F3':  'Previous Item',
       'F4':  'Scanner Menu',
       'F5':  'Home',
@@ -522,10 +522,10 @@
         g1: "Group 1: Keyboard",
         g2: "Group 2: Mouse & Windows",
         g3: "Group 3: Macros",
-        g4: "Group 4: Scanning - Space, Enter, F3-F12 (Switch Control)",
+        g4: "Group 4: Scanning - Enter, Space, F3-F12 (Switch Control)",
         g5: "Group 5: Media + App Launchers (USB HID Consumer Controls)",
         g6: "Group 6 (placeholder)",
-        g7: "Group 7 (placeholder)",
+        g7: "Group 7: Switch - sip holds Enter, puff holds Space (no Morse)",
         g8: "Group 8 (placeholder)",
         g9: "Group 9 (placeholder)"
       };
@@ -601,7 +601,7 @@
           key = key.toUpperCase();
         }
 
-        /* Group 4 only: if the key is Space, Enter or F3..F12, look up its iOS Switch Control
+        /* Group 4 only: if the key is Enter, Space or F3..F12, look up its iOS Switch Control
            action so it can be rendered as a small purple badge next to the key. */
         let iosLabel = null;
         if (group === 'g4' && IOS_F_KEY_LABELS[key]) {
