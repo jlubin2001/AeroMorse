@@ -641,6 +641,10 @@ def check_config_settings(c):
          or isinstance(v, (tuple, list)) and all(isinstance(g, int) and 0 <= g <= 9 for g in v),
          "should be group numbers in brackets, e.g. (4,) or (4, 3), or () for none. "
          "(Note the comma in (4,).)")
+    want('REPEAT_SPLIT_PCT', lambda v: is_num(v) and (v == 0 or 30 <= v <= 90),
+         "should be 0 (off) or 30-90 (percent of the sip/puff peak; 60 is a good start).")
+    want('REPEAT_SPLIT_RISE', lambda v: is_num(v) and 0.2 <= v <= 5,
+         "should be 0.2-5 (hPa the pressure must climb again after the dip; 1.0 is normal).")
     want('SWITCH_GROUP', lambda v: isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 9,
          "should be a group number 1-9, or 0 for no Switch group.")
     want('SWITCH_IDLE_EXIT_S', lambda v: is_num(v) and (v == 0 or 5 <= v <= 600),

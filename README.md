@@ -781,6 +781,7 @@ explaining what it does. The same Key Settings table also appears in
 | `POINTS_TO_AVERAGE` | `8` | Reserved — the threshold path uses the raw reading, so this currently has no effect. Not a speed knob |
 | `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass filter. `False` = lowest latency, noisier signal |
 | `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag per edge), `False` = ODR/9 (about half). **Major typing-speed lever** — set `False` if you type fast |
+| `REPEAT_SPLIT_PCT` | `0` | Split on a dip (v1.18+): a sip/puff that drops below this % of its peak and then climbs again by `REPEAT_SPLIT_RISE` hPa counts as two. Fixes two quick sips/puffs running together. Try `60`; `0` = off |
 | `DOT_PIN` | `board.D5` | GPIO pin for dot switch (switch mode only) |
 | `DASH_PIN` | `board.D6` | GPIO pin for dash switch (switch mode only) |
 
@@ -1081,6 +1082,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | Pattern shows `?` on display | Pattern not mapped in current group | Check `morse_map.py`; REPL shows the exact pattern received |
 | Calibration message at startup then hangs | Sensor not found on I²C | Check the STEMMA QT cable connection — or, on a board without a STEMMA QT port, the 3V / GND / SDA / SCL wires |
 | Dashes go missing (e.g. `x` `-..-` types `u` `..-`, `q` types `k`) | A quick puff right before a sip doesn't reach `THRESH_PUFF` on this sensor | Lower `THRESH_PUFF` a little (e.g. `2` → `1.5`); leave `THRESH_SIP` alone if dots are fine |
+| Two sips or two puffs in a row count as one (`p` `.--.` types `r` `.-.`, space `..--` types `w` `.--`) | The pressure doesn't fall back under the trigger between the two | Set `REPEAT_SPLIT_PCT = 60` in `config.py` (v1.18+), or leave a slightly longer break between the two |
 | Screen shows `ERROR - SEE LOG` | One action hit an unexpected problem (v1.6+ keeps running instead of stopping) | Keep using the device; the USB serial log shows which pattern and why. Fix that entry in `morse_map.py` and run the validator |
 
 ## Credits

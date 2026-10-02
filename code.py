@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.17   (released 2026-09-30)
+#  AeroMorse code.py   —   version 1.18   (released 2026-10-02)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -178,6 +178,29 @@ except NameError:
 except Exception as _e:
     print("STRONG_OFF_IN_GROUPS not understood (%s) - strong sip/puff on in all groups" % _e)
     _STRONG_OFF = ()
+
+# Split on a dip (config.py REPEAT_SPLIT_PCT, sensor mode): two quick sips or
+# puffs in a row can run together when the pressure doesn't fall back under the
+# trigger between them (p .--. comes out as r .-.). With this on, a sip/puff
+# that drops below REPEAT_SPLIT_PCT % of its peak and then climbs again by
+# REPEAT_SPLIT_RISE hPa counts as two. 0 or missing = off (old behaviour).
+try:
+    _SPLIT_FRAC = float(REPEAT_SPLIT_PCT) / 100.0
+    if not 0.0 < _SPLIT_FRAC < 1.0:
+        _SPLIT_FRAC = 0.0
+except NameError:
+    _SPLIT_FRAC = 0.0
+except Exception as _e:
+    print("REPEAT_SPLIT_PCT not understood (%s) - split on a dip is off" % _e)
+    _SPLIT_FRAC = 0.0
+try:
+    _SPLIT_RISE = max(0.2, float(REPEAT_SPLIT_RISE))
+except Exception:
+    _SPLIT_RISE = 1.0
+_SPLIT_MAX_S = 0.5      # only the first half second of a press can split, so a
+                        # long hold (group cycle) is never chopped up
+_sp_peak = 0.0          # highest pressure of the current press (toward its side)
+_sp_low  = None         # lowest pressure since it dipped; None = not dipped yet
 
 # Switch group (config.py SWITCH_GROUP, e.g. 7): in that group AeroMorse acts
 # like two plain switches instead of Morse — a sip presses SWITCH_SIP_KEY and a
@@ -1577,6 +1600,35 @@ while True:
             _candidate_state = candidate
             _candidate_count = 1
         new_state = _candidate_state if _candidate_count >= DEBOUNCE_SAMPLES else _last_state
+
+        # Sip straight into puff (or puff into sip) with no rest seen in between —
+        # the swing can be only a few ms, or fall inside a screen update. End
+        # the first press here (one pass of IDLE) so its dot/dash is counted;
+        # the next pass starts the other one. Without this it was dropped.
+        if new_state != IDLE and _last_state != IDLE and new_state != _last_state:
+            new_state = IDLE
+
+        # Split on a dip: a sip/puff that falls well below its peak and then
+        # climbs again is two presses that ran together. End the first one here
+        # (one pass of IDLE); the next pass starts the second as a new press.
+        if _SPLIT_FRAC:
+            if _last_state == IDLE:
+                _sp_peak = 0.0
+                _sp_low  = None
+            elif (new_state == _last_state and SWITCH_MODE != 1
+                    and not _CODE_REPEAT_ACTIVE and not _strong_handled
+                    and not _consuming_press and active_group != _SWITCH_GROUP
+                    and now - _press_start < _SPLIT_MAX_S):
+                _sp_a = _display_pressure if _last_state == DAH else -_display_pressure
+                if _sp_low is None:
+                    if _sp_a > _sp_peak:
+                        _sp_peak = _sp_a
+                    elif _sp_a < _sp_peak * _SPLIT_FRAC:
+                        _sp_low = _sp_a
+                elif _sp_a < _sp_low:
+                    _sp_low = _sp_a
+                elif _sp_a >= _sp_low + _SPLIT_RISE:
+                    new_state = IDLE
     else:
         dot_dn  = not _dot_btn.value    # active-low with pull-up
         dash_dn = not _dash_btn.value

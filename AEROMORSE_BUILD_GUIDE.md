@@ -1684,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.17 (released 2026-09-30)`. Open the file
+> `AeroMorse code.py — version 1.18 (released 2026-10-02)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1916,6 +1916,8 @@ it interact with other settings" explanation, jump to Appendix E.
 | `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass. `False` = lowest latency, noisier |
 | `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag), `False` = ODR/9 (~half). Major typing-speed lever |
 | `BASELINE_DRIFT_S` | `30` | Auto-zero time constant (s) — baseline tracks ambient pressure drift while idle. `0` disables |
+| `REPEAT_SPLIT_PCT` | `0` | Split on a dip: a sip/puff that drops below this % of its peak and then climbs again counts as two. Fixes two quick sips/puffs running together (`p` → `r`, space → `w`). Try `60`. `0` = off |
+| `REPEAT_SPLIT_RISE` | `1.0` | hPa the pressure must climb again after the dip before it is split. Keep above sensor noise |
 | `DOT_PIN` | `board.D5` | Switch mode only — GPIO for the dot switch |
 | `DASH_PIN` | `board.D6` | Switch mode only — GPIO for the dash switch |
 
@@ -2188,6 +2190,12 @@ no longer resolve adjacent elements.
 
 **Fix, in order:**
 
+0. *(v1.18+)* `REPEAT_SPLIT_PCT = 60` — "split on a dip". A sip/puff
+   that drops below 60 % of its peak and then climbs again by
+   `REPEAT_SPLIT_RISE` hPa is counted as two, even if the pressure never
+   got back inside the idle band. It leaves the triggers, filter and
+   timing alone, so try it first if your other settings already suit
+   you. `0` switches it off.
 1. `SENSOR_FILTER_HEAVY = False` — halves the group delay so the dip
    between elements survives. Usually sufficient on its own.
 2. `DEBOUNCE_SAMPLES = 3` → `2` — fewer samples needed to confirm the

@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.17 (released 2026-09-30)
+# AeroMorse config.py — version 1.18 (released 2026-10-02)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -45,6 +45,13 @@ POINTS_TO_AVERAGE = 8         # reserved — not currently used in the threshold
 SENSOR_FILTER_ENABLED = True  # LPS33HW hardware low-pass. False = lowest latency, noisier
 SENSOR_FILTER_HEAVY   = True  # True = ODR/20 (~40-60 ms lag), False = ODR/9 (~half that)
 BASELINE_DRIFT_S  = 30        # auto-zero time constant; 0 disables, follows ambient pressure drift
+
+# Split on a dip — for two quick sips or puffs in a row that run together
+# (p .--. comes out as r .-.,  space ..-- as w .--). A sip/puff that drops
+# below REPEAT_SPLIT_PCT % of its peak and then climbs again by
+# REPEAT_SPLIT_RISE hPa is counted as two. Try 60. 0 = off.
+REPEAT_SPLIT_PCT  = 0         # 0 = off; 60 = split when it dips below 60 % of its peak
+REPEAT_SPLIT_RISE = 1.0       # hPa it must climb again after the dip (keep above sensor noise)
 
 DOT_PIN           = board.D5  # switch-mode only — TIP of dot jack
 DASH_PIN          = board.D6  # switch-mode only — TIP of dash jack
