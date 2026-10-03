@@ -1,6 +1,6 @@
 # receiver_magtag.py — AeroMorse wireless e-ink remote display (Option W2)
 #
-# AeroMorse receiver_magtag.py — version 1.19 (released 2026-10-03)
+# AeroMorse receiver_magtag.py — version 1.20 (released 2026-10-03)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # ════════════════════════════════════════════════════════════════════════════

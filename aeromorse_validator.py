@@ -670,7 +670,17 @@ def check_config_settings(c):
          "\"AeroMorse Green\". (The device still works; it just keeps the "
          "default name.)")
     want('NO_REPEAT_KEYS',       lambda v: isinstance(v, (tuple, list)),
-         "should be a tuple of key names, e.g. (\"PAGE_UP\", \"PAGE_DOWN\").")
+         "should be a tuple of key names, e.g. (\"PAGE_UP\", \"PAGE_DOWN\"). "
+         "(One name alone needs a comma: (\"TAB\",).)")
+    if 'NO_REPEAT_KEYS' in present and isinstance(val('NO_REPEAT_KEYS'), (tuple, list)):
+        for _entry in val('NO_REPEAT_KEYS'):
+            _parts = [p.strip().upper() for p in str(_entry).split('+')]
+            _bad = [p for p in _parts if p not in _KC_NAMES]
+            if not isinstance(_entry, str) or _bad:
+                warn("config.py: NO_REPEAT_KEYS entry %r has a key name that is not a "
+                     "known Keycode (%s) - the device ignores that entry, so it would "
+                     "still repeat. Use names like \"TAB\", or a combination joined "
+                     "with + like \"ALT+TAB\"." % (_entry, ', '.join(_bad) or 'not text'))
 
     check_warn('config.py: settings sanity',
                not missing, 'checked %d known settings' % len(_KNOWN_CONFIG & present))

@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.19   (released 2026-10-03)
+#  AeroMorse code.py   —   version 1.20   (released 2026-10-03)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -928,20 +928,28 @@ def _exec_consumer(cc_action):
         cc_device.send(cc_action.code)
 
 
-# Keycodes that must never arm the repeat (config NO_REPEAT_KEYS, by name).
-# Resolved to integer keycodes once at import. Guarded so an older config.py
+# Keys and key combinations that must never arm the repeat (config
+# NO_REPEAT_KEYS, by name). A plain name ("PAGE_UP") blocks that key pressed on
+# its own; names joined with + ("ALT+TAB") block exactly that combination, in
+# any order — the same keys on their own, or in another combination, still
+# repeat. Resolved to keycodes once at import. Guarded so an older config.py
 # without NO_REPEAT_KEYS still boots with a sane default instead of crashing.
 try:
     _NO_REPEAT_NAMES = NO_REPEAT_KEYS
 except NameError:
     _NO_REPEAT_NAMES = ("PAGE_UP", "PAGE_DOWN")
+if isinstance(_NO_REPEAT_NAMES, str):
+    _NO_REPEAT_NAMES = (_NO_REPEAT_NAMES,)       # ("TAB") without the comma
 _NO_REPEAT_KEYCODES = set()
+_NO_REPEAT_COMBOS   = set()                      # frozensets of keycodes
 for _nm in _NO_REPEAT_NAMES:
-    _kc = getattr(Keycode, _nm, None)
-    if isinstance(_kc, int):
-        _NO_REPEAT_KEYCODES.add(_kc)
-    else:
+    _kcs = [getattr(Keycode, _p.strip().upper(), None) for _p in str(_nm).split("+")]
+    if not all(isinstance(_k, int) for _k in _kcs):
         print(f"WARNING: NO_REPEAT_KEYS entry {_nm!r} is not a valid Keycode — ignored")
+    elif len(_kcs) == 1:
+        _NO_REPEAT_KEYCODES.add(_kcs[0])
+    else:
+        _NO_REPEAT_COMBOS.add(frozenset(_kcs))
 
 
 # ── Secret macros (passwords) — plain or PIN-locked ─────────────────────────────
@@ -1276,8 +1284,14 @@ def _execute(action, pattern=""):
     elif isinstance(action, tuple):
         label = " + ".join(_KEYCODE_NAMES.get(k, f"KEY {k}") for k in action)
         _last_action     = label[:20] if label else "COMBO"
-        _last_repeatable = action
-        _repeat_label    = _last_action
+        if _NO_REPEAT_COMBOS and frozenset(action) in _NO_REPEAT_COMBOS:
+            # This exact combination is excluded from repeat (e.g. ALT+TAB):
+            # leave nothing armed so a following `repeat` is a no-op.
+            _last_repeatable = None
+            _repeat_label    = ""
+        else:
+            _last_repeatable = action
+            _repeat_label    = _last_action
         _last_mouse_vec  = (0, 0, 0)
         print(f"{pattern}  {label}")
         _exec_combo(action)

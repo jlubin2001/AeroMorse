@@ -1684,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.19 (released 2026-10-03)`. Open the file
+> `AeroMorse code.py — version 1.20 (released 2026-10-03)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1995,7 +1995,7 @@ it interact with other settings" explanation, jump to Appendix E.
 
 | Setting | Shipped | Hint |
 |---------|---------|------|
-| `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that never auto-repeat. Add e.g. `"HOME"`, `"END"`. Arrows deliberately omitted |
+| `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that never auto-repeat. Add e.g. `"HOME"`, `"END"`. A combination joined with `+` (`"ALT+TAB"`, v1.20+) blocks exactly that combination. Arrows deliberately omitted |
 | `SECRETS_AUTOLOCK_MIN` | `0` | Only matters with a PIN-locked `macro_secrets.enc` (see README *PIN-locked secrets*). Minutes with no sip/puff before unlocked secrets lock again. `0` = stay unlocked until power-off or Macro `L` (`lock`). Secrets are always locked at power-up |
 
 **Display / wireless**
@@ -3004,6 +3004,12 @@ accidental repeat scrolls far past where you were and you lose your
 place. Add any others you don't want to repeat, e.g.
 `("PAGE_UP", "PAGE_DOWN", "HOME", "END", "ESCAPE", "TAB")`.
 
+- *(v1.20+)* An entry can also be a **key combination**: join the names
+  with `+`, e.g. `"ALT+TAB"`, `"GUI+TAB"` or
+  `"RIGHT_CONTROL+RIGHT_ALT+LEFT_ARROW"`. It blocks exactly that
+  combination (keys in any order). A single-key entry such as `"TAB"`
+  only blocks that key pressed on its own, so `SHIFT+TAB` still repeats
+  unless you list it, and `LEFT_ARROW` alone still repeats.
 - The **arrow keys are intentionally not** in this list — Up/Down arrow
   held with `repeat` is a normal, fine-grained way to scroll, and you
   stop it with any sip/puff.

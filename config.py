@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.19 (released 2026-10-03)
+# AeroMorse config.py — version 1.20 (released 2026-10-03)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -169,6 +169,9 @@ MOUSE_CLICK_GAP  = 0.040       # s between the two clicks of a double-click
 # scrolls far past where you were and you lose your place. Add others you
 # don't want to repeat, e.g. "HOME", "END", "ESCAPE", "TAB". Arrow keys are
 # intentionally NOT here — arrow + repeat is the preferred way to scroll.
+# A key combination can be listed too: join the names with +, e.g. "ALT+TAB"
+# or "GUI+TAB". That blocks exactly that combination (keys in any order); the
+# same keys on their own still follow the single-key entries.
 NO_REPEAT_KEYS = ("PAGE_UP", "PAGE_DOWN")
 
 

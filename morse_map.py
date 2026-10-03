@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.19 (released 2026-10-03)
+# AeroMorse morse_map.py — version 1.20 (released 2026-10-03)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
