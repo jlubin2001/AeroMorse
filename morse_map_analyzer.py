@@ -22,7 +22,16 @@ REPORT_PATH    = os.path.join(_BASE, 'morse_map_report.txt')
 
 # ── Mock adafruit_hid so morse_map imports cleanly ───────────────────────────
 
-class _Keycode:
+# Any Keycode.NAME is accepted (SHIFT, CONTROL, keypad digits, F13+ ...): the
+# analyzer only counts patterns, so it must never stop on a key name. Whether a
+# name really exists on the device is the validator's job, not this tool's.
+class _KeycodeMeta(type):
+    def __getattr__(cls, name):
+        if name.startswith('__'):
+            raise AttributeError(name)
+        return f'Keycode.{name}'
+
+class _Keycode(metaclass=_KeycodeMeta):
     pass
 
 for _n in [
