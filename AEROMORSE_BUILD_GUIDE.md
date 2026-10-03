@@ -1684,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.18 (released 2026-10-02)`. Open the file
+> `AeroMorse code.py — version 1.19 (released 2026-10-03)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1918,6 +1918,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | `BASELINE_DRIFT_S` | `30` | Auto-zero time constant (s) — baseline tracks ambient pressure drift while idle. `0` disables |
 | `REPEAT_SPLIT_PCT` | `0` | Split on a dip: a sip/puff that drops below this % of its peak and then climbs again counts as two. Fixes two quick sips/puffs running together (`p` → `r`, space → `w`). Try `60`. `0` = off |
 | `REPEAT_SPLIT_RISE` | `1.0` | hPa the pressure must climb again after the dip before it is split. Keep above sensor noise |
+| `DIAG_LOG_S` | `0` | Diagnostics (v1.19+): every this many seconds one `DIAG ...` line of timing figures (loop speed, longest blind moment, screen / wireless / key-send time, sensor reading rate, shortest sip/puff and rest) goes to the USB serial log. The first / worst / last line are saved on `devicereset`, and automatically every 5 minutes while you type (so they survive an unplug); the next run prints them as `DIAG PREV ...` (and the run before that as `DIAG PREV2 ...`). For tracking down "types badly until restarted". `0` = off; try `10` |
 | `DOT_PIN` | `board.D5` | Switch mode only — GPIO for the dot switch |
 | `DASH_PIN` | `board.D6` | Switch mode only — GPIO for the dash switch |
 

@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.18 (released 2026-10-02)
+# AeroMorse config.py — version 1.19 (released 2026-10-03)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -52,6 +52,14 @@ BASELINE_DRIFT_S  = 30        # auto-zero time constant; 0 disables, follows amb
 # REPEAT_SPLIT_RISE hPa is counted as two. Try 60. 0 = off.
 REPEAT_SPLIT_PCT  = 0         # 0 = off; 60 = split when it dips below 60 % of its peak
 REPEAT_SPLIT_RISE = 1.0       # hPa it must climb again after the dip (keep above sensor noise)
+
+# Diagnostics — for tracking down "it types badly until I restart it". Every
+# DIAG_LOG_S seconds one "DIAG ..." line of timing figures goes to the USB
+# serial log (nothing is typed on the computer). The first / worst / last
+# line are saved on `devicereset`, and by themselves every 5 minutes while
+# you type, so they survive an unplug; the next run prints them as
+# "DIAG PREV ...". Switch it off again (0) once the problem is found.
+DIAG_LOG_S        = 0         # 0 = off; 10 = one line every 10 seconds
 
 DOT_PIN           = board.D5  # switch-mode only — TIP of dot jack
 DASH_PIN          = board.D6  # switch-mode only — TIP of dash jack

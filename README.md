@@ -782,6 +782,7 @@ explaining what it does. The same Key Settings table also appears in
 | `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass filter. `False` = lowest latency, noisier signal |
 | `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag per edge), `False` = ODR/9 (about half). **Major typing-speed lever** — set `False` if you type fast |
 | `REPEAT_SPLIT_PCT` | `0` | Split on a dip (v1.18+): a sip/puff that drops below this % of its peak and then climbs again by `REPEAT_SPLIT_RISE` hPa counts as two. Fixes two quick sips/puffs running together. Try `60`; `0` = off |
+| `DIAG_LOG_S` | `0` | Diagnostics (v1.19+): every this many seconds one `DIAG ...` line of timing figures (loop speed, longest blind moment, screen / wireless / key-send time, sensor reading rate, shortest sip/puff and rest) goes to the USB serial log. The first / worst / last line are saved on `devicereset`, and automatically every 5 minutes while you type (so they survive an unplug); the next run prints them as `DIAG PREV ...` (and the run before that as `DIAG PREV2 ...`). For tracking down "types badly until restarted". `0` = off; try `10` |
 | `DOT_PIN` | `board.D5` | GPIO pin for dot switch (switch mode only) |
 | `DASH_PIN` | `board.D6` | GPIO pin for dash switch (switch mode only) |
 
@@ -982,7 +983,8 @@ type in Morse.
   letters/digits, then **Enter** (`.-.-`). The screen shows `PIN ****`;
   **nothing you type while entering the PIN reaches the computer**.
 - Right PIN → **UNLOCKED** (about 1.5 s) and it types the secret you asked
-  for. The status line shows `UNLOCKED` while secrets are open.
+  for. The status line shows `UNLOCKED` while secrets are open — only in groups whose map has
+  `_secret()` entries (v1.19+), so it doesn't clutter the other groups.
 - Wrong PIN → **WRONG PIN**, stays locked; just use the pattern again.
 - **Esc**, or **Backspace** with nothing typed, cancels. Entry also
   cancels itself after 60 s of no input.

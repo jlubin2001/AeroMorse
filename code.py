@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.18   (released 2026-10-02)
+#  AeroMorse code.py   —   version 1.19   (released 2026-10-03)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -201,6 +201,24 @@ _SPLIT_MAX_S = 0.5      # only the first half second of a press can split, so a
                         # long hold (group cycle) is never chopped up
 _sp_peak = 0.0          # highest pressure of the current press (toward its side)
 _sp_low  = None         # lowest pressure since it dipped; None = not dipped yet
+
+# Diagnostics (config.py DIAG_LOG_S; see "Diagnostics" above the main loop).
+try:
+    _DIAG_S = float(DIAG_LOG_S)
+    if _DIAG_S < 2:
+        _DIAG_S = 0.0
+except Exception:
+    _DIAG_S = 0.0
+
+# One list instead of many globals (functions can update it without `global`):
+#  0 loops   1 longest gap   2 gaps>20ms   3 gaps>40ms   4 screen max
+#  5 wireless max   6 action max   7 new sensor readings   8 lowest pressure
+#  9 highest pressure   10 presses   11 shortest press   12 shortest rest
+#  13 swing fixes   14 splits
+def _dg_fresh():
+    return [0, 0.0, 0, 0, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 0, 9.0, 9.0, 0, 0]
+
+_dg = _dg_fresh()
 
 # Switch group (config.py SWITCH_GROUP, e.g. 7): in that group AeroMorse acts
 # like two plain switches instead of Morse — a sip presses SWITCH_SIP_KEY and a
@@ -816,6 +834,7 @@ def _reset_confirm_input(action):
             mouse.release_all()
         except Exception:
             pass
+        _diag_save()
         time.sleep(0.5)
         microcontroller.reset()
     _reset_cancel()
@@ -961,6 +980,35 @@ def _parse_secrets(text):
 _SECRETS       = {}
 _SECRETS_ENC   = None     # raw bytes of macro_secrets.enc (None = no PIN lock)
 _secrets_locked = False
+
+# Groups whose map holds at least one _secret() entry. The "UNLOCKED" reminder
+# on the screen is shown only in those groups (in every group if Group 0, the
+# always-available layer, has one), not everywhere.
+def _has_secret(action):
+    if isinstance(action, _Secret):
+        return True
+    if isinstance(action, (tuple, list)):
+        for _a in action:
+            if isinstance(_a, _Secret):
+                return True
+    return False
+
+_SECRET_GROUPS = set()
+if _Secret is not None:
+    try:
+        for _g, _grp in groups.items():
+            for _pats in _grp.values():
+                for _act in _pats.values():
+                    if _has_secret(_act):
+                        _SECRET_GROUPS.add(_g)
+                        break
+                if _g in _SECRET_GROUPS:
+                    break
+    except Exception as _e:
+        print("Secrets: could not list the groups that use them (%s)" % _e)
+        _SECRET_GROUPS = set(range(10))      # fall back to showing it everywhere
+_SECRETS_EVERYWHERE = 0 in _SECRET_GROUPS
+
 if _Secret is not None:
     try:
         with open("/macro_secrets.enc", "rb") as _f:
@@ -1182,9 +1230,14 @@ def execute(action, pattern=""):
     the USB log and shown on screen, all keys and buttons are released, and
     the device carries on."""
     global _last_action, _drag_active
+    _t0 = time.monotonic() if _DIAG_S else 0.0
     try:
         _execute(action, pattern)
-    except Exception as e:           # not KeyboardInterrupt: Ctrl-C still stops it
+        if _DIAG_S:
+            _t0 = time.monotonic() - _t0
+            if _t0 > _dg[6]:
+                _dg[6] = _t0
+    except Exception as e:          # not KeyboardInterrupt: Ctrl-C still stops it
         print("ERROR in action %r: %s: %s" % (pattern, type(e).__name__, e))
         _last_action = "ERROR - SEE LOG"
         try:
@@ -1488,8 +1541,10 @@ def _update_display(pressure=0.0):
         _pieces.append("DRAG")
     if _pin_active:
         _pieces.append("PIN")
-    elif _SECRETS_ENC is not None and not _secrets_locked:
-        _pieces.append("UNLOCKED")        # reminder: secrets are open
+    elif (_SECRETS_ENC is not None and not _secrets_locked
+          and (_SECRETS_EVERYWHERE or active_group in _SECRET_GROUPS)):
+        _pieces.append("UNLOCKED")        # reminder: secrets are open (shown only
+                                          # in groups that have secrets)
     mods_str = " ".join(_pieces) if _pieces else " "
     if _show_splash and not _pieces:
         mods_str = _SPLASH_CP or " "     # start-up screen, row 4
@@ -1551,7 +1606,146 @@ def _update_display(pressure=0.0):
     # visible to others; the local screen keeps them so you can see your input.
     if _pin_active:
         buf_str = "*" * _num_shifts if _num_shifts else " "
-    _espnow_send(group_str, buf_str, action_str, mods_str)
+    if _DIAG_S:
+        _dg_e0 = time.monotonic()
+        _espnow_send(group_str, buf_str, action_str, mods_str)
+        _dg_e0 = time.monotonic() - _dg_e0
+        if _dg_e0 > _dg[5]:
+            _dg[5] = _dg_e0
+    else:
+        _espnow_send(group_str, buf_str, action_str, mods_str)
+
+# ── Diagnostics (config.py DIAG_LOG_S) ─────────────────────────────────────────
+# For tracking down "it types badly until I restart it". Every DIAG_LOG_S
+# seconds one "DIAG ..." line goes to the USB serial log: how fast the main loop
+# runs, its longest blind moments, how long screen / wireless / key-sending
+# took, how often the sensor delivers a new reading, and how short the sips,
+# puffs and rests were. Nothing is sent to the computer as keystrokes.
+# The first / worst / last line are saved in the board's small non-volatile
+# memory by `devicereset` just before it restarts, and automatically (from one
+# minute after start-up, then every five minutes, only while there is typing)
+# so they also survive an unplug. The next run prints them as "DIAG PREV ..."
+# and the run before that as "DIAG PREV2 ...", so a bad spell can still be
+# examined after the restart that cured it. 0 or missing = off (no cost).
+# (_DIAG_S and the _dg counter list are set up near the top, with the other
+# config.py settings, because functions defined earlier use them.)
+_dg_t0    = 0.0       # start of the current interval
+_dg_last  = 0.0        # time of the previous loop pass
+_dg_raw   = None       # previous raw sensor reading
+_dg_count = 0          # intervals reported so far
+_dg_first = ""
+_dg_worst = ""
+_dg_worst_gap = 0.0
+_dg_lastline  = ""
+_dg_saved_at  = 0.0    # when this run's lines were last saved (0 = not yet)
+_dg_unsaved   = 0      # sips/puffs since the last save
+_DG_PREV  = ""
+_DG_RR    = "?"
+_DG_MAGIC = b"AMD1"
+
+def _dg_ctrl1():
+    """Sensor CTRL_REG1 as it is right now (data rate / filter bits), or -1."""
+    try:
+        _b = bytearray(1)
+        with lps.i2c_device as _d:
+            _d.write_then_readinto(b"\x10", _b)
+        return _b[0]
+    except Exception:
+        return -1
+
+def _dg_line(now):
+    span = max(now - _dg_t0, 0.001)
+    try:
+        import supervisor
+        usb = 1 if supervisor.runtime.usb_connected else 0
+    except Exception:
+        usb = -1
+    return ("up=%d rr=%s loops=%d/s gap=%dms g20=%d g40=%d scr=%dms esp=%dms act=%dms "
+            "smp=%d/s p=%.1f..%.1f base=%.2f n=%d press>=%dms rest>=%dms swing=%d split=%d "
+            "mem=%d ctrl1=0x%02x usb=%d grp=%d" % (
+                now, _DG_RR, _dg[0] / span, _dg[1] * 1000, _dg[2], _dg[3], _dg[4] * 1000,
+                _dg[5] * 1000, _dg[6] * 1000, _dg[7] / span, _dg[8], _dg[9],
+                _baseline if USE_SENSOR else 0.0, _dg[10],
+                (_dg[11] if _dg[11] < 9 else 0) * 1000, (_dg[12] if _dg[12] < 9 else 0) * 1000,
+                _dg[13], _dg[14], gc.mem_free(),
+                _dg_ctrl1() if USE_SENSOR else 0, usb, active_group))
+
+def _diag_report(now, quiet=False):
+    """Close the current interval: print its line and remember first/worst/last."""
+    global _dg, _dg_t0, _dg_count, _dg_first, _dg_worst, _dg_worst_gap, _dg_lastline
+    global _dg_unsaved
+    line = _dg_line(now)
+    _dg_count += 1
+    if _dg_count == 2 or not _dg_first:
+        _dg_first = line                 # interval 1 includes start-up; keep the 2nd
+    if _dg_count > 1 and _dg[10] and _dg[1] >= _dg_worst_gap:
+        _dg_worst_gap = _dg[1]
+        _dg_worst = line                 # worst = longest blind moment while typing
+    _dg_lastline = line
+    _dg_unsaved += _dg[10]
+    if not quiet:
+        print("DIAG " + line)
+        if _DG_PREV and _dg_count % 6 == 1:
+            _diag_print_prev()
+    _dg = _dg_fresh()
+    _dg_t0 = now
+    # Auto-save, so an unplug (not only `devicereset`) keeps the figures: from
+    # one minute after start-up, then every five minutes — and only if there
+    # has been typing since the last save.
+    if (not quiet and _dg_unsaved
+            and now - _dg_saved_at >= (60 if _dg_saved_at == 0.0 else 300)):
+        _diag_write(now, "auto")
+
+def _diag_print_prev():
+    """Print what earlier runs saved: PREV = the run before this one, PREV2 = the one before."""
+    for _i, _blk in enumerate(_DG_PREV.split("\n---\n")[:2]):
+        for _l in _blk.split("\n"):
+            print("DIAG PREV%s %s" % ("" if _i == 0 else "2", _l))
+
+def _diag_write(now, why):
+    """Store this run's first/worst/last lines, followed by the previous run's,
+    in the board's non-volatile memory."""
+    global _dg_saved_at, _dg_unsaved
+    try:
+        text = ("SAVED up=%d by=%s rr=%s\nFIRST %s\nWORST %s\nLAST %s" % (
+            now, why, _DG_RR, _dg_first, _dg_worst, _dg_lastline))
+        if _DG_PREV:
+            text += "\n---\n" + _DG_PREV.split("\n---\n")[0]
+        data = text.encode()[:2400]
+        nvm = microcontroller.nvm
+        if nvm is not None and len(nvm) >= len(data) + 6:
+            nvm[0:len(data) + 6] = _DG_MAGIC + bytes([len(data) >> 8, len(data) & 255]) + data
+        _dg_saved_at = now
+        _dg_unsaved  = 0
+    except Exception as e:
+        print("DIAG save failed:", e)
+
+def _diag_save():
+    """Called by devicereset just before restarting: keep first/worst/last."""
+    if not _DIAG_S:
+        return
+    try:
+        _diag_report(time.monotonic(), quiet=True)
+    except Exception as e:
+        print("DIAG save failed:", e)
+    _diag_write(time.monotonic(), "devicereset")
+
+if _DIAG_S:
+    try:
+        _DG_RR = str(microcontroller.cpu.reset_reason).split(".")[-1]
+    except Exception:
+        pass
+    try:
+        _nvm = microcontroller.nvm
+        if _nvm is not None and bytes(_nvm[0:4]) == _DG_MAGIC:
+            _n = (_nvm[4] << 8) | _nvm[5]
+            if 0 < _n <= 2400:
+                _DG_PREV = bytes(_nvm[6:6 + _n]).decode()
+    except Exception as _e:
+        print("DIAG: could not read saved lines:", _e)
+    print("DIAG on: one line every %d s; reset reason %s" % (_DIAG_S, _DG_RR))
+    if _DG_PREV:
+        _diag_print_prev()
 
 # ── Main loop ──────────────────────────────────────────────────────────────────
 #
@@ -1566,6 +1760,23 @@ _DISPLAY_RATE = 0.1     # cap display refresh at 10 Hz
 while True:
     now = time.monotonic()
 
+    # ── Diagnostics: loop speed and blind moments ───────────────────────────
+    if _DIAG_S:
+        if _dg_t0 == 0.0:
+            _dg_t0 = _dg_last = now
+        _dg_gap  = now - _dg_last
+        _dg_last = now
+        _dg[0] += 1
+        if _dg_gap > 0.02:
+            _dg[2] += 1
+            if _dg_gap > 0.04:
+                _dg[3] += 1
+            if _dg_gap > _dg[1]:
+                _dg[1] = _dg_gap
+        if now - _dg_t0 >= _DIAG_S:
+            _diag_report(now)
+            now = _dg_last = time.monotonic()
+
     # ── Timed audio release ─────────────────────────────────────────────────
     _audio_tick()
 
@@ -1574,6 +1785,14 @@ while True:
         raw = lps.pressure
         _avg_pressure.add(raw)
         _display_pressure = raw - _baseline
+        if _DIAG_S:
+            if raw != _dg_raw:
+                _dg_raw = raw
+                _dg[7] += 1
+            if _display_pressure < _dg[8]:
+                _dg[8] = _display_pressure
+            elif _display_pressure > _dg[9]:
+                _dg[9] = _display_pressure
 
         # Auto-zero: while no input is active, slowly drift baseline toward
         # the current raw reading so weather / HVAC / temperature changes
@@ -1607,6 +1826,7 @@ while True:
         # the next pass starts the other one. Without this it was dropped.
         if new_state != IDLE and _last_state != IDLE and new_state != _last_state:
             new_state = IDLE
+            _dg[13] += 1
 
         # Split on a dip: a sip/puff that falls well below its peak and then
         # climbs again is two presses that ran together. End the first one here
@@ -1629,6 +1849,7 @@ while True:
                     _sp_low = _sp_a
                 elif _sp_a >= _sp_low + _SPLIT_RISE:
                     new_state = IDLE
+                    _dg[14] += 1
     else:
         dot_dn  = not _dot_btn.value    # active-low with pull-up
         dash_dn = not _dash_btn.value
@@ -1755,6 +1976,10 @@ while True:
         elif _last_state == IDLE:
             # IDLE → DIT/DAH: record when the press started, begin sidetone,
             # reset the code-repeat stream counter and strong-press tracking
+            if _DIAG_S:
+                _dg[10] += 1
+                if now - _last_trans_at < _dg[12]:
+                    _dg[12] = now - _last_trans_at
             _press_start    = now
             _stream_count   = 0
             _peak_delta     = 0.0
@@ -1772,6 +1997,8 @@ while True:
             # DIT/DAH → IDLE: stop sidetone, commit the element (or long-press)
             _beep_stop()
             duration = now - _press_start
+            if _DIAG_S and duration < _dg[11]:
+                _dg[11] = duration
 
             # If this press was the one that cancelled a mouse repeat, swallow
             # the release entirely — no bit shift, no cycle, no accept.
@@ -1900,5 +2127,12 @@ while True:
 
     # ── Display refresh (capped at 10 Hz) ───────────────────────────────────
     if now - _last_display >= _DISPLAY_RATE:
-        _update_display(_display_pressure)
+        if _DIAG_S:
+            _dg_gap = time.monotonic()
+            _update_display(_display_pressure)
+            _dg_gap = time.monotonic() - _dg_gap
+            if _dg_gap > _dg[4]:
+                _dg[4] = _dg_gap
+        else:
+            _update_display(_display_pressure)
         _last_display = now
