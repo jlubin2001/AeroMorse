@@ -98,6 +98,7 @@ restarts with the new values.
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before it returns to `SWITCH_EXIT_GROUP` by itself. `0` = never (then use the long puff). |
 | `SWITCH_EXIT_PUFF_S` | `5.0` | Hold one puff this long to leave straight away. |
 | `SWITCH_EXIT_GROUP` | `1` | Where you go when leaving (1 = Keyboard). |
+| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) Seconds of on-screen countdown before it leaves, e.g. `MOUSE IN 5`. `0` = none. |
 
 Key names are listed in the **Keycode Reference** (`KEYCODE_REFERENCE.md` /
 the PDF). For example, a game controlled with the arrow keys could use
@@ -127,6 +128,7 @@ copy `config.py` to the device.
 | Problem | Why | Fix |
 |---|---|---|
 | It leaves Switch mode while I'm playing | A pause longer than `SWITCH_IDLE_EXIT_S`, or a 5-second puff | Raise `SWITCH_IDLE_EXIT_S` / `SWITCH_EXIT_PUFF_S` |
+| I need the mouse between games | Switch mode has no Morse, so there is no code to press | Set `SWITCH_EXIT_GROUP = 2` so leaving lands in Mouse, and add a short Group 2 code for `"group 7"` in `morse_map.py` to come back. The countdown (`SWITCH_COUNTDOWN_S`) shows when it is about to leave |
 | It won't leave Switch mode | You keep sipping/puffing within 20 s | Stop for 20 s, or hold one puff for 5 s |
 | Nothing happens in the game | The game window isn't in front, or wants other keys | Click the game once; or change `SWITCH_SIP_KEY` / `SWITCH_PUFF_KEY` |
 | `...-----` doesn't go to Switch mode | `SWITCH_GROUP` isn't `7` | Check `config.py` (or use the Group 0 code for the group you chose) |

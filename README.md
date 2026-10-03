@@ -776,6 +776,7 @@ explaining what it does. The same Key Settings table also appears in
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before the Switch group returns to `SWITCH_EXIT_GROUP` by itself. `0` = never |
 | `SWITCH_EXIT_PUFF_S` | `5.0` | Or hold one puff this many seconds to leave the Switch group |
 | `SWITCH_EXIT_GROUP` | `1` | Group you return to when leaving the Switch group (1 = Keyboard) |
+| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) For the last this-many seconds before the Switch group is left the screen counts down, e.g. `MOUSE IN 5` — both for the idle exit and while holding the long exit puff. Any sip/puff clears it. `0` = no countdown |
 | `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip — e.g. `"group 2"` to jump to Mouse. Empty string = disabled. **Switch mode:** triggered by a long-press of the DIT-side switch instead of pressure peak; overrides `LONG_PRESS_CYCLES_GROUP` on that switch |
 | `STRONG_PUFF_ACTION` | `""` | Same as above but for puff / DAH-side switch in switch mode |
 | `POINTS_TO_AVERAGE` | `8` | Reserved — the threshold path uses the raw reading, so this currently has no effect. Not a speed knob |

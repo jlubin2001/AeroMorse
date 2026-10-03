@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.20   (released 2026-10-03)
+#  AeroMorse code.py   —   version 1.21   (released 2026-10-03)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -263,6 +263,11 @@ try:
         _SW_EXIT_GROUP = 1
 except Exception:
     _SW_EXIT_GROUP = 1
+try:
+    _SW_CD_S = max(0.0, float(SWITCH_COUNTDOWN_S))      # 0 = no countdown
+except Exception:
+    _SW_CD_S = 0.0
+_sw_cd_shown = 0       # countdown number currently on the screen (0 = none)
 _sw_key  = None        # key currently held down by the Switch group (or None)
 _sw_skip = False       # this press only dismissed the start-up screen
 
@@ -1929,11 +1934,30 @@ while True:
     # need them). The group is left automatically after SWITCH_IDLE_EXIT_S
     # seconds with no sip/puff, or by holding one puff SWITCH_EXIT_PUFF_S s.
     if in_switch:
+        # Countdown on the screen for the last SWITCH_COUNTDOWN_S seconds before
+        # the group is left — while idle, or while holding the long exit puff
+        # (from 1 s into the hold) — e.g. "MOUSE IN 5". Any sip/puff clears it.
+        if _SW_CD_S and _last_state == new_state and not _sw_skip:
+            _sw_left = 0.0
+            if _last_state == IDLE:
+                if _SW_IDLE_S:
+                    _sw_left = _SW_IDLE_S - (now - _last_trans_at)
+            elif _last_state == DAH and now - _press_start >= 1.0:
+                _sw_left = _SW_EXIT_S - (now - _press_start)
+            if 0.0 < _sw_left <= _SW_CD_S:
+                _sw_n = int(_sw_left)
+                if _sw_left > _sw_n:
+                    _sw_n += 1                      # round up: 4.2 s left shows 5
+                if _sw_n != _sw_cd_shown:
+                    _sw_cd_shown = _sw_n
+                    _last_action = ("%s IN %d" % (_GROUP_NAMES[_SW_EXIT_GROUP], _sw_n))[:20]
+
         if (_SW_IDLE_S and _last_state == IDLE and new_state == IDLE
                 and now - _last_trans_at >= _SW_IDLE_S):
             active_group   = _SW_EXIT_GROUP
             _last_action   = "-> " + _GROUP_NAMES[_SW_EXIT_GROUP]
             _last_trans_at = now
+            _sw_cd_shown   = 0
             print("SWITCH exit (idle %.0f s) -> group %d" % (_SW_IDLE_S, _SW_EXIT_GROUP))
             _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
         elif (_last_state == DAH and new_state == DAH and not _sw_skip
@@ -1947,9 +1971,13 @@ while True:
             _consuming_press = True
             _strong_handled  = True
             _last_action     = "-> " + _GROUP_NAMES[_SW_EXIT_GROUP]
+            _sw_cd_shown     = 0
             print("SWITCH exit (%.0f s puff) -> group %d" % (_SW_EXIT_S, _SW_EXIT_GROUP))
             _beep_notify(duration=BEEP_GROUP_S, freq=GROUP_FREQ)
         elif new_state != _last_state:
+            if _sw_cd_shown:                        # a sip/puff cancels the countdown
+                _sw_cd_shown = 0
+                _last_action = " "
             if _sw_key is not None:                 # press ended (or sip<->puff)
                 kbd.release(_sw_key)
                 _sw_key = None

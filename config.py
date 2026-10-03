@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.20 (released 2026-10-03)
+# AeroMorse config.py — version 1.21 (released 2026-10-03)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -106,6 +106,7 @@ SWITCH_PUFF_KEY   = "SPACE"    # key held while puffing  (a Keycode name)
 SWITCH_IDLE_EXIT_S = 20        # seconds with no sip/puff before leaving by itself (0 = never)
 SWITCH_EXIT_PUFF_S = 5.0       # or hold one puff this many seconds to leave
 SWITCH_EXIT_GROUP = 1          # group to go to when leaving (1 = Keyboard)
+SWITCH_COUNTDOWN_S = 10       # show e.g. "KEYBOARD IN 5" for the last N seconds before leaving (0 = off)
 
 
 # ── TIMING ────────────────────────────────────────────────────────────────

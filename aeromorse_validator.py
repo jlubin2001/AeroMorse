@@ -652,6 +652,9 @@ def check_config_settings(c):
     want('SWITCH_IDLE_EXIT_S', lambda v: is_num(v) and (v == 0 or 5 <= v <= 600),
          "should be 0 (never) or 5-600 seconds with no sip/puff before the Switch group "
          "returns to SWITCH_EXIT_GROUP by itself.")
+    want('SWITCH_COUNTDOWN_S', lambda v: is_num(v) and 0 <= v <= 600,
+         "should be 0 (no countdown) or the number of seconds of on-screen countdown "
+         "before the Switch group is left, e.g. 10.")
     want('SWITCH_EXIT_PUFF_S', lambda v: is_num(v) and 2 <= v <= 30,
          "should be 2-30 (seconds to hold one puff to leave the Switch group).")
     want('SWITCH_EXIT_GROUP', lambda v: isinstance(v, int) and not isinstance(v, bool) and 1 <= v <= 9,
