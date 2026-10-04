@@ -1684,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.21 (released 2026-10-03)`. Open the file
+> `AeroMorse code.py — version 1.22 (released 2026-10-03)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -2003,7 +2003,7 @@ it interact with other settings" explanation, jump to Appendix E.
 
 | Setting | Shipped | Hint |
 |---------|---------|------|
-| `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender) — the device still types over USB and still broadcasts to a wireless receiver; only the local screen is skipped. A missing screen is also auto-detected, so a screenless board won't crash even if this is left `True`. |
+| `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender) — the device still types over USB and still broadcasts to a wireless receiver; only the local screen is skipped. A missing screen is also auto-detected, so a screenless board won't crash even if this is left `True`. Also set `False` on a board that **has** a screen when you only watch the wireless display (v1.22+): the built-in screen is blanked and its backlight switched off, removing screen-drawing pauses of 60–100 ms that can swallow a quick sip or puff (the backlight comes back on if the program stops with an error) |
 | `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight `0.1` (dim) – `1.0` (full); applies on save; never below `0.1` |
 | `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |

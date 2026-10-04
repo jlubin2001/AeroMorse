@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.21   (released 2026-10-03)
+#  AeroMorse code.py   —   version 1.22   (released 2026-10-03)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -1442,6 +1442,33 @@ if _USE_DISPLAY:
         pass
     except Exception as _e:
         print("WARNING: display brightness not set (%s)" % _e)
+else:
+    # USE_DISPLAY = False on a board that DOES have a screen (you only watch the
+    # wireless display): blank it and switch its backlight off. Otherwise the
+    # screen falls back to showing this log as text, and drawing / scrolling a
+    # line for every character typed costs up to ~80 ms each — time in which a
+    # quick sip or puff can be missed. If the program ever stops (an error, or
+    # Ctrl-C), the backlight comes back on so the message on the screen is
+    # readable.
+    try:
+        _off_disp = board.DISPLAY
+        _off_disp.root_group = displayio.Group()
+        _off_disp.brightness = 0
+        print("USE_DISPLAY = False - built-in screen blanked, backlight off")
+        try:
+            import atexit
+            def _screen_back_on():
+                try:
+                    board.DISPLAY.brightness = 1.0
+                except Exception:
+                    pass
+            atexit.register(_screen_back_on)
+        except ImportError:
+            pass
+    except AttributeError:
+        pass                  # no built-in screen at all: nothing to do
+    except Exception as _e:
+        print("Built-in screen could not be blanked (%s)" % _e)
 
 def _make_label(root, text, color, scale, y):
     lbl = label.Label(
