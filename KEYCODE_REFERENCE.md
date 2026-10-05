@@ -131,6 +131,9 @@ KEYPAD_ASTERISK   KEYPAD_FORWARD_SLASH
 KEYPAD_ENTER      KEYPAD_EQUALS    KEYPAD_BACKSLASH
 ```
 
+> **`KEYPAD_EQUALS` does nothing on Windows.** It is a Mac number-pad key; a PC
+> ignores it, so nothing is typed. For `=` on a PC use `Keycode.EQUALS` instead.
+
 ## Modifiers (for chords)
 
 | Primary name | Also accepted (aliases) |

@@ -466,6 +466,23 @@ def collect_warnings(m):
     except Exception:
         pass
 
+    # Keys that are valid names but that Windows ignores: nothing gets typed.
+    _WINDOWS_IGNORES = {'Keycode.KEYPAD_EQUALS': 'Keycode.EQUALS'}
+    try:
+        for gnum, g in m.groups.items():
+            for L, d in g.items():
+                for c, action in d.items():
+                    parts = action if isinstance(action, (tuple, list)) else (action,)
+                    for part in parts:
+                        if isinstance(part, _KCStr) and str(part) in _WINDOWS_IGNORES:
+                            bstr = '0b' + format(c, '0%db' % L)
+                            pat = ''.join('-' if ch == '1' else '.' for ch in format(c, '0%db' % L))
+                            warn("g%d[%d][%s] (%s) uses %s, which Windows ignores - on a PC "
+                                 "nothing is typed (it is a Mac number-pad key). FIX: use %s "
+                                 "instead." % (gnum, L, bstr, pat, part, _WINDOWS_IGNORES[str(part)]))
+    except Exception:
+        pass
+
     # A key combination written inside quotes is just text: the device would
     # TYPE the words "Keycode.CONTROL,Keycode.ALT,R" instead of pressing keys.
     try:
