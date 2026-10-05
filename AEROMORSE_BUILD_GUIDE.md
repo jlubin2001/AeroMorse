@@ -1684,7 +1684,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.22 (released 2026-10-03)`. Open the file
+> `AeroMorse code.py — version 1.23 (released 2026-10-05)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1940,6 +1940,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | `THRESH_SIP_STRONG` | `15` | Sensor mode — hPa for strong-sip detection |
 | `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
 | `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is off — a hard sip/puff there is just a normal dot/dash. Default Scanning (4), so hard presses can't knock you out of Switch Control. `()` = on everywhere |
+| `STRONG_FIRST_ONLY` | `True` | (v1.23+) A strong sip/puff only counts as a gesture when it is the **first** breath of a code. In the middle of a code a hard sip/puff is just a normal dot/dash, so a sip pulled too hard inside e.g. `---.-` no longer throws the code away and jumps group. `False` = old behaviour (strong fires anywhere) |
 | `SWITCH_GROUP` | `7` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |

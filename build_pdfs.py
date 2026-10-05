@@ -31,19 +31,33 @@ def _edge():
     sys.exit("ERROR: Microsoft Edge (or Chrome) not found — needed to make PDFs.")
 
 def _print_to_pdf(url, out, extra=()):
-    """Drive Edge/Chrome headless to render `url` to `out` (a PDF path)."""
-    if os.path.exists(out):
-        try: os.remove(out)
+    """Drive Edge/Chrome headless to render `url` to `out` (a PDF path).
+
+    Printed to a temporary file first and then moved over `out`, so a PDF that
+    is open in a viewer (Acrobat locks it) is reported as NOT updated instead
+    of silently leaving the old one in place and calling it a success."""
+    tmp = out + ".building.pdf"
+    if os.path.exists(tmp):
+        try: os.remove(tmp)
         except OSError: pass
     cmd = [_edge(), "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
            "--run-all-compositor-stages-before-draw", *extra,
-           "--print-to-pdf=%s" % out, url]
+           "--print-to-pdf=%s" % tmp, url]
     subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     for _ in range(30):
-        if os.path.exists(out) and os.path.getsize(out) > 0:
-            return True
+        if os.path.exists(tmp) and os.path.getsize(tmp) > 0:
+            break
         time.sleep(0.5)
-    return False
+    else:
+        return False
+    try:
+        os.replace(tmp, out)
+    except OSError:
+        print("\n  *** %s is open in another program (e.g. Acrobat), so it could NOT be\n"
+              "  *** replaced. Close it and run this again. The new version was saved as:\n"
+              "  ***   %s\n" % (os.path.basename(out), tmp))
+        return False
+    return True
 
 def _pages(path):
     try:

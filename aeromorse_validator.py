@@ -168,11 +168,16 @@ _KC_NAMES = set((
     "CONTROL SHIFT ALT GUI COMMAND OPTION WINDOWS"
 ).split())
 
+class _KCStr(str):
+    """What the stand-in Keycode hands back for Keycode.NAME. A str subclass, so
+    a REAL key (this type) can be told apart from text the user put in quotes
+    (plain str) - e.g. 'Keycode.CONTROL,Keycode.ALT,R' typed as a string."""
+
 class _KCMeta(type):
     def __getattr__(cls, name):
         if not name.startswith('__') and name not in _KC_NAMES:
             _unknown_kc.add(name)
-        return 'Keycode.%s' % name
+        return _KCStr('Keycode.%s' % name)
 
 class _Keycode(metaclass=_KCMeta):
     pass
@@ -461,6 +466,26 @@ def collect_warnings(m):
     except Exception:
         pass
 
+    # A key combination written inside quotes is just text: the device would
+    # TYPE the words "Keycode.CONTROL,Keycode.ALT,R" instead of pressing keys.
+    try:
+        for gnum, g in m.groups.items():
+            for L, d in g.items():
+                for c, action in d.items():
+                    # type() is str, not isinstance: real Keycode.NAME values are
+                    # _KCStr here; only text the user quoted is a plain str.
+                    if type(action) is str and ('Keycode.' in action
+                                                or 'ConsumerControlCode.' in action):
+                        bstr = '0b' + format(c, '0%db' % L)
+                        pat = ''.join('-' if ch == '1' else '.' for ch in format(c, '0%db' % L))
+                        warn("g%d[%d][%s] (%s) is in quotes, so it will be TYPED as the "
+                             "text %r - it will not press those keys. FIX: remove the "
+                             "quotes and put Keycode. before every key, e.g.  "
+                             "Keycode.CONTROL, Keycode.ALT, Keycode.R"
+                             % (gnum, L, bstr, pat, action[:40]))
+    except Exception:
+        pass
+
 
 # ── config.py checks ─────────────────────────────────────────────────────────
 # code.py does  `from config import *`, so a config.py that won't import — or
@@ -547,7 +572,7 @@ def check_config_import():
 # those (and Python's True/False, or 1/0) are valid; anything else is flagged.
 _BOOL_SETTINGS = ("USE_SENSOR SENSOR_FILTER_ENABLED SENSOR_FILTER_HEAVY CODE_REPEAT "
                   "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY "
-                  "USE_DISPLAY").split()
+                  "USE_DISPLAY STRONG_FIRST_ONLY").split()
 _VALID_BOOL_TOKENS = {'True', 'False', 'true', 'false', 'TRUE', 'FALSE', '1', '0'}
 
 def check_config_bool_source():

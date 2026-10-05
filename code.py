@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.22   (released 2026-10-03)
+#  AeroMorse code.py   —   version 1.23   (released 2026-10-05)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -178,6 +178,15 @@ except NameError:
 except Exception as _e:
     print("STRONG_OFF_IN_GROUPS not understood (%s) - strong sip/puff on in all groups" % _e)
     _STRONG_OFF = ()
+
+# Strong sip / puff only as the FIRST breath of a code (config.py
+# STRONG_FIRST_ONLY, default True). Inside a code that has already started, a
+# hard sip/puff is just a normal dot/dash — so a sip pulled a little too hard
+# in the middle of e.g. ---.- no longer throws the code away and jumps group.
+try:
+    _STRONG_FIRST_ONLY = bool(STRONG_FIRST_ONLY)
+except NameError:
+    _STRONG_FIRST_ONLY = True
 
 # Split on a dip (config.py REPEAT_SPLIT_PCT, sensor mode): two quick sips or
 # puffs in a row can run together when the pressure doesn't fall back under the
@@ -1918,7 +1927,8 @@ while True:
     # devicereset y/n is being typed (a hard sip/puff there is a normal dot/dash).
     if (USE_SENSOR and not _strong_handled and _last_state in (DIT, DAH)
             and active_group not in _STRONG_OFF and active_group != _SWITCH_GROUP
-            and not _pin_active and not _reset_confirm):
+            and not _pin_active and not _reset_confirm
+            and not (_STRONG_FIRST_ONLY and _num_shifts)):
         abs_delta = abs(_display_pressure)
         if abs_delta > _peak_delta:
             _peak_delta = abs_delta

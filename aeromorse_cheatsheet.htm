@@ -100,6 +100,8 @@
 
   .cols-3 { column-count: 3; }
   .cols-2 { column-count: 2; }
+  /* Tighter rows for a group that would otherwise spill onto a second page */
+  .columns.dense .item { margin-bottom: 3px; padding-bottom: 2px; }
 
   .item {
     display: flex;
@@ -351,7 +353,10 @@
         'LEFT_ARROW': '←',  'RIGHT_ARROW': '→',
         'ENTER':      '⏎',  'TAB':         '⇥',
         'BACKSPACE':  '⌫',  'BACKSLASH':   '\\',
-        'LEFT_GUI':  'LEFT ⊞/⌘', 'RIGHT_GUI': 'RIGHT ⊞/⌘'
+        'LEFT_GUI':  'LEFT ⊞/⌘', 'RIGHT_GUI': 'RIGHT ⊞/⌘',
+        'EQUALS': '=', 'MINUS': '-', 'COMMA': ',', 'PERIOD': '.', 'FORWARD_SLASH': '/',
+        'SEMICOLON': ';', 'QUOTE': "'", 'LEFT_BRACKET': '[', 'RIGHT_BRACKET': ']',
+        'GRAVE_ACCENT': '`'
       };
       if (Object.prototype.hasOwnProperty.call(exactMap, part)) return exactMap[part];
 
@@ -512,6 +517,63 @@
       return wrap;
     }
 
+    /* ── Switch group (config.py SWITCH_GROUP) ─────────────────────────────
+       In that group AeroMorse is NOT Morse: a sip holds one key and a puff holds
+       another. Whatever morse_map.py lists for that group can never be typed, so
+       the sheet shows the two real actions instead. The settings come from the
+       config.py next to this page when it can be read (the PDF builder serves
+       it); otherwise the shipped defaults below are used. SWITCH_GROUP = 0 means
+       no Switch group — the group is then printed from morse_map.py as usual. */
+    const SWITCH_CFG = { group: 7, sip: 'ENTER', puff: 'SPACE', idle: 20, exitPuff: 5,
+                         exitGroup: 1, countdown: 10 };
+    const SHORT_GROUP_NAMES = ['Base', 'Keyboard', 'Mouse', 'Macros', 'Scanning', 'Media',
+                               'Group 6', 'Group 7', 'Group 8', 'Group 9'];
+
+    function readSwitchConfig(cfgText) {
+      const num = (name) => {
+        const m = cfgText.match(new RegExp('^' + name + '\\s*=\\s*([0-9.]+)', 'm'));
+        return m ? parseFloat(m[1]) : null;
+      };
+      const str = (name) => {
+        const m = cfgText.match(new RegExp('^' + name + '\\s*=\\s*["\']([^"\']*)["\']', 'm'));
+        return m ? m[1].trim().toUpperCase() : null;
+      };
+      const set = (key, v) => { if (v !== null && !(typeof v === 'number' && isNaN(v))) SWITCH_CFG[key] = v; };
+      set('group', num('SWITCH_GROUP'));
+      set('sip', str('SWITCH_SIP_KEY'));
+      set('puff', str('SWITCH_PUFF_KEY'));
+      set('idle', num('SWITCH_IDLE_EXIT_S'));
+      set('exitPuff', num('SWITCH_EXIT_PUFF_S'));
+      set('exitGroup', num('SWITCH_EXIT_GROUP'));
+      set('countdown', num('SWITCH_COUNTDOWN_S'));
+    }
+
+    /* ── Shrink a label that would not fit its column ───────────────────────
+       A long label next to a long code (e.g. "→ Group 2 - Mouse" in the
+       three-column Group 1 page) used to be cut off at the column edge. Work
+       out the room the label has on a PRINTED page — column width minus the
+       dots and dashes in front of it — and, if the text is wider, reduce just
+       that label's font until it fits (never below 55 %). */
+    const PRINT_PAGE_PX = 725;        /* usable width of a printed Letter page, CSS px */
+    const _measureCtx = document.createElement('canvas').getContext('2d');
+    function fitLabelFont(el, symbolCount, colCount, kind, takenPx) {
+      const basePx = kind === 'keybd' ? 19.2 : 16;
+      const family = kind === 'keybd'
+        ? 'Consolas, "Courier New", monospace'
+        : '"Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+      _measureCtx.font = 'bold ' + basePx + 'px ' + family;
+      const need  = _measureCtx.measureText(el.textContent).width + basePx * 1.3 + 4;
+      const colW  = (PRINT_PAGE_PX - 20 * (colCount - 1)) / colCount;
+      const avail = colW - symbolCount * 19 - 14 - (takenPx || 0);
+      if (need > avail) {
+        el.style.fontSize = (basePx * Math.max(0.55, avail / need)).toFixed(1) + 'px';
+      }
+    }
+
+    function niceKeyName(name) {
+      return name.toLowerCase().split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
     function processMorseData(dataStr) {
       const container = document.getElementById('pages-container');
       container.innerHTML = '';
@@ -525,10 +587,16 @@
         g4: "Group 4: Scanning - Enter, Space, F3-F12 (Switch Control)",
         g5: "Group 5: Media + App Launchers (USB HID Consumer Controls)",
         g6: "Group 6 (placeholder)",
-        g7: "Group 7: Switch - sip holds Enter, puff holds Space (no Morse)",
+        g7: "Group 7 (placeholder)",
         g8: "Group 8 (placeholder)",
         g9: "Group 9 (placeholder)"
       };
+
+      const switchKey = (SWITCH_CFG.group >= 1 && SWITCH_CFG.group <= 9) ? 'g' + SWITCH_CFG.group : null;
+      if (switchKey) {
+        groupNames[switchKey] = 'Group ' + SWITCH_CFG.group + ': Switch - sip holds ' +
+          niceKeyName(SWITCH_CFG.sip) + ', puff holds ' + niceKeyName(SWITCH_CFG.puff) + ' (no Morse)';
+      }
 
       const regex = /^\s*(g[0-9])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
 
@@ -639,6 +707,13 @@
         return a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: 'base' });
       };
 
+      if (switchKey) {
+        parsedGroups[switchKey] = [
+          { binStr: '0', key: 'Hold ' + niceKeyName(SWITCH_CFG.sip)  + '  (while you sip)',  cls: null, iosLabel: null },
+          { binStr: '1', key: 'Hold ' + niceKeyName(SWITCH_CFG.puff) + '  (while you puff)', cls: null, iosLabel: null },
+        ];
+      }
+
       let pagesGenerated = false;
 
       ['g0', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9'].forEach(groupKey => {
@@ -646,7 +721,7 @@
         if (groupItems.length === 0) return;
 
         pagesGenerated = true;
-        groupItems.sort(sortKeys);
+        if (groupKey !== switchKey) groupItems.sort(sortKeys);
 
         const pageDiv = document.createElement('div');
         pageDiv.className = 'page';
@@ -658,7 +733,23 @@
 
         const columnsDiv = document.createElement('div');
         columnsDiv.className = 'columns';
-        columnsDiv.classList.add(groupKey === 'g1' ? 'cols-3' : 'cols-2');
+        const colCount = groupKey === 'g1' ? 3 : 2;
+        columnsDiv.classList.add(colCount === 3 ? 'cols-3' : 'cols-2');
+
+        /* Fit on ONE printed page when it nearly does. A Letter page holds about
+           FIT_ROWS rows per column at full size, or DENSE_ROWS with tighter row
+           spacing. A group that needs a few more rows (e.g. 26) used to spill its
+           last entries onto a second sheet; tighten the spacing and, if still
+           needed, shrink it just enough instead. Groups that would have to shrink
+           below FIT_MIN (far too many entries) stay at full size on two pages. */
+        const FIT_ROWS = 18, DENSE_ROWS = 23, FIT_MIN = 0.78;
+        const rowsNeeded = Math.ceil(groupItems.length / colCount);
+        if (rowsNeeded > FIT_ROWS && DENSE_ROWS / rowsNeeded >= FIT_MIN) {
+          columnsDiv.classList.add('dense');            /* 1st: tighter row spacing */
+          if (rowsNeeded > DENSE_ROWS) {                /* 2nd: shrink the rest of the way */
+            columnsDiv.style.zoom = (DENSE_ROWS / rowsNeeded).toFixed(3);
+          }
+        }
 
         groupItems.forEach(item => {
           const itemDiv = document.createElement('div');
@@ -688,6 +779,7 @@
             if (item.cls === 'app') prefix = '\u{1F5C2}\u{FE0E} ';    /* launcher */
             if (item.cls === 'sec') prefix = '\u{1F512} ';            /* lock — private secret */
             badge.textContent = prefix + item.key;
+            fitLabelFont(badge, item.binStr.length, colCount, 'cmd', 0);
             keyDiv.appendChild(badge);
           } else {
             /* Group 4: prepend the iOS Switch Control action as a small purple
@@ -702,6 +794,8 @@
             }
             const keybd = document.createElement('keybd');
             keybd.textContent = item.key;
+            fitLabelFont(keybd, item.binStr.length, colCount, 'keybd',
+                         item.iosLabel ? item.iosLabel.length * 9 + 32 : 0);
             keyDiv.appendChild(keybd);
           }
 
@@ -718,6 +812,28 @@
         });
 
         pageDiv.appendChild(columnsDiv);
+
+        if (groupKey === switchKey) {
+          /* How this group works and how to leave it — there are no codes to list. */
+          const exitName = SHORT_GROUP_NAMES[SWITCH_CFG.exitGroup] || ('Group ' + SWITCH_CFG.exitGroup);
+          const lines = [
+            'No Morse codes in this group. The key goes down the moment a sip or puff starts and comes up when it ends - like two plain switches.',
+          ];
+          const ways = [];
+          if (SWITCH_CFG.idle > 0) ways.push('wait ' + SWITCH_CFG.idle + ' seconds without a sip or puff');
+          ways.push('hold one puff for ' + SWITCH_CFG.exitPuff + ' seconds');
+          lines.push('To leave (goes to ' + exitName + '): ' + ways.join(', or ') + '.' +
+            (SWITCH_CFG.countdown > 0 ? ' The screen counts down the last ' + SWITCH_CFG.countdown +
+              ' seconds, e.g. "' + exitName.toUpperCase() + ' IN 5".' : ''));
+          lines.forEach(text => {
+            const pEl = document.createElement('p');
+            pEl.className = 'switch-note';
+            pEl.style.cssText = 'margin: 18px 4px 0; font-size: 15px; line-height: 1.5; color: #333;';
+            pEl.textContent = text;
+            pageDiv.appendChild(pEl);
+          });
+        }
+
         container.appendChild(pageDiv);
       });
 
@@ -818,7 +934,13 @@
          · The page is served from a URL where morse_map.py isn't a sibling.
     */
     (function autoLoadSibling() {
-      fetch('morse_map.py')
+      fetch('config.py')
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .catch(function () { return ''; })
+        .then(function (cfgText) {
+          if (cfgText) readSwitchConfig(cfgText);
+          return fetch('morse_map.py');
+        })
         .then(function (r) {
           if (!r.ok) throw new Error('not found');
           return r.text();

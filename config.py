@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.22 (released 2026-10-03)
+# AeroMorse config.py — version 1.23 (released 2026-10-05)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -88,6 +88,11 @@ STRONG_OFF_IN_GROUPS = (4,)    # groups where strong sip/puff is OFF — a hard 
                                # there is just a normal dot/dash. (4,) = Scanning, so a
                                # hard sip/puff can't knock you out of Switch Control.
                                # e.g. (4, 3) for several groups, () = on everywhere.
+STRONG_FIRST_ONLY = True       # True = a strong sip/puff only counts as the FIRST breath of
+                               # a code. In the middle of a code a hard sip/puff is just a
+                               # normal dot/dash (so ---.- with a hard sip still works).
+                               # False = old behaviour: strong fires anywhere and clears
+                               # the code typed so far.
 
 
 # ── SWITCH GROUP — sip / puff act like two plain switches ─────────────────

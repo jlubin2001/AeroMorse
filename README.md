@@ -770,6 +770,7 @@ explaining what it does. The same Key Settings table also appears in
 | `THRESH_SIP_STRONG` | `15` | **Sensor mode only.** hPa below baseline at which a strong sip is detected; fires `STRONG_SIP_ACTION` once per press. Ignored in switch mode |
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
 | `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is switched off: a hard sip/puff there counts as a normal dot/dash. Default `(4,)` = Scanning, so a hard sip/puff (Enter/Space) never jumps you out of Switch Control. List several like `(4, 3)`; `()` = strong gestures on in every group |
+| `STRONG_FIRST_ONLY` | `True` | (v1.23+) A strong sip/puff only counts as a gesture when it is the **first** breath of a code. In the middle of a code a hard sip/puff is just a normal dot/dash, so a sip pulled too hard inside e.g. `---.-` no longer throws the code away and jumps group. `False` = old behaviour (strong fires anywhere) |
 | `SWITCH_GROUP` | `7` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |

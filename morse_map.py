@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.22 (released 2026-10-03)
+# AeroMorse morse_map.py — version 1.23 (released 2026-10-05)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -312,7 +312,7 @@ g2[4][0b0001] = "version"          # ...-    show start-up screen (name, version
 # ── Keypad & Arrow Keys ───────────────────────────────────────────────────────
 g2[5][0b10001]=Keycode.KEYPAD_PLUS         # -...-
 g2[5][0b01110]=Keycode.KEYPAD_MINUS        # .---.
-g2[5][0b11101]=Keycode.KEYPAD_EQUALS       # ---.-
+g2[5][0b11101]=Keycode.EQUALS              # ---.-  (KEYPAD_EQUALS does nothing on Windows)
 g2[5][0b10011]=Keycode.KEYPAD_ASTERISK     # -..--
 g2[6][0b011111]=Keycode.KEYPAD_PERIOD      # .-----
 g2[6][0b000011]=Keycode.KEYPAD_FORWARD_SLASH  # ....--
