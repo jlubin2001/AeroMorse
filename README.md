@@ -778,7 +778,6 @@ explaining what it does. The same Key Settings table also appears in
 | `THRESH_SIP_STRONG` | `15` | **Sensor mode only.** hPa below baseline at which a strong sip is detected; fires `STRONG_SIP_ACTION` once per press. Ignored in switch mode |
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
 | `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is switched off: a hard sip/puff there counts as a normal dot/dash. Default `(4,)` = Scanning, so a hard sip/puff (Enter/Space) never jumps you out of Switch Control. List several like `(4, 3)`; `()` = strong gestures on in every group |
-| `STRONG_FIRST_ONLY` | `True` | (v1.23+) A strong sip/puff only counts as a gesture when it is the **first** breath of a code. In the middle of a code a hard sip/puff is just a normal dot/dash, so a sip pulled too hard inside e.g. `---.-` no longer throws the code away and jumps group. `False` = old behaviour (strong fires anywhere) |
 | `SWITCH_GROUP` | `9` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
@@ -788,10 +787,7 @@ explaining what it does. The same Key Settings table also appears in
 | `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) For the last this-many seconds before the Switch group is left the screen counts down, e.g. `MOUSE IN 5` — both for the idle exit and while holding the long exit puff. Any sip/puff clears it. `0` = no countdown |
 | `STRONG_SIP_ACTION` | `""` | Command string fired on a strong sip — e.g. `"group 2"` to jump to Mouse. Empty string = disabled. **Switch mode:** triggered by a long-press of the DIT-side switch instead of pressure peak; overrides `LONG_PRESS_CYCLES_GROUP` on that switch |
 | `STRONG_PUFF_ACTION` | `""` | Same as above but for puff / DAH-side switch in switch mode |
-| `POINTS_TO_AVERAGE` | `8` | Reserved — the threshold path uses the raw reading, so this currently has no effect. Not a speed knob |
-| `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass filter. `False` = lowest latency, noisier signal |
-| `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag per edge), `False` = ODR/9 (about half). **Major typing-speed lever** — set `False` if you type fast |
-| `REPEAT_SPLIT_PCT` | `0` | Split on a dip (v1.18+): a sip/puff that drops below this % of its peak and then climbs again by `REPEAT_SPLIT_RISE` hPa counts as two. Fixes two quick sips/puffs running together. Try `60`; `0` = off |
+| `REPEAT_SPLIT_PCT` | `0` | Split on a dip (v1.18+): a sip/puff that drops below this % of its peak and then climbs again by 1 hPa counts as two. Fixes two quick sips/puffs running together. Try `60`; `0` = off |
 | `DIAG_LOG_S` | `0` | Diagnostics (v1.19+): every this many seconds one `DIAG ...` line of timing figures (loop speed, longest blind moment, screen / wireless / key-send time, sensor reading rate, shortest sip/puff and rest) goes to the USB serial log. The first / worst / last line are saved on `devicereset`, and automatically every 5 minutes while you type (so they survive an unplug); the next run prints them as `DIAG PREV ...` (and the run before that as `DIAG PREV2 ...`). For tracking down "types badly until restarted". `0` = off; try `10` |
 | `DOT_PIN` | `board.D5` | GPIO pin for dot switch (switch mode only) |
 | `DASH_PIN` | `board.D6` | GPIO pin for dash switch (switch mode only) |

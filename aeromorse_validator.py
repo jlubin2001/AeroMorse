@@ -513,8 +513,8 @@ def collect_warnings(m):
 # The settings the standard build ships with (config.py v1.0). Used only to
 # WARN if one is absent — not every one is required, so this never hard-fails.
 _KNOWN_CONFIG = set((
-    "USE_SENSOR THRESH_SIP THRESH_PUFF DEBOUNCE_SAMPLES POINTS_TO_AVERAGE "
-    "SENSOR_FILTER_ENABLED SENSOR_FILTER_HEAVY BASELINE_DRIFT_S DOT_PIN DASH_PIN "
+    "USE_SENSOR THRESH_SIP THRESH_PUFF DEBOUNCE_SAMPLES "
+    "BASELINE_DRIFT_S DOT_PIN DASH_PIN "
     "SWITCH_MODE ONE_SWITCH_INPUT ONE_SWITCH_DOT_MS THIRD_SWITCH_GESTURE "
     "STRONG_SIP_ACTION STRONG_PUFF_ACTION THRESH_SIP_STRONG THRESH_PUFF_STRONG "
     "ACCEPT_DELAY LONG_PRESS CODE_REPEAT DOT_REPEAT_MS DASH_REPEAT_MS "
@@ -587,9 +587,9 @@ def check_config_import():
 
 # The on/off settings. config.py aliases true/false/TRUE/FALSE, so any of
 # those (and Python's True/False, or 1/0) are valid; anything else is flagged.
-_BOOL_SETTINGS = ("USE_SENSOR SENSOR_FILTER_ENABLED SENSOR_FILTER_HEAVY CODE_REPEAT "
+_BOOL_SETTINGS = ("USE_SENSOR CODE_REPEAT "
                   "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY "
-                  "USE_DISPLAY STRONG_FIRST_ONLY").split()
+                  "USE_DISPLAY").split()
 _VALID_BOOL_TOKENS = {'True', 'False', 'true', 'false', 'TRUE', 'FALSE', '1', '0'}
 
 def check_config_bool_source():
@@ -662,7 +662,7 @@ def check_config_settings(c):
         want(n, is_bool, "should be True or False.")
 
     for n in ("THRESH_SIP THRESH_PUFF THRESH_SIP_STRONG THRESH_PUFF_STRONG "
-              "DEBOUNCE_SAMPLES POINTS_TO_AVERAGE BASELINE_DRIFT_S ONE_SWITCH_DOT_MS "
+              "DEBOUNCE_SAMPLES BASELINE_DRIFT_S ONE_SWITCH_DOT_MS "
               "DOT_REPEAT_MS DASH_REPEAT_MS CODE_REPEAT_MAX MOUSE_SPEED_NORMAL "
               "MOUSE_SPEED_SLOW MOUSE_SPEED_FAST MOUSE_SPEED_FACTOR ACCEPT_DELAY "
               "MOUSE_ACCEPT_DELAY SECRETS_AUTOLOCK_MIN "
@@ -685,8 +685,20 @@ def check_config_settings(c):
          "(Note the comma in (4,).)")
     want('REPEAT_SPLIT_PCT', lambda v: is_num(v) and (v == 0 or 30 <= v <= 90),
          "should be 0 (off) or 30-90 (percent of the sip/puff peak; 60 is a good start).")
-    want('REPEAT_SPLIT_RISE', lambda v: is_num(v) and 0.2 <= v <= 5,
-         "should be 0.2-5 (hPa the pressure must climb again after the dip; 1.0 is normal).")
+    # Settings that were removed: harmless if still present, but they do nothing.
+    _gone = {
+        'SENSOR_FILTER_ENABLED': "it never had any effect (the sensor's filter was never switched on)",
+        'SENSOR_FILTER_HEAVY':   "it never had any effect (the sensor's filter was never switched on)",
+        'POINTS_TO_AVERAGE':     "it fed an average that nothing used",
+        'REPEAT_SPLIT_RISE':     "the value is fixed at 1 hPa now",
+        'STRONG_FIRST_ONLY':     "it is always on now",
+    }
+    _still = sorted(n for n in _gone if n in present)
+    if _still:
+        warn("config.py still has setting(s) that are no longer used since v1.25: %s. "
+             "They are ignored - the device works exactly the same with or without them. "
+             "You can delete those lines to keep config.py short. (%s)"
+             % (', '.join(_still), '; '.join('%s: %s' % (n, _gone[n]) for n in _still)))
     want('DIAG_LOG_S', lambda v: is_num(v) and (v == 0 or 2 <= v <= 600),
          "should be 0 (off) or 2-600 (seconds between diagnostic lines in the USB log).")
     want('SWITCH_GROUP', lambda v: isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 9,

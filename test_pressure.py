@@ -39,7 +39,7 @@ import adafruit_lps35hw
 DURATION_S        = 30     # total run time in seconds
 SAMPLE_INTERVAL   = 0.05   # seconds between sensor reads  (20 Hz)
 PRINT_INTERVAL    = 0.20   # seconds between printed lines  (5 Hz)
-POINTS_TO_AVERAGE = 8      # rolling-average depth — matches config.py default
+POINTS_TO_AVERAGE = 8      # rolling-average depth for this chart only (config.py no longer has it)
 THRESH_SIP_CFG    = 5      # config.py default — used only for trigger markers
 THRESH_PUFF_CFG   = 5
 

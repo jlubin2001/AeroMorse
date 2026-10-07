@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.24 (released 2026-10-07)
+# AeroMorse config.py — version 1.25 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -39,19 +39,15 @@ DEVICE_NAME = "AeroMorse"
 USE_SENSOR        = True      # True = LPS33HW sensor; False = AT switches on D5/D6
 THRESH_SIP        = 2         # hPa below baseline = dot (raise if false triggers)
 THRESH_PUFF       = 2         # hPa above baseline = dash
-DEBOUNCE_SAMPLES  = 3         # consecutive agreeing samples to confirm a state change (~13 ms each)
-POINTS_TO_AVERAGE = 8         # reserved — not currently used in the threshold path
-
-SENSOR_FILTER_ENABLED = True  # LPS33HW hardware low-pass. False = lowest latency, noisier
-SENSOR_FILTER_HEAVY   = True  # True = ODR/20 (~40-60 ms lag), False = ODR/9 (~half that)
-BASELINE_DRIFT_S  = 30        # auto-zero time constant; 0 disables, follows ambient pressure drift
+DEBOUNCE_SAMPLES  = 3         # consecutive agreeing readings to confirm a state change (a few ms each)
+BASELINE_DRIFT_S  = 30        # auto-zero: follows slow ambient pressure drift while idle; 0 disables.
+                              # (Nominal seconds; in practice it settles in roughly a quarter of that.)
 
 # Split on a dip — for two quick sips or puffs in a row that run together
 # (p .--. comes out as r .-.,  space ..-- as w .--). A sip/puff that drops
-# below REPEAT_SPLIT_PCT % of its peak and then climbs again by
-# REPEAT_SPLIT_RISE hPa is counted as two. Try 60. 0 = off.
+# below REPEAT_SPLIT_PCT % of its peak and then climbs again by 1 hPa is
+# counted as two. Try 60. 0 = off.
 REPEAT_SPLIT_PCT  = 0         # 0 = off; 60 = split when it dips below 60 % of its peak
-REPEAT_SPLIT_RISE = 1.0       # hPa it must climb again after the dip (keep above sensor noise)
 
 # Diagnostics — for tracking down "it types badly until I restart it". Every
 # DIAG_LOG_S seconds one "DIAG ..." line of timing figures goes to the USB
@@ -88,11 +84,8 @@ STRONG_OFF_IN_GROUPS = (4,)    # groups where strong sip/puff is OFF — a hard 
                                # there is just a normal dot/dash. (4,) = Scanning, so a
                                # hard sip/puff can't knock you out of Switch Control.
                                # e.g. (4, 3) for several groups, () = on everywhere.
-STRONG_FIRST_ONLY = True       # True = a strong sip/puff only counts as the FIRST breath of
-                               # a code. In the middle of a code a hard sip/puff is just a
-                               # normal dot/dash (so ---.- with a hard sip still works).
-                               # False = old behaviour: strong fires anywhere and clears
-                               # the code typed so far.
+# A strong sip/puff only counts as the FIRST breath of a code; in the middle of
+# a code a hard sip/puff is just a normal dot/dash (so ---.- with a hard sip works).
 
 
 # ── SWITCH GROUP — sip / puff act like two plain switches ─────────────────

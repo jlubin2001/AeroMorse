@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.24   (released 2026-10-07)
+#  AeroMorse code.py   —   version 1.25   (released 2026-10-07)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -101,24 +101,6 @@ import gc
 # to change thresholds, switch mode, code-repeat, audio pitches, etc.
 from config import *  # noqa: F401,F403
 
-# ── RollingAverage ─────────────────────────────────────────────────────────────
-
-class RollingAverage:
-    """Circular buffer for smooth pressure averaging."""
-    def __init__(self, size):
-        self.size   = size
-        self.buffer = array.array('d')
-        for _ in range(size):
-            self.buffer.append(0.0)
-        self.pos = 0
-
-    def add(self, val):
-        self.buffer[self.pos] = val
-        self.pos = (self.pos + 1) % self.size
-
-    def average(self):
-        return sum(self.buffer) / self.size
-
 # ── Hardware setup ─────────────────────────────────────────────────────────────
 
 kbd    = Keyboard(usb_hid.devices)
@@ -179,20 +161,18 @@ except Exception as _e:
     print("STRONG_OFF_IN_GROUPS not understood (%s) - strong sip/puff on in all groups" % _e)
     _STRONG_OFF = ()
 
-# Strong sip / puff only as the FIRST breath of a code (config.py
-# STRONG_FIRST_ONLY, default True). Inside a code that has already started, a
-# hard sip/puff is just a normal dot/dash — so a sip pulled a little too hard
-# in the middle of e.g. ---.- no longer throws the code away and jumps group.
-try:
-    _STRONG_FIRST_ONLY = bool(STRONG_FIRST_ONLY)
-except NameError:
-    _STRONG_FIRST_ONLY = True
+# A strong sip / puff counts as the group-jump gesture only as the FIRST breath
+# of a code. Inside a code that has already started, a hard sip/puff is just a
+# normal dot/dash — so a sip pulled a little too hard in the middle of e.g.
+# ---.- can't throw the code away and jump group. (v1.23-1.24 had a config
+# switch for this, STRONG_FIRST_ONLY; the old behaviour was a bug, so it is
+# always on now and the setting is ignored.)
 
 # Split on a dip (config.py REPEAT_SPLIT_PCT, sensor mode): two quick sips or
 # puffs in a row can run together when the pressure doesn't fall back under the
 # trigger between them (p .--. comes out as r .-.). With this on, a sip/puff
 # that drops below REPEAT_SPLIT_PCT % of its peak and then climbs again by
-# REPEAT_SPLIT_RISE hPa counts as two. 0 or missing = off (old behaviour).
+# 1 hPa (comfortably above sensor noise) counts as two. 0 or missing = off.
 try:
     _SPLIT_FRAC = float(REPEAT_SPLIT_PCT) / 100.0
     if not 0.0 < _SPLIT_FRAC < 1.0:
@@ -202,10 +182,7 @@ except NameError:
 except Exception as _e:
     print("REPEAT_SPLIT_PCT not understood (%s) - split on a dip is off" % _e)
     _SPLIT_FRAC = 0.0
-try:
-    _SPLIT_RISE = max(0.2, float(REPEAT_SPLIT_RISE))
-except Exception:
-    _SPLIT_RISE = 1.0
+_SPLIT_RISE = 1.0       # hPa it must climb again after the dip (fixed since v1.25)
 _SPLIT_MAX_S = 0.5      # only the first half second of a press can split, so a
                         # long hold (group cycle) is never chopped up
 _sp_peak = 0.0          # highest pressure of the current press (toward its side)
@@ -309,12 +286,11 @@ if USE_SENSOR:
     lps = adafruit_lps35hw.LPS35HW(i2c)
     lps.zero_pressure()
     lps.data_rate      = adafruit_lps35hw.DataRate.RATE_75_HZ
-    # Hardware low-pass filter. filter_config True = ODR/20 (3.75 Hz cutoff at
-    # 75 Hz — quietest but ~40-60 ms of group delay on every press AND every
-    # release); False = ODR/9 (8.3 Hz, roughly half the lag). Both are on the
-    # critical path for typing speed — see Build Guide Appendix E.
-    lps.filter_enabled = SENSOR_FILTER_ENABLED
-    lps.filter_config  = SENSOR_FILTER_HEAVY
+    # The sensor's own low-pass filter is left OFF (its power-on state). Up to
+    # v1.24 config.py had SENSOR_FILTER_ENABLED / SENSOR_FILTER_HEAVY, but they
+    # were written to attribute names the sensor library doesn't have, so they
+    # never did anything; every device has always run unfiltered. They were
+    # removed in v1.25 (an old config.py that still has them is fine).
 else:
     _dot_btn  = digitalio.DigitalInOut(DOT_PIN)
     _dash_btn = digitalio.DigitalInOut(DASH_PIN)
@@ -337,11 +313,12 @@ if USE_SENSOR:
     _baseline, _sip_threshold, _puff_threshold = _calibrate()
     print(f"Baseline: {_baseline:.3f}  sip<{_sip_threshold:.3f}  puff>{_puff_threshold:.3f}")
     print("Calibration complete — ready for input.")
-    _avg_pressure = RollingAverage(POINTS_TO_AVERAGE)
 
-    # Auto-zero coefficient: each IDLE-state sample nudges _baseline this
-    # fraction of the way toward the current raw reading. Sensor runs at
-    # 75 Hz, so a 30 s time constant means alpha ≈ 1 / (30 × 75) ≈ 4.4e-4.
+    # Auto-zero coefficient: each IDLE-state loop pass nudges _baseline this
+    # fraction of the way toward the current raw reading. The figure assumes
+    # 75 passes a second; the loop really runs 3-4 times faster than that, so
+    # the true time constant is roughly a quarter of BASELINE_DRIFT_S (about
+    # 7-10 s for the default 30). Left as it is because it works well.
     # BASELINE_DRIFT_S = 0 disables auto-zero entirely.
     if BASELINE_DRIFT_S > 0:
         _BASELINE_ALPHA = 1.0 / (BASELINE_DRIFT_S * 75.0)
@@ -452,10 +429,31 @@ elif _ESPNOW_IMPORTABLE:
 else:
     print("ESP-NOW: module not available on this board")
 
+_esp_last   = None     # the four fields last sent
+_esp_last_t = 0.0      # when
+_esp_again  = 0        # extra sends still owed after a change
+_ESP_HEARTBEAT_S = 1.0
+
 def _espnow_send(group_str, buf_str, action_str, mods_str):
-    """Broadcast four display fields over ESP-NOW.  Fire-and-forget."""
+    """Broadcast four display fields over ESP-NOW.  Fire-and-forget.
+
+    Sent when something CHANGED (and twice more straight after, because a
+    broadcast has no acknowledgement and one packet can get lost), otherwise
+    once a second as a heartbeat so the display knows the sender is alive.
+    Before v1.25 the same message was built and sent ten times a second."""
+    global _esp_last, _esp_last_t, _esp_again
     if not _ESPNOW_ENABLED:
         return
+    key = (group_str, buf_str, action_str, mods_str)
+    now = time.monotonic()
+    if key != _esp_last:
+        _esp_last  = key
+        _esp_again = 2
+    elif _esp_again:
+        _esp_again -= 1
+    elif now - _esp_last_t < _ESP_HEARTBEAT_S:
+        return
+    _esp_last_t = now
     msg = (group_str + "|" + buf_str + "|" + action_str + "|" + mods_str).encode()
     try:
         _espnow_dev.send(msg, _broadcast_peer)
@@ -577,6 +575,37 @@ def _start_mouse_repeat():
     _mouse_moved      = [0, 0, 0]
     _mouse_start_t    = 0.0
     _last_repeat_tick = 0.0
+
+# Steps of mouse clicks in progress, oldest first: (wait, step, button) where
+# `wait` is the time that must pass after the PREVIOUS step was carried out.
+# step 0 = press, 1 = release, 2 = release the armed modifier keys.
+_click_q   = []
+_click_due = 0.0        # when the step at the head of the queue may run
+
+def _click_add(wait, step, btn):
+    global _click_due
+    if not _click_q:
+        _click_due = time.monotonic() + wait
+    _click_q.append((wait, step, btn))
+
+def _click_tick(now):
+    """Carry out the queued click steps that are due. Called from the main loop
+    on every pass (a cheap no-op while the queue is empty). The next step's wait
+    starts when this one actually ran, so holds and gaps are never cut short."""
+    global _armed_mods, _click_due
+    while _click_q and now >= _click_due:
+        _wait, step, btn = _click_q.pop(0)
+        if step == 0:
+            mouse.press(btn)
+        elif step == 1:
+            mouse.release(btn)
+        else:
+            kbd.release_all()
+            if not MOUSE_CLICK_KEEPS_MODS:
+                _armed_mods.clear()
+        if _click_q:
+            now = time.monotonic()
+            _click_due = now + _click_q[0][0]
 
 def _stop_mouse_repeat():
     global _mouse_repeating, _mouse_moved, _mouse_start_t, _last_repeat_tick
@@ -718,35 +747,38 @@ def _exec_command(cmd):
         btn   = (Mouse.LEFT_BUTTON   if side == 'left'   else
                  Mouse.RIGHT_BUTTON  if side == 'right'  else
                  Mouse.MIDDLE_BUTTON)
+        # The click is SCHEDULED, not slept through: each step (press, release,
+        # second press ...) is queued with the time it is due and carried out
+        # by _click_tick() from the main loop. Before v1.25 the firmware waited
+        # here with time.sleep() — 60 ms for a click, ~160 ms for a double-click
+        # — and could not see the sensor meanwhile, so a sip/puff started right
+        # after a click was easily missed.
+        # Each queued step carries the WAIT that must pass after the step
+        # before it, so a hold or gap can run long (if the loop is busy) but
+        # never short.
+        wait = MOUSE_CLICK_GAP if _click_q else 0.0         # after a click still in progress
         if _armed_mods:
             # Keyboard and mouse are separate USB HID interfaces, so the host
             # can process their reports out of order. Without a settle delay
             # the click often lands before the modifier registers and the host
             # sees a plain click — which is why Ctrl+click multi-select failed.
             kbd.press(*_armed_mods)
-            time.sleep(MOUSE_CLICK_MOD_DELAY)
+            wait += MOUSE_CLICK_MOD_DELAY
         # Press → hold → release, rather than mouse.click() which fires
         # press and release in the same call microseconds apart. Windows
         # scrollbar tracks and some controls ignore a zero-duration click;
-        # holding for MOUSE_CLICK_HOLD makes them register. (This is why a
-        # `mdrag` toggle scrolled but a click did not — the drag holds the
-        # button down, a click did not.)
+        # holding for MOUSE_CLICK_HOLD makes them register.
         for i in range(count):
-            mouse.press(btn)
-            time.sleep(MOUSE_CLICK_HOLD)
-            mouse.release(btn)
-            if i < count - 1:
-                time.sleep(MOUSE_CLICK_GAP)   # separate the clicks of a dbl-click
+            _click_add(wait, 0, btn)                        # press
+            _click_add(MOUSE_CLICK_HOLD, 1, btn)            # release after the hold
+            wait = MOUSE_CLICK_GAP                          # separates a double-click
         if _armed_mods:
-            time.sleep(MOUSE_CLICK_MOD_DELAY)   # let the click land first
-            kbd.release_all()
-            # Modifiers normally auto-clear after one use, but Ctrl+click
-            # multi-select needs the modifier to survive click after click —
-            # otherwise every file costs two patterns instead of one. Keep it
-            # armed and let the user toggle it off with the same pattern that
-            # armed it. The status line keeps showing e.g. "RCtrl" throughout.
-            if not MOUSE_CLICK_KEEPS_MODS:
-                _armed_mods.clear()
+            # Let the click land, then let go of the modifier keys. Modifiers
+            # normally auto-clear after one use, but Ctrl+click multi-select
+            # needs the modifier to survive click after click — so with
+            # MOUSE_CLICK_KEEPS_MODS it stays armed until toggled off.
+            _click_add(MOUSE_CLICK_MOD_DELAY, 2, 0)
+        _click_tick(time.monotonic())                       # a step due now goes out now
         _last_mouse_vec  = (0, 0, 0)    # clicks are not repeatable
         _last_repeatable = None
 
@@ -1273,6 +1305,7 @@ def execute(action, pattern=""):
         print("ERROR in action %r: %s: %s" % (pattern, type(e).__name__, e))
         _last_action = "ERROR - SEE LOG"
         try:
+            del _click_q[:]                  # drop any click still in progress
             kbd.release_all()
             mouse.release_all()
             _drag_active = False
@@ -1542,6 +1575,10 @@ _lbl_group = _lbl_buf = _lbl_action = _lbl_rpt = _lbl_mods = None
 _bar_pal = _bar_bmp = None
 _BAR_WIDTH_PX = 0
 _last_bar_fill = 0    # tracks last frame's fill width for incremental updates
+try:
+    import bitmaptools as _bitmaptools      # fast rectangle fill for the pressure bar
+except ImportError:
+    _bitmaptools = None
 if _USE_DISPLAY:
     _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
     _BAR_WIDTH_PX = display.width - 8
@@ -1660,10 +1697,15 @@ def _update_display(pressure=0.0):
                 # 100 ms).
                 lo = min(fill_px, _last_bar_fill)
                 hi = max(fill_px, _last_bar_fill)
-                for x in range(lo, hi):
-                    v = 1 if x < fill_px else 0
-                    for y in range(8):
-                        _bar_bmp[x, y] = v
+                v = 1 if fill_px > _last_bar_fill else 0
+                if _bitmaptools is not None:
+                    # One native call. The old dot-by-dot Python loop took
+                    # 36-54 ms for a full swing — on every sip and puff.
+                    _bitmaptools.fill_region(_bar_bmp, lo, 0, hi, 8, v)
+                else:
+                    for x in range(lo, hi):
+                        for y in range(8):
+                            _bar_bmp[x, y] = v
                 _last_bar_fill = fill_px
 
     # Mirror to wireless OLED (no-op if ESP-NOW not initialised). While a PIN is
@@ -1825,6 +1867,10 @@ _DISPLAY_RATE = 0.1     # cap display refresh at 10 Hz
 while True:
     now = time.monotonic()
 
+    # ── Mouse clicks in progress (press / release at their due times) ───────
+    if _click_q:
+        _click_tick(now)
+
     # ── Diagnostics: loop speed and blind moments ───────────────────────────
     if _DIAG_S:
         if _dg_t0 == 0.0:
@@ -1848,7 +1894,6 @@ while True:
     # ── Read sensor / switches ──────────────────────────────────────────────
     if USE_SENSOR:
         raw = lps.pressure
-        _avg_pressure.add(raw)
         _display_pressure = raw - _baseline
         if _DIAG_S:
             if raw != _dg_raw:
@@ -1938,7 +1983,7 @@ while True:
     if (USE_SENSOR and not _strong_handled and _last_state in (DIT, DAH)
             and active_group not in _STRONG_OFF and active_group != _SWITCH_GROUP
             and not _pin_active and not _reset_confirm
-            and not (_STRONG_FIRST_ONLY and _num_shifts)):
+            and not _num_shifts):
         abs_delta = abs(_display_pressure)
         if abs_delta > _peak_delta:
             _peak_delta = abs_delta

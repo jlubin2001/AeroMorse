@@ -1685,7 +1685,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.24 (released 2026-10-07)`. Open the file
+> `AeroMorse code.py — version 1.25 (released 2026-10-07)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1912,13 +1912,9 @@ it interact with other settings" explanation, jump to Appendix E.
 | `USE_SENSOR` | `True` | `False` = AT switches on D5/D6 instead of LPS33HW sensor |
 | `THRESH_SIP` | `2` | hPa below baseline = dot (raise if false triggers) |
 | `THRESH_PUFF` | `2` | hPa above baseline = dash |
-| `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing samples to confirm a state change (~13 ms each) |
-| `POINTS_TO_AVERAGE` | `8` | Reserved — not used in the threshold path; changing it does nothing |
-| `SENSOR_FILTER_ENABLED` | `True` | LPS33HW hardware low-pass. `False` = lowest latency, noisier |
-| `SENSOR_FILTER_HEAVY` | `True` | `True` = ODR/20 (~40–60 ms lag), `False` = ODR/9 (~half). Major typing-speed lever |
+| `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing readings to confirm a state change (one per loop pass, a few ms each) |
 | `BASELINE_DRIFT_S` | `30` | Auto-zero time constant (s) — baseline tracks ambient pressure drift while idle. `0` disables |
 | `REPEAT_SPLIT_PCT` | `0` | Split on a dip: a sip/puff that drops below this % of its peak and then climbs again counts as two. Fixes two quick sips/puffs running together (`p` → `r`, space → `w`). Try `60`. `0` = off |
-| `REPEAT_SPLIT_RISE` | `1.0` | hPa the pressure must climb again after the dip before it is split. Keep above sensor noise |
 | `DIAG_LOG_S` | `0` | Diagnostics (v1.19+): every this many seconds one `DIAG ...` line of timing figures (loop speed, longest blind moment, screen / wireless / key-send time, sensor reading rate, shortest sip/puff and rest) goes to the USB serial log. The first / worst / last line are saved on `devicereset`, and automatically every 5 minutes while you type (so they survive an unplug); the next run prints them as `DIAG PREV ...` (and the run before that as `DIAG PREV2 ...`). For tracking down "types badly until restarted". `0` = off; try `10` |
 | `DOT_PIN` | `board.D5` | Switch mode only — GPIO for the dot switch |
 | `DASH_PIN` | `board.D6` | Switch mode only — GPIO for the dash switch |
@@ -1941,7 +1937,6 @@ it interact with other settings" explanation, jump to Appendix E.
 | `THRESH_SIP_STRONG` | `15` | Sensor mode — hPa for strong-sip detection |
 | `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
 | `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is off — a hard sip/puff there is just a normal dot/dash. Default Scanning (4), so hard presses can't knock you out of Switch Control. `()` = on everywhere |
-| `STRONG_FIRST_ONLY` | `True` | (v1.23+) A strong sip/puff only counts as a gesture when it is the **first** breath of a code. In the middle of a code a hard sip/puff is just a normal dot/dash, so a sip pulled too hard inside e.g. `---.-` no longer throws the code away and jumps group. `False` = old behaviour (strong fires anywhere) |
 | `SWITCH_GROUP` | `9` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
@@ -2145,19 +2140,21 @@ order — the first two matter most:
 | Setting | Default | Try | Effect |
 |---|---|---|---|
 | `ACCEPT_DELAY` | `0.3` | `0.20`, then `0.15` | Directly sets the pause you must leave between characters. The single biggest throughput lever. |
-| `SENSOR_FILTER_HEAVY` | `True` | `False` | Halves the sensor's hardware low-pass lag (~40–60 ms → ~20–30 ms) on **every** press and release. |
-| `DEBOUNCE_SAMPLES` | `3` | `2` | Saves ~13 ms confirming each edge (~27 ms per element). Don't go to `1` unless you have a very clean signal. |
+| `USE_DISPLAY` | `True` | `False` | **Only if you watch a wireless display, not the built-in screen.** Drawing on the built-in screen stops the firmware reading the sensor for tens of milliseconds each time the text changes — long enough to miss or merge a quick sip/puff. With it off the screen is blanked and those pauses disappear. On the author's own device this was the change that ended missed dots and dashes. |
+| `DEBOUNCE_SAMPLES` | `3` | `2` | Confirms each edge one loop pass sooner (a few ms). Don't go to `1` unless you have a very clean signal. |
 | `THRESH_SIP` / `THRESH_PUFF` | `2` | `2`, or lower | Lower thresholds trigger earlier in the breath. Only lower these if you are *not* getting false triggers; use `test_pressure.py` to check your headroom. |
-| `SENSOR_FILTER_ENABLED` | `True` | `False` | Last resort. Removes hardware smoothing entirely — lowest possible latency, but you will likely need to raise `THRESH_*` to stop false triggers. |
 
 Change **one setting at a time** and type a familiar paragraph after
 each. Latency changes are easy to misjudge by feel, and stacking three
 edits at once makes it impossible to tell which one helped.
 
-> **`POINTS_TO_AVERAGE` is not a speed knob.** It looks like the
-> obvious thing to lower, but it is not currently used in the
-> threshold path (see Appendix E) — changing it does nothing. Smoothing
-> lives in `SENSOR_FILTER_*` and `DEBOUNCE_SAMPLES`.
+> **Settings removed in v1.25.** `SENSOR_FILTER_ENABLED`,
+> `SENSOR_FILTER_HEAVY` and `POINTS_TO_AVERAGE` used to be listed here as
+> speed levers. They never did anything: the firmware wrote the filter
+> settings to names the sensor library doesn't have, so the sensor's
+> filter was always off, and the running average was never used. Earlier
+> editions of this guide that told you to change them were wrong. An old
+> `config.py` that still has those lines keeps working; they are ignored.
 
 **Repeated elements collapse — `--` reads as `-`, `..` reads as `.`**
 
@@ -2175,33 +2172,39 @@ dropped isolated element. Examples from the default map:
 **Cause.** To register two dots in a row the firmware must see
 `IDLE → DIT → IDLE → DIT`. Pressure has to fall back inside the idle
 band *between* the elements and stay there long enough for
-`DEBOUNCE_SAMPLES` to confirm it. Two things eat that brief dip:
+`DEBOUNCE_SAMPLES` to confirm it. Three things eat that brief dip:
 
-- the sensor's hardware low-pass, which at `SENSOR_FILTER_HEAVY =
-  True` adds ~40–60 ms of group delay and smooths a short
-  return-to-neutral away entirely, and
+- **your own breath**: in a quick double sip or double puff the
+  pressure often only falls part of the way back before the second one
+  starts, and never gets inside the idle band at all;
+- **moments when the firmware is not reading the sensor**: while it
+  redraws the built-in screen (tens of milliseconds whenever the text
+  changes) the dip can come and go unseen. Measured on the author's
+  device before v1.22 these pauses were 60–130 ms on every sip and
+  puff, and they were the main cause of merged and dropped elements;
 - `DEBOUNCE_SAMPLES`, which needs that many consecutive agreeing
-  samples (~13 ms each) before it will believe the IDLE.
+  readings (one per loop pass, a few ms each) before it will believe
+  the IDLE.
 
-Together they need roughly 80–100 ms of clean gap between same-type
-elements. Type faster and your inter-element gaps shrink below that,
-so the pair merges into one longer element.
+Type faster and your inter-element gaps shrink, so the pair merges
+into one longer element.
 
 This is why the fault often **appears right after you lower
 `ACCEPT_DELAY`** — nothing is wrong with the new value, you simply
-started keying faster and crossed the threshold where the filter can
-no longer resolve adjacent elements.
+started keying faster and crossed the point where adjacent elements
+can no longer be told apart.
 
 **Fix, in order:**
 
 0. *(v1.18+)* `REPEAT_SPLIT_PCT = 60` — "split on a dip". A sip/puff
-   that drops below 60 % of its peak and then climbs again by
-   `REPEAT_SPLIT_RISE` hPa is counted as two, even if the pressure never
-   got back inside the idle band. It leaves the triggers, filter and
-   timing alone, so try it first if your other settings already suit
-   you. `0` switches it off.
-1. `SENSOR_FILTER_HEAVY = False` — halves the group delay so the dip
-   between elements survives. Usually sufficient on its own.
+   that drops below 60 % of its peak and then climbs again by 1 hPa is
+   counted as two, even if the pressure never got back inside the idle
+   band. It leaves the triggers and timing alone, so try it first if
+   your other settings already suit you. `0` switches it off.
+1. `USE_DISPLAY = False` — **if you watch a wireless display and not
+   the built-in screen.** Removes the screen-redraw pauses, so the dip
+   between elements is seen. (v1.25 also made the pressure bar far
+   cheaper to draw for those who keep the screen on.)
 2. `DEBOUNCE_SAMPLES = 3` → `2` — fewer samples needed to confirm the
    brief IDLE.
 3. Steps 1 and 2 are usually enough on their own. Only if they are
@@ -2727,10 +2730,11 @@ fires once the delta exceeds the threshold.
 > `importlib.reload`).
 
 **`DEBOUNCE_SAMPLES`** (default `3`). *Sensor mode only.*
-Number of consecutive sensor readings that must agree on a new state
-before the firmware accepts a state change. At 75 Hz each sample is
-~13 ms, so `DEBOUNCE_SAMPLES = 3` means a change must hold for ~40 ms
-before it takes effect. Filters out brief pressure wobble that would
+Number of consecutive readings that must agree on a new state before
+the firmware accepts a state change. One reading is taken per pass of
+the main loop (a few milliseconds; the sensor itself delivers a new
+value every ~13 ms), so `DEBOUNCE_SAMPLES = 3` means a change must
+hold for roughly 10–15 ms before it takes effect. Filters out brief pressure wobble that would
 otherwise turn a single dot into dot-dot.
 - The big win: with debounce, you can use **low** `THRESH_*` values
   (2 or even 1) and still get rock-solid element detection. That gives
@@ -2738,33 +2742,12 @@ otherwise turn a single dot into dot-dot.
 - Set to `1` to disable. Switch mode reads digital pins which are
   already clean, so this value is ignored when `USE_SENSOR = False`.
 
-**`POINTS_TO_AVERAGE`** (default `8`). *Sensor mode only.*
-Reserved. A rolling average of this depth is maintained but the
-dot/dash threshold comparison uses the **raw** reading, so changing
-this value currently has **no effect** on responsiveness or on
-false-trigger rate. Smoothing is handled upstream by the sensor's own
-hardware low-pass filter (`SENSOR_FILTER_*` below) and downstream by
-`DEBOUNCE_SAMPLES`. Don't spend tuning time here.
-
-**`SENSOR_FILTER_ENABLED`** (default `True`). *Sensor mode only.*
-Enables the LPS33HW's built-in hardware low-pass filter. Leave it on
-unless you are chasing the absolute lowest latency and can tolerate a
-noisier signal (which usually means raising `THRESH_SIP` /
-`THRESH_PUFF` to compensate).
-
-**`SENSOR_FILTER_HEAVY`** (default `True`). *Sensor mode only.*
-Selects the filter's cutoff. `True` = ODR/20 (3.75 Hz at the 75 Hz
-sample rate) — quietest, but it costs roughly **40–60 ms of group
-delay on every press and every release**. `False` = ODR/9 (8.3 Hz),
-about half the lag for a modest increase in noise.
-
-> **This is one of the largest single levers on typing speed** and it
-> is easy to miss, because the delay is symmetric: it postpones both
-> the start and the end of every element, so the device feels
-> uniformly "behind" rather than obviously broken. Fast Morse users
-> coming from a switch-based device (where switch closure is read
-> with essentially zero latency) usually want `False` here. See
-> **"Typing feels slower than my previous Morse device"** in §12.
+> **Removed in v1.25:** `POINTS_TO_AVERAGE`, `SENSOR_FILTER_ENABLED` and
+> `SENSOR_FILTER_HEAVY`. None of them ever had an effect — the running
+> average was not used, and the filter settings were written to names
+> the sensor library doesn't have, so the LPS33HW's low-pass filter was
+> always off. The readings the firmware acts on are the sensor's raw
+> 75 Hz output; wobble is handled by `DEBOUNCE_SAMPLES`.
 
 **`BASELINE_DRIFT_S`** (default `30`). *Sensor mode only.*
 Time constant in seconds for auto-zero drift correction. The LPS33HW
@@ -2775,10 +2758,11 @@ opening, temperature changes, anything. Without correction, after
 30–60 minutes the device often starts firing phantom sips or puffs
 as the stale baseline drifts further and further from current ambient.
 - While the state machine is **IDLE** (no active sip/puff), baseline
-  drifts slowly toward the current raw reading at this time constant.
-  At 75 Hz sampling, `BASELINE_DRIFT_S = 30` gives a per-sample
-  correction factor of ~0.00044, so a step change in ambient is
-  ~95 % corrected in ~90 s.
+  drifts toward the current raw reading. The figure is nominal: the
+  correction is applied once per loop pass with a factor of ~0.00044
+  (`1 / (BASELINE_DRIFT_S × 75)`), and the loop runs 3–4 times faster
+  than 75 passes a second, so with the default `30` a step change in
+  ambient is in practice ~95 % corrected in roughly 20–30 s, not 90.
 - While in **DIT** or **DAH** the baseline is **frozen** — a held sip
   or puff cannot be absorbed into the baseline, so a sustained
   element still detects normally.
