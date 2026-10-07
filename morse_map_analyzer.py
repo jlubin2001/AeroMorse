@@ -93,13 +93,28 @@ GROUP_TITLES = {
     1: 'Group 1 — Keyboard',
     2: 'Group 2 — Mouse / Shortcuts',
     3: 'Group 3 — Macros',
-    4: 'Group 4 — Scanning / F1–F12 (Switch Control)',
+    4: 'Group 4 — Scanning (Switch Control)',
     5: 'Group 5 — Media / USB HID Consumer Controls',
     6: 'Group 6 — Placeholder',
-    7: 'Group 7 — Switch (patterns unused while SWITCH_GROUP = 7)',
+    7: 'Group 7 — Placeholder',
     8: 'Group 8 — Placeholder',
     9: 'Group 9 — Placeholder',
 }
+
+def read_switch_group():
+    """SWITCH_GROUP from the config.py next to morse_map.py (9 = the shipped
+    default when it can't be read; 0 = no Switch group)."""
+    try:
+        cfg = open(os.path.join(os.path.dirname(MORSE_MAP_PATH), 'config.py'),
+                   encoding='utf-8-sig').read()
+        m = re.search(r'(?m)^SWITCH_GROUP\s*=\s*(\d+)', cfg)
+        return int(m.group(1)) if m else 9
+    except OSError:
+        return 9
+
+SWITCH_GROUP = read_switch_group()
+if 1 <= SWITCH_GROUP <= 9:
+    GROUP_TITLES[SWITCH_GROUP] = 'Group %d — Switch (no Morse codes here)' % SWITCH_GROUP
 
 # ── 1. Duplicate assignments (source scan) ────────────────────────────────────
 
@@ -147,13 +162,18 @@ LENGTH_RANGE = {0: range(6, 9)}   # g0
 DEFAULT_RANGE = range(2, 8)        # g1, g2, g3
 
 def find_unused(groups):
-    """Return {gnum: {length: [sorted list of unused code ints]}}."""
+    """Return {gnum: {length: [sorted list of unused code ints]}}.
+    A code that Group 0 already uses is NOT offered for the other groups:
+    Group 0 is checked first, so it could never be reached there."""
     result = {}
+    g0 = groups.get(0, {})
     for gnum, g in groups.items():
         lengths = LENGTH_RANGE.get(gnum, DEFAULT_RANGE)
         result[gnum] = {}
         for length in lengths:
             used  = set(g.get(length, {}).keys())
+            if gnum != 0:
+                used |= set(g0.get(length, {}).keys())
             all_c = set(range(1 << length))
             result[gnum][length] = sorted(all_c - used)
     return result
@@ -213,34 +233,56 @@ def write_report(src_dups, g0_conflicts, unused_map, groups, outpath):
             gx_val = repr(groups[gnum][length][code])
             ln(f'  g{gnum:<7}{length:<6}{bin(code):<14}{pat:<12}{g0_val:<24}{gx_val}')
 
-    # ── Section 3: Unused codes ───────────────────────────────────────────────
-    section('3.  UNUSED MORSE CODES  PER GROUP\n'
-            '      (g0: lengths 6–8  |  g1/g2/g3: lengths 2–7)')
+    # ── Section 3: Unused codes — paste-ready ─────────────────────────────────
+    # Every line from here on is either a comment (starts with #) or a complete,
+    # left-justified morse_map.py line in the map's own spacing, so any block can
+    # be copied straight into morse_map.py without fixing indents or spaces.
+    ln()
+    ln('# ' + '=' * (W - 2))
+    ln('# 3.  UNUSED MORSE CODES PER GROUP  —  ready to copy and paste')
+    ln('#')
+    ln('#   Every line below is either a comment (starts with #) or a complete')
+    ln('#   morse_map.py line. To add a code: copy its line, paste it into that')
+    ln("#   group's section of morse_map.py, and put what it should do between")
+    ln("#   the quotes — e.g. 'my phrase' — or replace the quotes with a key")
+    ln("#   (Keycode.ENTER), a secret (_secret('mykey')), an app launcher")
+    ln("#   (_cc('AL_CALCULATOR', 0x192)) or a command ('mclick left 1').")
+    ln('#')
+    ln('#   Listed: Group 0 lengths 6-8, all other groups lengths 2-7. Codes that')
+    ln('#   Group 0 already uses are left out of the other groups (Group 0 is')
+    ln('#   checked first, so they could never be reached there).')
+    ln('# ' + '=' * (W - 2))
 
     for gnum in sorted(unused_map):
-        sub(GROUP_TITLES.get(gnum, f'Group {gnum}'))
+        title = GROUP_TITLES.get(gnum, f'Group {gnum}')
+        ln()
+        ln()
+        ln('# ' + '-' * (W - 2))
+        ln(f'# {title}')
+        ln('# ' + '-' * (W - 2))
+        if gnum == SWITCH_GROUP:
+            ln('# Nothing to add here: in the Switch group a sip and a puff hold a key each,')
+            ln('# so no Morse code can be typed.')
+            continue
         lengths = LENGTH_RANGE.get(gnum, DEFAULT_RANGE)
         for length in lengths:
             unused = unused_map[gnum][length]
             total  = 1 << length
             used_n = total - len(unused)
             ln()
-            ln(f'    Length {length}  —  {used_n} of {total} used,  '
-               f'{len(unused)} unused:')
+            ln(f'# Group {gnum}, {length} symbols: {used_n} of {total} used, {len(unused)} free')
             if not unused:
-                ln('      (none — all slots used)')
+                ln('# (none free)')
             else:
-                gname = f'g{gnum}'
                 for code in unused:
-                    pat  = to_pattern(length, code)
-                    bstr = f'0b{code:0{length}b}'
-                    entry = f'{gname}[{length}][{bstr}]='
-                    ln(f'      {entry:<26}\'\'   # {pat}')
+                    pat   = to_pattern(length, code)
+                    entry = f"g{gnum}[{length}][0b{code:0{length}b}]=''"
+                    ln(f'{entry:<28}# {pat}')
 
     ln()
-    rule('=')
-    ln('  END OF REPORT')
-    rule('=')
+    ln('# ' + '=' * (W - 2))
+    ln('# END OF REPORT')
+    ln('# ' + '=' * (W - 2))
     ln()
 
     with open(outpath, 'w', encoding='utf-8') as f:

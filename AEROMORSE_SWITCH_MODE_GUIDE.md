@@ -1,7 +1,8 @@
 # AeroMorse Switch Mode Guide — Two-Button Hold Mode
 
-**Switch mode** (Group 7, new in v1.15) turns AeroMorse into **two plain
-switches**. There is no Morse code in this group:
+**Switch mode** (Group 9; new in v1.15 as Group 7, moved to Group 9 in v1.24)
+turns AeroMorse into **two plain switches**. There is no Morse code in this
+group:
 
 - a **sip** presses **Enter** the moment it starts and **holds it** until the
   sip ends;
@@ -16,7 +17,7 @@ need a key **held down**, which Morse groups can't do.
 
 ## When to use which group
 
-| | **Group 4 — Scanning** | **Group 7 — Switch** |
+| | **Group 4 — Scanning** | **Group 9 — Switch** |
 |---|---|---|
 | What a sip/puff does | Taps a key after the Morse pattern finishes | Presses a key **instantly** and **holds** it while you sip/puff |
 | Keys | 12: Enter, Space, F3–F12 (1–3-symbol patterns) | 2: Enter (sip), Space (puff) |
@@ -28,8 +29,8 @@ need a key **held down**, which Morse groups can't do.
 
 ## Quick start
 
-1. **Enter Switch mode:** type the Group 0 code **`...-----`**
-   (3 sips, 5 puffs). The screen shows **[ SWITCH ]**. (Long-press group
+1. **Enter Switch mode:** type the Group 0 code **`.-------`**
+   (1 sip, 7 puffs). The screen shows **[ SWITCH ]**. (Long-press group
    cycling skips Switch mode, so you never land in it by accident.)
 2. **Sip** to hold **Enter**, **puff** to hold **Space**. While a key is held
    the screen shows `HOLD RETURN` or `HOLD SPACEBAR`.
@@ -76,7 +77,7 @@ Space to slide left, hold Enter to slide right*, and its menus use *tap Space
 1. On the computer, open
    <https://narbehouse.github.io/bennyshub/index.html> in a browser (full
    screen helps).
-2. On AeroMorse, enter Switch mode (`...-----`).
+2. On AeroMorse, enter Switch mode (`.-------`).
 3. Puff to move, sip to choose. When you're finished, stop for 20 seconds and
    AeroMorse returns to Keyboard.
 
@@ -92,7 +93,7 @@ restarts with the new values.
 
 | Setting | Default | What it does |
 |---|---|---|
-| `SWITCH_GROUP` | `7` | Which group is Switch mode. `0` = no Switch mode (Group 7 becomes an ordinary placeholder group again). |
+| `SWITCH_GROUP` | `9` | Which group is Switch mode (it was `7` before v1.24). `0` = no Switch mode (Group 9 becomes an ordinary group again). |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping. Any Keycode name, e.g. `"LEFT_ARROW"`. |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing, e.g. `"RIGHT_ARROW"`. |
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before it returns to `SWITCH_EXIT_GROUP` by itself. `0` = never (then use the long puff). |
@@ -128,8 +129,8 @@ copy `config.py` to the device.
 | Problem | Why | Fix |
 |---|---|---|
 | It leaves Switch mode while I'm playing | A pause longer than `SWITCH_IDLE_EXIT_S`, or a 5-second puff | Raise `SWITCH_IDLE_EXIT_S` / `SWITCH_EXIT_PUFF_S` |
-| I need the mouse between games | Switch mode has no Morse, so there is no code to press | Set `SWITCH_EXIT_GROUP = 2` so leaving lands in Mouse, and add a short Group 2 code for `"group 7"` in `morse_map.py` to come back. The countdown (`SWITCH_COUNTDOWN_S`) shows when it is about to leave |
+| I need the mouse between games | Switch mode has no Morse, so there is no code to press | Set `SWITCH_EXIT_GROUP = 2` so leaving lands in Mouse, and add a short Group 2 code for `"group 9"` in `morse_map.py` to come back. The countdown (`SWITCH_COUNTDOWN_S`) shows when it is about to leave |
 | It won't leave Switch mode | You keep sipping/puffing within 20 s | Stop for 20 s, or hold one puff for 5 s |
 | Nothing happens in the game | The game window isn't in front, or wants other keys | Click the game once; or change `SWITCH_SIP_KEY` / `SWITCH_PUFF_KEY` |
-| `...-----` doesn't go to Switch mode | `SWITCH_GROUP` isn't `7` | Check `config.py` (or use the Group 0 code for the group you chose) |
-| Group 7's own patterns don't type | Group 7 is Switch mode | Set `SWITCH_GROUP = 0` to use Group 7 for Morse again |
+| `.-------` doesn't go to Switch mode | `SWITCH_GROUP` isn't `9` (before v1.24 it was `7`, reached with `...-----`) | Check `config.py` (or use the Group 0 code for the group you chose) |
+| Group 9's own patterns don't type | Group 9 is Switch mode | Set `SWITCH_GROUP = 0` to use Group 9 for Morse again |

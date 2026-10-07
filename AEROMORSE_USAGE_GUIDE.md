@@ -107,7 +107,7 @@ live in a separate secrets file, and `morse_map.py` only *names* them. A line
 like
 
 ```python
-g3[4][0b0110] = _secret('password1', '(set password1 in macro_secrets.txt)')   # .--.  P
+g3[4][0b0110] = _secret('password1')   # .--.  P
 ```
 
 means: *pattern `.--.` in Group 3 types whatever is stored under the key
@@ -214,7 +214,7 @@ lists:
 - **Build Guide** (PDF) — hardware, wiring, every `config.py` setting (§10) and
   troubleshooting (§12).
 - **README** — group-by-group pattern tables and the full secrets guide.
-- **Switch Mode Guide** — Group 7, where a sip holds Enter and a puff holds
+- **Switch Mode Guide** — Group 9, where a sip holds Enter and a puff holds
   Space like two plain switches (switch games such as
   [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)).
 - **Switch Control Guide** — Group 4 with iOS Switch Control, Android Switch
@@ -299,7 +299,7 @@ enough.
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.23 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.24 …`); keep all four at the same version.
 
 ---
 

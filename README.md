@@ -52,11 +52,12 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
   explorer, browser, and mail
-- **Group 7** — **Switch**: no Morse — a sip holds Enter and a puff holds
+- **Groups 6, 7, 8** — **Placeholders** carrying Group 1's letters and numbers,
+  written out line by line in `morse_map.py`, ready for you to customise
+- **Group 9** — **Switch**: no Morse — a sip holds Enter and a puff holds
   Space for as long as you keep going, like two real switches (games and
-  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md)
-- **Groups 6, 8, 9** — **Placeholders** seeded with g1's letters and numbers,
-  ready for you to customise
+  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
+  (It was Group 7 before v1.24.)
 
 Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
 mirrors the main screen on a second board up to ~30 m away — useful when the
@@ -293,11 +294,11 @@ remain available in the background at all times):
 | Long press | Effect |
 |------------|--------|
 | Long sip | Cycle groups **backward** (… 3 → 2 → 1 → 9 → 8 → 6 …) |
-| Long puff | Cycle groups **forward**  (1 → 2 → … → 6 → 8 → 9 → 1 …) |
+| Long puff | Cycle groups **forward**  (1 → 2 → … → 7 → 8 → 1 …) |
 
-The **Switch group (Group 7) is skipped** when cycling: long presses don't
+The **Switch group (Group 9) is skipped** when cycling: long presses don't
 change group inside Switch mode (games need long holds), so cycling into it
-would leave you stuck. Enter Switch mode on purpose with `...-----`.
+would leave you stuck. Enter Switch mode on purpose with `.-------`.
 
 With ten groups, cycling all the way around is slow — use the 8-symbol
 **Group 0 jump codes** below to go straight to any group from anywhere.
@@ -324,9 +325,9 @@ add trailing dashes to reach the higher groups.
 | `......--` | 2 | Group 5 — Media (USB HID Consumer Controls) |
 | `.....---` | 3 | Group 6 — placeholder |
 | `....----` | 4 | Group 3 — Macros |
-| `...-----` | 5 | Group 7 — **Switch** (sip holds Enter, puff holds Space) |
+| `...-----` | 5 | Group 7 — placeholder |
 | `..------` | 6 | Group 8 — placeholder |
-| `.-------` | 7 | Group 9 — placeholder |
+| `.-------` | 7 | Group 9 — **Switch** (sip holds Enter, puff holds Space) |
 | `--------` | 8 | Group 2 — Mouse / Shortcuts |
 | `----....` | (alias) | Group 4 — Scanning / Switch Control (second shortcut) |
 
@@ -675,9 +676,14 @@ generally honours all four; macOS and Linux desktops vary. The remaining
 letters and numbers in g5 are inherited from Group 1 as a placeholder and
 can be customised.
 
-### Group 7 — Switch (two-button hold mode)
+### Group 9 — Switch (two-button hold mode)
 
-In Group 7 AeroMorse stops decoding Morse and behaves like **two plain
+> **Changed in v1.24:** Switch mode moved from Group 7 to **Group 9**, so the
+> one group without Morse is the last one. Its Group 0 code is now `.-------`
+> (it was `...-----`). To keep it on Group 7, set `SWITCH_GROUP = 7` in
+> `config.py`.
+
+In Group 9 AeroMorse stops decoding Morse and behaves like **two plain
 switches**: a **sip holds Enter** and a **puff holds Space** from the moment
 you start until you stop — the way switch-accessible games and apps expect
 (e.g. [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html):
@@ -688,13 +694,15 @@ Keyboard **by itself after 20 s** with no sip or puff (or hold one puff for
 `SWITCH_IDLE_EXIT_S`, `SWITCH_EXIT_PUFF_S`, `SWITCH_EXIT_GROUP` in
 `config.py`. Full guide: [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
 
-### Groups 6, 8, 9 — Placeholders
+### Groups 6, 7, 8 — Placeholders
 
-Groups 6, 8 and 9 (and 7, if `SWITCH_GROUP = 0`) are seeded with a copy of
-Group 1's letters and numbers so the
-same muscle memory works while you decide what each group is for. Replace
-the entries in `morse_map.py` with your own keycodes, macros, or command
-strings. Reach each group with its Group 0 jump code (table above).
+Groups 6, 7 and 8 carry Group 1's letters and numbers on the same codes, so
+the same muscle memory works while you decide what each group is for. Since
+v1.24 they are **written out line by line** in `morse_map.py` (before, a
+hidden helper copied them), so to make a code do something else you just
+change what is between the quotes on its line — a phrase, `_secret('mykey')`,
+a `Keycode`, an app launcher or a command string. Groups 4 and 5 list their
+remaining letters and numbers the same way. Reach each group with its Group 0 jump code (table above).
 
 ---
 
@@ -771,7 +779,7 @@ explaining what it does. The same Key Settings table also appears in
 | `THRESH_PUFF_STRONG` | `15` | Same as above but for puff |
 | `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is switched off: a hard sip/puff there counts as a normal dot/dash. Default `(4,)` = Scanning, so a hard sip/puff (Enter/Space) never jumps you out of Switch Control. List several like `(4, 3)`; `()` = strong gestures on in every group |
 | `STRONG_FIRST_ONLY` | `True` | (v1.23+) A strong sip/puff only counts as a gesture when it is the **first** breath of a code. In the middle of a code a hard sip/puff is just a normal dot/dash, so a sip pulled too hard inside e.g. `---.-` no longer throws the code away and jumps group. `False` = old behaviour (strong fires anywhere) |
-| `SWITCH_GROUP` | `7` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
+| `SWITCH_GROUP` | `9` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before the Switch group returns to `SWITCH_EXIT_GROUP` by itself. `0` = never |
@@ -895,7 +903,7 @@ braces, so an editing slip can't break anything):
 2. In `morse_map.py`, a pattern pulls a value in by key, with a harmless
    fallback:
    ```python
-   g3[4][0b0110] = _secret('password1', '(set password1 in macro_secrets.txt)')  # P
+   g3[4][0b0110] = _secret('password1')  # P
    ```
 
 **Why this is safe:**
@@ -943,15 +951,18 @@ braces, so an editing slip can't break anything):
 dedicate a placeholder group like g6 to logins:
 
 ```python
-g6[4][0b0110] = _secret('bank_login', '(set bank_login in macro_secrets.txt)')  # P
+g6[4][0b0110] = _secret('bank_login')  # P
 ```
 
 - **Keys are shared across the whole file** — `_secret('email', …)` in
-  g3 and in g7 both read the same `email=` line. Use distinct key names
+  g3 and in g6 both read the same `email=` line. Use distinct key names
   (`email`, `work_email`) if you want different values.
-- In **g4–g9** the letter patterns are pre-seeded with g1's letters, so a
-  `_secret(...)` assignment there overrides the seeded letter — same as
-  the g5 media keys do.
+- In **g4–g8** the letters and numbers are ordinary lines in the file: to put
+  a secret on a letter's code, replace the quoted letter on that line with
+  `_secret('mykey')`.
+- **Short form (v1.24+):** `_secret('mykey')` is enough. The second argument
+  (the text typed when the key isn't set) is optional; without it the
+  pattern types `(set mykey in AeroMorse Secrets)`.
 - The cheat sheet shows a 🔒 lock badge with the key name for
   `_secret(...)` in **any** group, so secrets stay hidden when printed.
 
@@ -1049,7 +1060,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `CAREGIVER_SETUP_GUIDE.md` | Plain-English step-by-step assembly guide for a non-technical caregiver, using a specific recommended parts set |
 | `AEROMORSE_VS_DARCI.md` | Feature-by-feature comparison vs. the WesTest Darci USB, with migration guide for Darci users |
 | `MORSE_DEVICES_COMPARISON.md` | Side-by-side comparison of AeroMorse vs Adap2U, Darci USB, and morAce — including 1/2/3-switch mode support |
-| `AEROMORSE_SWITCH_MODE_GUIDE.md` / `.pdf` | **Switch mode (Group 7)** — AeroMorse as two plain switches: sip holds Enter, puff holds Space, for switch games and apps that need a key held (e.g. [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)). How to enter/leave, settings, Benny's Hub walkthrough, troubleshooting |
+| `AEROMORSE_SWITCH_MODE_GUIDE.md` / `.pdf` | **Switch mode (Group 9)** — AeroMorse as two plain switches: sip holds Enter, puff holds Space, for switch games and apps that need a key held (e.g. [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)). How to enter/leave, settings, Benny's Hub walkthrough, troubleshooting |
 | `AEROMORSE_SWITCH_CONTROL_GUIDE.md` | How to use AeroMorse's Group 4 (F1–F12) with **iOS Switch Control**, **Android Switch Access**, and **Samsung Universal Switch** — Morse-pattern → F-key → OS action tables, with step-by-step OS setup for each platform |
 | `TOOLS_AND_GUIDES.md` | Reference for development tools: Thonny, CircuitPython installer |
 | `AeroMorse Cheat Sheet.pdf` | Printable cheat sheet — one page per group, showing every pattern as dots/dashes next to its key or action, with a legend on the first page. Printed from `aeromorse_cheatsheet.htm` (load `morse_map.py` and use the browser's Print). |

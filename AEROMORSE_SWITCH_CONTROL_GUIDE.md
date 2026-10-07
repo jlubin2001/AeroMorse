@@ -28,7 +28,7 @@ through the OS-side setup.
 > switch games and apps (for example
 > [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)) want
 > two plain switches that hold Space and Enter. Use the **Switch group**
-> (Group 7) instead — see [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
+> (Group 9) instead — see [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
 
 ---
 

@@ -74,11 +74,12 @@ Ten groups organize all functions — `g0` plus `g1–g9`:
 - **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
   mute, track skip, brightness, plus launchers for calculator, file
   explorer, browser, and mail
-- **Group 7** — **Switch**: no Morse — a sip holds Enter and a puff holds
+- **Groups 6, 7, 8** — **Placeholders** carrying Group 1's letters and numbers,
+  written out line by line in `morse_map.py`, ready for you to customise
+- **Group 9** — **Switch**: no Morse — a sip holds Enter and a puff holds
   Space for as long as you keep going, like two real switches (games and
-  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md)
-- **Groups 6, 8, 9** — **Placeholders** seeded with g1's letters and numbers,
-  ready for you to customise
+  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
+  (It was Group 7 before v1.24.)
 
 Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
 mirrors the main screen on a second board up to ~30 m away — useful when the
@@ -1684,7 +1685,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.23 (released 2026-10-05)`. Open the file
+> `AeroMorse code.py — version 1.24 (released 2026-10-07)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1941,7 +1942,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
 | `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is off — a hard sip/puff there is just a normal dot/dash. Default Scanning (4), so hard presses can't knock you out of Switch Control. `()` = on everywhere |
 | `STRONG_FIRST_ONLY` | `True` | (v1.23+) A strong sip/puff only counts as a gesture when it is the **first** breath of a code. In the middle of a code a hard sip/puff is just a normal dot/dash, so a sip pulled too hard inside e.g. `---.-` no longer throws the code away and jumps group. `False` = old behaviour (strong fires anywhere) |
-| `SWITCH_GROUP` | `7` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
+| `SWITCH_GROUP` | `9` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before the Switch group returns to `SWITCH_EXIT_GROUP` by itself. `0` = never |
@@ -2488,9 +2489,9 @@ to any group with its 8-symbol Group 0 toggle code.
 | 4 | Scanning — Enter, Space and F3–F12 on the 12 shortest codes (Switch Control on iOS / Android) | `.......-` or `----....` | Long-puff cycling |
 | 5 | Media — USB HID Consumer Controls (volume / play-pause / mute / track / brightness / eject) on the 12 shortest codes | `......--` | Long-puff cycling |
 | 6 | Placeholder | `.....---` | Long-puff cycling |
-| 7 | **Switch** — sip holds Enter, puff holds Space (games / switch apps; see `AEROMORSE_SWITCH_MODE_GUIDE.md`). Returns to Keyboard after 20 s idle | `...-----` | Only with `...-----` — long-press cycling skips it; leaves by itself |
+| 7 | Placeholder | `...-----` | Long-puff cycling |
 | 8 | Placeholder | `..------` | Long-puff cycling |
-| 9 | Placeholder | `.-------` | Long-puff cycling |
+| 9 | **Switch** — sip holds Enter, puff holds Space (games / switch apps; see `AEROMORSE_SWITCH_MODE_GUIDE.md`). Returns to Keyboard after 20 s idle. (Group 7 before v1.24) | `.-------` | Only with `.-------` — long-press cycling skips it; leaves by itself |
 
 **Long sip** (hold ≥ `LONG_PRESS` seconds) → cycle backward (…3→2→1→9→8…)
 **Long puff** (hold ≥ `LONG_PRESS` seconds) → cycle forward (1→2→3→4→…→9→1…)

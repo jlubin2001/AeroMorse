@@ -404,7 +404,7 @@
       'group 4':  { label: '→ Group 4 - Scanning',  cls: 'grp' },
       'group 5':  { label: '→ Group 5 - Media',     cls: 'grp' },
       'group 6':  { label: '→ Group 6',             cls: 'grp' },
-      'group 7':  { label: '→ Group 7 - Switch',    cls: 'grp' },
+      'group 7':  { label: '→ Group 7',             cls: 'grp' },
       'group 8':  { label: '→ Group 8',             cls: 'grp' },
       'group 9':  { label: '→ Group 9',             cls: 'grp' },
 
@@ -524,7 +524,7 @@
        config.py next to this page when it can be read (the PDF builder serves
        it); otherwise the shipped defaults below are used. SWITCH_GROUP = 0 means
        no Switch group — the group is then printed from morse_map.py as usual. */
-    const SWITCH_CFG = { group: 7, sip: 'ENTER', puff: 'SPACE', idle: 20, exitPuff: 5,
+    const SWITCH_CFG = { group: 9, sip: 'ENTER', puff: 'SPACE', idle: 20, exitPuff: 5,
                          exitGroup: 1, countdown: 10 };
     const SHORT_GROUP_NAMES = ['Base', 'Keyboard', 'Mouse', 'Macros', 'Scanning', 'Media',
                                'Group 6', 'Group 7', 'Group 8', 'Group 9'];
@@ -593,6 +593,10 @@
       };
 
       const switchKey = (SWITCH_CFG.group >= 1 && SWITCH_CFG.group <= 9) ? 'g' + SWITCH_CFG.group : null;
+      /* The "go to group N" badge of the Switch group says so, whichever group it is. */
+      if (switchKey && CMD_MAP['group ' + SWITCH_CFG.group]) {
+        CMD_MAP['group ' + SWITCH_CFG.group].label = '→ Group ' + SWITCH_CFG.group + ' - Switch';
+      }
       if (switchKey) {
         groupNames[switchKey] = 'Group ' + SWITCH_CFG.group + ': Switch - sip holds ' +
           niceKeyName(SWITCH_CFG.sip) + ', puff holds ' + niceKeyName(SWITCH_CFG.puff) + ' (no Morse)';
@@ -665,7 +669,7 @@
            lowercase in morse_map.py so that typing actually produces lowercase
            output by default, but the printed cheat sheet reads better when the
            letter glyphs are large and capitalised. */
-        if (group === 'g1' && cls === null && /^[a-z]$/.test(key)) {
+        if (cls === null && /^[a-z]$/.test(key)) {
           key = key.toUpperCase();
         }
 
@@ -742,7 +746,7 @@
            last entries onto a second sheet; tighten the spacing and, if still
            needed, shrink it just enough instead. Groups that would have to shrink
            below FIT_MIN (far too many entries) stay at full size on two pages. */
-        const FIT_ROWS = 18, DENSE_ROWS = 23, FIT_MIN = 0.78;
+        const FIT_ROWS = 16, DENSE_ROWS = 23, FIT_MIN = 0.78;
         const rowsNeeded = Math.ceil(groupItems.length / colCount);
         if (rowsNeeded > FIT_ROWS && DENSE_ROWS / rowsNeeded >= FIT_MIN) {
           columnsDiv.classList.add('dense');            /* 1st: tighter row spacing */

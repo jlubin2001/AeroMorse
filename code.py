@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.23   (released 2026-10-05)
+#  AeroMorse code.py   —   version 1.24   (released 2026-10-07)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -32,8 +32,8 @@
 #   Group 3  macro strings
 #   Group 4  scanning — Enter, Space, F3–F12 on the 12 shortest codes (Switch Control)
 #   Group 5    media keys
-#   Group 6–9  placeholders (copy of g1 letters + numbers — customise)
-#   Group 7    SWITCH by default (config SWITCH_GROUP): sip/puff HOLD Enter/Space
+#   Group 6–8  placeholders (g1's letters + numbers, written out — customise)
+#   Group 9    SWITCH by default (config SWITCH_GROUP): sip/puff HOLD Enter/Space
 #              like two plain switches — see AEROMORSE_SWITCH_MODE_GUIDE.md
 #   Reach any group directly with its 8-symbol Group 0 toggle code.
 #
@@ -229,7 +229,7 @@ def _dg_fresh():
 
 _dg = _dg_fresh()
 
-# Switch group (config.py SWITCH_GROUP, e.g. 7): in that group AeroMorse acts
+# Switch group (config.py SWITCH_GROUP, e.g. 9): in that group AeroMorse acts
 # like two plain switches instead of Morse — a sip presses SWITCH_SIP_KEY and a
 # puff presses SWITCH_PUFF_KEY the moment it starts, and HOLDS it until the
 # sip/puff ends (for switch games and scanning apps that need a held key).
@@ -916,6 +916,16 @@ def _build_int_name_map(cls):
 
 _KEYCODE_NAMES = _build_int_name_map(Keycode)
 _CC_NAMES      = _build_int_name_map(ConsumerControlCode)
+# App launchers: older adafruit_hid bundles have no AL_* names, so a launcher
+# sent by its raw usage ID showed as "CC 402". Name the common ones here (USB
+# HID Usage Tables, Consumer page); these also read better than the AL_ names.
+_CC_NAMES.update({
+    0x192: "CALCULATOR",   0x194: "FILE EXPLORER",  0x196: "WEB BROWSER",
+    0x18A: "MAIL",         0x183: "MEDIA PLAYER",   0x18E: "CALENDAR",
+    0x18D: "CONTACTS",     0x19F: "CONTROL PANEL",  0x1A7: "DOCUMENTS",
+    0x221: "SEARCH",       0x223: "BROWSER HOME",   0x224: "BROWSER BACK",
+    0x225: "BROWSER FWD",  0x227: "BROWSER REFRESH",
+})
 
 # adafruit_hid gives several aliases to the same integer — LEFT_GUI is also
 # GUI / WINDOWS / COMMAND, and LEFT_ALT is also ALT / OPTION. _build_int_name_map

@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.23 (released 2026-10-05)
+# AeroMorse config.py — version 1.24 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -100,12 +100,13 @@ STRONG_FIRST_ONLY = True       # True = a strong sip/puff only counts as the FIR
 # presses SWITCH_PUFF_KEY the moment it starts, and HOLDS the key down until
 # the sip/puff ends — for switch-accessible games and scanning apps (e.g.
 # Benny's Hub: Space = move, Enter = select) that need a key held.
-# Get there with its Group 0 code (Group 7: ...-----). It goes back to
+# Get there with its Group 0 code (Group 9: .-------). It goes back to
 # SWITCH_EXIT_GROUP BY ITSELF after SWITCH_IDLE_EXIT_S seconds with no sip or
 # puff — just stop and wait when you're done. (Or hold one puff for
 # SWITCH_EXIT_PUFF_S seconds.) Hard or long sips/puffs never leave it otherwise.
 
-SWITCH_GROUP      = 7          # group number to use as the Switch group; 0 = none
+SWITCH_GROUP      = 9          # group number to use as the Switch group; 0 = none
+                               # (9 = the last group since v1.24; it was 7 before)
 SWITCH_SIP_KEY    = "ENTER"    # key held while sipping  (a Keycode name)
 SWITCH_PUFF_KEY   = "SPACE"    # key held while puffing  (a Keycode name)
 SWITCH_IDLE_EXIT_S = 20        # seconds with no sip/puff before leaving by itself (0 = never)

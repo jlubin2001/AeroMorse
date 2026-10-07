@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.23 (released 2026-10-05)
+# AeroMorse morse_map.py — version 1.24 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -20,6 +20,13 @@ class CC:
     __slots__ = ('code',)
     def __init__(self, code):
         self.code = code
+
+def _cc(name, usage_id):
+    """An app-launcher / media key by NAME, for use in ANY group, e.g.
+        gN[length][0b...] = _cc('AL_CALCULATOR', 0x192)
+    Older key libraries lack the AL_* names, so the raw code from the USB
+    standard is given as well and used when the name is missing."""
+    return CC(getattr(ConsumerControlCode, name, usage_id))
 
 
 groups = {}
@@ -60,14 +67,15 @@ class Secret:
         self.key = key
         self.placeholder = placeholder
 
-def _secret(key, placeholder):
+def _secret(key, placeholder=None):
     """Pattern types the secret stored under `key`, or `placeholder` if it isn't
     set — so shared copies never leak.
 
-    Usable on ANY group's assignment (g1–g9). In g4–g9 the letter patterns are
-    pre-seeded with g1's letters, so a _secret() assignment there overrides the
-    seed. Keys are shared file-wide: the same key in two groups reads the same
-    value."""
+    Usable in ANY group (g1–g9). The short form  _secret('mykey')  is enough;
+    the optional second argument is the text typed when the key isn't set.
+    Keys are shared file-wide: the same key in two groups reads the same value."""
+    if placeholder is None:                 # short form: _secret('mykey')
+        placeholder = '(set %s in AeroMorse Secrets)' % key
     return Secret(key, placeholder)
 
 ############################################
@@ -86,9 +94,9 @@ def _secret(key, placeholder):
 #   ......--  (2 dashes)  → g5
 #   .....---  (3 dashes)  → g6
 #   ....----  (4 dashes)  → g3  Macros
-#   ...-----  (5 dashes)  → g7  Switch (2-button hold — config SWITCH_GROUP)
+#   ...-----  (5 dashes)  → g7
 #   ..------  (6 dashes)  → g8
-#   .-------  (7 dashes)  → g9
+#   .-------  (7 dashes)  → g9  Switch (2-button hold, no Morse — config SWITCH_GROUP)
 #   --------  (8 dashes)  → g2  Mouse / Shortcuts
 #   ----....  (alias)     → g4  Scanning / Switch Control (second shortcut)
 
@@ -99,9 +107,9 @@ g0[8][0b00000001] = "group 4"   # .......-  → Scanning / Switch Control
 g0[8][0b00000011] = "group 5"   # ......--  → Group 5 (placeholder)
 g0[8][0b00000111] = "group 6"   # .....---  → Group 6 (placeholder)
 g0[8][0b00001111] = "group 3"   # ....----  → Macros
-g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 — Switch (sip/puff hold Enter/Space)
+g0[8][0b00011111] = "group 7"   # ...-----  → Group 7 (placeholder)
 g0[8][0b00111111] = "group 8"   # ..------  → Group 8 (placeholder)
-g0[8][0b01111111] = "group 9"   # .-------  → Group 9 (placeholder)
+g0[8][0b01111111] = "group 9"   # .-------  → Group 9 — Switch (sip/puff hold keys, no Morse)
 g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
 g0[8][0b11110000] = "group 4"   # ----....  → Scanning / Switch Control (second shortcut)
 
@@ -365,10 +373,16 @@ groups[2] = g2
 
 g3 = init_group()
 
-# ── Named macros — personal details, pulled from macro_secrets.txt ─────────────
-# The 2nd arg is the placeholder typed when macro_secrets.txt is absent — set to
-# example values (matching macro_secrets.example.txt) so a shared morse_map.py
-# never reveals real details.
+# ── ADD A NEW SECRET — copy the line below, remove the leading '# ', then: ─────
+#   1. change the code in [ ] to a free one (morse_map_report.txt lists them)
+#   2. change  mykey  to a name of your own
+#   3. add that name and its value in the AeroMorse Secrets tool
+# g3[6][0b000000]=_secret('mykey')   # ......
+
+# ── Named macros — personal details, pulled from your secrets file ────────────
+# The optional 2nd argument is the placeholder typed when the key isn't set —
+# example values here (matching macro_secrets.example.txt), so a shared
+# morse_map.py never reveals real details.
 g3[2][0b01]  = _secret('name',    'Your Name')                    # .-    A
 g3[4][0b1000]= _secret('address', '123 Example St, City, ST 00000')  # -...  B
 g3[4][0b1110]= _secret('phone',   '555-555-0100')                # ---.  C (non-standard pattern)
@@ -399,13 +413,13 @@ g3[4][0b1001]='phrase'            # -..-  X
 g3[4][0b1011]='phrase'            # -.--  Y
 g3[4][0b1100]='phrase'            # --..  Z
 
-# ── Passwords / logins — values live ONLY in macro_secrets.txt ─────────────────
-# These override the placeholder letters above. Add or rename keys to match
-# your macro_secrets.txt. When that file is absent the pattern types the shown
-# placeholder text, so a shared morse_map.py never reveals a real password.
-# (Examples below reuse the P and W letter patterns — change to suit.)
-g3[4][0b0110]= _secret('password1', '(set password1 in macro_secrets.txt)')  # .--.  P
-g3[3][0b011] = _secret('wifi',      '(set wifi in macro_secrets.txt)')       # .--   W
+# ── Passwords / logins — values live ONLY in your secrets file ────────────────
+# Add or rename keys to match the names you enter in AeroMorse Secrets (or in
+# macro_secrets.txt). Until a key is set, its pattern types "(set <key> in
+# AeroMorse Secrets)", so a shared morse_map.py never reveals a real password.
+# (Examples below use the P and W letter patterns — change to suit.)
+g3[4][0b0110]=_secret('password1')   # .--.  P
+g3[3][0b011]=_secret('wifi')         # .--   W
 
 # ── Numbers (same patterns as Group 1) ───────────────────────────────────────
 g3[5][0b01111]='1'          # .----
@@ -426,24 +440,14 @@ g3[2][0b11]=Keycode.BACKSPACE    # --
 groups[3] = g3
 
 ############################################
-# Group-seed helper (used by g4, g5, and the g6–9 placeholder groups)
+# Letters and numbers in Groups 4–8
 ############################################
-# Builds a fresh group pre-loaded with g1's A–Z (1–4 symbol patterns) and
-# 0–9 (5-symbol patterns). Punctuation, function keys, navigation, and
-# modifiers are intentionally NOT copied, so seeded groups start minimal and
-# are easy to customise. Switch between groups any time using the 8-symbol
-# Group 0 toggle codes documented at the top of this file.
+# Groups 4–8 carry Group 1's A–Z and 0–9 on the same codes, so your Morse muscle
+# memory works in every group. They are written out as real lines in each group
+# (before v1.24 a hidden helper copied them), so to make a code do something
+# else you only change what is between the quotes on its line. Punctuation,
+# function keys, navigation and modifiers are intentionally NOT repeated.
 
-def _seed_letters_numbers():
-    g = init_group()
-    for length in (1, 2, 3, 4):
-        for pattern, value in g1[length].items():
-            if isinstance(value, str) and len(value) == 1 and value.isalpha():
-                g[length][pattern] = value          # copy single letters a–z
-    for pattern, value in g1[5].items():
-        if isinstance(value, str) and len(value) == 1 and value.isdigit():
-            g[5][pattern] = value                   # copy single digits 0–9
-    return g
 
 ############################################
 # Begin Group 4
@@ -455,15 +459,15 @@ def _seed_letters_numbers():
 # (Select = Enter on a sip, Next = Space on a puff) take a single sip or puff. (Before v1.14
 # those two were F1 and F2 — re-assign them in the phone/tablet's switch
 # settings if it was set up with F1/F2.)
-# The remaining letters / numbers are inherited from g1 as a placeholder
-# and can be customised.
+# The remaining letters / numbers are listed below the F-keys, on the same
+# codes as Group 1, and can be customised.
 #
 #   Enter .    F5  -.     F9   .-.
 #   Space -    F6  --     F10  .--
 #   F3  ..     F7  ...    F11  -..
 #   F4  .-     F8  ..-    F12  -.-
 
-g4 = _seed_letters_numbers()
+g4 = init_group()
 
 g4[1][0b0]   = Keycode.ENTER     # .
 g4[1][0b1]   = Keycode.SPACE     # -
@@ -478,25 +482,44 @@ g4[3][0b011] = Keycode.F10    # .--
 g4[3][0b100] = Keycode.F11    # -..
 g4[3][0b101] = Keycode.F12    # -.-
 
+# ── Letters and numbers — same codes as Group 1. Change what is between the quotes. ──
+g4[4][0b1000]='b'           # -...
+g4[4][0b1110]='c'           # ---.
+g4[4][0b0010]='f'           # ..-.
+g4[3][0b110]='g'            # --.
+g4[4][0b0000]='h'           # ....
+g4[4][0b0111]='j'           # .---
+g4[4][0b0100]='l'           # .-..
+g4[4][0b1111]='m'           # ----
+g4[3][0b111]='o'            # ---
+g4[4][0b0110]='p'           # .--.
+g4[4][0b1101]='q'           # --.-
+g4[4][0b0001]='v'           # ...-
+g4[4][0b1001]='x'           # -..-
+g4[4][0b1011]='y'           # -.--
+g4[4][0b1100]='z'           # --..
+g4[5][0b01111]='1'          # .----
+g4[5][0b00111]='2'          # ..---
+g4[5][0b00011]='3'          # ...--
+g4[5][0b00001]='4'          # ....-
+g4[5][0b00000]='5'          # .....
+g4[5][0b10000]='6'          # -....
+g4[5][0b11000]='7'          # --...
+g4[5][0b11100]='8'          # ---..
+g4[5][0b11110]='9'          # ----.
+g4[5][0b11111]='0'          # -----
+
 groups[4] = g4
 
-############################################
-# Seed Group 5 (its media overrides follow next)
-############################################
-# g5 starts as a copy of g1's letters + numbers, then the Media block below
-# overrides the shortest patterns. Groups 6-9 are seeded and given example
-# entries at the very END of this file, in the "Groups 6-9" section — that's
-# where you customise them.
-
-groups[5] = _seed_letters_numbers()
+groups[5] = init_group()
 
 ############################################
 # Group 5 — MEDIA (USB HID Consumer Controls)
 ############################################
 # The 12 SHORTEST Morse patterns are reassigned to the most-used USB HID
 # Consumer Control codes — volume, play/pause, mute, track skip, etc. This
-# turns g5 into a media-remote group. The remaining letters and numbers
-# stay as the placeholder seed.
+# turns g5 into a media-remote group. The remaining letters and numbers are
+# listed at the end of the group, on the same codes as Group 1.
 #
 # Wrapped in CC(...) so the dispatcher routes them through the
 # ConsumerControl HID device, not the Keyboard.
@@ -539,10 +562,10 @@ g5[3][0b101] = CC(ConsumerControlCode.EJECT)                 # -.-
 # are fixed by the spec, so the fallback is always correct and these codes
 # work on every bundle version.
 #
-# These overwrite the placeholder letters b / f / l seeded from g1
+# These take the codes of the letters b / f / l
 # (-.-. was already free here, since g1 uses it for LEFT_CONTROL).
-def _cc(name, usage_id):
-    return CC(getattr(ConsumerControlCode, name, usage_id))
+# _cc() is defined at the top of this file, so launchers work in ANY group,
+# e.g. in Group 2:  g2[6][0b101010] = _cc('AL_CALCULATOR', 0x192)   # -.-.-.
 
 g5[4][0b1010] = _cc('AL_CALCULATOR',            0x192)   # -.-.  C  calculator
 g5[4][0b0010] = _cc('AL_LOCAL_MACHINE_BROWSER', 0x194)   # ..-.  F  file explorer
@@ -553,46 +576,174 @@ g5[4][0b0100] = _cc('AL_EMAIL_READER',          0x18A)   # .-..  L  mai-L
 # pattern is too easy to hit by accident in a group whose 1–3 symbol patterns
 # are routine media keys, and an unintended shutdown or sleep is far more
 # disruptive than a stray volume change. --.. and .--. therefore keep the
-# placeholder letters z and p seeded from g1.
+# letters z and p below.
+
+# ── Letters and numbers — same codes as Group 1. Change what is between the quotes. ──
+g5[4][0b1110]='c'           # ---.
+g5[3][0b110]='g'            # --.
+g5[4][0b0000]='h'           # ....
+g5[4][0b0111]='j'           # .---
+g5[4][0b1111]='m'           # ----
+g5[3][0b111]='o'            # ---
+g5[4][0b0110]='p'           # .--.
+g5[4][0b1101]='q'           # --.-
+g5[4][0b0001]='v'           # ...-
+g5[4][0b1001]='x'           # -..-
+g5[4][0b1011]='y'           # -.--
+g5[4][0b1100]='z'           # --..
+g5[5][0b01111]='1'          # .----
+g5[5][0b00111]='2'          # ..---
+g5[5][0b00011]='3'          # ...--
+g5[5][0b00001]='4'          # ....-
+g5[5][0b00000]='5'          # .....
+g5[5][0b10000]='6'          # -....
+g5[5][0b11000]='7'          # --...
+g5[5][0b11100]='8'          # ---..
+g5[5][0b11110]='9'          # ----.
+g5[5][0b11111]='0'          # -----
 
 groups[5] = g5
 
 ############################################
-# Groups 6–9 — YOUR placeholder groups (customise these)
-# (Group 7 is the SWITCH group by default — see below)
+# Groups 6, 7, 8 — YOUR placeholder groups (customise these)
 ############################################
-# Group 7 is the SWITCH group when config.py has SWITCH_GROUP = 7 (the default):
-# there sip/puff hold Enter/Space directly and no Morse patterns are used, so
-# anything assigned to g7 below is ignored. Set SWITCH_GROUP = 0 to make g7 an
-# ordinary placeholder again. See AEROMORSE_SWITCH_MODE_GUIDE.md.
-#
-# g6–g9 are yours to fill. Each starts as a copy of Group 1's letters + numbers
-# (so your muscle memory works right away); overwrite any pattern with your own
-# entry. Reach a group with its Group 0 toggle code (see top of this file):
-#     g6  .....---      g8  ..------
-#     g7  ...-----      g9  .-------
-#
-# An entry can be any of:
-#   * a macro string   g8[3][0b010] = 'My favourite string here'
-#   * a private login  g6[3][0b010] = _secret('bank_login', '(set in macro_secrets.txt)')
-#   * a Keycode        g8[4][0b0101] = Keycode.ENTER
-#   * a command string g9[2][0b01]  = 'mclick left 1'    (see Group 2 for the verbs)
-# The pattern in [ ] is the same Morse code as the matching Group 1 letter, so
-# 0b010 = R (.-.), 0b000 = S (...), etc. Delete or change the examples freely.
+# Each group below starts with Group 1's letters and numbers, written out line
+# by line, so your Morse muscle memory works right away. To make a code do
+# something else, just change what is between the quotes on its line — or
+# replace the quoted text with any of these:
+#   a phrase          'My favourite string here'
+#   a secret          _secret('mykey')          (then add mykey in AeroMorse Secrets)
+#   a key             Keycode.ENTER             or a combination: Keycode.CONTROL, Keycode.C
+#   an app launcher   _cc('AL_CALCULATOR', 0x192)
+#   a command         'mclick left 1'           (see Group 2 for the commands)
+# Reach a group with its Group 0 code:  g6 .....---   g7 ...-----   g8 ..------
 
-for _gid in (6, 7, 8, 9):
-    groups[_gid] = _seed_letters_numbers()
+g6 = groups[6] = init_group()
+g7 = groups[7] = init_group()
+g8 = groups[8] = init_group()
+g9 = groups[9] = init_group()
 
-g6 = groups[6]
-g7 = groups[7]
-g8 = groups[8]
-g9 = groups[9]
+# ── Group 6  (reach it with .....---) ─────────────────────────────────────────
+# Your entries:
+g6[3][0b010]=_secret('bank_login')   # .-.  R
+# Letters and numbers — change what is between the quotes:
+g6[2][0b01]='a'             # .-
+g6[4][0b1000]='b'           # -...
+g6[4][0b1110]='c'           # ---.
+g6[3][0b100]='d'            # -..
+g6[1][0b0]='e'              # .
+g6[4][0b0010]='f'           # ..-.
+g6[3][0b110]='g'            # --.
+g6[4][0b0000]='h'           # ....
+g6[2][0b00]='i'             # ..
+g6[4][0b0111]='j'           # .---
+g6[3][0b101]='k'            # -.-
+g6[4][0b0100]='l'           # .-..
+g6[4][0b1111]='m'           # ----
+g6[2][0b10]='n'             # -.
+g6[3][0b111]='o'            # ---
+g6[4][0b0110]='p'           # .--.
+g6[4][0b1101]='q'           # --.-
+g6[3][0b000]='s'            # ...
+g6[1][0b1]='t'              # -
+g6[3][0b001]='u'            # ..-
+g6[4][0b0001]='v'           # ...-
+g6[3][0b011]='w'            # .--
+g6[4][0b1001]='x'           # -..-
+g6[4][0b1011]='y'           # -.--
+g6[4][0b1100]='z'           # --..
+g6[5][0b01111]='1'          # .----
+g6[5][0b00111]='2'          # ..---
+g6[5][0b00011]='3'          # ...--
+g6[5][0b00001]='4'          # ....-
+g6[5][0b00000]='5'          # .....
+g6[5][0b10000]='6'          # -....
+g6[5][0b11000]='7'          # --...
+g6[5][0b11100]='8'          # ---..
+g6[5][0b11110]='9'          # ----.
+g6[5][0b11111]='0'          # -----
 
-# ── Group 6 example — a private login (its value lives in macro_secrets.txt) ──
-g6[3][0b010] = _secret('bank_login', '(set bank_login in macro_secrets.txt)')  # .-.  R
+# ── Group 7  (reach it with ...-----) ─────────────────────────────────────────
+# Your entries:
+g7[3][0b010] = 'My favourite string here'   # .-.  R
+g7[3][0b000] = 'Frequently typed phrase'    # ...  S
+# Letters and numbers — change what is between the quotes:
+g7[2][0b01]='a'             # .-
+g7[4][0b1000]='b'           # -...
+g7[4][0b1110]='c'           # ---.
+g7[3][0b100]='d'            # -..
+g7[1][0b0]='e'              # .
+g7[4][0b0010]='f'           # ..-.
+g7[3][0b110]='g'            # --.
+g7[4][0b0000]='h'           # ....
+g7[2][0b00]='i'             # ..
+g7[4][0b0111]='j'           # .---
+g7[3][0b101]='k'            # -.-
+g7[4][0b0100]='l'           # .-..
+g7[4][0b1111]='m'           # ----
+g7[2][0b10]='n'             # -.
+g7[3][0b111]='o'            # ---
+g7[4][0b0110]='p'           # .--.
+g7[4][0b1101]='q'           # --.-
+g7[1][0b1]='t'              # -
+g7[3][0b001]='u'            # ..-
+g7[4][0b0001]='v'           # ...-
+g7[3][0b011]='w'            # .--
+g7[4][0b1001]='x'           # -..-
+g7[4][0b1011]='y'           # -.--
+g7[4][0b1100]='z'           # --..
+g7[5][0b01111]='1'          # .----
+g7[5][0b00111]='2'          # ..---
+g7[5][0b00011]='3'          # ...--
+g7[5][0b00001]='4'          # ....-
+g7[5][0b00000]='5'          # .....
+g7[5][0b10000]='6'          # -....
+g7[5][0b11000]='7'          # --...
+g7[5][0b11100]='8'          # ---..
+g7[5][0b11110]='9'          # ----.
+g7[5][0b11111]='0'          # -----
 
-# ── Groups 8–9 examples — frequently typed phrases (plain text, typed as-is) ──
+# ── Group 8  (reach it with ..------) ─────────────────────────────────────────
+# Your entries:
 g8[3][0b010] = 'My favourite string here'   # .-.  R
 g8[3][0b000] = 'Frequently typed phrase'    # ...  S
-g9[3][0b010] = 'My favourite string here'   # .-.  R
-g9[3][0b000] = 'Frequently typed phrase'    # ...  S
+# Letters and numbers — change what is between the quotes:
+g8[2][0b01]='a'             # .-
+g8[4][0b1000]='b'           # -...
+g8[4][0b1110]='c'           # ---.
+g8[3][0b100]='d'            # -..
+g8[1][0b0]='e'              # .
+g8[4][0b0010]='f'           # ..-.
+g8[3][0b110]='g'            # --.
+g8[4][0b0000]='h'           # ....
+g8[2][0b00]='i'             # ..
+g8[4][0b0111]='j'           # .---
+g8[3][0b101]='k'            # -.-
+g8[4][0b0100]='l'           # .-..
+g8[4][0b1111]='m'           # ----
+g8[2][0b10]='n'             # -.
+g8[3][0b111]='o'            # ---
+g8[4][0b0110]='p'           # .--.
+g8[4][0b1101]='q'           # --.-
+g8[1][0b1]='t'              # -
+g8[3][0b001]='u'            # ..-
+g8[4][0b0001]='v'           # ...-
+g8[3][0b011]='w'            # .--
+g8[4][0b1001]='x'           # -..-
+g8[4][0b1011]='y'           # -.--
+g8[4][0b1100]='z'           # --..
+g8[5][0b01111]='1'          # .----
+g8[5][0b00111]='2'          # ..---
+g8[5][0b00011]='3'          # ...--
+g8[5][0b00001]='4'          # ....-
+g8[5][0b00000]='5'          # .....
+g8[5][0b10000]='6'          # -....
+g8[5][0b11000]='7'          # --...
+g8[5][0b11100]='8'          # ---..
+g8[5][0b11110]='9'          # ----.
+g8[5][0b11111]='0'          # -----
+
+# ── Group 9 — the SWITCH group (config.py SWITCH_GROUP = 9) ─────────────────────
+# No Morse here: a sip holds SWITCH_SIP_KEY and a puff holds SWITCH_PUFF_KEY, so
+# a code assigned to g9 could never be typed. None are defined. (Set
+# SWITCH_GROUP = 0 in config.py to use Group 9 as an ordinary group instead.)
