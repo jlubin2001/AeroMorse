@@ -36,7 +36,7 @@ For a broader comparison that also covers Adap2U and morAce, see
 ## 1. Switch input — now at parity with Darci
 
 AeroMorse supports all three Darci input arrangements via the
-`SWITCH_MODE` config setting in `code.py`:
+`SWITCH_MODE` setting in `config.py`:
 
 | Darci mode | What it expects | AeroMorse support |
 |---|---|---|
@@ -84,9 +84,10 @@ code map:
 | **g1** | Keyboard (letters, numbers, punctuation) | `........` |
 | **g2** | Mouse / Windows shortcuts | `--------` |
 | **g3** | Macros (or Number Mode in `morse_map_darci.py`) | `....----` |
-| **g4** | Scanning — F1–F12 (Switch Control on iOS / Android) | `.......-` |
+| **g4** | Scanning — Enter, Space, F3–F12 (Switch Control on iOS / Android) | `.......-` |
 | **g5** | Media — USB HID Consumer Controls on the 12 shortest codes (volume / play-pause / mute / track / brightness / eject) | `......--` |
-| **g6–g9** | Placeholders (copy of g1 letters + numbers — customise) | `.....---` … `.-------` |
+| **g6–g8** | Placeholders (copy of g1 letters + numbers — customise) | `.....---`, `...-----`, `..------` |
+| **g9** | Switch — a sip / puff *holds* a key, no Morse (games, scanning) | `.-------` |
 
 Modifiers are sticky in the same single-tap-arms way Darci uses.
 
@@ -109,7 +110,7 @@ explicit Morse command codes (e.g., `--.-.` enters Mouse Mode), not
 gestures.
 
 If you prefer Darci's all-codes approach, set `LONG_PRESS_CYCLES_GROUP =
-False` in `code.py`. Long-press gestures then do nothing, and group
+False` in `config.py`. Long-press gestures then do nothing, and group
 switching happens entirely through g0 Morse patterns:
 
 | Group target | g0 pattern | Length |
@@ -171,6 +172,12 @@ will prefer `morse_map_darci.py`.
 - Repeatable: holding the same code repeats the action
 
 ### Migration note
+In `morse_map_darci.py` (Group 2, Darci's own mouse codes) a move code moves
+the pointer **one step**. To keep it moving, follow the move with the repeat
+code — `.-.`, or Darci's own Repeat code `.-..-.` — and enter it again to
+stop. Darci's click-and-hold codes work as a drag toggle: once to press the
+button, again to let go.
+
 A Darci user accustomed to single-step Mouse Keys behavior may find
 AeroMorse's mouse smoother because:
 - AeroMorse uses real mouse-pointer events (sub-pixel accuracy, full speed)
