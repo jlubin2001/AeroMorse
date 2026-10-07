@@ -1096,6 +1096,41 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | Two sips or two puffs in a row count as one (`p` `.--.` types `r` `.-.`, space `..--` types `w` `.--`) | The pressure doesn't fall back under the trigger between the two | Set `REPEAT_SPLIT_PCT = 60` in `config.py` (v1.18+), or leave a slightly longer break between the two |
 | Screen shows `ERROR - SEE LOG` | One action hit an unexpected problem (v1.6+ keeps running instead of stopping) | Keep using the device; the USB serial log shows which pattern and why. Fix that entry in `morse_map.py` and run the validator |
 
+### Pop-ups on the computer when the device starts or restarts
+
+AeroMorse shows up on the computer as a keyboard, a mouse **and a small USB
+drive called `CIRCUITPY`** — that drive is how you edit `config.py` and
+`morse_map.py`. Every time the device starts, restarts (`devicereset`, saving a
+file, replugging) the drive reconnects, and any program that watches for USB
+drives reacts with a pop-up near the clock. Typical ones on Windows:
+
+| Pop-up | Who shows it | What it wants |
+|---|---|---|
+| **AutoPlay** — "Select to choose what happens with removable drives" | Windows | To know what to do when a USB drive appears |
+| **"New device detected"** / an offer to scan the drive | Your antivirus (ESET and others) | To scan the drive |
+| An offer to **back up the device** | Google Drive (other cloud-backup tools do the same) | To copy the drive's contents to the cloud |
+| "There's a problem with this drive — scan and fix" | Windows | Appears if the drive vanished mid-restart without being ejected |
+
+**They are harmless and safe to ignore.** None of them changes anything unless
+you click it, and they have no effect on typing. If you would rather not see
+them, switch each one off where it comes from (menu names vary a little
+between versions):
+
+- **AutoPlay:** Windows *Settings → Bluetooth & devices → AutoPlay* → turn
+  off **Use AutoPlay for all media and devices**.
+- **Antivirus:** look in its settings for **Removable media** (sometimes
+  under device control or detection) and set the action on inserting a drive
+  to **do not scan / do not ask**. In ESET it is under *Setup → Advanced
+  setup*. Leave the rest of the antivirus as it is.
+- **Google Drive:** Drive icon near the clock → gear → *Preferences* → gear
+  again → **USB devices & SD cards** → untick the prompt to back up. The
+  pop-up itself may also offer *Don't ask again for this device*. This one is
+  worth switching off regardless, so the contents of your device (your key
+  map and your encrypted secrets file) are never copied to the cloud.
+
+Do **not** try to stop the pop-ups by hiding or disabling the `CIRCUITPY`
+drive — without it you could no longer edit or update the device.
+
 ## Credits
 
 Inspired by AirTalker (https://github.com/ATMakersOrg/AirTalker). Thanks Bill!

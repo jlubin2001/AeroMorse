@@ -249,6 +249,14 @@ earlier is fine too — just always run it again last.
 
 ---
 
+### Pop-ups on the computer when the device restarts
+
+Each restart reconnects the device's `CIRCUITPY` drive, so Windows AutoPlay,
+your antivirus and cloud-backup tools such as Google Drive may each show a
+pop-up near the clock. They are harmless and can be ignored, or switched off
+in each program — see **Troubleshooting → Pop-ups on the computer when the
+device starts or restarts** in the README / Build Guide for the steps.
+
 ## 4. Changing `config.py`
 
 Same order as above (skip steps 3, 5, 6 and 10). Things to know:
