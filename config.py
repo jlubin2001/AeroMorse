@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.26 (released 2026-10-07)
+# AeroMorse config.py — version 1.27 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -204,3 +204,7 @@ ESPNOW_CHANNEL       = 1        # WiFi channel (1–13) — display's receiver_c
 PC_DISPLAY           = False   # True = also report the display to the "AeroMorse Display" window on the
                               # computer, over the USB cable (v1.26+). No extra hardware. Leave False
                               # unless you use that program.
+PC_SOUND             = False   # True = the same program also plays the beeps (a tone for each dot and
+                              # dash, a blip when an action fires) through the COMPUTER's speakers —
+                              # for a device with no speaker. Needs PC_DISPLAY = True, and "Sound"
+                              # switched on in the program's right-click menu.

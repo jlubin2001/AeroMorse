@@ -1,6 +1,6 @@
 # receiver.py — AeroMorse wireless mirror display
 #
-# AeroMorse receiver.py — version 1.26 (released 2026-10-07)
+# AeroMorse receiver.py — version 1.27 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Hardware

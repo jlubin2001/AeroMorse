@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.26   (released 2026-10-07)
+#  AeroMorse code.py   —   version 1.27   (released 2026-10-07)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -343,6 +343,23 @@ if _AUDIO_AVAILABLE:
 _beeping_morse  = False  # True while a DIT or DAH is held
 _notify_end     = 0.0    # monotonic time when the timed blip should stop
 
+# PC window (config.py PC_DISPLAY) and its sound (PC_SOUND): the "AeroMorse
+# Display" program on the computer can play the beeps through the computer's
+# own speakers — for a device with no speaker fitted. Each beep is reported on
+# the USB serial log the moment it starts / stops:
+#     ~AS<tab>1<tab>freq          tone on  (a dot or dash is being held)
+#     ~AS<tab>0                   tone off
+#     ~AS<tab>2<tab>freq<tab>ms   short blip (action fired, group changed)
+try:
+    _PC_DISPLAY = bool(PC_DISPLAY)
+except NameError:
+    _PC_DISPLAY = False          # older config.py without the setting
+try:
+    _PC_SOUND = _PC_DISPLAY and bool(PC_SOUND)   # the program finds the device by its display lines
+except NameError:
+    _PC_SOUND = False
+_pc_tone = False                 # a "tone on" has been reported and not yet ended
+
 
 def _tone_on(freq):
     """Drive the speaker at `freq` Hz with a 50% duty square wave."""
@@ -361,7 +378,10 @@ def _tone_off():
 
 def _beep_start(state):
     """Start sidetone on press — higher pitch for dot, lower for dash."""
-    global _beeping_morse
+    global _beeping_morse, _pc_tone
+    if _PC_SOUND and not _pc_tone:
+        _pc_tone = True
+        print("~AS\t1\t%d" % (BEEP_DOT_FREQ if state == 0 else BEEP_DASH_FREQ))
     if not _AUDIO_AVAILABLE or _beeping_morse:
         return
     # DIT == 0, DAH == 1 — constants defined further down
@@ -371,7 +391,10 @@ def _beep_start(state):
 
 def _beep_stop():
     """Stop sidetone when press releases."""
-    global _beeping_morse
+    global _beeping_morse, _pc_tone
+    if _pc_tone:
+        _pc_tone = False
+        print("~AS\t0")
     if not _AUDIO_AVAILABLE or not _beeping_morse:
         return
     _tone_off()
@@ -381,6 +404,8 @@ def _beep_stop():
 def _beep_notify(duration=BEEP_CONFIRM_S, freq=None):
     """Short timed blip for action confirmation or group change."""
     global _notify_end
+    if _PC_SOUND:
+        print("~AS\t2\t%d\t%d" % (freq if freq is not None else CONFIRM_FREQ, int(duration * 1000)))
     if not _AUDIO_AVAILABLE:
         return
     _tone_on(freq if freq is not None else CONFIRM_FREQ)
@@ -467,10 +492,6 @@ def _espnow_send(group_str, buf_str, action_str, mods_str):
 # window of any size. Written only when something changed (and every 2 s, so a
 # window opened later catches up). Nothing is sent as keystrokes. The program
 # only listens; it never sends anything to the device.
-try:
-    _PC_DISPLAY = bool(PC_DISPLAY)
-except NameError:
-    _PC_DISPLAY = False          # older config.py without the setting
 _pc_last   = None
 _pc_last_t = 0.0
 

@@ -8,6 +8,12 @@
 #
 # On the device: set  PC_DISPLAY = True  in config.py.
 #
+# SOUND (optional): the program can also play the device's beeps — a tone while
+# each dot or dash is held, a blip when an action fires — through the
+# computer's speakers, for a device with no speaker fitted. Set
+# PC_SOUND = True in config.py as well, and choose a volume under "Sound" in
+# the right-click menu.
+#
 # This program ONLY LISTENS. It never sends a single byte to the device, so it
 # cannot stop or disturb it. While it is running, no other program (Thonny, a
 # serial terminal) can open the same device's port — close this window first.
@@ -15,6 +21,9 @@
 # Run:   AeroMorse Display.exe            (finds the device by itself)
 #        aeromorse_display.py --port COM8 (use one port only)
 #        aeromorse_display.py --demo      (made-up data, no device needed)
+#
+# The window can be resized only while its title bar is showing (menu: Title
+# bar); the plain panel can be moved by dragging it but has no edge to drag.
 #
 # Right-click the window for the menu (always on top, see-through, title bar,
 # switch device, close). Needs Python 3 with pyserial when run from source.
@@ -37,6 +46,7 @@ except ImportError:                       # only matters when run from source
 
 APP = "AeroMorse Display"
 MARK = "~AM\t"                            # start of a status line from code.py
+SOUND_MARK = "~AS\t"                      # start of a sound line (PC_SOUND = True)
 ADAFRUIT_VID = 0x239A
 BG = "#000020"
 GROUP_COLORS = {"BASE": "#606060", "KEYBOARD": "#0080FF", "MOUSE": "#00C040", "MACRO": "#FF8000",
@@ -77,6 +87,167 @@ def parse(line):
         return None
     return tuple(p.strip() for p in parts)
 
+class Sound:
+    """The device's beeps on the computer's speakers (Windows).
+
+    Each tone is a tiny ready-made clip — a whole number of waves, about a
+    hundredth of a second — that Windows itself repeats for as long as the dot
+    or dash is held. Nothing is generated while it plays, so it cannot crackle
+    when this program or the computer is busy (an earlier version built the
+    sound a piece at a time and did). "Tone off" stops it at once — within a
+    few thousandths of a second — so a dot stays a dot; letting the repeat
+    run out instead ended cleanly but about 60 ms late, which smeared fast
+    keying together."""
+
+    LEVELS = {"off": 0.0, "quiet": 0.10, "medium": 0.30, "loud": 0.85}
+    RATE = 44100
+
+    def __init__(self):
+        self.level = "off"
+        self.ok = False
+        self.writes = 0                   # clips handed to Windows (for testing)
+        self._dev = None
+        self._mm = None
+        self._clips = {}                  # (kind, freq, ms, level) -> list of [header, samples]
+        self._lock = threading.Lock()
+        self._th = None
+        self._busy = 0.0                  # time until which something is sounding (inf = a held tone)
+
+    def _clear(self):
+        """Stop whatever is sounding, if anything is (takes 2-8 ms)."""
+        if self._busy > time.time():
+            self._mm.waveOutReset(self._dev)
+        self._busy = 0.0
+
+    # ── set-up ────────────────────────────────────────────────────────────────
+    def prime(self):
+        """Open the sound device now (it takes about 0.4 s), so the first beep is not late."""
+        if self.level != "off" and self._th is None:
+            self._th = threading.Thread(target=self._open, daemon=True)
+            self._th.start()
+
+    def _open(self):
+        import ctypes
+        from ctypes import wintypes
+
+        class WAVEFORMATEX(ctypes.Structure):
+            _fields_ = [("wFormatTag", wintypes.WORD), ("nChannels", wintypes.WORD),
+                        ("nSamplesPerSec", wintypes.DWORD), ("nAvgBytesPerSec", wintypes.DWORD),
+                        ("nBlockAlign", wintypes.WORD), ("wBitsPerSample", wintypes.WORD),
+                        ("cbSize", wintypes.WORD)]
+
+        class WAVEHDR(ctypes.Structure):
+            _fields_ = [("lpData", ctypes.c_void_p), ("dwBufferLength", wintypes.DWORD),
+                        ("dwBytesRecorded", wintypes.DWORD), ("dwUser", ctypes.c_size_t),
+                        ("dwFlags", wintypes.DWORD), ("dwLoops", wintypes.DWORD),
+                        ("lpNext", ctypes.c_void_p), ("reserved", ctypes.c_size_t)]
+        self._ct, self._HDR = ctypes, WAVEHDR
+        try:
+            mm = ctypes.windll.winmm
+            fmt = WAVEFORMATEX(1, 1, self.RATE, self.RATE * 2, 2, 16, 0)
+            dev = ctypes.c_void_p()
+            if mm.waveOutOpen(ctypes.byref(dev), 0xFFFFFFFF, ctypes.byref(fmt), None, None, 0):
+                return
+        except Exception:
+            return
+        self._mm, self._dev = mm, dev
+        self.ok = True
+
+    # ── clips ─────────────────────────────────────────────────────────────────
+    def _make(self, kind, freq, ms):
+        import math
+        ct = self._ct
+        amp = 32767 * self.LEVELS.get(self.level, 0.0)
+        freq = max(100, min(4000, freq))
+        if kind == "loop":
+            waves = max(1, int(round(freq * 0.010)))          # about 10 ms ...
+            n = int(round(waves * self.RATE / float(freq)))   # ... and exactly a whole number of waves
+            w = 2 * math.pi * waves / n
+            fade = 0
+        else:
+            n = max(1, int(self.RATE * ms / 1000.0))
+            w = 2 * math.pi * freq / self.RATE
+            fade = min(int(self.RATE * 0.004), n // 2)        # 4 ms in and out
+        buf = (ct.c_short * n)()
+        for i in range(n):
+            g = min(1.0, i / float(fade), (n - 1 - i) / float(fade)) if fade else 1.0
+            buf[i] = int(amp * g * math.sin(w * i))
+        hdr = self._HDR(ct.addressof(buf), n * 2, 0, 0, 0, 0, None, 0)
+        self._mm.waveOutPrepareHeader(self._dev, ct.byref(hdr), ct.sizeof(hdr))
+        return [hdr, buf]
+
+    def _free_clip(self, kind, freq, ms):
+        """A prepared clip that Windows is not playing at the moment."""
+        key = (kind, freq, ms, self.level)
+        pool = self._clips.setdefault(key, [])
+        for c in pool:
+            if not (c[0].dwFlags & 0x10):                    # WHDR_INQUEUE
+                return c
+        if len(pool) < 6:
+            c = self._make(kind, freq, ms)
+            pool.append(c)
+            return c
+        return None
+
+    # ── commands ──────────────────────────────────────────────────────────────
+    def handle(self, parts):
+        """parts = the fields after '~AS': ['1', freq] / ['0'] / ['2', freq, ms]."""
+        if self.level == "off" or not parts:
+            return
+        if not self.ok:
+            self.prime()
+            return                                           # still opening: skip this one beep
+        ct = self._ct
+        try:
+            with self._lock:
+                if parts[0] == "0":
+                    self._clear()
+                    return
+                if parts[0] == "1":
+                    self._clear()                            # a new dot / dash cuts a blip short, as on the device
+                    c = self._free_clip("loop", int(parts[1]), 0)
+                    if c is None:
+                        return
+                    c[0].dwFlags = (c[0].dwFlags | 0x4 | 0x8) & ~0x1     # BEGINLOOP | ENDLOOP, not DONE
+                    c[0].dwLoops = 0x7FFFFFFF
+                    self._busy = float("inf")
+                elif parts[0] == "2":
+                    ms = max(20, int(parts[2]))
+                    self._clear()
+                    c = self._free_clip("blip", int(parts[1]), ms)
+                    if c is None:
+                        return
+                    c[0].dwFlags &= ~0x1
+                    self._busy = time.time() + ms / 1000.0 + 0.05
+                else:
+                    return
+                self._mm.waveOutWrite(self._dev, ct.byref(c[0]), ct.sizeof(c[0]))
+                self.writes += 1
+        except (ValueError, IndexError):
+            pass
+        except Exception:
+            pass
+
+    def quiet(self):
+        """Silence everything at once (device unplugged, sound switched off, closing)."""
+        if self.ok:
+            try:
+                with self._lock:
+                    self._mm.waveOutReset(self._dev)
+                    self._busy = 0.0
+            except Exception:
+                pass
+
+    def position(self):
+        """Samples Windows has played so far (for testing)."""
+        ct = self._ct
+        class MMTIME(ct.Structure):
+            _fields_ = [("wType", ct.c_uint), ("sample", ct.c_uint), ("pad", ct.c_uint)]
+        t = MMTIME(2, 0, 0)                                  # TIME_SAMPLES
+        self._mm.waveOutGetPosition(self._dev, ct.byref(t), ct.sizeof(t))
+        return t.sample if t.wType == 2 else -1
+
+
 def group_color(text):
     for name, col in GROUP_COLORS.items():
         if name in text:
@@ -87,9 +258,11 @@ def group_color(text):
 class Reader(threading.Thread):
     """Listens to the device. Opens the port, reads lines, never writes."""
 
-    def __init__(self, out, port=None, serial_number=None):
+    def __init__(self, out, port=None, serial_number=None, sound=None):
         super().__init__(daemon=True)
         self.out = out                    # queue of ("data", fields) / ("state", text)
+        self.sound = sound                # beeps are played straight from this thread: no delay
+        self.sound_lines = 0
         self.fixed_port = port
         self.want_serial = serial_number  # remembered device, or None = any
         self.stop = False
@@ -111,7 +284,7 @@ class Reader(threading.Thread):
     def _listen(self, device, sn, probe):
         """Read one port. With probe=True give up after PROBE_S without a status line."""
         try:
-            s = serial.Serial(device, 115200, timeout=0.2)
+            s = serial.Serial(device, 115200, timeout=0.05)
         except Exception:
             return False
         got = False
@@ -119,12 +292,19 @@ class Reader(threading.Thread):
         buf = b""
         try:
             while not self.stop and not self.rescan:
-                chunk = s.read(4096)      # read only - nothing is ever written
+                chunk = s.read(s.in_waiting or 1)   # read only - nothing is ever written
                 if chunk:
                     buf += chunk
                     while b"\n" in buf:
                         raw, buf = buf.split(b"\n", 1)
-                        f = parse(raw.decode("utf-8", "replace"))
+                        line = raw.decode("utf-8", "replace")
+                        k = line.find(SOUND_MARK)
+                        if k >= 0:
+                            self.sound_lines += 1
+                            if self.sound is not None:
+                                self.sound.handle(line[k + len(SOUND_MARK):].strip().split("\t"))
+                            continue
+                        f = parse(line)
                         if f:
                             if not got:
                                 got = True
@@ -137,6 +317,8 @@ class Reader(threading.Thread):
         except Exception:
             pass                          # unplugged / restarted: go and look again
         finally:
+            if self.sound is not None:
+                self.sound.quiet()        # never leave a tone sounding when the device goes away
             try:
                 s.close()
             except Exception:
@@ -196,6 +378,7 @@ class Window:
         self.q = queue.Queue()
         self.last_data = 0.0
         self.state = "Looking for the AeroMorse ..."
+        self.other_hwnd = 0               # the program you were last working in
         self.device = None
 
         r = self.root = tk.Tk()
@@ -226,22 +409,33 @@ class Window:
         self.v_top = tk.BooleanVar(value=self.cfg.get("on_top", True))
         self.v_bar = tk.BooleanVar(value=self.cfg.get("title_bar", True))
         self.v_alpha = tk.IntVar(value=int(self.cfg.get("opacity", 100)))
+        self.sound = Sound()
+        self.v_sound = tk.StringVar(value=self.cfg.get("sound", "off"))
+        self.sound.level = self.v_sound.get() if self.v_sound.get() in Sound.LEVELS else "off"
+        self.sound.prime()
         m = self.menu = tk.Menu(r, tearoff=0)
         m.add_checkbutton(label="Always on top", variable=self.v_top, command=self.apply_look)
-        m.add_checkbutton(label="Title bar (untick for a plain panel)", variable=self.v_bar, command=self.apply_look)
+        m.add_checkbutton(label="Title bar (needed to resize; untick for a plain panel)", variable=self.v_bar, command=self.apply_look)
         sub = tk.Menu(m, tearoff=0)
         for pct in (100, 85, 70, 50, 35):
             sub.add_radiobutton(label="%d %%" % pct, value=pct, variable=self.v_alpha, command=self.apply_look)
         m.add_cascade(label="See-through", menu=sub)
+        snd = tk.Menu(m, tearoff=0)
+        for name, text in (("off", "Off"), ("quiet", "Quiet"), ("medium", "Medium"), ("loud", "Loud")):
+            snd.add_radiobutton(label=text, value=name, variable=self.v_sound, command=self.apply_sound)
+        m.add_cascade(label="Sound (needs PC_SOUND = True)", menu=snd)
         m.add_separator()
         m.add_command(label="Switch to another AeroMorse", command=self.choose_again)
         m.add_separator()
         m.add_command(label="Close", command=self.close)
 
-        for w in (r, self.rows, self.act, self.l_group, self.l_buf, self.l_rpt, self.l_action, self.l_mods, self.l_state):
-            w.bind("<Button-3>", self.popup)
-            w.bind("<ButtonPress-1>", self.drag_start)
-            w.bind("<B1-Motion>", self.drag_move)
+        # Bound on the window ONLY. A click on any label inside it reaches the
+        # window too, so binding the labels as well ran each handler twice —
+        # the menu was opened a second time the moment the first one closed,
+        # which looked like "the menu stays open".
+        r.bind("<Button-3>", self.popup)
+        r.bind("<ButtonPress-1>", self.drag_start)
+        r.bind("<B1-Motion>", self.drag_move)
         r.bind("<Configure>", self.on_resize)
         r.protocol("WM_DELETE_WINDOW", self.close)
 
@@ -249,7 +443,8 @@ class Window:
             self.reader = Demo(self.q)
         else:
             self.reader = Reader(self.q, port=args.get("port"),
-                                 serial_number=None if args.get("port") else self.cfg.get("serial"))
+                                 serial_number=None if args.get("port") else self.cfg.get("serial"),
+                                 sound=self.sound)
         self.reader.start()
         self.apply_look()
         self.fit()
@@ -264,6 +459,15 @@ class Window:
         if bool(r.overrideredirect()) != want_plain:
             r.overrideredirect(want_plain)
         self.remember()
+
+    def apply_sound(self):
+        self.sound.quiet()
+        self.sound.level = self.v_sound.get()
+        self.cfg["sound"] = self.sound.level
+        save_settings(self.cfg)
+        if self.sound.level != "off":                # let the new volume be heard
+            self.sound.prime()
+            self.root.after(120 if self.sound.ok else 700, lambda: self.sound.handle(["2", "1050", "120"]))
 
     def remember(self):
         self.cfg.update(on_top=bool(self.v_top.get()), title_bar=bool(self.v_bar.get()),
@@ -284,8 +488,41 @@ class Window:
         if ev.widget is self.root:
             self.fit()
 
+    def _hwnd(self):
+        try:
+            import ctypes
+            return ctypes.windll.user32.GetAncestor(self.root.winfo_id(), 2) or self.root.winfo_id()   # 2 = the outer window
+        except Exception:
+            return 0
+
     def popup(self, ev):
-        self.menu.tk_popup(ev.x_root, ev.y_root)
+        # Windows only closes a pop-up menu properly when the window that owns
+        # it is the active one. This window usually is not (you are typing in
+        # another program), and then the menu stays on screen after a choice.
+        # So: become the active window for the menu, and hand the keyboard
+        # back to the program you were in as soon as the menu closes.
+        try:
+            import ctypes
+            ctypes.windll.user32.SetForegroundWindow(self._hwnd())
+        except Exception:
+            pass
+        try:
+            self.menu.tk_popup(ev.x_root, ev.y_root)
+        finally:
+            self.menu.grab_release()
+            self.root.after(60, self.menu_done)
+
+    def menu_done(self):
+        try:
+            self.menu.unpost()
+        except Exception:
+            pass
+        try:
+            import ctypes
+            if self.other_hwnd and ctypes.windll.user32.IsWindow(self.other_hwnd):
+                ctypes.windll.user32.SetForegroundWindow(self.other_hwnd)
+        except Exception:
+            pass
 
     def drag_start(self, ev):
         self._drag = (ev.x_root - self.root.winfo_x(), ev.y_root - self.root.winfo_y())
@@ -336,6 +573,13 @@ class Window:
                     self.state = val
         except queue.Empty:
             pass
+        try:                              # note which other program has the keyboard
+            import ctypes
+            fg = ctypes.windll.user32.GetForegroundWindow()
+            if fg and fg != self._hwnd():
+                self.other_hwnd = fg
+        except Exception:
+            pass
         if time.time() - self.last_data > QUIET_S:
             self.l_group.configure(text="AeroMorse", fg="#606060")
             self.l_buf.configure(text=" ")
@@ -350,6 +594,7 @@ class Window:
     def close(self):
         self.remember()
         self.reader.stop = True
+        self.sound.quiet()
         self.root.destroy()
 
 
@@ -369,7 +614,7 @@ def dump(port, seconds, serial_number=None):
             n += 1
         print(kind, val)
     rd.stop = True
-    print("status lines:", n)
+    print("status lines:", n, "| sound lines:", rd.sound_lines)
 
 
 def main():

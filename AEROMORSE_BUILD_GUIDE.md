@@ -889,9 +889,13 @@ any size and place anywhere.
    finds the device by itself.
 
 - **Any size.** Drag the window's edge; the text grows to fill it.
+  **Resizing only works while *Title bar* is ticked** — the plain panel has
+  no edge to drag. To change its size: right-click, tick *Title bar*,
+  resize, then untick it again. The size is kept.
 - **Right-click the window** for the menu: *Always on top*, *See-through*
   (so it can sit over other programs), *Title bar* (untick for a plain panel
-  you move by dragging it), *Switch to another AeroMorse*, *Close*. Your
+  you move by dragging it), *Sound* (see below), *Switch to another
+  AeroMorse*, *Close*. Your
   choices and the window's place are remembered.
 - **It only listens.** The program never sends anything to the device, so it
   cannot stop or disturb it — unlike Thonny (§9.3). The information travels
@@ -909,6 +913,98 @@ serial terminal) can open that device's port — close the window first.
 Running from source instead: `python aeromorse_display.py` (needs
 `pyserial`). `--port COM8` listens to one port only; `--demo` shows made-up
 data with no device.
+
+##### Sound through the computer's speakers (v1.27+)
+
+AeroMorse Display can also **play the device's beeps on the computer** — a
+tone for as long as each dot or dash is held (higher for a dot, lower for a
+dash), a short blip when an action fires, and a lower blip on a group
+change. This gives audio feedback **without fitting a speaker to the
+device**, which matters to anyone who enters Morse by ear — for example
+when moving from a Darci USB.
+
+1. In `config.py` set **`PC_DISPLAY = True`** and **`PC_SOUND = True`**.
+2. Start AeroMorse Display, right-click the window and choose **Sound →
+   Quiet / Medium / Loud**. A short beep confirms the volume. *Off* silences
+   it again. The choice is remembered.
+
+The pitches and blip lengths are the ones in `config.py` (`BEEP_DOT_FREQ`,
+`BEEP_DASH_FREQ`, `CONFIRM_FREQ`, `GROUP_FREQ`, `BEEP_CONFIRM_S`,
+`BEEP_GROUP_S`) — the same settings a fitted speaker uses, so changing them
+changes both.
+
+Good to know:
+
+- The sound comes from the computer, so it follows the computer's own
+  volume and output device (speakers, headphones, Bluetooth). A Bluetooth
+  speaker or headset adds a noticeable delay; wired speakers do not.
+- A tone starts within a few hundredths of a second of the sip, puff or
+  switch press and ends about as promptly. That is close to, but not quite
+  as immediate as, a speaker on the device itself. If you key very fast and
+  rely on the sound for timing, a fitted speaker (§6) remains the better
+  choice.
+- The window does not need to be visible — only running. Make it small, or
+  see-through, if you want the sound and not the picture.
+- It plays alongside a speaker fitted to the device, if there is one.
+- **Tested** on the author's daily device with a sip-and-puff sensor: clean
+  tones, a dot clearly shorter than a dash. It has not yet been judged by
+  someone who keys Morse by ear at speed. Reports are welcome.
+
+##### Opening and closing the window with a Morse code (AutoHotkey)
+
+The window can be switched on and off from the AeroMorse itself: one Morse
+code sends a key combination, and a free Windows program, **AutoHotkey**,
+turns that key combination into "open the window if it is closed, close it
+if it is open". It takes three small steps, once.
+
+**1. Get AutoHotkey.** Download **AutoHotkey v2** from
+**https://www.autohotkey.com** and run the installer (the defaults are
+fine). It is free and open-source.
+
+**2. Make the script.** Open Notepad, paste the lines below, and save the
+file as **`AeroMorse.ahk`** (any folder; *Save as type: All files*). Change
+the two paths to wherever your `AeroMorse Display.exe` is.
+
+```
+#Requires AutoHotkey v2.0
+
+; Ctrl+Alt+D - AeroMorse Display window ON / OFF
+^!d:: {
+    if ProcessExist("AeroMorse Display.exe") {
+        if WinExist("AeroMorse Display ahk_exe AeroMorse Display.exe")
+            WinClose()
+    } else
+        Run('"C:\AeroMorse\AeroMorse Display.exe"', "C:\AeroMorse")
+}
+```
+
+Double-click `AeroMorse.ahk` to start it. A green **H** icon appears near
+the clock, and Ctrl+Alt+D now opens and closes the window. In the script,
+`^` means Ctrl, `!` means Alt and `d` is the D key — change the letter if
+Ctrl+Alt+D is already used by something else on your computer.
+
+**3. Make it start with Windows.** Press **Win+R**, type **`shell:startup`**
+and press Enter — a folder opens. Put a **shortcut** to `AeroMorse.ahk` in
+that folder (right-click the file → *Show more options* → *Create
+shortcut*, then move the shortcut there). From the next sign-in the hotkey
+is always ready.
+
+**4. Give it a Morse code.** In `morse_map.py`, add one line to **Group 0**
+so the code works from every group. Pick a code that is free and that you
+find easy to enter (`morse_map_report.txt` lists the free ones):
+
+```python
+g0[7][0b1001000] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # -..-...  AeroMorse Display on / off
+```
+
+Run the validator and save as usual (Usage Guide). Entering the code now
+opens the window; entering it again closes it. The window comes back at the
+size, place and see-through level you left it.
+
+> The same idea works for any program: copy the block in the script, change
+> the letter and the path, and give the new key combination its own Group 0
+> code. If you edit the script later, right-click the green **H** icon and
+> choose *Reload Script*.
 
 #### Want a bigger wireless display?
 
@@ -967,6 +1063,11 @@ Text size follows the screen: 240×135 gives the size you see on the #5691,
 ---
 
 ## 6. Speaker Options
+
+> **No speaker, but want the beeps?** If the device is plugged into a
+> Windows computer, the **AeroMorse Display** program can play them through
+> the computer's speakers instead — no parts, no wiring. See §5 "Sound
+> through the computer's speakers" (v1.27+).
 
 The speaker gives audio feedback — a tone for every dot and dash, and a
 different tone when a pattern fires. It is optional but strongly recommended:
@@ -1887,7 +1988,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.26 (released 2026-10-07)`. Open the file
+> `AeroMorse code.py — version 1.27 (released 2026-10-07)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -2208,6 +2309,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
 | `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `ESPNOW_CHANNEL` in the display's `receiver_config.py` |
 | `PC_DISPLAY` | `False` | `True` = also report the display over the USB cable to the **AeroMorse Display** window on the computer (v1.26+; see §5). No extra hardware. Leave `False` unless you use that program |
+| `PC_SOUND` | `False` | `True` = the AeroMorse Display program also plays the beeps (dot / dash tone, action blip) through the **computer's** speakers (v1.27+; see §5) — audio feedback with no speaker on the device. Needs `PC_DISPLAY = True`, and *Sound* switched on in the program's menu |
 
 ### Input modes — what `SWITCH_MODE` does
 
@@ -2235,7 +2337,7 @@ a few seconds.
 2. Wait 3–5 seconds. The display shows the **start-up screen**:
 
     - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
-    - the AeroMorse version, e.g. `v1.26`
+    - the AeroMorse version, e.g. `v1.27`
     - the CircuitPython version, e.g. `CP 9.2.9`
 
 3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
@@ -3312,6 +3414,16 @@ serial log, as one short line each time something changes, for the
 computer"). Nothing is sent as keystrokes, and each line takes about
 2 ms — far less than drawing the built-in screen. Leave it `False` if you
 do not use that program; the lines would only clutter the log.
+
+**`PC_SOUND`** (default `False`, v1.27+).
+`True` makes the device also report each beep the moment it starts and
+stops, so the **AeroMorse Display** program can play it through the
+computer's speakers (§5 "Sound through the computer's speakers"). It is the
+way to get audio feedback from a device that has no speaker fitted. It
+needs `PC_DISPLAY = True` (that is how the program finds the device), and
+*Sound* must be switched on in the program's right-click menu. Each report
+takes about 1 ms. The pitches come from the `BEEP_*` / `*_FREQ` settings
+under Audio.
 
 ---
 

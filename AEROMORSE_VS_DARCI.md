@@ -214,8 +214,9 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 | Volume | Not adjustable | Not adjustable directly — set by speaker choice (#3885 has a built-in 1 W amp; piezo options are quieter) |
 | On-board speaker | None — headset out only | #3885 STEMMA Speaker (Option S1), or piezo (S2), or PAM8302 amp + speaker (S3) |
 | External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — any speaker that already terminates in a 3.5 mm mono plug plugs straight in (see Build Guide §6 Option S2) |
-| Sticky-key indicator | LED on box | Text on OLED (`SHIFT`, `CTRL`, etc.) |
-| Current character preview | None | OLED shows growing dot/dash sequence |
+| Sound with no speaker fitted | — | **Through the computer's speakers** (v1.27+): set `PC_DISPLAY = True` and `PC_SOUND = True`, run the *AeroMorse Display* program and switch *Sound* on in its right-click menu. Sine tones, three volume levels. See Build Guide §5 |
+| Sticky-key indicator | LED on box | Text on the screen (`Shift`, `Ctrl`, etc.) |
+| Current character preview | None | Screen shows the growing dot/dash sequence |
 | Pressure bar | None (no sip-and-puff) | Magnitude-encoded fill bar on the TFT (green for puff, orange for sip) |
 | Across-the-room display | None | Optional wireless TFT mirror via ESP-NOW (`USE_WIRELESS_DISPLAY = True`) |
 
