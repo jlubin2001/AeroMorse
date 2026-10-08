@@ -1,11 +1,15 @@
 # receiver.py — AeroMorse wireless mirror display
 #
-# AeroMorse receiver.py — version 1.25 (released 2026-10-07)
+# AeroMorse receiver.py — version 1.26 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Hardware
 #   Adafruit ESP32-S3 Reverse TFT Feather   https://www.adafruit.com/product/5691
 #   (same board as the main AeroMorse unit — no extra display hardware needed)
+#   Any other ESP32-S3 board with a screen CircuitPython drives by itself
+#   (board.DISPLAY) should also work: the layout scales to the screen (v1.26+).
+#   A separate display can be set up in an optional display_setup.py — see
+#   the Build Guide, "Display Options".
 #
 # Libraries required in /lib on this board
 #   adafruit_display_text/label.mpy
@@ -74,7 +78,7 @@ print("ESP-NOW: listening on channel", _CHANNEL)
 # Mirrors the main board TFT layout exactly: same 4 rows, same colours,
 # same group indicator colours.  Pressure bar omitted (no sensor on this board).
 #
-# Layout on the 240 × 135 px TFT:
+# Layout on the 240 × 135 px TFT (a larger screen gets larger text — _layout()):
 #   Row 1  y=  2   group name          (large, group-coloured)
 #   Row 2  y= 30   morse buffer        (cyan)
 #   Row 3  y= 58   last action         (yellow)
@@ -85,7 +89,30 @@ _GROUP_NAMES  = ("BASE", "KEYBOARD", "MOUSE", "MACRO", "SCANNING",
 _GROUP_COLORS = (0x606060, 0x0080FF, 0x00C040, 0xFF8000, 0xFF00FF,
                  0xFFFF00, 0x00FFFF, 0xFF0080, 0x8000FF, 0xFF4000)
 
-display = board.DISPLAY
+# Which screen: an optional display_setup.py on this board (a file holding
+#     def setup():  ...  return display
+# for a display that is not built into the board), otherwise the built-in one.
+display = None
+try:
+    import display_setup as _display_setup
+except ImportError as _e:
+    _display_setup = None
+    if "display_setup" not in str(_e):           # the file is there, a library it needs is not
+        print("display_setup.py could not load (%s)" % _e)
+except Exception as _e:
+    _display_setup = None
+    print("display_setup.py has an error (%s: %s)" % (type(_e).__name__, _e))
+if _display_setup is not None:
+    try:
+        display = _display_setup.setup()
+        if display is None:
+            raise ValueError("setup() returned no display")
+        print("Display: from display_setup.py (%d x %d)" % (display.width, display.height))
+    except Exception as _e:
+        display = None
+        print("display_setup.py failed (%s: %s) - trying the built-in screen" % (type(_e).__name__, _e))
+if display is None:
+    display = board.DISPLAY
 _BRIGHTNESS = min(1.0, max(0.1, _setting("DISPLAY_BRIGHTNESS", 1.0)))
 try:
     display.rotation = _setting("DISPLAY_ROTATION", 0)
@@ -96,9 +123,23 @@ try:
 except Exception:
     pass
 
+# Layout — worked out from the size of whatever screen is in use, so the same
+# code suits the built-in 240 x 135 screen and a larger one from
+# display_setup.py. On 240 x 135 these give exactly the figures used before
+# v1.26 (text scale 2, rows at y = 2 / 30 / 58 / 86).
+def _layout(disp, bar):
+    s = max(1, min(disp.width // 120, disp.height // 67))   # text scale: 20 chars wide, 4 rows
+    bar_zone = (4 * s + 1) if bar else 0
+    spare = disp.height - 4 * 14 * s - bar_zone
+    top = s if spare < 14 * s else spare // 2               # centre the rows on a tall screen
+    return s, tuple(top + i * 14 * s for i in range(4))
+
+_TXT_SCALE, _ROW_Y = _layout(display, False)     # after the rotation is applied
+print("Screen %d x %d, text scale %d" % (display.width, display.height, _TXT_SCALE))
+
 def _make_label(root, text, color, y):
     lbl = label.Label(
-        terminalio.FONT, text=text, color=color, scale=2,
+        terminalio.FONT, text=text, color=color, scale=_TXT_SCALE,
         anchor_point=(0.5, 0.0),
         anchored_position=(display.width // 2, y),
     )
@@ -113,23 +154,23 @@ def _build_display():
     pal[0] = 0x000020
     root.append(displayio.TileGrid(bmp, pixel_shader=pal))
 
-    lbl_group  = _make_label(root, "[ AeroMorse ]", _GROUP_COLORS[1],  2)
-    lbl_buf    = _make_label(root, "Waiting...",    0x00FFFF,          30)
-    lbl_action = _make_label(root, " ",             0xFFFF00,          58)
+    lbl_group  = _make_label(root, "[ AeroMorse ]", _GROUP_COLORS[1],  _ROW_Y[0])
+    lbl_buf    = _make_label(root, "Waiting...",    0x00FFFF,          _ROW_Y[1])
+    lbl_action = _make_label(root, " ",             0xFFFF00,          _ROW_Y[2])
     # Orange "RPT" tag pinned to the LEFT of the action row, shown only while a
     # repeat is active. Mirrors the main board: the RPT flag stands out in
     # orange against the yellow repeated-action name on the same row.
-    lbl_rpt    = label.Label(terminalio.FONT, text=" ", color=0xFF8000, scale=2,
-                             anchor_point=(0.0, 0.0), anchored_position=(4, 58))
+    lbl_rpt    = label.Label(terminalio.FONT, text=" ", color=0xFF8000, scale=_TXT_SCALE,
+                             anchor_point=(0.0, 0.0), anchored_position=(2 * _TXT_SCALE, _ROW_Y[2]))
     root.append(lbl_rpt)
-    lbl_mods   = _make_label(root, " ",             0xFF8000,          86)
+    lbl_mods   = _make_label(root, " ",             0xFF8000,          _ROW_Y[3])
 
     display.root_group = root
     return lbl_group, lbl_buf, lbl_action, lbl_rpt, lbl_mods
 
 _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods = _build_display()
 
-_CHAR_W = 12   # terminalio.FONT advance at scale 2 (6 px glyph × 2)
+_CHAR_W = 6 * _TXT_SCALE   # terminalio.FONT advance: 6 px glyph × text scale
 
 def _set_action(text):
     """Set the action row, splitting a leading 'RPT ' into the orange tag so
@@ -145,15 +186,15 @@ def _set_action(text):
         left_x = max(0, (display.width - len(text) * _CHAR_W) // 2)
         _lbl_rpt.text                 = "RPT"
         _lbl_rpt.anchor_point         = (0.0, 0.0)
-        _lbl_rpt.anchored_position    = (left_x, 58)
+        _lbl_rpt.anchored_position    = (left_x, _ROW_Y[2])
         _lbl_action.text              = text[4:]
         _lbl_action.anchor_point      = (0.0, 0.0)
-        _lbl_action.anchored_position = (left_x + 4 * _CHAR_W, 58)
+        _lbl_action.anchored_position = (left_x + 4 * _CHAR_W, _ROW_Y[2])
     else:
         _lbl_rpt.text    = " "
         _lbl_action.text = text
         _lbl_action.anchor_point      = (0.5, 0.0)
-        _lbl_action.anchored_position = (display.width // 2, 58)
+        _lbl_action.anchored_position = (display.width // 2, _ROW_Y[2])
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 

@@ -98,6 +98,7 @@ CODE_PATH      = os.path.join(_BASE, 'code.py')
 SECRETS_PATH   = os.path.join(_BASE, 'macro_secrets.txt')
 SECRETS_ENC_PATH = os.path.join(_BASE, 'macro_secrets.enc')
 RECEIVER_CONFIG_PATH = os.path.join(_BASE, 'receiver_config.py')   # display board only
+DISPLAY_SETUP_PATH = os.path.join(_BASE, 'display_setup.py')   # optional (v1.26+)
 
 # Files whose presence we probe for the "nothing to check" guard.
 _ALL_PATHS = (MORSE_MAP_PATH, CONFIG_PATH, BOOT_PATH, CODE_PATH)
@@ -522,7 +523,7 @@ _KNOWN_CONFIG = set((
     "CONFIRM_FREQ GROUP_FREQ BEEP_CONFIRM_S BEEP_GROUP_S MOUSE_SPEED_NORMAL "
     "MOUSE_SPEED_SLOW MOUSE_SPEED_FAST MOUSE_SPEED_FACTOR MOUSE_REPEAT_DELAY "
     "MOUSE_CLICK_MOD_DELAY MOUSE_CLICK_KEEPS_MODS MOUSE_CLICK_HOLD MOUSE_CLICK_GAP "
-    "NO_REPEAT_KEYS DISPLAY_ROTATION USE_WIRELESS_DISPLAY ESPNOW_CHANNEL"
+    "NO_REPEAT_KEYS DISPLAY_ROTATION USE_WIRELESS_DISPLAY ESPNOW_CHANNEL PC_DISPLAY"
 ).split())
 
 def _install_board_stub():
@@ -589,7 +590,7 @@ def check_config_import():
 # those (and Python's True/False, or 1/0) are valid; anything else is flagged.
 _BOOL_SETTINGS = ("USE_SENSOR CODE_REPEAT "
                   "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY "
-                  "USE_DISPLAY").split()
+                  "USE_DISPLAY PC_DISPLAY").split()
 _VALID_BOOL_TOKENS = {'True', 'False', 'true', 'false', 'TRUE', 'FALSE', '1', '0'}
 
 def check_config_bool_source():
@@ -1023,6 +1024,18 @@ def main():
     run_morse_map_checks()
     if os.path.exists(RECEIVER_CONFIG_PATH):     # wireless display settings
         run_pyfile_checks(RECEIVER_CONFIG_PATH, 'receiver_config.py')
+    if os.path.exists(DISPLAY_SETUP_PATH):       # optional separate-display set-up (v1.26+)
+        run_pyfile_checks(DISPLAY_SETUP_PATH, 'display_setup.py')
+        try:
+            _ds = open(DISPLAY_SETUP_PATH, 'r', encoding='utf-8-sig').read()
+        except Exception:
+            _ds = ''
+        if not re.search(r'^def\s+setup\s*\(', _ds, re.M):
+            warn("display_setup.py has no  def setup():  in it, so it will be ignored and the "
+                 "built-in screen (if any) is used. It must define setup() and return the display.")
+        warn("display_setup.py is present: the screen is set up by that file, not by code.py. "
+             "If it fails on the device, AeroMorse still types - it falls back to the built-in "
+             "screen, or runs without one. The reason is printed in the device's start-up log.")
     return finish()
 
 

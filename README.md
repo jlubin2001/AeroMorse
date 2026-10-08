@@ -34,7 +34,7 @@ useful signal this project can collect right now.
 
 Input is by **sip-and-puff** (LPS33HW pressure sensor) or **two standard AT
 switches**. A short sip (or switch 1) is a **dot**; a short puff (or switch 2)
-is a **dash**. A small OLED display shows the active group, the Morse pattern
+is a **dash**. A small colour screen shows the active group, the Morse pattern
 as it builds, and the last action. An optional speaker beeps for every dot
 and dash.
 
@@ -166,7 +166,7 @@ connected to a computer.
 |------|---------|
 | `boot.py` | Runs once at power-on before `code.py`. Enables the USB HID Keyboard, Mouse, and ConsumerControl (media keys) devices. **Must be present or the device will not appear as a keyboard/mouse.** |
 | `code.py` | Main program. Reads input, runs the state machine, executes actions, drives the display. You should not need to open this file — all tunable settings live in `config.py`. |
-| `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, strong sip/puff, audio pitches, timing, etc. Edit this file (in Thonny) to change behaviour. The Feather auto-reloads on save. |
+| `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, strong sip/puff, audio pitches, timing, etc. Edit this file (on the CIRCUITPY drive, in any text editor) to change behaviour. The Feather auto-reloads on save. |
 | `morse_map.py` | All Morse code assignments for every group. Edit this file to remap keys, add macros, or change which Consumer Control codes g5 sends. |
 | `macro_secrets.txt` | **Optional, private.** Holds the real values (passwords, phone, address, etc.) for any `_secret()` entries in `morse_map.py`, one `key=value` per line. Not required for the device to run — if absent, those patterns type their placeholder text. Keep it out of any copy you share. See [Storing passwords and secrets safely](#storing-passwords-and-secrets-safely). |
 
@@ -756,13 +756,17 @@ GROUP -> 2 (Mouse)
 
 `?` means the pattern was not found in any code table.  Connect a terminal
 (Mu editor, Thonny, PuTTY, or `screen`) at 115200 baud to see this output.
+**Careful:** Thonny interrupts the running program when it connects, and
+Ctrl+C in any terminal does the same — AeroMorse then stops typing until it
+is restarted (replug the USB cable). If AeroMorse is your only way to use the
+computer, read the warning in Build Guide §9.3 first.
 
 ---
 
 ## Configuration
 
-All tunable values live in **`config.py`** (not `code.py`). Open it in
-Thonny, find the setting you want, change the value, save — the Feather
+All tunable values live in **`config.py`** (not `code.py`). Open it from the
+CIRCUITPY drive in any text editor, find the setting you want, change the value, save — the Feather
 auto-reloads with the new value. Each setting has a comment block above it
 explaining what it does. The same Key Settings table also appears in
 **§10 Configuration** of `AEROMORSE_BUILD_GUIDE.md` — all three sources
@@ -849,6 +853,7 @@ explaining what it does. The same Key Settings table also appears in
 | `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight, `0.1` (dim) to `1.0` (full). Takes effect when `config.py` is saved. Never goes below `0.1`, so the screen can't be blacked out by mistake. Useful when one board's screen is brighter than another's, or at night |
 | `DISPLAY_ROTATION` | `0` | Display orientation in degrees — `0` = USB on left, `180` = USB on right; also `90`, `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
+| `PC_DISPLAY` | `False` | `True` = also report the display over USB to the **AeroMorse Display** window on the computer (v1.26+). No extra hardware |
 
 ---
 
@@ -1046,6 +1051,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
 | `receiver_magtag.py` | Wireless display mirror firmware — Option W2 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** Copy as `code.py` to the MagTag. |
 | `receiver_config.py` | **Settings for the wireless display board only** (either type): `ESPNOW_CHANNEL` (must match the main device's `config.py`), and for the colour display `DISPLAY_BRIGHTNESS`, `DISPLAY_ROTATION`, `SLEEP_AFTER_S`; for both `NO_SIGNAL_S`, `AUTO_RESET_S`; for the MagTag `REFRESH_MIN_S`. Copy it next to the display's `code.py`. If it's missing or a value is wrong, the built-in default is used and the display keeps working. |
+| `display_setup.example.py` | **Only for a display that is not built into the board** (TFT FeatherWing, breakout, OLED). Copy it to the drive as `display_setup.py` and keep the block for your display; `code.py` and `receiver.py` pick it up by themselves and size the layout to the screen (v1.26+). Not needed — and not to be copied — on the #5691 or any board with a built-in screen. The example blocks are untested |
 
 ### Documentation
 
@@ -1068,6 +1074,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `aeromorse_cheatsheet.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |
 | `KEYCODE_REFERENCE.md` / `keycode_reference.htm` / `AeroMorse — Keycode Reference.pdf` | Reference of every valid `Keycode.NAME` for `morse_map.py` (letters, number keys, navigation, punctuation, F-keys, keypad, modifiers), plus how to produce shifted symbols (`:` `{` `}` …). The `.pdf` is the ready-to-print 2-page sheet; the `.htm` is the same styled for the browser; the `.md` opens in the Markdown viewer. Extracted from the `adafruit_hid` 9.x library on the devices. |
 | `aeromorse_validator.py` / `aeromorse_validator.exe` | **Safety check — run this before trusting edited device files on the device.** Checks every required file the device needs to boot: **`boot.py`, `code.py`, `config.py`, `morse_map.py`** (plus optional `macro_secrets.txt`). For each it catches the things CircuitPython is fussy about that desktop editors hide: a **UTF-8 BOM** (the classic "lost all access" cause) and a Python **syntax error**. For `config.py` and `morse_map.py` it also reproduces the device's actual import (catching an **import error**), sanity-checks `config.py` settings (missing settings, out-of-range values), and confirms every `_secret()` pattern finds its value in `macro_secrets.txt`. Reports a plain-language **PASS** (safe) or **FAIL** (fix before relying on it — don't replace your working files yet), pointing at the exact line. A file that isn't in the folder shows **SKIP**, not FAIL. **Never prints secret values** — key names and counts only. Put it in the same folder as the file(s) you edited and double-click the `.exe`, or run `python aeromorse_validator.py`. Accepts an optional folder/file argument (e.g. `aeromorse_validator.exe F:\`) to check the device directly. |
+| `aeromorse_display.py` / `AeroMorse Display.exe` | **The AeroMorse screen in a window on the computer** (v1.26+) — any size, always-on-top or see-through, no extra hardware. Set `PC_DISPLAY = True` in `config.py`, then start the program; it finds the device, only listens (never sends anything to it) and reconnects by itself. See Build Guide §5 |
 | `aeromorse_secrets.py` / `AeroMorse Secrets.exe` | **Edit your passwords and save them PIN-locked.** Opens `macro_secrets.enc` (asks the PIN) or imports `macro_secrets.txt`, lets you edit the `key=value` lines, saves them encrypted with a PIN you choose, warns about `_secret()` keys in `morse_map.py` with no value, and can copy the file to the CIRCUITPY drive and remove the plain-text file. See [PIN-locked secrets](#pin-locked-secrets-macro_secretsenc). The `.py` needs `pip install cryptography`; the `.exe` needs nothing. |
 | `Edit my AeroMorse secrets.bat` | **One-click** launcher for AeroMorse Secrets. Keep it in your edit folder next to `AeroMorse Secrets.exe` and `morse_map.py`; double-click it to open the secrets in that folder. |
 | `Back up my AeroMorse.bat` | **One-click dated backup.** Keep it in your work folder and double-click with the device plugged in: copies everything on every AeroMorse (CIRCUITPY) drive into `Backups\<name>-<YYYY-MM-DD_HHMM>`, named from a label file such as `AeroMorse-Green.txt` on the device. Read-only on the device. |

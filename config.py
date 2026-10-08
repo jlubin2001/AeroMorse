@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.25 (released 2026-10-07)
+# AeroMorse config.py — version 1.26 (released 2026-10-07)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -201,3 +201,6 @@ DISPLAY_BRIGHTNESS   = 1.0      # screen backlight: 0.1 (dim) to 1.0 (full); app
 DISPLAY_ROTATION     = 0       # degrees: 0 = USB left, 180 = USB right (also 90, 270)
 USE_WIRELESS_DISPLAY = False   # True = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA, ESP32-only). Set True only if you have a receiver.
 ESPNOW_CHANNEL       = 1        # WiFi channel (1–13) — display's receiver_config.py ESPNOW_CHANNEL must match
+PC_DISPLAY           = False   # True = also report the display to the "AeroMorse Display" window on the
+                              # computer, over the USB cable (v1.26+). No extra hardware. Leave False
+                              # unless you use that program.

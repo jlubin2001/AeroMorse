@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.25   (released 2026-10-07)
+#  AeroMorse code.py   —   version 1.26   (released 2026-10-07)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -459,6 +459,30 @@ def _espnow_send(group_str, buf_str, action_str, mods_str):
         _espnow_dev.send(msg, _broadcast_peer)
     except Exception:
         pass
+
+# ── PC window (config.py PC_DISPLAY) ───────────────────────────────────────────
+# The same four display fields, written to the USB serial log as one line
+#     ~AM<tab>group<tab>buffer<tab>action<tab>status
+# for the "AeroMorse Display" program on the computer, which shows them in a
+# window of any size. Written only when something changed (and every 2 s, so a
+# window opened later catches up). Nothing is sent as keystrokes. The program
+# only listens; it never sends anything to the device.
+try:
+    _PC_DISPLAY = bool(PC_DISPLAY)
+except NameError:
+    _PC_DISPLAY = False          # older config.py without the setting
+_pc_last   = None
+_pc_last_t = 0.0
+
+def _pc_send(group_str, buf_str, action_str, mods_str):
+    global _pc_last, _pc_last_t
+    key = (group_str, buf_str, action_str, mods_str)
+    now = time.monotonic()
+    if key == _pc_last and now - _pc_last_t < 2.0:
+        return
+    _pc_last   = key
+    _pc_last_t = now
+    print("~AM\t" + group_str + "\t" + buf_str + "\t" + action_str + "\t" + mods_str)
 
 # ── Action type helpers ────────────────────────────────────────────────────────
 
@@ -1473,19 +1497,47 @@ try:
 except NameError:
     _USE_DISPLAY = True   # older config.py without the setting: assume a screen
 
+# A display that is NOT built into the board (a FeatherWing, a breakout, an
+# OLED) is set up by an optional file on the drive, display_setup.py, holding
+#     def setup():  ...  return display
+# It is used when present (v1.26+), so this file never needs editing for a
+# display and a new code.py does not undo the display set-up. If it is missing,
+# the built-in screen is used as before. If it fails for any reason the device
+# carries on with the built-in screen, or with none — it still types.
 display = None
 if _USE_DISPLAY:
     try:
-        display = board.DISPLAY
-    except AttributeError:
-        _USE_DISPLAY = False
-        print("No board.DISPLAY on this board — running screenless. Set USE_DISPLAY = False in config.py to silence this.")
+        import display_setup as _display_setup
+    except ImportError as _e:
+        _display_setup = None
+        if "display_setup" not in str(_e):       # the file is there, a library it needs is not
+            print("display_setup.py could not load (%s)" % _e)
+    except Exception as _e:
+        _display_setup = None
+        print("display_setup.py has an error (%s: %s)" % (type(_e).__name__, _e))
+    if _display_setup is not None:
+        try:
+            display = _display_setup.setup()
+            if display is None:
+                raise ValueError("setup() returned no display")
+            print("Display: from display_setup.py (%d x %d)" % (display.width, display.height))
+        except Exception as _e:
+            display = None
+            print("display_setup.py failed (%s: %s) - trying the built-in screen" % (type(_e).__name__, _e))
+    if display is None:
+        try:
+            display = board.DISPLAY
+        except AttributeError:
+            _USE_DISPLAY = False
+            print("No board.DISPLAY on this board — running screenless. Set USE_DISPLAY = False in config.py to silence this.")
 
 if _USE_DISPLAY:
     try:
         display.rotation = DISPLAY_ROTATION
     except AttributeError:
         print("WARNING: display rotation not settable — upgrade CircuitPython to 9.x")
+    except Exception as _e:
+        print("WARNING: display rotation not set (%s)" % _e)
     # Backlight level from config.py (0.1–1.0). Never below 0.1, so a typo
     # can't black out the screen; older config.py without it keeps full.
     try:
@@ -1522,6 +1574,24 @@ else:
     except Exception as _e:
         print("Built-in screen could not be blanked (%s)" % _e)
 
+# Layout — worked out from the size of whatever screen is in use, so the same
+# code suits the built-in 240 x 135 screen and a larger one from
+# display_setup.py. On 240 x 135 these give exactly the figures used before
+# v1.26 (text scale 2, rows at y = 2 / 30 / 58 / 86, bar 8 px tall at y = 126).
+def _layout(disp, bar):
+    s = max(1, min(disp.width // 120, disp.height // 67))   # text scale: 20 chars wide, 4 rows
+    bar_zone = (4 * s + 1) if bar else 0
+    spare = disp.height - 4 * 14 * s - bar_zone
+    top = s if spare < 14 * s else spare // 2               # centre the rows on a tall screen
+    return s, tuple(top + i * 14 * s for i in range(4))
+
+_TXT_SCALE = 2
+_ROW_Y     = (2, 30, 58, 86)
+_CHAR_W    = 12       # one character's width: 6 px x text scale
+_BAR_H     = 8
+_BAR_Y     = 126
+_BAR_X     = 4
+
 def _make_label(root, text, color, scale, y):
     lbl = label.Label(
         terminalio.FONT, text=text, color=color, scale=scale,
@@ -1532,9 +1602,14 @@ def _make_label(root, text, color, scale, y):
     return lbl
 
 def _build_display():
-    # terminalio.FONT glyphs are ~14 px tall; at scale=2 each row ≈ 28 px.
-    # Four rows × 28 px = 112 px + 4 px top margin = 116 px.
-    # Pressure bar (8 px tall) sits at y=126, ending at y=134 — within 135 px.
+    # terminalio.FONT glyphs are ~14 px tall, so each row is 14 px x text scale.
+    # The pressure bar sits along the bottom edge.
+    global _TXT_SCALE, _ROW_Y, _CHAR_W, _BAR_H, _BAR_Y, _BAR_X
+    _TXT_SCALE, _ROW_Y = _layout(display, True)
+    _CHAR_W = 6 * _TXT_SCALE
+    _BAR_H  = 4 * _TXT_SCALE
+    _BAR_Y  = display.height - _BAR_H - 1
+    _BAR_X  = 2 * _TXT_SCALE
     root = displayio.Group()
 
     bmp = displayio.Bitmap(display.width, display.height, 1)
@@ -1542,22 +1617,22 @@ def _build_display():
     pal[0] = 0x000020
     root.append(displayio.TileGrid(bmp, pixel_shader=pal))
 
-    lbl_group  = _make_label(root, f"[ {_GROUP_NAMES[1]} ]", _GROUP_COLORS[1], 2,  2)
-    lbl_buf    = _make_label(root, " ",             0x00FFFF,          2, 30)
-    lbl_action = _make_label(root, " ",             0xFFFF00,          2, 58)
+    lbl_group  = _make_label(root, f"[ {_GROUP_NAMES[1]} ]", _GROUP_COLORS[1], _TXT_SCALE, _ROW_Y[0])
+    lbl_buf    = _make_label(root, " ",             0x00FFFF,          _TXT_SCALE, _ROW_Y[1])
+    lbl_action = _make_label(root, " ",             0xFFFF00,          _TXT_SCALE, _ROW_Y[2])
     # Orange "RPT" tag pinned to the LEFT of the action row (row 3), shown only
     # while a repeat is active. This lets the RPT flag stand out in orange
     # against the yellow repeated-action name on the same row. Left-anchored
     # (0.0) so its x position is fixed while lbl_action stays centred.
-    lbl_rpt    = label.Label(terminalio.FONT, text=" ", color=0xFF8000, scale=2,
-                             anchor_point=(0.0, 0.0), anchored_position=(4, 58))
+    lbl_rpt    = label.Label(terminalio.FONT, text=" ", color=0xFF8000, scale=_TXT_SCALE,
+                             anchor_point=(0.0, 0.0), anchored_position=(_BAR_X, _ROW_Y[2]))
     root.append(lbl_rpt)
-    lbl_mods   = _make_label(root, " ",             0xFF8000,          2, 86)
+    lbl_mods   = _make_label(root, " ",             0xFF8000,          _TXT_SCALE, _ROW_Y[3])
 
-    bar_bg_bmp = displayio.Bitmap(display.width - 8, 8, 1)
+    bar_bg_bmp = displayio.Bitmap(display.width - 2 * _BAR_X, _BAR_H, 1)
     bar_bg_pal = displayio.Palette(1)
     bar_bg_pal[0] = 0x202020
-    root.append(displayio.TileGrid(bar_bg_bmp, pixel_shader=bar_bg_pal, x=4, y=126))
+    root.append(displayio.TileGrid(bar_bg_bmp, pixel_shader=bar_bg_pal, x=_BAR_X, y=_BAR_Y))
 
     # Foreground bar — full-width bitmap. Palette index 0 = transparent
     # (matches background), index 1 = direction colour painted by
@@ -1565,8 +1640,8 @@ def _build_display():
     bar_pal = displayio.Palette(2)
     bar_pal.make_transparent(0)
     bar_pal[1] = 0x00FF00
-    bar_bmp = displayio.Bitmap(display.width - 8, 8, 2)
-    root.append(displayio.TileGrid(bar_bmp, pixel_shader=bar_pal, x=4, y=126))
+    bar_bmp = displayio.Bitmap(display.width - 2 * _BAR_X, _BAR_H, 2)
+    root.append(displayio.TileGrid(bar_bmp, pixel_shader=bar_pal, x=_BAR_X, y=_BAR_Y))
 
     display.root_group = root
     return lbl_group, lbl_buf, lbl_action, lbl_rpt, lbl_mods, bar_pal, bar_bmp
@@ -1580,8 +1655,13 @@ try:
 except ImportError:
     _bitmaptools = None
 if _USE_DISPLAY:
-    _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
-    _BAR_WIDTH_PX = display.width - 8
+    try:
+        _lbl_group, _lbl_buf, _lbl_action, _lbl_rpt, _lbl_mods, _bar_pal, _bar_bmp = _build_display()
+        _BAR_WIDTH_PX = display.width - 2 * _BAR_X
+    except Exception as _e:
+        # A screen that cannot be drawn on must never stop the device typing.
+        _USE_DISPLAY = False
+        print("Screen could not be set up (%s: %s) - running without it" % (type(_e).__name__, _e))
 
 _MOD_NAMES = {
     Keycode.LEFT_CONTROL:  "Ctrl",  Keycode.RIGHT_CONTROL: "RCtrl",
@@ -1661,23 +1741,23 @@ def _update_display(pressure=0.0):
         # stays YELLOW. action_str itself is left whole for the ESP-NOW broadcast
         # below, so the wireless display still shows "RPT <action>".
         # The tag + name are centred together as ONE unit: the combined string
-        # would span len*12 px (terminalio.FONT is 12 px/char at scale 2), so both
+        # would span len*_CHAR_W px (terminalio.FONT is 6 px/char x text scale), so both
         # labels are left-anchored from that block's centred start — the tag first,
         # the name one "RPT " width in. Reads like a normal centred row that just
         # happens to be two colours, rather than the tag pinned to the far left.
         if action_str.startswith("RPT "):
-            _rpt_left = max(0, (display.width - len(action_str) * 12) // 2)
+            _rpt_left = max(0, (display.width - len(action_str) * _CHAR_W) // 2)
             _lbl_rpt.text                 = "RPT"
             _lbl_rpt.anchor_point         = (0.0, 0.0)
-            _lbl_rpt.anchored_position    = (_rpt_left, 58)
+            _lbl_rpt.anchored_position    = (_rpt_left, _ROW_Y[2])
             _lbl_action.text              = action_str[4:]
             _lbl_action.anchor_point      = (0.0, 0.0)
-            _lbl_action.anchored_position = (_rpt_left + 4 * 12, 58)
+            _lbl_action.anchored_position = (_rpt_left + 4 * _CHAR_W, _ROW_Y[2])
         else:
             _lbl_rpt.text    = " "
             _lbl_action.text = action_str
             _lbl_action.anchor_point      = (0.5, 0.0)
-            _lbl_action.anchored_position = (display.width // 2, 58)
+            _lbl_action.anchored_position = (display.width // 2, _ROW_Y[2])
         _lbl_mods.text   = mods_str
         if USE_SENSOR:
             # Pressure bar — direction colour + magnitude-encoded fill width.
@@ -1701,10 +1781,10 @@ def _update_display(pressure=0.0):
                 if _bitmaptools is not None:
                     # One native call. The old dot-by-dot Python loop took
                     # 36-54 ms for a full swing — on every sip and puff.
-                    _bitmaptools.fill_region(_bar_bmp, lo, 0, hi, 8, v)
+                    _bitmaptools.fill_region(_bar_bmp, lo, 0, hi, _BAR_H, v)
                 else:
                     for x in range(lo, hi):
-                        for y in range(8):
+                        for y in range(_BAR_H):
                             _bar_bmp[x, y] = v
                 _last_bar_fill = fill_px
 
@@ -1721,6 +1801,8 @@ def _update_display(pressure=0.0):
             _dg[5] = _dg_e0
     else:
         _espnow_send(group_str, buf_str, action_str, mods_str)
+    if _PC_DISPLAY:
+        _pc_send(group_str, buf_str, action_str, mods_str)
 
 # ── Diagnostics (config.py DIAG_LOG_S) ─────────────────────────────────────────
 # For tracking down "it types badly until I restart it". Every DIAG_LOG_S

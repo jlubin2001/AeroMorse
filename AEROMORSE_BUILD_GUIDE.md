@@ -57,8 +57,8 @@ useful signal this project can collect right now.
 
 Input is by **sip-and-puff** (LPS33HW pressure sensor) or **two standard AT
 switches**. A short sip (or switch 1) is a dot; a short puff (or switch 2) is
-a dash. A small OLED display shows the active group, the Morse pattern as it
-builds, and the last action. An optional speaker beeps for every dot and dash.
+a dash. A small colour screen (built into the recommended board) shows the
+active group, the Morse pattern as it builds, and the last action. An optional speaker beeps for every dot and dash.
 
 Ten groups organize all functions — `g0` plus `g1–g9`:
 
@@ -271,16 +271,14 @@ The **ESP32-S3 Feather #5477** is the same chip without a soldered-on TFT,
 so it sits flat in a breadboard. Pair it with one of:
 
 - **STEMMA QT OLED #326 (0.96") or #938 (1.3")** — plug-and-play via the
-  STEMMA QT chain (the same chain that carries the sensor). You'll need to
-  swap the `display = board.DISPLAY` line at the top of `code.py` for a
-  short SSD1306 init block (a few lines). Monochrome 128×64.
+  STEMMA QT chain (the same chain that carries the sensor). Needs a
+  `display_setup.py` file on the drive (v1.26+, example provided — see §5).
+  Monochrome 128×64, small text. Untested.
 - **FeatherWing TFT (#3651, #5872, or #3315)** — plugs straight onto the
-  header pins, no extra wiring. Same kind of one-time `code.py` display-init
-  swap. Larger, colour, much more screen area than the OLED. For the
-  full **#5477 + #3651** combo see **Appendix F** at the end of this
-  guide for a consolidated walkthrough including the display-init code
-  to paste, the upscaled-label layout for 480×320, and the pressure-bar
-  repositioning.
+  header pins, no extra wiring. Also needs a `display_setup.py` file (§5).
+  Larger, colour, much more screen area than the OLED; the text grows to
+  fit by itself. For the full **#5477 + #3651** combo see **Appendix F**
+  at the end of this guide. Untested.
 - **EYESPI TFT** (Build Guide §5 "EYESPI displays") — possible but the most
   involved option: needs a #5613 breakout, ~7 jumper wires, a flex cable,
   and a more complex `displayio` init block. Use only if you specifically
@@ -439,11 +437,26 @@ two switches (dot + dash) are strongly recommended for practical use.
 
 **Two wiring options for the TRRS jack:**
 
-#### Option B1 — Solderless breadboard
+#### Option B1 — Breadboard (solderless only if the Feather already has header pins)
 
-A no-soldering build using a half-size breadboard, a single TRRS jack (#1699),
-and three jumper wires. Lowest-cost path and reversible, but bulky and best
-suited to bench testing rather than long-term use.
+A build using a half-size breadboard, a single TRRS jack (#1699), and three
+jumper wires. Lowest-cost path and reversible, but bulky and best suited to
+bench testing rather than long-term use.
+
+> ⚠️ **This option needs a Feather with header pins.** The Feather stands
+> *in* the breadboard on its two rows of pins, so "solderless" is true only
+> if those pins are already on the board. Most Feathers ship as a bare
+> board with a loose pin strip in the bag — the pins then have to be
+> soldered on first (about 28 joints), or the board bought "with headers".
+> A bare Feather cannot be used on a breadboard at all.
+>
+> **Not for the recommended #5691.** Its screen is on the underside, so once
+> it is pushed into a breadboard the screen faces down into the breadboard
+> and cannot be read. On a breadboard use the #5483 (screen faces up)
+> instead.
+>
+> **No header pins, or a #5691?** Use **Option B3** below — three wires,
+> and no breadboard.
 
 **Detailed step-by-step breadboard instructions are in
 [Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
@@ -508,8 +521,68 @@ Parts needed:
 
 ## 5. Display Options
 
-All displays below are supported by CircuitPython's `displayio` system and work
-with AeroMorse. The code must be updated to match the display driver you choose.
+### Which displays are tested
+
+**Only the built-in screen works straight out of the box.** `code.py`
+drives the screen that is part of the board (`board.DISPLAY`) with no extra
+file. Every other display on this page is supported by CircuitPython's
+`displayio` system and *can* be used, by adding one small file — see "Using a
+separate display" below — but the project has not built or tested any of
+them.
+
+| Display | Status |
+|---|---|
+| Built-in screen on the **#5691** Reverse TFT Feather | ✅ **Tested** — the author's daily device. Works as shipped, no code change |
+| Built-in screen on the #5483 / #5300 TFT Feathers | Expected to work as shipped (same `board.DISPLAY`, same size) — not tested by the project |
+| 3.5" TFT FeatherWing #3651 on a #5477 | Needs a `display_setup.py` file; step-by-step in **Appendix F** — written from the parts' documentation, not from a tested build |
+| Other FeatherWings (#5872, #3315) | ⚠️ **Untested** — needs a `display_setup.py` file |
+| Standalone / breakout TFTs (#2050, #1743, #1770, #4311) | ⚠️ **Untested** — needs a `display_setup.py` file |
+| EYESPI displays (#5800, #5393) | ⚠️ **Untested** — needs a `display_setup.py` file |
+| STEMMA QT OLEDs (#326, #938) | ⚠️ **Untested** with the current firmware — needs a `display_setup.py` file; text is small |
+| Wireless display (second board, ESP-NOW) | ✅ **Tested** — has its own ready-made `receiver.py`; see below |
+
+**If you want a display that simply works, choose the #5691** — and if you
+need a bigger or more distant screen, see "Want a bigger wireless display?"
+further down this section.
+
+### Using a separate display — `display_setup.py` (v1.26+)
+
+A display that is not built into the board is set up by **one small extra
+file on the CIRCUITPY drive, `display_setup.py`**. You never edit `code.py`
+for a display, and updating AeroMorse to a new version does not undo your
+display set-up.
+
+1. Copy **`display_setup.example.py`** from the repo to the CIRCUITPY drive
+   and rename the copy **`display_setup.py`**.
+2. Open it. It holds a ready-made block for each display family (3.5" and
+   2.4" FeatherWings, breakout TFTs, ST7789 / EYESPI, OLED). Keep the one
+   for your display and check the pin names against your wiring.
+3. Copy that display's driver library into `/lib` (named in the block, and in
+   the table at the end of this section).
+4. Save. The device restarts.
+
+What you get:
+
+- **The layout fits itself to the screen.** Text size, row positions and the
+  pressure bar are worked out from the screen's width and height — about
+  20 characters across and 4 rows — so a 480×320 screen gets text twice the
+  size of the built-in one, with nothing to adjust.
+- **A mistake cannot stop the device typing.** If the file has an error, a
+  library is missing or the display does not answer, AeroMorse falls back to
+  the built-in screen (if the board has one) or runs without a screen, and
+  prints the reason in its start-up log.
+- **The same file works on a wireless-display board** — `receiver.py` looks
+  for `display_setup.py` too.
+- The validator checks `display_setup.py` for typing mistakes when it finds
+  one in the folder.
+
+The file's one rule: it must contain `def setup():` and `setup()` must return
+the display. The blocks in the example have **not been run on real
+hardware** — they are written from each display's documentation — so treat
+them as a starting point, and please report what works.
+
+Boards with a built-in screen (#5691, #5483, #5300) must **not** have a
+`display_setup.py` — they need nothing.
 
 ### Understanding the columns
 
@@ -549,7 +622,11 @@ All three are functionally identical for AeroMorse.
 
 ---
 
-### FeatherWing displays (plug directly on Feather — easiest, requires headers)
+### FeatherWing displays (plug directly on Feather — easiest wiring, requires headers)
+
+> ⚠️ **These need a `display_setup.py` file, and none is tested.** The
+> #3651 has a step-by-step walkthrough in Appendix F (not from a tested
+> build). See "Using a separate display" at the top of §5.
 
 | Display | # | Size | Resolution | Interface | URL |
 |---------|---|------|-----------|-----------|-----|
@@ -577,6 +654,11 @@ plugs straight on (once headers are in place) with no additional wiring.
 ---
 
 ### Standalone / breakout displays (5 wires required)
+
+> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** Nothing
+> in this table has been built and tried by the project; see "Which displays
+> are tested" and "Using a separate display" at the top of §5 before buying
+> one.
 
 | Display | # | Size | Resolution | Driver | URL |
 |---------|---|------|-----------|--------|-----|
@@ -622,6 +704,11 @@ more neatly.
 
 **EYESPI-compatible displays:**
 
+> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** Nothing
+> in this table has been built and tried by the project; see "Which displays
+> are tested" and "Using a separate display" at the top of §5 before buying
+> one.
+
 | Display | # | Size | Resolution | Driver | URL |
 |---------|---|------|-----------|--------|-----|
 | 2.0" 320×240 IPS TFT EYESPI | [5800](https://www.adafruit.com/product/5800) | 2.0" | 320×240 colour | ST7789 | https://www.adafruit.com/product/5800 |
@@ -641,7 +728,7 @@ more neatly.
 > comfortable soldering 7 wires to the #5613 breakout.
 
 > **Code:** EYESPI displays are not auto-initialised — `board.DISPLAY` is not
-> populated. You must initialise them in `code.py` with `displayio` and the
+> populated. They are set up in a `display_setup.py` file with the
 > appropriate driver library (same as the standalone breakout displays above).
 
 ---
@@ -654,13 +741,19 @@ more neatly.
 | 1.3" Monochrome OLED | [938](https://www.adafruit.com/product/938) | **1.3"** | 128×64 | SSD1306 | https://www.adafruit.com/product/938 |
 
 Both connect via STEMMA QT — no soldering. Both use the same SSD1306 driver, the
-same library, and the same I²C address (0x3C). The v2 code works with either
-with **no changes at all** — simply swap the physical display.
+same library, and the same I²C address (0x3C), so the two are interchangeable:
+whatever works for one works for the other.
 
-**#326 (0.96")** is the v2 default — compact, easy to mount on a tube holder.
-**#938 (1.3")** is a direct plug-in upgrade — 35% larger, identical wiring and
-code. A better choice if you want a slightly bigger display without any of the
-complexity of a TFT.
+**#326 (0.96")** is compact and easy to mount on a tube holder.
+**#938 (1.3")** is 35% larger with identical wiring and code — a better choice
+if you want a slightly bigger display without the complexity of a TFT.
+
+> **These need a `display_setup.py` file** (see "Using a separate display"
+> at the top of §5; the example file has an OLED block). The layout shrinks
+> itself to 128×64, which makes the text small — about 2 mm tall on the
+> 0.96" screen. (The very first AeroMorse code, "v2", was written for the
+> #326 OLED; it was retired in v1.14.) An OLED has **not been tested** with
+> the current firmware. If you just want it to work, use the #5691.
 
 ---
 
@@ -783,6 +876,62 @@ libraries — listed in the `receiver_magtag.py` file header).
 
 ---
 
+#### A window on the computer — "AeroMorse Display" (v1.26+, no hardware)
+
+If the screen you want to see the AeroMorse on is **the computer's own
+monitor**, you need no second board at all. **AeroMorse Display** is a small
+Windows program that shows the device's screen — group, the dots and dashes
+as they build, the last action and the status line — in a window you can make
+any size and place anywhere.
+
+1. On the device, set **`PC_DISPLAY = True`** in `config.py`.
+2. On the computer, start **`AeroMorse Display.exe`** (from the repo). It
+   finds the device by itself.
+
+- **Any size.** Drag the window's edge; the text grows to fill it.
+- **Right-click the window** for the menu: *Always on top*, *See-through*
+  (so it can sit over other programs), *Title bar* (untick for a plain panel
+  you move by dragging it), *Switch to another AeroMorse*, *Close*. Your
+  choices and the window's place are remembered.
+- **It only listens.** The program never sends anything to the device, so it
+  cannot stop or disturb it — unlike Thonny (§9.3). The information travels
+  over the USB cable the device is already plugged in with.
+- **It reconnects by itself** after `devicereset`, a replug or a restart.
+  It remembers which AeroMorse it showed and waits for that one, even if
+  another is plugged in; *Switch to another AeroMorse* in the menu changes it.
+- It works alongside the built-in screen and the wireless display, or
+  instead of them (`USE_DISPLAY = False`).
+
+Limits: it shows the AeroMorse plugged into *this* computer, on Windows. It
+has no pressure bar. And while it is running, no other program (Thonny, a
+serial terminal) can open that device's port — close the window first.
+
+Running from source instead: `python aeromorse_display.py` (needs
+`pyserial`). `--port COM8` listens to one port only; `--demo` shows made-up
+data with no device.
+
+#### Want a bigger wireless display?
+
+The wireless display is the easy place to get a bigger screen: it is a
+separate board, so nothing you try there can affect typing. Since v1.26
+`receiver.py` sizes its text to whatever screen it finds. Your choices, from
+least to most effort:
+
+| Choice | Screen | What you need | Status |
+|---|---|---|---|
+| **The computer's own monitor** | any size | The "AeroMorse Display" program above and `PC_DISPLAY = True` — no hardware | ✅ Tested |
+| **MagTag (Option W2)** | 2.9" e-ink | Just the MagTag and `receiver_magtag.py` | ✅ Supported — but e-ink refreshes every ~2 s, so no live dots and dashes |
+| **A board with a larger built-in colour screen** | 2" and up | Any ESP32-S3 board whose screen CircuitPython drives by itself (`board.DISPLAY`) and whose circuitpython.org page lists the `espnow` module. Copy `receiver.py` as `code.py` exactly as for Option W1 — no display file needed | ⚠️ Untested — should work, please report |
+| **A Feather plus a FeatherWing TFT** (e.g. #5477 + 3.5" #3651) | up to 3.5" | Header pins soldered on the Feather, the display's driver in `/lib`, and a `display_setup.py` (see "Using a separate display" above) next to `receiver.py` | ⚠️ Untested |
+
+Before buying a board for the second row, open its page on
+circuitpython.org and check two things under "Built-in modules available":
+`espnow` is listed, and the board description says the display is
+built in. An ESP32-S2 or ESP32-S3 chip is required for ESP-NOW.
+
+Text size follows the screen: 240×135 gives the size you see on the #5691,
+320×240 the same size with more room around it, 480×320 twice that size.
+
 #### Wireless display comparison
 
 | | Option W1 — Second #5691 | Option W2 — MagTag #4800 |
@@ -811,9 +960,9 @@ libraries — listed in the `receiver_magtag.py` file header).
 | HX8357D | `adafruit_hx8357` | #3651, #5872, #2050 |
 | ST7789 | `adafruit_st7789` | #4311 |
 
-> **Note:** Adding a larger TFT display requires updating the display
-> initialisation section at the top of `code.py`. Ask for help with this step if
-> needed.
+> **Note:** Any display other than a built-in one needs a `display_setup.py`
+> file naming its driver (see "Using a separate display" at the top of §5).
+> Apart from the built-in screen, these combinations are **untested**.
 
 ---
 
@@ -1014,7 +1163,7 @@ required.
 | 1 m | Silicone Tubing — 2.5 mm ID, 4.7 mm OD (recommended) | #3659 | https://www.adafruit.com/product/3659 |
 | — | *or* Aquarium airline tubing — 3/16" ID, 5/16" OD | — | pet store / hardware store |
 
-#### AT switch — solderless breadboard
+#### AT switch — breadboard (the Feather must have header pins)
 
 | Qty | Item | Adafruit # | URL |
 |-----|------|-----------|-----|
@@ -1068,6 +1217,10 @@ several GND pins — any of them work).
 > **If you chose the #5691 Reverse TFT Feather, skip this section entirely —
 > the display is already part of that board.**
 
+> ⚠️ **Every display in this table needs a `display_setup.py` file, and none
+> has been tested by the project** (the #3651 has written instructions in
+> Appendix F). Read "Which displays are tested" in §5 before ordering.
+
 | Qty | Item | Adafruit # | URL |
 |-----|------|-----------|-----|
 | 1 | 3.5" TFT FeatherWing Resistive (recommended for table) | #3651 | https://www.adafruit.com/product/3651 |
@@ -1075,8 +1228,8 @@ several GND pins — any of them work).
 | — | *or* 2.4" TFT FeatherWing Resistive | #3315 | https://www.adafruit.com/product/3315 |
 | — | *or* 3.5" TFT Breakout (standalone, needs 5 wires) | #2050 | https://www.adafruit.com/product/2050 |
 | — | *or* 2.8" TFT Breakout (standalone) | #1770 | https://www.adafruit.com/product/1770 |
-| — | *or* 1.3" OLED — STEMMA QT (larger OLED, no code change) | #938 | https://www.adafruit.com/product/938 |
-| — | *or* 0.96" OLED — STEMMA QT (v2 code default, compact) | #326 | https://www.adafruit.com/product/326 |
+| — | *or* 1.3" OLED — STEMMA QT (larger OLED; needs a `code.py` change, see §5) | #938 | https://www.adafruit.com/product/938 |
+| — | *or* 0.96" OLED — STEMMA QT (compact; needs a `code.py` change, see §5) | #326 | https://www.adafruit.com/product/326 |
 
 **If you choose the OLED #326**, you also need:
 
@@ -1196,6 +1349,11 @@ electronics shops will do this for free if you ask.
 ---
 
 ### Step 8A — Connect the display
+
+> The #5691's built-in screen needs no connecting — skip to Step 8B. The
+> displays below are **untested with AeroMorse** and also need a
+> `display_setup.py` file before they show anything (§5 "Using a separate
+> display").
 
 #### If you chose a FeatherWing display (#3651, #5872, or #3315)
 
@@ -1556,6 +1714,46 @@ load `code.py`, the libraries, or `morse_map.py`. **Without watching the
 console, a problem in §9.4 looks like "nothing happens" instead of a
 specific error message you can act on.**
 
+> ⚠️ **Connecting Thonny STOPS AeroMorse.** When Thonny connects to the
+> Feather it interrupts whatever program is running, so `code.py` stops and
+> the device **no longer types or moves the mouse** until it is restarted.
+> During a first build that is harmless — you are using an ordinary keyboard
+> and mouse. But **if AeroMorse is how you operate this computer, connecting
+> Thonny to it locks you out**: the `>>>` prompt in the Shell means AeroMorse
+> is *stopped*, not ready.
+>
+> **To get it going again:** have a helper unplug the Feather's USB cable and
+> plug it back in (or click in Thonny's Shell and press Ctrl+D, which needs a
+> working keyboard or mouse). Nothing is lost or damaged.
+>
+> **If AeroMorse is your only access:**
+>
+> - Do not connect Thonny to it unless a helper, or a second keyboard / mouse
+>   you can use, is at hand.
+> - You do not need Thonny to change settings. `config.py` and `morse_map.py`
+>   can be edited straight on the CIRCUITPY drive with any text editor
+>   (Notepad, Notepad++, …); saving restarts the device by itself.
+> - To only *watch* what the device prints, **untick "Interrupt working
+>   program on connect"** in the same window (*Run → Configure interpreter…*,
+>   or *Tools → Options → Interpreter*) **before** you choose the port and
+>   click OK. Thonny then just listens: the Shell shows each code as you
+>   enter it, and AeroMorse keeps typing (confirmed on a device in daily
+>   use). Thonny remembers the setting. Even then, the Run button, Ctrl+C
+>   in the Shell, and *File → Open → CircuitPython device* all stop
+>   AeroMorse, and the Stop / Restart button interrupts it (see below).
+> - When the device restarts (`devicereset`, or a replug) Thonny's Shell
+>   prints **"Connection lost — Use Stop/Restart to reconnect"** and then
+>   shows nothing more. That message is only about Thonny: AeroMorse itself
+>   has restarted and is working normally. To make Thonny listen again,
+>   click **Stop / Restart**: on our test device this restarted the program
+>   on the Feather (Shell shows `soft reboot`, then the start-up lines — a
+>   few seconds of calibration, so do not sip or puff) and AeroMorse carried
+>   on working. Because that button does interrupt the program first, have a
+>   helper nearby the first time you try it on a device you depend on; if
+>   the Shell ends at `>>>` instead, AeroMorse is stopped and needs a replug.
+> - The same applies to any other serial program (PuTTY, `screen`, Mu):
+>   sending Ctrl+C to the device stops it.
+
 #### Step 9.3.1 — Download and install Thonny
 
 1. Go to **https://thonny.org** and click the download button for your
@@ -1582,9 +1780,13 @@ isn't, unplug and replug the USB-C cable.
    - **Windows:** a COM port, e.g. `COM3` or `COM7` — try each if unsure
    - **macOS:** something like `/dev/cu.usbmodem14101`
    - **Linux:** something like `/dev/ttyACM0`
-4. Click **OK**.
+4. Click **OK**. **This stops any program running on the Feather** — on a
+   device that already has AeroMorse on it, typing and the mouse stop
+   working at this moment (see the warning at the top of §9.3).
 5. The bottom **Shell** panel should now show `>>>` — this is the REPL
-   prompt, confirming Thonny is talking to the Feather.
+   prompt, confirming Thonny is talking to the Feather. While `>>>` is
+   showing, AeroMorse is not running; press Ctrl+D in the Shell (§9.3.5) or
+   replug the USB cable to start it again.
 
 > **Can't find the right port?**
 > Windows: open Device Manager → Ports (COM & LPT) — the Feather appears
@@ -1652,8 +1854,8 @@ ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
 | Action | Shortcut |
 |--------|---------|
 | Save file (and trigger Feather restart) | Ctrl+S / Cmd+S |
-| Stop running program / go to REPL | Ctrl+C (in Shell) |
-| Restart program from REPL | Ctrl+D (in Shell) |
+| Stop running program / go to REPL — **AeroMorse stops typing** | Ctrl+C (in Shell) |
+| Restart program from REPL — AeroMorse works again | Ctrl+D (in Shell) |
 | Open file from CIRCUITPY drive | File → Open → CircuitPython device |
 
 > Further Thonny details (REPL examples, alternative editors like VS
@@ -1685,7 +1887,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.25 (released 2026-10-07)`. Open the file
+> `AeroMorse code.py — version 1.26 (released 2026-10-07)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -1703,10 +1905,9 @@ latest, correct files.
 > the file to `morse_map.py` *before* or *after* copying** — see the
 > Darci callout below.
 
-**The repo root `code.py` is the active firmware** — it targets boards
-with a built-in 240×135 colour TFT (#5691 Reverse TFT, #5483, #5300) and
-also drives an EYESPI or FeatherWing TFT with a one-line display init
-swap (see §5).
+**The repo root `code.py` is the active firmware** — it drives the built-in
+240×135 colour TFT of the #5691 Reverse TFT, #5483 and #5300 with no extra
+file, and a separate display through an optional `display_setup.py` (see §5).
 
 Copy these four files from the **repo root** to the root of the
 CIRCUITPY drive (not inside any subfolder):
@@ -1879,8 +2080,9 @@ copy them all from the CircuitPython 10.x library bundle. The
 ## 10. Configuration
 
 All user-tunable settings live in **`config.py`** at the root of the
-CIRCUITPY drive (not in `code.py`). Open `config.py` in Thonny (§9.3) or
-any plain-text editor — one assignment per line, grouped into nine
+CIRCUITPY drive (not in `code.py`). Open `config.py` from the CIRCUITPY
+drive in any plain-text editor (Notepad, Notepad++, …) — connecting Thonny
+is not needed for this and stops AeroMorse (§9.3) — one assignment per line, grouped into nine
 sub-sections (Input, Input mode, Strong sip/puff, Timing, Code repeat,
 Audio, Mouse, Repeat exclusions, Display / wireless). Each line has a
 short trailing hint; for **full per-setting explanations including when
@@ -1888,7 +2090,7 @@ and how to tune**, see **[Appendix E — Configuration
 Reference](#appendix-e--configuration-reference)** at the end of this
 guide.
 
-> **Save in Thonny → the Feather auto-reloads** with the new values.
+> **Save the file → the Feather auto-reloads** with the new values.
 > Press **Ctrl+D** in the Shell panel any time to force a fresh restart
 > with full boot output (§9.3.5).
 
@@ -2002,9 +2204,10 @@ it interact with other settings" explanation, jump to Appendix E.
 |---------|---------|------|
 | `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender) — the device still types over USB and still broadcasts to a wireless receiver; only the local screen is skipped. A missing screen is also auto-detected, so a screenless board won't crash even if this is left `True`. Also set `False` on a board that **has** a screen when you only watch the wireless display (v1.22+): the built-in screen is blanked and its backlight switched off, removing screen-drawing pauses of 60–100 ms that can swallow a quick sip or puff (the backlight comes back on if the program stops with an error) |
 | `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight `0.1` (dim) – `1.0` (full); applies on save; never below `0.1` |
-| `DISPLAY_ROTATION` | `0` | `0` / `90` / `180` / `270` |
+| `DISPLAY_ROTATION` | `0` | Screen orientation in degrees: `0` = USB port on the **left** side of the display, `180` = USB port on the **right** side. `90` / `270` turn the text sideways |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
 | `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `ESPNOW_CHANNEL` in the display's `receiver_config.py` |
+| `PC_DISPLAY` | `False` | `True` = also report the display over the USB cable to the **AeroMorse Display** window on the computer (v1.26+; see §5). No extra hardware. Leave `False` unless you use that program |
 
 ### Input modes — what `SWITCH_MODE` does
 
@@ -2025,24 +2228,42 @@ a few seconds.
 
 ## 11. First Power-On Test
 
-1. Plug the Feather into your computer.
-2. Wait 3–5 seconds. You should see:
-   - The display showing **[Keyboard]**
-   - If using the sensor: the message "Calibrating…" in the serial console
-   - A short beep from the speaker when calibration finishes (sensor mode only)
-3. Open a plain-text editor on your computer (Notepad, TextEdit).
-4. Click inside the editor so it is focused.
+1. Plug the Feather into your computer. **In sensor mode, do not sip or puff
+   for the first few seconds** — the device measures the resting air
+   pressure ("calibrating") as it starts, and a breath in the tube at that
+   moment throws the measurement off.
+2. Wait 3–5 seconds. The display shows the **start-up screen**:
+
+    - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
+    - the AeroMorse version, e.g. `v1.26`
+    - the CircuitPython version, e.g. `CP 9.2.9`
+
+3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
+   inside it so it is focused.
+4. Give **one sip, puff or switch press**. This first one only clears the
+   start-up screen — it types nothing. The display now shows
+   **[ KEYBOARD ]** and the device is ready.
+
+No screen on your board, or `USE_DISPLAY = False`? There is nothing to see,
+but the device behaves the same way: the first sip / puff / press after
+start-up is swallowed, the next ones type. (A wireless display, if you use
+one, shows the same start-up screen.)
+
+You do not need Thonny or a serial console for this test. If one happens to
+be connected it shows `Calibrating — do not sip or puff ...` followed by
+`Calibration complete — ready for input.`
 
 ### Quick test — sensor mode
 
-Gently sip (dot) · pause · gently puff (dash) · pause · puff (dash).
-Wait 0.3 seconds. The letter **W** (`.--`) should appear in the text editor and
-the speaker should have beeped three times.
+Gently sip (dot) · pause · gently puff (dash) · pause · puff (dash), then
+stop. After about a third of a second (`ACCEPT_DELAY`) the letter **W**
+(`.--`) appears in the text editor. If a speaker is fitted, it beeps once
+for each sip and puff.
 
 ### Quick test — switch mode
 
-Press dot switch · dot switch · dash switch (`. . -`). Wait 0.3 seconds. The
-letter **U** (`..-`) should appear.
+Press dot switch · dot switch · dash switch (`. . -`), then stop. The
+letter **U** (`..-`) appears.
 
 ### If nothing appears
 
@@ -2051,7 +2272,9 @@ letter **U** (`..-`) should appear.
   `boot.py` sometimes needs a fresh plug.
 - In sensor mode: make sure the tube is pushed onto the sensor and you are
   breathing into it, not blowing from the side.
-- In switch mode: confirm `USE_SENSOR = False` is set in `code.py`.
+- In switch mode: confirm `USE_SENSOR = False` is set in `config.py`.
+- Remember the first sip / puff / press after start-up only clears the
+  start-up screen; enter the test code again.
 
 ---
 
@@ -2287,13 +2510,19 @@ drive — without it you could no longer edit or update the device.
 ### Display
 
 **Display is blank or white**
-- Check that you are running the correct version of `code.py` for your
-  display. The v2 code expects the OLED #326 by default. If you have a TFT
-  FeatherWing, the display initialisation in `code.py` must be updated.
-- For the OLED: check both ends of both STEMMA QT cables are fully
+- **Built-in screen (#5691):** check `USE_DISPLAY` in `config.py` — `False`
+  deliberately blanks the screen and switches its backlight off. Also check
+  `DISPLAY_BRIGHTNESS` is not set very low.
+- **Any other display:** it needs a `display_setup.py` file on the drive
+  (§5 "Using a separate display"; Appendix F for the 3.5" FeatherWing).
+  Without one, `code.py` looks only for a screen built into the board. If
+  the file is there and the screen is still blank, the start-up log says why
+  — look for a line starting `display_setup.py`.
+- For an OLED: check both ends of both STEMMA QT cables are fully
   clicked in.
-- Try changing `device_address=0x3C` to `device_address=0x3D` if the OLED
-  stays blank — some OLEDs use the alternate address.
+- In the OLED block of `display_setup.py`, try changing `device_address=0x3C` to
+  `device_address=0x3D` if the OLED stays blank — some OLEDs use the
+  alternate address.
 
 ---
 
@@ -2583,9 +2812,15 @@ Save the file — the Feather reloads automatically.
 
 ## Appendix D — Breadboard Wiring Walkthrough
 
-Detailed step-by-step instructions for **§4 Option B1 — Solderless breadboard**.
+Detailed step-by-step instructions for **§4 Option B1 — Breadboard**.
 Skip this appendix if you chose Option B2 (TRRS breakout) or Option B3 (#2915
 Terminal Block).
+
+> ⚠️ **Before you start: your Feather must have header pins soldered on.**
+> It stands in the breadboard on those pins. If yours came as a bare board
+> (most do), the pins have to be soldered first — see §8 "Before you start"
+> — or choose Option B3, which needs no breadboard. The #5691 Reverse TFT is
+> also a poor fit here: on a breadboard its screen faces down.
 
 ### Parts — exactly what to buy
 
@@ -2596,7 +2831,8 @@ Terminal Block).
 | 1 pack | Male-to-male jumper wires | https://www.adafruit.com/product/153 | You will use 3 of them |
 | 1 | 3.5 mm mono Y-splitter | any store | Needed only if you use 2 switches |
 
-No soldering iron. No solder. No stripped wires. All connections are push-in.
+With header pins already on the Feather: no soldering iron, no solder, no
+stripped wires — all connections are push-in.
 
 ### Understanding the breadboard
 
@@ -3069,6 +3305,14 @@ only if channel 1 is congested in your area. See §12 "How the ESP-NOW
 channel is selected" for the full mechanism and why the channel is
 pinned the way it is.
 
+**`PC_DISPLAY`** (default `False`, v1.26+).
+`True` makes the device also write its four display fields to the USB
+serial log, as one short line each time something changes, for the
+**AeroMorse Display** program on the computer (§5 "A window on the
+computer"). Nothing is sent as keystrokes, and each line takes about
+2 ms — far less than drawing the built-in screen. Leave it `False` if you
+do not use that program; the lines would only clutter the log.
+
 ---
 
 ## Appendix F — Building with #5477 + 3.5" TFT FeatherWing #3651
@@ -3080,9 +3324,9 @@ Touch #3651** — the largest readable display AeroMorse supports
 behaviour (USB HID, ESP-NOW, etc.) is identical; only the display path
 differs.
 
-The cost of this build relative to #5691 is **one code edit** (a
-display-init swap) plus an **optional layout retune** that takes
-better advantage of the much larger screen. Everything else (sensor,
+The cost of this build relative to #5691 is **one extra file on the
+drive** (`display_setup.py`, v1.26+) and one extra library. The text
+enlarges itself to suit the bigger screen. Everything else (sensor,
 speaker, AT switches, ESP-NOW wireless display) is identical to the
 recommended build.
 
@@ -3185,99 +3429,47 @@ The standard /lib set from §9.2 *plus* the HX8357D driver:
 #### Project files
 
 The same `boot.py`, `code.py`, `config.py`, and `morse_map.py` as the
-standard build. Then make the two edits below to `code.py`.
+standard build, **plus one more file: `display_setup.py`**. No file is
+edited by hand.
 
-#### Edit 1 — Display init swap (required)
+#### Add `display_setup.py`
 
-The root `code.py` initialises the display with:
+The #5477 has no built-in display, so `code.py` on its own finds no screen
+and runs without one (it still types). To use the #3651:
 
-```python
-display = board.DISPLAY
-```
+1. Copy **`display_setup.example.py`** from the repo to the CIRCUITPY drive.
+2. Rename the copy **`display_setup.py`**.
 
-That works on #5691 / #5483 / #5300 because those Feathers have a
-built-in TFT wired up at firmware level, so `board.DISPLAY` is
-auto-populated. The #5477 has no built-in display, so `board.DISPLAY`
-is `None` and the firmware crashes at the first label-creation call.
-
-Find that line near the top of the display-setup section (just before
-`def _make_label`) and replace with:
+That is all — the block that is active in the example file is the one for
+this FeatherWing:
 
 ```python
-import busio
-import fourwire
-from adafruit_hx8357 import HX8357
-
-displayio.release_displays()
-spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-display_bus = fourwire.FourWire(
-    spi, command=board.D10, chip_select=board.D9, reset=None
-)
-display = HX8357(display_bus, width=480, height=320, rotation=DISPLAY_ROTATION)
+def setup():
+    import busio
+    import fourwire
+    from adafruit_hx8357 import HX8357
+    displayio.release_displays()
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    bus = fourwire.FourWire(spi, command=board.D10, chip_select=board.D9, reset=None)
+    return HX8357(bus, width=480, height=320)
 ```
 
 The `D9 = CS` / `D10 = DC` pin assignment is Adafruit's standard
 FeatherWing convention — those are the pins the #3651's CS and DC
-traces wire to on the FeatherWing PCB. The `rotation=DISPLAY_ROTATION`
-reads from `config.py` so the existing `DISPLAY_ROTATION` setting
-keeps working.
+traces wire to on the FeatherWing PCB. `DISPLAY_ROTATION` and
+`DISPLAY_BRIGHTNESS` in `config.py` are applied afterwards as usual.
 
-After this edit your CIRCUITPY drive's `code.py` should boot with
-**[ KEYBOARD ]** showing on the #3651 TFT — but the text will appear
-tiny because the layout is still tuned for the much smaller #5691
-panel. That's what the next (optional) edit fixes.
+#### The layout sizes itself
 
-#### Edit 2 — Resize labels and reposition the pressure bar (optional but strongly recommended)
+Nothing needs retuning. `code.py` works out the text size from the screen:
+on this 480×320 panel the four rows are drawn at **twice** the size used on
+the #5691 (text scale 4 instead of 2 — characters 24 px wide, 20 across),
+centred on the screen, with a 16 px pressure bar along the bottom edge.
 
-The default layout positions and scales in `_build_display()` were
-chosen for the 240×135 px #5691 TFT. On the 480×320 px #3651 the
-labels are perfectly readable but use only the top-left ~quarter of
-the panel, leaving most of the screen blank.
-
-To use the full 480×320 area, change the values in `_build_display()`
-from the **left column** (current #5691 defaults) to the **right column**
-(#3651 layout). Just edit the literal numbers — no structural changes.
-
-| Element | #5691 (current) | #3651 (recommended) | What changes |
-|---|---|---|---|
-| Group name `_make_label(...)` | `scale=2, y=2` | `scale=5, y=10` | Largest text, top of screen |
-| Morse buffer `_make_label(...)` | `scale=2, y=30` | `scale=4, y=90` | Big, easy to follow as you sip/puff |
-| Last action `_make_label(...)` | `scale=2, y=58` | `scale=4, y=160` | Big "what just fired" |
-| Modifier/status `_make_label(...)` | `scale=2, y=86` | `scale=3, y=230` | Smaller — less important info |
-| Pressure bar y-position (both `TileGrid` calls) | `y=126` | `y=290` | Bottom of screen with 22 px margin |
-| Pressure bar height (`Bitmap` 2nd arg, both bar bitmaps) | `8` | `20` | Thicker for visibility from distance |
-
-Concretely, your `_build_display()` becomes something like (only the
-two TileGrid `y=` values and the Bitmap height change for the bar; the
-four `_make_label` calls change their `scale` and `y` arguments):
-
-```python
-lbl_group  = _make_label(root, f"[ {_GROUP_NAMES[1]} ]", _GROUP_COLORS[1], 5,  10)
-lbl_buf    = _make_label(root, " ",                       0x00FFFF,         4,  90)
-lbl_action = _make_label(root, " ",                       0xFFFF00,         4, 160)
-lbl_mods   = _make_label(root, " ",                       0xFF8000,         3, 230)
-
-bar_bg_bmp = displayio.Bitmap(display.width - 8, 20, 1)   # was height 8
-bar_bg_pal = displayio.Palette(1)
-bar_bg_pal[0] = 0x202020
-root.append(displayio.TileGrid(bar_bg_bmp, pixel_shader=bar_bg_pal, x=4, y=290))
-
-bar_pal = displayio.Palette(2)
-bar_pal.make_transparent(0)
-bar_pal[1] = 0x00FF00
-bar_bmp = displayio.Bitmap(display.width - 8, 20, 2)      # was height 8
-root.append(displayio.TileGrid(bar_bmp, pixel_shader=bar_pal, x=4, y=290))
-```
-
-The pixel-bar painting code further down in `_update_display()` uses
-`for y in range(8)` — change those `range(8)` calls to `range(20)` to
-fill the taller bar.
-
-> All numbers above are starting points — feel free to tune. A
-> reasonable rule of thumb on the 480×320: terminalio.FONT is 6×12 px
-> at scale 1, so at scale 5 a character is 30×60 px and you fit
-> 480/30 = 16 characters per line at full width; at scale 4 you fit
-> 20 characters per line.
+> Before v1.26 this build needed two hand edits inside `code.py` (a display
+> set-up swap and a table of label sizes) that had to be redone after every
+> update. If you made those edits to an older `code.py`, simply install the
+> current `code.py` unchanged and add `display_setup.py`.
 
 ### F.6 Configuration
 
@@ -3300,21 +3492,33 @@ Baseline auto-zero: 30s time constant
 ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
 ```
 
+…with one extra line near the top of the log:
+
+```
+Display: from display_setup.py (480 x 320)
+```
+
 …and the 3.5" TFT should display the standard four-row layout with the
-pressure bar at the bottom (after applying Edit 2), at the much
-larger scale.
+pressure bar at the bottom, at the larger scale.
 
-If you get a blank display or a `KeyError` / `AttributeError` on
-`board.DISPLAY`, Edit 1 didn't apply cleanly — open the file again
-and confirm the import lines and the `display = HX8357(...)` block are
-above the first `_make_label(...)` call.
+If the display stays blank, read the start-up log (§9.3 — mind the warning
+there about Thonny). A line beginning `display_setup.py` names the problem:
 
-If the display lights up but text is tiny in the top-left corner of a
-blank screen, Edit 1 worked but Edit 2 wasn't applied yet. Apply Edit
-2 for the full-size layout.
+- `display_setup.py could not load (no module named 'adafruit_hx8357')` —
+  the driver library is missing from `/lib`.
+- `display_setup.py failed (...)` — the display did not answer; check the
+  FeatherWing is pressed fully onto the header pins.
+- No such line at all, and `No board.DISPLAY on this board` instead — the
+  file is not on the drive, or is not named exactly `display_setup.py`.
+
+In every one of these cases the device still types; only the screen is
+missing.
 
 If text rotates the wrong way, change `DISPLAY_ROTATION` in
 `config.py` (valid values: `0`, `90`, `180`, `270`).
+
+> This appendix is written from the parts' documentation; the combination
+> has not been built and tested by the project.
 
 ---
 

@@ -39,6 +39,48 @@ gives you:
 
 ---
 
+> ⚠️ **Connecting Thonny STOPS AeroMorse.** When Thonny connects to the
+> Feather it interrupts whatever program is running, so `code.py` stops and
+> the device **no longer types or moves the mouse** until it is restarted.
+> During a first build that is harmless — you are using an ordinary keyboard
+> and mouse. But **if AeroMorse is how you operate this computer, connecting
+> Thonny to it locks you out**: the `>>>` prompt in the Shell means AeroMorse
+> is *stopped*, not ready.
+>
+> **To get it going again:** have a helper unplug the Feather's USB cable and
+> plug it back in (or click in Thonny's Shell and press Ctrl+D, which needs a
+> working keyboard or mouse). Nothing is lost or damaged.
+>
+> **If AeroMorse is your only access:**
+>
+> - Do not connect Thonny to it unless a helper, or a second keyboard / mouse
+>   you can use, is at hand.
+> - You do not need Thonny to change settings. `config.py` and `morse_map.py`
+>   can be edited straight on the CIRCUITPY drive with any text editor
+>   (Notepad, Notepad++, …); saving restarts the device by itself.
+> - To only *watch* what the device prints, **untick "Interrupt working
+>   program on connect"** in the same window (*Run → Configure interpreter…*,
+>   or *Tools → Options → Interpreter*) **before** you choose the port and
+>   click OK. Thonny then just listens: the Shell shows each code as you
+>   enter it, and AeroMorse keeps typing (confirmed on a device in daily
+>   use). Thonny remembers the setting. Even then, the Run button, Ctrl+C
+>   in the Shell, and *File → Open → CircuitPython device* all stop
+>   AeroMorse, and the Stop / Restart button interrupts it (see below).
+> - When the device restarts (`devicereset`, or a replug) Thonny's Shell
+>   prints **"Connection lost — Use Stop/Restart to reconnect"** and then
+>   shows nothing more. That message is only about Thonny: AeroMorse itself
+>   has restarted and is working normally. To make Thonny listen again,
+>   click **Stop / Restart**: on our test device this restarted the program
+>   on the Feather (Shell shows `soft reboot`, then the start-up lines — a
+>   few seconds of calibration, so do not sip or puff) and AeroMorse carried
+>   on working. Because that button does interrupt the program first, have a
+>   helper nearby the first time you try it on a device you depend on; if
+>   the Shell ends at `>>>` instead, AeroMorse is stopped and needs a replug.
+> - The same applies to any other serial program (PuTTY, `screen`, Mu):
+>   sending Ctrl+C to the device stops it.
+
+---
+
 #### Step 1 — Install Thonny
 
 1. Go to https://thonny.org and click the download button for your operating
@@ -69,9 +111,12 @@ gives you:
    - **Windows:** a COM port, e.g. `COM3` or `COM7` — try each if unsure
    - **macOS:** something like `/dev/cu.usbmodem14101`
    - **Linux:** something like `/dev/ttyACM0`
-4. Click **OK**
+4. Click **OK**. **This stops any program running on the Feather** — on a
+   device that already has AeroMorse on it, typing and the mouse stop working
+   at this moment (see the warning above).
 5. The bottom panel (Shell) should now show `>>>` — this is the REPL prompt,
-   confirming Thonny is connected.
+   confirming Thonny is connected. While `>>>` is showing, AeroMorse is not
+   running; press Ctrl+D in the Shell or replug the USB cable to start it again.
 
 > **Can't find the right port?**
 > On Windows: open Device Manager → Ports (COM & LPT) — the Feather appears
@@ -143,8 +188,8 @@ Shell panel. To restart the program, press **Ctrl+D**.
 | Action | Shortcut |
 |--------|---------|
 | Save file (and trigger Feather restart) | Ctrl+S / Cmd+S |
-| Stop running program / go to REPL | Ctrl+C (in Shell) |
-| Restart program from REPL | Ctrl+D (in Shell) |
+| Stop running program / go to REPL — **AeroMorse stops typing** | Ctrl+C (in Shell) |
+| Restart program from REPL — AeroMorse works again | Ctrl+D (in Shell) |
 | Open file from CIRCUITPY drive | File → Open → CircuitPython device |
 | Open file from computer | File → Open → This computer |
 | Increase font size | View → Increase font size |
@@ -191,7 +236,9 @@ Download the bundle that matches your CircuitPython version number (shown in
 - You are building the soldered TRRS breakout option (Option B2), **or**
 - Your Feather board arrived without header pins pre-soldered
 
-The solderless breadboard option (Option B1) needs no soldering at all.
+The breadboard option (Option B1) needs no soldering **only if the Feather
+already has header pins**. Option B3 (#2915 terminal block) needs at most
+three solder joints, and none if the Feather has header pins.
 
 > **New to soldering?** Read Adafruit's free beginner guide before you start:
 > https://learn.adafruit.com/adafruit-guide-excellent-soldering

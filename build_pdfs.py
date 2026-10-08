@@ -14,7 +14,7 @@ package (auto-installed on first run if missing).
 
 Nothing here is loaded on the device — these are PC-side documents.
 """
-import os, sys, subprocess, time, functools, http.server, socketserver, threading
+import os, re, sys, subprocess, time, functools, http.server, socketserver, threading
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 EDGE_CANDIDATES = [
@@ -93,6 +93,38 @@ ul, ol { padding-left: 1.5em; }
 .toc-box a { color: #33506e; }
 """
 
+_LIST_RE = re.compile(r"(?:[-*+] |\d+\. )")
+
+def _like_github(text):
+    """Make the `markdown` library read the guides the way GitHub shows them.
+    Two differences otherwise spoil the PDF:
+      - a wrapped line that happens to start with a part number ("#5477). ...")
+        becomes a giant heading, because the library does not need a space
+        after the "#";
+      - a list that follows a paragraph line with no blank line between
+        ("**Before you can use BLE:**" then "- ...") is run into the paragraph;
+      - a list nested inside another with 1-3 spaces of indent is run into
+        its parent item, because the library wants 4.
+    Code blocks are left alone."""
+    out, fence = [], False
+    for line in text.split("\n"):
+        if line.lstrip().startswith("```"):
+            fence = not fence
+        elif not fence:
+            m = (re.match(r"((?:> ?)*)#+[^#\s]", line)   # also inside a "> " note
+                 or re.match(r"((?:> ?)* *(?:[-*+] |\d+\. ))#\d", line))  # "- #3885 ..."
+            if m:
+                line = m.group(1) + "\\" + line[m.end(1):]
+            if re.match(r" {1,3}(?:[-*+] |\d+\. )", line):
+                line = "    " + line.lstrip(" ")       # nested list: 4 spaces
+            elif _LIST_RE.match(line) and out:
+                prev = out[-1]
+                if (prev.strip() and not prev.startswith((" ", "\t", ">", "|", "#"))
+                        and not _LIST_RE.match(prev)):
+                    out.append("")
+        out.append(line)
+    return "\n".join(out)
+
 def build_guide(name="AEROMORSE_BUILD_GUIDE", title="AeroMorse Build Guide", toc=True):
     try:
         import markdown
@@ -102,13 +134,26 @@ def build_guide(name="AEROMORSE_BUILD_GUIDE", title="AeroMorse Build Guide", toc
         import markdown
     md_path = os.path.join(REPO, name + ".md")
     out = os.path.join(REPO, name + ".pdf")
-    md = markdown.Markdown(extensions=["extra", "toc", "sane_lists"])
-    body = md.convert(open(md_path, encoding="utf-8").read())
-    toc_html = ("<div class='toc-box'><div class='toctitle'>Contents</div>%s</div>" % md.toc
-                if toc else "")
+    md = markdown.Markdown(extensions=["extra", "toc", "sane_lists"],
+                           extension_configs={"toc": {"toc_depth": "2-6"}})   # not the title itself
+    body = md.convert(_like_github(open(md_path, encoding="utf-8").read()))
+    if toc:
+        # The title and introduction come first; the detailed contents list then
+        # takes the place of the guide's own short "Table of Contents" section.
+        # (It used to be printed in front of the title page.)
+        # Drop the entries for the subtitle and for that section itself.
+        entries = re.sub(r'<li>(?:(?!<li>).)*?</li>\s*(?=<li><a href="#table-of-contents">)', "", md.toc, flags=re.S)
+        entries = re.sub(r'<li><a href="#table-of-contents">.*?</a></li>\s*', "", entries, flags=re.S)
+        box = ("<div class='toc-box' style='page-break-before: always'>"
+               "<div class='toctitle'>Contents</div>%s</div>" % entries)
+        own = re.search(r'<h2 id="table-of-contents">.*?(?=<hr)', body, flags=re.S)
+        if own:
+            body = body[:own.start()] + box + body[own.end():]
+        else:
+            body = box + body
     html = ("<!DOCTYPE html><html><head><meta charset='utf-8'><title>%s</title>"
-            "<style>%s</style></head><body>%s%s</body></html>"
-            % (title, _CSS, toc_html, body))
+            "<style>%s</style></head><body>%s</body></html>"
+            % (title, _CSS, body))
     tmp = os.path.join(REPO, "_%s.tmp.html" % name)
     open(tmp, "w", encoding="utf-8").write(html)
     ok = _print_to_pdf("file:///%s" % tmp.replace("\\", "/"), out)
