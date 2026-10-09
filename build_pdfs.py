@@ -71,6 +71,7 @@ _CSS = """
 @page { size: Letter; margin: 0.75in 0.7in; }
 * { box-sizing: border-box; }
 body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #1a1a1a; }
+img { max-width: 100%; height: auto; border: 1px solid #ccd6e0; border-radius: 4px; page-break-inside: avoid; }
 h1,h2,h3,h4 { color: #1f3a5f; line-height: 1.25; margin: 1.1em 0 0.4em; page-break-after: avoid; }
 h1 { font-size: 22pt; border-bottom: 3px solid #1f3a5f; padding-bottom: 6px; }
 h2 { font-size: 16pt; border-bottom: 1px solid #ccd6e0; padding-bottom: 4px; margin-top: 1.4em; }

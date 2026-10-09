@@ -27,6 +27,15 @@ once before buying anything — your hardware choices affect each other.
 11. [First Power-On Test](#11-first-power-on-test)
 12. [Troubleshooting](#12-troubleshooting)
 
+Appendices: [A — Groups](#appendix-a--groups-and-group-cycling) ·
+[B — Display layout](#appendix-b--display-layout) ·
+[C — Macros](#appendix-c--customising-macros) ·
+[D — Breadboard wiring](#appendix-d--breadboard-wiring-walkthrough) ·
+[E — Configuration reference](#appendix-e--configuration-reference) ·
+[F — #5477 + 3.5" FeatherWing](#appendix-f--building-with-5477--35-tft-featherwing-3651) ·
+[G — AutoHotkey](#appendix-g--autohotkey-starting-programs-with-a-morse-code) ·
+[H — Enclosure and tube strain relief](#appendix-h--enclosure-and-air-tube-strain-relief)
+
 ---
 
 ## 1. What AeroMorse Does
@@ -115,6 +124,12 @@ AeroMorse has modular hardware. You pick:
 4. **A speaker** (audio feedback — optional)
 
 Once you have chosen each, jump to the relevant wiring section in Step 8.
+
+> **Is the AeroMorse going to be someone's only way to use a computer?**
+> Then consider building **two**. The second is a spare that is working the
+> minute the first one fails, and a safe place to try a new version or a new
+> setting without risking the device that is depended on. It is how the
+> project's author works. See the Usage Guide, §6 "More than one device".
 
 > **Recommended combination for most builders (USB HID, display included):**
 > ESP32-S3 Reverse TFT Feather #5691 · LPS33HW sensor #4414 · STEMMA Speaker #3885
@@ -257,9 +272,12 @@ STEMMA QT with no wiring change.
 **If you want a built-in TFT and plan to use a breadboard (or no enclosure):**
 
 The **ESP32-S3 TFT Feather #5483** is electrically identical to #5691, but
-its TFT faces the same side as the components. Press it into a breadboard
-with headers and the screen still faces up. Everything else — PSRAM,
-STEMMA QT, ESP-NOW, USB HID — is the same.
+its TFT faces the same side as the components, so the screen still faces up
+when the board stands in a breadboard. **A breadboard needs header pins on
+the Feather** — they come loose in the bag and have to be soldered on
+first (see "Building with no header pins" below). Without a breadboard the
+#5483 needs no pins at all, exactly like the #5691. Everything else —
+PSRAM, STEMMA QT, ESP-NOW, USB HID — is the same.
 https://www.adafruit.com/product/5483
 
 ---
@@ -268,20 +286,25 @@ https://www.adafruit.com/product/5483
 or for maximum display flexibility:**
 
 The **ESP32-S3 Feather #5477** is the same chip without a soldered-on TFT,
-so it sits flat in a breadboard. Pair it with one of:
+so — **once header pins are soldered on** — it sits flat in a breadboard.
+Like most Feathers it arrives as a bare board with the pin strips loose in
+the bag. Pair it with one of:
 
 - **STEMMA QT OLED #326 (0.96") or #938 (1.3")** — plug-and-play via the
   STEMMA QT chain (the same chain that carries the sensor). Needs a
   `display_setup.py` file on the drive (v1.26+, example provided — see §5).
   Monochrome 128×64, small text. Untested.
-- **FeatherWing TFT (#3651, #5872, or #3315)** — plugs straight onto the
-  header pins, no extra wiring. Also needs a `display_setup.py` file (§5).
+- **FeatherWing TFT (#3651, #5872, or #3315)** — no wiring, but **the
+  Feather must have header pins soldered on**: the wing has sockets that
+  the Feather's pins push into, and a bare Feather has nothing to push in.
+  Also needs a `display_setup.py` file (§5).
   Larger, colour, much more screen area than the OLED; the text grows to
   fit by itself. For the full **#5477 + #3651** combo see **Appendix F**
   at the end of this guide. Untested.
 - **EYESPI TFT** (Build Guide §5 "EYESPI displays") — possible but the most
-  involved option: needs a #5613 breakout, ~7 jumper wires, a flex cable,
-  and a more complex `displayio` init block. Use only if you specifically
+  involved option: needs a #5613 breakout, ~7 wires soldered at the
+  breakout end (and soldered at the Feather end too unless the Feather has
+  header pins), a flex cable, and a `display_setup.py` file. Use only if you specifically
   want EYESPI's flex-cable advantages.
 
 https://www.adafruit.com/product/5477
@@ -373,7 +396,8 @@ Each pad is ~1.5 mm — much easier to solder than the pin holes for headers.
 
 > **No soldering at all?** Skip the speaker and use the **#5691 + sensor
 > only** combination. The OLED/TFT shows every dot and dash visually. Cost:
-> a #5691 + #4414 + STEMMA QT cable, ~$30, zero solder joints. Add a
+> a #5691 + #4414 + STEMMA QT cable, ~$30 (electronics only — no enclosure,
+> see Appendix H), zero solder joints. Add a
 > third-party 3.5 mm Y-splitter and your existing AT switches won't work
 > in this config — sensor mode is the no-solder path.
 
@@ -421,7 +445,10 @@ first if the fit feels loose.
 Cut to a comfortable length — most users prefer 20–40 cm (8–16 inches).
 
 > The tube pushes over the small nipple on the LPS33HW breakout board. No
-> adhesive is needed; friction holds it securely during normal use.
+> adhesive is needed — but **friction alone is not enough for daily use**.
+> The port is tiny and every tug on the tube pulls on it. Plan a strain
+> relief (an enclosure that anchors the tube, or at least a cable tie); see
+> **Appendix H**.
 
 ---
 
@@ -468,7 +495,9 @@ that first.
 #### Option B2 — Soldered TRRS breakout (compact, durable)
 
 Solders three short wires to an Adafruit TRRS Jack Breakout board (T, R1, S
-— Ring 2 is unused).
+— Ring 2 is unused). The other ends go to the Feather: **soldered to its
+pads** (3 more joints), or — only if the Feather has header pins — pushed
+onto the pins using wires with a female socket on that end.
 
 Parts needed:
 - Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
@@ -586,8 +615,9 @@ Boards with a built-in screen (#5691, #5483, #5300) must **not** have a
 
 ### Understanding the columns
 
-- **Form factor:** FeatherWing plugs directly onto the Feather (no wiring).
-  Breakout/standalone requires 5 wires.
+- **Form factor:** a FeatherWing plugs directly onto the Feather with no
+  wiring — **but only onto a Feather that has header pins soldered on**.
+  A breakout / standalone display needs 7 wires, soldered at the display end.
 - **Interface:** SPI displays have no I²C address conflicts with the sensor.
 - **Resolution:** Higher = more text/detail. The Morse buffer, group name, last
   action, and status line all fit comfortably on 320×240 or larger.
@@ -639,8 +669,12 @@ All three are functionally identical for AeroMorse.
 > on top of the Feather. If your Feather shipped as a bare PCB with empty
 > pin holes, those holes must be filled with soldered male headers before a
 > FeatherWing can be used — there is nothing for the wing to grip otherwise.
-> Adafruit's standard Feather header kit (#2886) is the right part, or order
-> a Feather variant that ships with headers pre-installed. If you cannot or
+> The right part is the pair of **male pin strips that normally come loose
+> in the bag with the Feather**; if yours are missing, any 0.1" break-away
+> male header works ([#392](https://www.adafruit.com/product/392)). (Not the
+> #2886 "Feather header kit" — those are *female* sockets.) Adafruit's own
+> pages for the #5477 and #5691 do not offer a pre-soldered version; some
+> resellers do — look for "headers soldered" in the listing. If you cannot or
 > would rather not solder, choose a STEMMA QT OLED (#326 / #938) or the
 > built-in TFT on #5691 instead — both are plug-and-play with no headers.
 
@@ -694,9 +728,10 @@ flat flex cable connects the display to an **EYESPI Breakout Board**.
 [ Any Feather ]──7 wires──[ #5613 breakout ]──EYESPI cable──[ EYESPI display ]
 ```
 
-You still need to solder or jumper ~7 wires from the Feather's SPI pins
-(MOSI, SCK, CS, DC, RST, 3V, GND) to the #5613 breakout's through-hole
-pads. The breakout then sends those signals through the flat flex cable to
+You still need ~7 wires from the Feather's SPI pins (MOSI, SCK, CS, DC, RST,
+3V, GND) to the #5613 breakout's through-hole pads. They are **soldered at
+the breakout end**; at the Feather end they are soldered to the pads, or
+pushed onto header pins with female jumper wires if the Feather has pins. The breakout then sends those signals through the flat flex cable to
 the display. This is functionally the same amount of wiring as connecting
 any standalone SPI breakout display — the advantage is that the flex cable
 is then available for routing the display to a different physical location
@@ -950,61 +985,12 @@ Good to know:
   tones, a dot clearly shorter than a dash. It has not yet been judged by
   someone who keys Morse by ear at speed. Reports are welcome.
 
-##### Opening and closing the window with a Morse code (AutoHotkey)
+##### Opening and closing the window with a Morse code
 
-The window can be switched on and off from the AeroMorse itself: one Morse
-code sends a key combination, and a free Windows program, **AutoHotkey**,
-turns that key combination into "open the window if it is closed, close it
-if it is open". It takes three small steps, once.
-
-**1. Get AutoHotkey.** Download **AutoHotkey v2** from
-**https://www.autohotkey.com** and run the installer (the defaults are
-fine). It is free and open-source.
-
-**2. Make the script.** Open Notepad, paste the lines below, and save the
-file as **`AeroMorse.ahk`** (any folder; *Save as type: All files*). Change
-the two paths to wherever your `AeroMorse Display.exe` is.
-
-```
-#Requires AutoHotkey v2.0
-
-; Ctrl+Alt+D - AeroMorse Display window ON / OFF
-^!d:: {
-    if ProcessExist("AeroMorse Display.exe") {
-        if WinExist("AeroMorse Display ahk_exe AeroMorse Display.exe")
-            WinClose()
-    } else
-        Run('"C:\AeroMorse\AeroMorse Display.exe"', "C:\AeroMorse")
-}
-```
-
-Double-click `AeroMorse.ahk` to start it. A green **H** icon appears near
-the clock, and Ctrl+Alt+D now opens and closes the window. In the script,
-`^` means Ctrl, `!` means Alt and `d` is the D key — change the letter if
-Ctrl+Alt+D is already used by something else on your computer.
-
-**3. Make it start with Windows.** Press **Win+R**, type **`shell:startup`**
-and press Enter — a folder opens. Put a **shortcut** to `AeroMorse.ahk` in
-that folder (right-click the file → *Show more options* → *Create
-shortcut*, then move the shortcut there). From the next sign-in the hotkey
-is always ready.
-
-**4. Give it a Morse code.** In `morse_map.py`, add one line to **Group 0**
-so the code works from every group. Pick a code that is free and that you
-find easy to enter (`morse_map_report.txt` lists the free ones):
-
-```python
-g0[7][0b1001000] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # -..-...  AeroMorse Display on / off
-```
-
-Run the validator and save as usual (Usage Guide). Entering the code now
-opens the window; entering it again closes it. The window comes back at the
-size, place and see-through level you left it.
-
-> The same idea works for any program: copy the block in the script, change
-> the letter and the path, and give the new key combination its own Group 0
-> code. If you edit the script later, right-click the green **H** icon and
-> choose *Reload Script*.
+One Morse code can switch the window on and off, using the free **AutoHotkey**
+program on the computer. The steps — where to get AutoHotkey, a ready-made
+script, making it start with Windows, and the line for `morse_map.py` — are in
+**[Appendix G — AutoHotkey](#appendix-g--autohotkey-starting-programs-with-a-morse-code)**.
 
 #### Want a bigger wireless display?
 
@@ -1105,11 +1091,14 @@ Wiring (#4046 cable to Feather):
 
 ---
 
-### Option S2 — Passive piezo with detachable 3.5 mm connection (solderless)
+### Option S2 — Passive piezo with detachable 3.5 mm connection (solderless if the Feather has header pins)
 
 A passive piezo wired via a **3.5 mm jack-and-plug pair**, so the piezo
 end can be unplugged and swapped. Quieter than Option S1, but every
-connection is screw-terminal — no soldering anywhere. Any speaker that
+connection on the jack and the piezo is a screw terminal. **The only
+possible soldering is at the Feather:** with header pins, two jumper wires
+push on and nothing is soldered; with a bare Feather, two wires are
+soldered to the A0 and GND pads. Any speaker that
 already terminates in a 3.5 mm mono plug also plugs straight into the
 same #2915 jack with no adapter.
 
@@ -1204,8 +1193,9 @@ still need the jack itself wired to A0 / GND on the Feather.
 | Sleeve | **GND** | piezo's Sleeve lead | Audio return |
 
 > If your piezo doesn't already have a 3.5 mm plug, pair it with the
-> #2790 plug-side terminal block — that gives you a fully solderless
-> Feather-to-piezo chain (see the parts table at the top of Option S2).
+> #2790 plug-side terminal block — that gives you a solderless chain from
+> the jack to the piezo (see the parts table at the top of Option S2). The
+> two wires to the Feather are solderless only if the Feather has header pins.
 
 #### Connecting either jack to the Feather
 
@@ -1232,6 +1222,11 @@ For louder output or a specific speaker size:
 - Amplifier A+ → A0, A− → GND, VIN → 3V, GND → GND
 - Speaker connects to the amplifier output terminals
 
+> **This option involves soldering.** The amplifier board's own pin strip
+> and screw terminal are supplied loose, and its four wires to the Feather
+> are soldered to the pads unless the Feather has header pins. Choose
+> Option S1 or S2 for less soldering.
+
 ---
 
 ## 7. Complete Parts Lists
@@ -1239,17 +1234,35 @@ For louder output or a specific speaker size:
 Pick one item from each section. Everything in **Core hardware** is always
 required.
 
+> **Not in these lists: an enclosure.** The lists cover the electronics. A
+> box to hold them, and a strain relief for the air tube, are extra and are
+> not priced here — see **Appendix H**. Plan for them before the device
+> goes into daily use.
+
 ---
 
 ### Core hardware (always required)
 
 | Qty | Item | Adafruit # | URL |
 |-----|------|-----------|-----|
-| 1 | Feather microcontroller (see Section 3) | #5477 recommended | https://www.adafruit.com/product/5477 |
+| 1 | Feather microcontroller (see Section 3) | #5691 recommended (screen built in) | https://www.adafruit.com/product/5691 |
 | 1 | USB-C cable — **data + power** (not charge-only) | any | — |
 
 > To confirm a USB cable transfers data: plug it in; if a drive appears on your
 > computer, it is a data cable. Charge-only cables show nothing.
+
+> **Header pins.** Most Feathers arrive as a bare board with two male pin
+> strips loose in the bag — nothing is soldered. Whether you need them
+> soldered on depends on what you choose below:
+>
+> | You choose | Header pins on the Feather |
+> |---|---|
+> | #5691 + sip-and-puff sensor (STEMMA QT cable) | **Not needed** — nothing is soldered at all |
+> | AT switches on the #2915 terminal block, speaker S1 / S2 | Not needed, but then 2–3 wires are soldered to the Feather's pads. With pins, jumper wires push on instead |
+> | A FeatherWing display | **Required** |
+> | A breadboard (switch Option B1) | **Required** |
+>
+> See §3 "Building with no header pins" for the full table.
 
 ---
 
@@ -1324,13 +1337,13 @@ several GND pins — any of them work).
 
 | Qty | Item | Adafruit # | URL |
 |-----|------|-----------|-----|
-| 1 | 3.5" TFT FeatherWing Resistive (recommended for table) | #3651 | https://www.adafruit.com/product/3651 |
-| — | *or* 3.5" TFT FeatherWing Capacitive | #5872 | https://www.adafruit.com/product/5872 |
-| — | *or* 2.4" TFT FeatherWing Resistive | #3315 | https://www.adafruit.com/product/3315 |
-| — | *or* 3.5" TFT Breakout (standalone, needs 5 wires) | #2050 | https://www.adafruit.com/product/2050 |
+| 1 | 3.5" TFT FeatherWing Resistive (largest; **Feather needs header pins**) | #3651 | https://www.adafruit.com/product/3651 |
+| — | *or* 3.5" TFT FeatherWing Capacitive (**Feather needs header pins**) | #5872 | https://www.adafruit.com/product/5872 |
+| — | *or* 2.4" TFT FeatherWing Resistive (**Feather needs header pins**) | #3315 | https://www.adafruit.com/product/3315 |
+| — | *or* 3.5" TFT Breakout (standalone, needs 7 soldered wires) | #2050 | https://www.adafruit.com/product/2050 |
 | — | *or* 2.8" TFT Breakout (standalone) | #1770 | https://www.adafruit.com/product/1770 |
-| — | *or* 1.3" OLED — STEMMA QT (larger OLED; needs a `code.py` change, see §5) | #938 | https://www.adafruit.com/product/938 |
-| — | *or* 0.96" OLED — STEMMA QT (compact; needs a `code.py` change, see §5) | #326 | https://www.adafruit.com/product/326 |
+| — | *or* 1.3" OLED — STEMMA QT (larger OLED; plugs in, no header pins) | #938 | https://www.adafruit.com/product/938 |
+| — | *or* 0.96" OLED — STEMMA QT (compact; plugs in, no header pins) | #326 | https://www.adafruit.com/product/326 |
 
 **If you choose the OLED #326**, you also need:
 
@@ -1399,7 +1412,7 @@ the pins press straight into the breadboard.
 | Option | What to do | Cost |
 |--------|-----------|------|
 | **Get headers soldered** | Take the Feather and the included loose header strip to a local makerspace, library maker lab, or electronics repair shop — most will solder headers for free or a few dollars. This is the most reliable long-term solution. | Free–$5 |
-| **Order with headers pre-installed** | Adafruit sells some Feather boards with headers already soldered. When reordering, look for the listing that says "with headers" in the title. | Same price as bare board |
+| **Order with headers pre-installed** | Some resellers sell Feather boards with the headers already soldered — look for "headers soldered" in the listing. Adafruit's own pages for the #5691 and #5477 do not offer this. | Varies |
 
 > **Why not test hook clips?** Test hook clips (EZ-hook / Goupchn style)
 > need something cylindrical to hook around — a wire lead, header pin, or
@@ -1442,10 +1455,14 @@ the pins press straight into the breadboard.
 
 Lay out all your parts. Do not plug anything in yet.
 
-The Feather's header pins must be soldered before use if your board came
-without headers. If your board has header pins already attached, skip this note.
-Soldering only the headers is straightforward and many local makerspaces or
-electronics shops will do this for free if you ask.
+**Do you need header pins on the Feather?** Only for some builds. The
+recommended build — #5691 with the sip-and-puff sensor on a STEMMA QT cable
+— needs **no header pins and no soldering**. Header pins are *required*
+for a FeatherWing display or a breadboard, and they turn the 2–3 soldered
+wires of the switch jack and the speaker into push-on jumper wires. If your
+build needs them and your board came bare (most do), the pins must be
+soldered on before you start; many local makerspaces or electronics shops
+will do this for free if you ask.
 
 ---
 
@@ -1458,11 +1475,14 @@ electronics shops will do this for free if you ask.
 
 #### If you chose a FeatherWing display (#3651, #5872, or #3315)
 
-1. Hold the FeatherWing above the Feather with the display facing up.
-2. Line up the two rows of holes on the FeatherWing with the two rows of header
-   pins on the Feather.
-3. Press firmly and evenly downward until the FeatherWing sits flush on the
-   Feather. The pins should click through all the way.
+**The Feather must already have its header pins soldered on.** A bare
+Feather cannot be attached to a FeatherWing.
+
+1. Hold the FeatherWing with the display facing up.
+2. Line up the Feather's two rows of header pins with the two rows of
+   sockets on the back of the FeatherWing.
+3. Press firmly and evenly until the two boards sit flush. The pins should
+   go in all the way.
 
 That is all — no wires needed.
 
@@ -1479,7 +1499,11 @@ Chain: **Feather → 100 mm cable → LPS33HW → 400 mm cable → OLED**
 
 #### If you chose a standalone TFT breakout (#2050, #1770, etc.)
 
-You need 5 short wires. Solder or use header connectors:
+You need 7 short wires, one for each row of the table. **This is a
+soldering job:** the wires are soldered at the display (breakouts arrive
+with their pin strip loose), and at the Feather they are soldered to the
+pads — or, if the Feather has header pins, pushed onto them with female
+jumper wires:
 
 | Display pin | Feather pin |
 |-------------|-------------|
@@ -1511,9 +1535,18 @@ Step 8A. No extra wiring needed.
 The sensor I²C address is 0x5C — it will not conflict with any display.
 
 **If your board has no STEMMA QT port** (e.g. the Feather nRF52840 Express),
-wire the sensor to the board's I²C pins instead. Use a **STEMMA QT to
-male-header cable** ([#4209](https://www.adafruit.com/product/4209)) or solder
-wires:
+wire the sensor to the board's I²C pins instead. Which cable depends on the
+Feather:
+
+- **Feather with header pins, not in a breadboard:** a STEMMA QT cable with
+  **female sockets** ([#4397](https://www.adafruit.com/product/4397)) — the
+  sockets push onto the pins.
+- **Feather standing in a breadboard:** a STEMMA QT cable with **male pins**
+  ([#4209](https://www.adafruit.com/product/4209)) — the pins push into the
+  breadboard rows beside the Feather.
+- **Bare Feather, no header pins:** cut one end off a STEMMA QT cable and
+  solder its four wires to the pads.
+
 
 | LPS33HW (STEMMA QT wire) | Feather pin |
 |--------------------------|-------------|
@@ -1529,9 +1562,15 @@ when it does. (Earlier firmware crashed at startup on such boards.)
 
 **Attach the sip-and-puff tube:**
 
-Push one end of the aquarium airline tubing over the small raised nipple on the
-top of the LPS33HW board. The fit should be snug. Cut the other end at a
-comfortable length and place it where you can sip and puff into it naturally.
+Push one end of the tubing over the small raised nipple on the top of the
+LPS33HW board. The fit should be snug. Cut the other end at a comfortable
+length and place it where you can sip and puff into it naturally.
+
+> **Give the tube a strain relief before relying on the device.** Pushed on
+> like this, the tube is held only by friction on a port a few millimetres
+> tall, and a tug on the tube pulls straight on the sensor. An enclosure
+> that anchors the tube is best; a cable tie is the minimum. See
+> **Appendix H — Enclosure and air-tube strain relief**.
 
 ---
 
@@ -1548,7 +1587,9 @@ for the full step-by-step procedure with diagrams.
 
 1. Solder a short wire to each pad: T (red), R1 (blue), S (black). Leave R2
    bare.
-2. Connect the other ends:
+2. Connect the other ends to the Feather — solder each to its pad, or, if
+   the Feather has header pins, use wires with a female socket end and push
+   them onto the pins:
 
 | Wire colour | Feather pin |
 |-------------|-------------|
@@ -3464,7 +3505,7 @@ options from §7 with these display-path changes:
 
 | Qty | Item | Adafruit # | Notes |
 |---|---|---|---|
-| 1 | **ESP32-S3 Feather 4MB/2MB PSRAM with Headers** | [#5477](https://www.adafruit.com/product/5477) | Order the variant with headers pre-installed, OR buy bare + a header strip ([#2886](https://www.adafruit.com/product/2886)) and solder them — see §F.3 |
+| 1 | **ESP32-S3 Feather 4MB/2MB PSRAM** — with its header pins soldered on | [#5477](https://www.adafruit.com/product/5477) | The pins come loose in the bag and must be soldered — see §F.3 |
 | 1 | 3.5" TFT FeatherWing Resistive Touch | [#3651](https://www.adafruit.com/product/3651) | The display itself; resistive touch is not used by AeroMorse |
 | — | *(everything else from §7 Sensor / Speaker / Input choices)* | — | Sensor (#4414 + STEMMA QT cable), speaker (S1/S2/S3), AT switches if not using sensor |
 
@@ -3485,12 +3526,12 @@ Three ways to get headers on:
 
 | Path | Cost | Effort |
 |---|---|---|
-| Order #5477 **with headers pre-installed** (Adafruit lists this as a separate variant) | Same as bare #5477 | None |
-| Bring #5477 + #2886 header strip to a makerspace / library maker lab / electronics shop | Usually free or a few dollars | Drop off, pick up |
+| Buy a #5477 **with headers already soldered** from a reseller that offers it (Adafruit's own page does not) | Varies | None |
+| Bring the #5477 and the loose pin strips from its bag to a makerspace / library maker lab / electronics shop | Usually free or a few dollars | Drop off, pick up |
 | Solder them yourself | Cost of an iron if you don't have one | ~30 minutes for a beginner |
 
-If you don't already own a soldering iron, the **with-headers** variant
-or the **makerspace** path are the practical options. See §8 "Before
+If you don't already own a soldering iron, a **pre-soldered board from a
+reseller** or the **makerspace** path are the practical options. See §8 "Before
 you start" for makerspace pointers.
 
 ### F.4 Hardware assembly
@@ -3631,6 +3672,244 @@ If text rotates the wrong way, change `DISPLAY_ROTATION` in
 
 > This appendix is written from the parts' documentation; the combination
 > has not been built and tested by the project.
+
+---
+
+## Appendix G — AutoHotkey: starting programs with a Morse code
+
+AeroMorse types keys; it cannot start a program by itself. **AutoHotkey** is
+a free Windows program that fills the gap: it watches for a key combination
+you choose — say Ctrl+Alt+D — and runs whatever you tell it to. Give that
+key combination a Morse code, and one code from any group opens a program
+or closes it.
+
+The example here switches the **AeroMorse Display** window (§5) on and off:
+open it if it is closed, close it if it is open. It takes four small steps,
+once. AutoHotkey is Windows-only.
+
+### G.1 Get AutoHotkey
+
+Download **AutoHotkey v2** from
+**https://www.autohotkey.com** and run the installer (the defaults are
+fine). It is free and open-source.
+
+### G.2 Make the script
+
+Open Notepad, paste the lines below, and save the
+file as **`AeroMorse.ahk`** (any folder; *Save as type: All files*). Change
+the two paths to wherever your `AeroMorse Display.exe` is.
+
+```
+#Requires AutoHotkey v2.0
+
+; Ctrl+Alt+D - AeroMorse Display window ON / OFF
+^!d:: {
+    if ProcessExist("AeroMorse Display.exe") {
+        if WinExist("AeroMorse Display ahk_exe AeroMorse Display.exe")
+            WinClose()
+    } else
+        Run('"C:\AeroMorse\AeroMorse Display.exe"', "C:\AeroMorse")
+}
+```
+
+Double-click `AeroMorse.ahk` to start it. A green **H** icon appears near
+the clock, and Ctrl+Alt+D now opens and closes the window. In the script,
+`^` means Ctrl, `!` means Alt and `d` is the D key — change the letter if
+Ctrl+Alt+D is already used by something else on your computer.
+
+### G.3 Make it start with Windows
+
+Press **Win+R**, type **`shell:startup`**
+and press Enter — a folder opens. Put a **shortcut** to `AeroMorse.ahk` in
+that folder (right-click the file → *Show more options* → *Create
+shortcut*, then move the shortcut there). From the next sign-in the hotkey
+is always ready.
+
+### G.4 Give it a Morse code
+
+In `morse_map.py`, add one line to **Group 0**
+so the code works from every group. Pick a code that is free and that you
+find easy to enter (`morse_map_report.txt` lists the free ones):
+
+```python
+g0[7][0b1001000] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # -..-...  AeroMorse Display on / off
+```
+
+Run the validator and save as usual (Usage Guide §3; this appendix is
+repeated there as §7). Entering the code now
+opens the window; entering it again closes it. The window comes back at the
+size, place and see-through level you left it.
+
+### G.5 Other programs, and changing the script
+
+The same idea works for any program: copy the block in the script, change
+the letter and the path, and give the new key combination its own Group 0
+code. For example, this opens Notepad with Ctrl+Alt+N:
+
+```
+^!n:: Run("notepad.exe")
+```
+
+After editing the script, right-click the green **H** icon near the clock
+and choose *Reload Script* — the change takes effect at once.
+
+If a hotkey does nothing: check the green **H** icon is there (the script is
+running), that the path in the script is exactly where the program is, and
+that no other program already uses the same key combination.
+
+---
+
+## Appendix H — Enclosure and air-tube strain relief
+
+Everything earlier in this guide gets you a working AeroMorse: a bare circuit
+board, a sensor on a short cable, and a tube pushed onto the sensor. That is
+fine on a bench. For daily use two things are still missing, and **neither is
+included in the parts lists or the prices in this guide**:
+
+- **An enclosure** — something to hold the boards so they are not loose on a
+  desk or a wheelchair tray, where they can be knocked, shorted against
+  metal, or pulled by their cables.
+- **Strain relief for the air tube** — the important one. The tube sits on a
+  port only a few millimetres tall on the sensor board. Every tug on the
+  tube (moving your head, the tube catching on something, a helper tidying
+  up) pulls directly on that port. Without something else taking the pull,
+  the tube works loose or comes off — and with it your access to the
+  computer — or the sensor board is dragged around by its thin cable.
+
+A good enclosure solves both at once. If you have no enclosure yet, do the
+strain relief anyway (H.3).
+
+### H.1 The author's enclosure — the ATMakers "HoseBox"
+
+<img src="images/enclosure-closed.jpg" alt="Green 3D-printed box with the screen and three buttons showing through a window in the lid, USB cable at one end and the tube fitting at the other" width="230">
+
+*Closed: the screen and the three buttons show through the lid. USB cable at
+the top, tube fitting at the bottom.*
+
+The author's two devices sit in a 3D-printed box designed by **ATMakers**
+(Bill Binko, the maker of [AirTalker](https://github.com/ATMakersOrg/AirTalker),
+which inspired AeroMorse). ATMakers built the first one; the second was
+printed by an online printing service from the same design files.
+
+<img src="images/enclosure-open.jpg" alt="The box with its lid off: Feather with screen on the left, the sensor board fixed to an inner wall, a short blue tube from the sensor to a push-in tube fitting held in the end wall" width="560">
+
+*Lid off. Left to right: USB cable, the Feather (screen up), the sensor board
+screwed to an inner wall, a short tube, and the tube fitting held by the end
+of the box.*
+
+How it is laid out:
+
+| Feature | What it does |
+|---|---|
+| Two parts: a base and a snap-on lid, about **96 × 37 × 23 mm** | Small enough to mount on a tube holder, tray or arm |
+| Window in the lid | The #5691's screen and its three buttons show through. This is the "panel mount" use the Reverse TFT Feather is made for (§3) |
+| Feather on four nylon stand-offs | Held clear of the base, screen facing the lid |
+| Inner wall with two screw holes | The sensor board is screwed to it, port pointing at the end of the box |
+| Slot in one end | The USB-C cable comes out here |
+| **Clip in the other end holding a push-in tube fitting** | **This is the strain relief.** A short piece of tube runs *inside* the box from the fitting to the sensor port. Your long tube plugs into the fitting on the *outside*. A tug on the tube pulls on the box, not on the sensor — and the tube can be unplugged and replaced without opening anything |
+
+Besides the printed parts it uses small nylon screws and stand-offs (an M2.5
+set such as [#3299](https://www.adafruit.com/product/3299)) and one push-in
+("push-to-connect") pneumatic tube fitting. The fitting's exact size is not
+recorded here yet — match it to your tube.
+
+**An earlier version is published.** ATMakers' original sip-and-puff box,
+made for AirTalker, is on Thingiverse:
+[Sip And Puff Interface by atmakers](https://www.thingiverse.com/thing:3458117),
+with a video walk-through of the design,
+[ATMakers Sip and Puff Enclosure Design](https://youtu.be/iUB5SzmasoA). That
+version is for a Feather **without** a built-in screen and for an older
+pressure sensor whose wires had to be soldered, so it does not fit the
+#5691 and the plug-in LPS33HW used in this guide as it stands — but it shows
+the same idea, and is a starting point if you can adapt a 3D model. The
+HoseBox described here is the later version, reworked for the #5691's screen
+and the STEMMA QT sensor.
+
+**Getting the HoseBox design.** The files are ATMakers' work and are **not in the
+AeroMorse repository yet**. A reworked, adjustable version of them (in
+OpenSCAD) has been drawn but has **not been test-printed**, so it is not
+published either. If you would like to print this enclosure, open an issue
+at https://github.com/jlubin2001/AeroMorse and ask; this section will be
+updated when files can be shared.
+
+### H.2 A case for the wireless display
+
+<img src="images/remote-display-case.jpg" alt="Small black two-part case around a Reverse TFT Feather used as the wireless display, with openings for the screen and four buttons, next to a ruler" width="430">
+
+*The wireless display (Option W1) in its case — about 52 × 23 mm.*
+
+The author's wireless display — a second #5691 — is in a small two-part
+printed case: a tray underneath and a bezel on top with openings for the
+screen, the three buttons and the reset button. The two halves are meant to
+be held together by four small screws through the Feather's mounting holes.
+It has no tube, so it needs no
+strain relief; the case is only for protection and for mounting it where it
+can be seen.
+
+**This design is published and free to download:**
+[Adafruit ESP32-S2 Reverse TFT Feather Case](https://www.printables.com/model/386400-adafruit-esp32-s2-reverse-tft-feather-case)
+by **badabby**, on Printables.
+
+- It was made for the ESP32-**S2** Reverse TFT Feather. The S3 board used in
+  this guide (#5691) has the same outline, and the case fits it — the
+  author's is on an S3.
+- Print the two files named `feather-tft-rev-case-front.stl` and
+  `feather-tft-rev-case-back.stl`. The same page also has a deeper version
+  with room for a small battery ([#3898](https://www.adafruit.com/product/3898)).
+- It takes four M2 × 10 mm screws (the deeper version up to six). The
+  designer's advice: print without supports, and clean out the screw
+  recesses with a Phillips screwdriver. **Order the screws with the
+  print** — M2 × 10 mm is not a size most people have to hand, and they do
+  not come with the Feather. The author did not have screws long enough and
+  simply wrapped a strip of black electrical tape around the two halves,
+  as in the photo above. The tape is holding.
+- **Mounting it.** The author's display is stuck to the laptop, just below
+  the screen, with a strip of reusable adhesive putty (the white strip under
+  the case in the photo). It holds the display where it can be seen, peels
+  off cleanly, and needs no bracket.
+- **Licence: Creative Commons Attribution-NonCommercial 4.0.** You may
+  print it and adapt it for your own use, with credit to the designer; it
+  may not be sold. For that reason the files are not copied into the
+  AeroMorse repository — download them from the designer's page.
+
+### H.3 No enclosure yet? Do the strain relief anyway
+
+These need no printed parts. The first is from Adafruit's own sip-and-puff
+guide; the other two are ordinary good practice and have not been tested by
+the project in daily use.
+
+1. **Tie the tube onto the port.** Adafruit's guide
+   ([LPS33 sip-and-puff](https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff))
+   shows a small cable tie tightened around the tube where it sits on the
+   port, so it cannot slide off and stays sealed. Cut the tube end square
+   first, push it on with a gentle twist, then tighten the tie. Adafruit
+   notes this is not what the port was designed for — it is made to seal
+   against an enclosure with an O-ring — but it works.
+2. **Anchor the tube close to the sensor.** Fix the tube to something solid
+   within a few centimetres of the sensor — a cable tie through one of the
+   sensor board's mounting holes, or a cable clip on whatever the board is
+   mounted to — and leave a small slack loop between that anchor and the
+   port. A pull on the tube then stops at the anchor.
+3. **Fix the sensor board down.** Do not let it hang from its STEMMA QT
+   cable. Screw it to a small plate or box through its mounting holes, so a
+   pull that does get through cannot drag the board or unplug the cable.
+
+Check the tube now and then for moisture, and that it is still fully on the
+port — a tube that has crept half off is a common cause of missed dots and
+dashes (§12).
+
+### H.4 Getting something 3D-printed without a printer
+
+You do not need to own a 3D printer. Online printing services print from
+design files and post the parts to you (the author's second box was made
+this way), and many public libraries, schools and makerspaces print small
+parts for the cost of the plastic. Prices vary widely with the service,
+the material and the size; **budget for it separately** from the
+electronics.
+
+Any small project box also works if you would rather not print: what
+matters is that the boards are held still, the screen can be seen, and the
+tube is anchored to the box rather than to the sensor.
 
 ---
 

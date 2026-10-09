@@ -287,6 +287,44 @@ enough.
 
 ## 6. More than one device
 
+### Why would you want two?
+
+One AeroMorse is all you need to use it. A second one is worth having **if
+the AeroMorse is your only way to use the computer** — as it is for the
+project's author — for two reasons:
+
+- **A spare.** If the device you rely on fails, is damaged, or is left
+  unable to start by a bad change, the second one is plugged in and you are
+  working again in a minute, instead of being without the computer until
+  someone repairs or replaces it.
+- **A safe place to try changes.** A new firmware version, a setting you are
+  unsure about, or a reworked `morse_map.py` goes on the second device
+  first. If it misbehaves, the device you depend on was never touched. Only
+  when it works there does it go on the daily one. Every AeroMorse release
+  is tested this way before it is published.
+
+A second device costs about as much as the first (roughly $30 for the
+recommended board, sensor and cable — an enclosure is extra; Build Guide
+Appendix H). It does not need its own speaker or
+wireless display.
+
+How it works in practice:
+
+- **Both can stay plugged into the computer at once.** Each shows up under
+  its own name (below). The one with the air tube — or the switches —
+  attached is the one in use; the other simply sits idle.
+- **There is one air tube** (or one pair of switches), and moving it from
+  one device to the other usually needs a helper. So plan it: make the
+  change on the spare ahead of time, and have the tube moved once, when
+  someone is with you, to try it.
+- **Keep the spare ready to take over**: the same `morse_map.py` and
+  secrets as your daily device, and sensor settings in its `config.py` that
+  you have actually tried with it — two sensors rarely want exactly the same
+  thresholds.
+- **Back both up**, and label them so backups are never mixed up.
+
+### Keeping two devices straight
+
 - Give each device its own label file (`AeroMorse-Green.txt`,
   `AeroMorse-Blue.txt`); backups and AeroMorse Secrets then show which is
   which.
@@ -311,7 +349,100 @@ enough.
 
 ---
 
-## 7. One-page checklist
+## 7. Starting programs with a Morse code (AutoHotkey)
+
+AeroMorse types keys; it cannot start a program by itself. **AutoHotkey** is
+a free Windows program that fills the gap: it watches for a key combination
+you choose — say Ctrl+Alt+D — and runs whatever you tell it to. Give that
+key combination a Morse code, and one code from any group opens a program
+or closes it.
+
+The example here switches the **AeroMorse Display** window (the device's
+screen in a window on the computer — Build Guide §5) on and off:
+open it if it is closed, close it if it is open. It takes four small steps,
+once. AutoHotkey is Windows-only.
+
+### 7.1 Get AutoHotkey
+
+Download **AutoHotkey v2** from
+**https://www.autohotkey.com** and run the installer (the defaults are
+fine). It is free and open-source.
+
+### 7.2 Make the script
+
+Open Notepad, paste the lines below, and save the
+file as **`AeroMorse.ahk`** (any folder; *Save as type: All files*). Change
+the two paths to wherever your `AeroMorse Display.exe` is.
+
+```
+#Requires AutoHotkey v2.0
+
+; Ctrl+Alt+D - AeroMorse Display window ON / OFF
+^!d:: {
+    if ProcessExist("AeroMorse Display.exe") {
+        if WinExist("AeroMorse Display ahk_exe AeroMorse Display.exe")
+            WinClose()
+    } else
+        Run('"C:\AeroMorse\AeroMorse Display.exe"', "C:\AeroMorse")
+}
+```
+
+Double-click `AeroMorse.ahk` to start it. A green **H** icon appears near
+the clock, and Ctrl+Alt+D now opens and closes the window. In the script,
+`^` means Ctrl, `!` means Alt and `d` is the D key — change the letter if
+Ctrl+Alt+D is already used by something else on your computer.
+
+### 7.3 Make it start with Windows
+
+Press **Win+R**, type **`shell:startup`**
+and press Enter — a folder opens. Put a **shortcut** to `AeroMorse.ahk` in
+that folder (right-click the file → *Show more options* → *Create
+shortcut*, then move the shortcut there). From the next sign-in the hotkey
+is always ready.
+
+### 7.4 Give it a Morse code
+
+In `morse_map.py`, add one line to **Group 0**
+so the code works from every group. Pick a code that is free and that you
+find easy to enter (`morse_map_report.txt` lists the free ones):
+
+```python
+g0[7][0b1001000] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # -..-...  AeroMorse Display on / off
+```
+
+This is an ordinary change to `morse_map.py`, so follow
+[the recommended order](#3-the-recommended-order-for-any-change): back up,
+edit the work copy, run the validator, and copy the file to the device only
+after it says PASS. Entering the code then opens the window; entering it
+again closes it. The window comes back at the
+size, place and see-through level you left it.
+
+### 7.5 Other programs, and changing the script
+
+The same idea works for any program: copy the block in the script, change
+the letter and the path, and give the new key combination its own Group 0
+code. For example, this opens Notepad with Ctrl+Alt+N:
+
+```
+^!n:: Run("notepad.exe")
+```
+
+After editing the script, right-click the green **H** icon near the clock
+and choose *Reload Script* — the change takes effect at once.
+
+If a hotkey does nothing: check the green **H** icon is there (the script is
+running), that the path in the script is exactly where the program is, and
+that no other program already uses the same key combination.
+
+The script itself lives on the computer, not on the device, so **a backup of
+the device does not include it**. Keep a copy of `AeroMorse.ahk` in your
+work folder too.
+
+*(The same instructions are in the Build Guide, Appendix G.)*
+
+---
+
+## 8. One-page checklist
 
 ```
 [ ] 1  Back up my AeroMorse                 (dated backup made)
