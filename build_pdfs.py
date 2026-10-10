@@ -178,7 +178,28 @@ def build_cheatsheet():
                            extra=("--virtual-time-budget=12000",))
     finally:
         httpd.shutdown()
+    build_help()
     return out, ok
+
+# ── 2b. Help page: the cheat sheet with the map built in, one tab per group ───
+def build_help():
+    """AeroMorse Help.html - a single file that opens straight from disk (no
+    server): the cheat-sheet page with morse_map.py (and config.py, for the
+    Switch group) built in, shown as a legend plus one tab per group. Made
+    next to the cheat sheet PDF every time that is built."""
+    import json
+    rd = lambda n: open(os.path.join(REPO, n), encoding="utf-8").read()
+    page = rd("aeromorse_cheatsheet.htm")
+    cfg = rd("config.py") if os.path.exists(os.path.join(REPO, "config.py")) else ""
+    data = json.dumps({"map": rd("morse_map.py"), "config": cfg}).replace("</", "<\\/")
+    mark = "  <script>\n    document.getElementById('file-input')"
+    assert page.count(mark) == 1, "cheat sheet page layout changed"
+    page = page.replace(mark, "  <script>window.AEROMORSE_EMBED = %s;</script>\n%s" % (data, mark))
+    page = page.replace("<title>AeroMorse Cheat Sheet</title>", "<title>AeroMorse Help</title>")
+    out = os.path.join(REPO, "AeroMorse Help.html")
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        f.write(page)
+    return out
 
 # ── 3. Keycode reference: self-contained htm, render straight from file:// ───
 def build_keycode():

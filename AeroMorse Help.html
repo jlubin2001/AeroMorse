@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroMorse Help</title>
+<style>
+  @charset "utf-8";
+
+  /* Reset and base styles */
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 20px;
+    background: #e9ecef;
+    color: #333;
+  }
+
+  h2 {
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+
+  /* Morse Code Dot (Pure CSS Circle) */
+  dot {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    background-color: #7806ec;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+
+  /* Morse Code Dash (Pure CSS Rounded Rectangle) */
+  dash {
+    width: 16px;
+    height: 9px;
+    display: inline-block;
+    background-color: #009832;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  /* Command badge — colour-coded by category (group switch, mouse, media, modifier, system) */
+  cmd {
+    border-radius: 10px;
+    display: inline-block;
+    font-size: 1.0em;
+    font-weight: bold;
+    padding: 0.15em 0.65em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  cmd.grp { background: #d4edda; color: #155724; border-color: #c3e6cb; }   /* group switch — green */
+  cmd.mse { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }   /* mouse — red */
+  cmd.med { background: #cce5ff; color: #004085; border-color: #b8daff; }   /* media (consumer controls) — blue */
+  cmd.mod { background: #fff3cd; color: #856404; border-color: #ffc107; }   /* modifier / lock — yellow */
+  cmd.sys { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }   /* system / repeat — gray */
+  cmd.ios { background: #ece6f8; color: #4b2e83; border-color: #d6c8ef; }   /* iOS Switch Control action — purple */
+  cmd.app { background: #d1f2eb; color: #0b5345; border-color: #a8e6d4; }   /* application launcher (AL_*) — teal */
+  cmd.sec { background: #d6d8db; color: #1b1e21; border-color: #b9bcc0; }   /* private secret macro (macro_secrets.py) — slate */
+
+  /* Keyboard */
+  keybd {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+    color: #000;
+    display: inline-block;
+    font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", "monospace";
+    line-height: 1.4em;
+    margin: 0;
+    padding: 0.1em 0.6em;
+    text-shadow: 0 1px 0 #fff;
+    white-space: nowrap;
+    font-size: 1.2em;
+    font-weight: bold;
+    background: #f8f9fa;
+    text-align: right;
+  }
+
+  /* Page and Layout Styles */
+  .page {
+    background: white;
+    padding: 40px;
+    margin: 0 auto 30px;
+    max-width: 1000px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    display: none; /* Hidden until file is loaded */
+  }
+
+  .columns {
+    column-gap: 40px;
+    column-rule: 1px solid #eee;
+  }
+
+  .cols-3 { column-count: 3; }
+  .cols-2 { column-count: 2; }
+  /* Tighter rows for a group that would otherwise spill onto a second page */
+  .columns.dense .item { margin-bottom: 3px; padding-bottom: 2px; }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    break-inside: avoid;
+    border-bottom: 1px dashed #f0f0f0;
+    padding-bottom: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding-left: 2px;
+    padding-right: 2px;
+    transition: background 0.1s;
+  }
+
+  .item:hover { background: #f0f4ff; }
+  .item:active { background: #ddeeff; }
+
+  .morse-seq {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .key-output {
+    flex-grow: 1;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-left: 10px;
+  }
+
+  .unassigned {
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.85em;
+    text-align: right;
+  }
+
+  /* Small speaker hint shown on screen, hidden when printing */
+  .audio-hint {
+    flex-shrink: 0;
+    margin-left: 6px;
+    color: #7806ec;
+    opacity: 0.35;
+    line-height: 1;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .item:hover .audio-hint { opacity: 0.75; }
+
+  /* UI Controls */
+  .controls-container {
+    background: white;
+    padding: 20px;
+    margin: 0 auto 30px;
+    max-width: 1000px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .file-upload-wrapper {
+    margin-bottom: 15px;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .custom-file-upload {
+    display: inline-block;
+    padding: 12px 24px;
+    cursor: pointer;
+    background: #6c757d;
+    color: white;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background 0.2s;
+    margin-right: 10px;
+  }
+
+  .custom-file-upload:hover { background: #5a6268; }
+
+  button.print-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+    transition: background 0.2s;
+    display: none; /* Hidden until data is loaded */
+  }
+
+  button.print-btn:hover { background: #0056b3; }
+
+  #file-name-display {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  /* Legend strip — shown above the pages, hidden when printing */
+  .legend {
+    margin: 0 auto 15px;
+    max-width: 1000px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    color: #555;
+  }
+
+  /* Print Specific Styles */
+  @media print {
+    body {
+      background: white;
+      margin: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .page {
+      box-shadow: none;
+      margin: 0;
+      padding: 10px 0;
+      max-width: 100%;
+      page-break-after: always;
+      border-radius: 0;
+      display: block !important;
+    }
+    .controls-container, .legend { display: none !important; }
+    .columns {
+      column-gap: 20px;
+    }
+    .cols-3 { column-count: 3 !important; }
+    .cols-2 { column-count: 2 !important; }
+    .item {
+      page-break-inside: avoid;
+      cursor: default;
+    }
+    /* Hide audio affordances when printing */
+    .audio-hint { display: none !important; }
+  }
+
+  /* Legend badge key — a print-only copy is appended to the bottom of the
+     first printed page so the colour codes are explained on paper. The on-
+     screen .legend at the top of the page stays hidden in print (below). */
+  .legend-print { display: none; }
+  @media print {
+    .legend-print {
+      display: block;
+      margin-top: 22px;
+      padding-top: 12px;
+      border-top: 2px solid #ccc;
+      page-break-inside: avoid;
+    }
+    .legend-print h3 {
+      text-align: center;
+      margin: 0 0 10px;
+      color: #2c3e50;
+      font-size: 1em;
+    }
+    .legend-print-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      justify-content: center;
+    }
+    .legend-print-strip .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8em;
+      color: #333;
+    }
+  }
+
+  /* ── Help view (AeroMorse Help.html) ─────────────────────────────────────
+     The same page with the map built in: the legend and one tab per group stay
+     at the top and only the chosen group is shown. Screen only - printing still
+     gives every group, one per page. */
+  #help-tabs, #help-size { display: none; }
+  @media screen {
+    body.help { margin: 0 20px 20px; }
+    body.help .controls-container { display: none; }
+    body.help #help-head {
+      position: sticky; top: 0; z-index: 10;
+      background: #e9ecef; padding: 6px 0 4px;
+    }
+    /* The size buttons float in the top right corner of the legend box and
+       the legend items flow beside and then underneath them, so no space is
+       left empty below the buttons. */
+    body.help .legend { display: block; text-align: center; max-width: none; margin-bottom: 6px; padding: 4px 10px; line-height: 1.9; }
+    body.help .page { padding-top: 12px; }
+    body.help .page h2 { margin-top: 0; }
+    body.help .legend .legend-item { display: inline-flex; margin: 0 7px; vertical-align: middle; line-height: 1.3; }
+    #help-size { float: right; display: flex; align-items: center; gap: 4px; margin: 2px 0 0 12px; line-height: 1.3; }
+    #help-size button {
+      font: inherit; font-size: 0.95em; font-weight: 700; min-width: 2em;
+      padding: 1px 8px; border: 2px solid #b8c0c8; border-radius: 6px;
+      background: white; color: #2c3e50; cursor: pointer;
+    }
+    #help-size button:hover { border-color: #2c3e50; }
+    #help-size .help-pct { min-width: 2.8em; text-align: center; font-size: 0.85em; font-weight: 600; color: #2c3e50; }
+    body.help #help-tabs {
+      /* always ONE row: fitTabs() shrinks the row just enough to fit the window */
+      display: flex; flex-wrap: nowrap; gap: 6px; align-items: center;
+      width: max-content; margin: 0 auto; white-space: nowrap;
+    }
+    #help-tabs button {
+      font: inherit; font-size: 0.85em; font-weight: 600;
+      padding: 4px 10px; border: 2px solid #b8c0c8; border-radius: 7px;
+      background: white; color: #2c3e50; cursor: pointer;
+    }
+    #help-tabs button:hover { border-color: #2c3e50; }
+    #help-tabs button.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+    #help-head .help-hint { text-align: center; font-size: 1em; color: #333; margin-top: 3px; }
+    /* fewer columns when the page is made bigger than the window has room for
+       (set by fitColumns() from the window width and the chosen size) */
+    body.help-narrow .cols-2 { column-count: 1 !important; }
+    body.help-narrow .cols-3 { column-count: 2 !important; }
+    body.help-tiny .cols-3 { column-count: 1 !important; }
+    body.help .page { display: none !important; }
+    body.help .page.active { display: block !important; }
+  }
+
+  /* Responsive fallback */
+  @media screen and (max-width: 768px) {
+    .cols-3 { column-count: 2; }
+    .cols-2 { column-count: 1; }
+  }
+  @media screen and (max-width: 480px) {
+    .cols-3, .cols-2 { column-count: 1; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="controls-container no-print">
+    <h2>AeroMorse Cheat Sheet</h2>
+    <div class="file-upload-wrapper">
+      <label class="custom-file-upload">
+        <input type="file" id="file-input" accept=".py,.txt" />
+        📂 Select morse_map.py
+      </label>
+      <button class="print-btn" id="print-btn" onclick="window.print()">🖨️ Print Cheat Sheets</button>
+      <span id="file-name-display">No file chosen yet… click a row to hear its Morse tones.</span>
+    </div>
+  </div>
+
+  <div class="legend" id="legend">
+    <span class="legend-item"><dot></dot> dot &nbsp; <dash></dash> dash</span>
+    <span class="legend-item"><cmd class="grp">→ Group</cmd> group switch</span>
+    <span class="legend-item"><cmd class="mse">&#x1F5B1;&#xFE0E; Mouse</cmd> mouse / move / click</span>
+    <span class="legend-item"><cmd class="med">&#x1F3B5; Media</cmd> consumer controls</span>
+    <span class="legend-item"><cmd class="app">&#x1F5C2;&#xFE0E; App</cmd> application launcher</span>
+    <span class="legend-item"><cmd class="sec">&#x1F512; Secret</cmd> private macro (value hidden)</span>
+    <span class="legend-item"><cmd class="mod">Mod</cmd> modifier / lock</span>
+    <span class="legend-item"><cmd class="sys">System</cmd> repeat / system</span>
+    <span class="legend-item"><cmd class="ios">iOS</cmd> iOS Switch Control action (Group 4)</span>
+    <span class="legend-item"><keybd>&#x2328;&#xFE0E; Key</keybd> keyboard key</span>
+  </div>
+
+  <div id="pages-container"></div>
+
+  <script>window.AEROMORSE_EMBED = {"map": "# AeroMorse morse_map.py \u2014 version 1.28 (released 2026-10-09)\n# Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse\n# This file defines every Morse pattern \u2192 action mapping. Edit it to remap keys.\n\nfrom adafruit_hid.keycode import Keycode\nfrom adafruit_hid.consumer_control_code import ConsumerControlCode\n\n\nclass CC:\n    \"\"\"Wrapper marking a value as a USB HID ConsumerControl action.\n\n    Keycode and ConsumerControlCode constants are both plain ints in\n    adafruit_hid, so the firmware dispatcher can't tell them apart on\n    `isinstance(x, int)`. Wrapping a ConsumerControlCode in CC() lets\n    `code.py` route it to the ConsumerControl device instead of the\n    Keyboard device.\n\n    Use like:  g5[1][0b0] = CC(ConsumerControlCode.PLAY_PAUSE)\n    \"\"\"\n    __slots__ = ('code',)\n    def __init__(self, code):\n        self.code = code\n\ndef _cc(name, usage_id):\n    \"\"\"An app-launcher / media key by NAME, for use in ANY group, e.g.\n        gN[length][0b...] = _cc('AL_CALCULATOR', 0x192)\n    Older key libraries lack the AL_* names, so the raw code from the USB\n    standard is given as well and used when the name is missing.\"\"\"\n    return CC(getattr(ConsumerControlCode, name, usage_id))\n\n\ngroups = {}\n\ndef init_group():\n    \"\"\"Helper to create the length-based dictionary structure\"\"\"\n    return {1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}}\n\n############################################\n# Secret macros (passwords / personal details) \u2014 loaded FIRST, usable in ANY group\n############################################\n# Never write a password, PIN, or personal detail directly into this file.\n# Keep the real values in a SEPARATE file, never shared, as  key=value  lines:\n#\n#     name=Your Name\n#     email_pw=hunter2\n#\n# Two ways to store that file on the device (code.py reads it, not this file):\n#   macro_secrets.enc  \u2014 ENCRYPTED, made with the \"AeroMorse Secrets\" PC tool.\n#                        Locked at every power-up; the first secret you use asks\n#                        for your PIN (typed in Morse, then ENTER). Recommended.\n#   macro_secrets.txt  \u2014 plain text, no PIN. Simple, but anyone who opens the\n#                        CIRCUITPY drive can read it.\n#\n# Then in ANY group (g1-g9) pull a value in by key, with a safe fallback:\n#     g3[2][0b01] = _secret('name', 'Your Name')   # types the real name, or the\n#                                                   # placeholder if it isn't set\n# A missing, malformed or unreadable secrets file never stops the device \u2014 the\n# secret just types its placeholder. For many users morse_map.py is their only\n# means of computer access, so it must never be brickable by the secrets file.\n# Defined here at the top so _secret() is available to every group below. See\n# README \"Storing passwords and secrets safely\".\nclass Secret:\n    \"\"\"Marker for a private value. code.py looks up `key` when the pattern is\n    used, so the value is never stored in (or shown from) this file.\"\"\"\n    __slots__ = ('key', 'placeholder')\n    def __init__(self, key, placeholder):\n        self.key = key\n        self.placeholder = placeholder\n\ndef _secret(key, placeholder=None):\n    \"\"\"Pattern types the secret stored under `key`, or `placeholder` if it isn't\n    set \u2014 so shared copies never leak.\n\n    Usable in ANY group (g1\u2013g9). The short form  _secret('mykey')  is enough;\n    the optional second argument is the text typed when the key isn't set.\n    Keys are shared file-wide: the same key in two groups reads the same value.\"\"\"\n    if placeholder is None:                 # short form: _secret('mykey')\n        placeholder = '(set %s in AeroMorse Secrets)' % key\n    return Secret(key, placeholder)\n\n############################################\n# Begin Group 0\n# ALWAYS AVAILABLE (System / Group toggles)\n############################################\n# Checked before the active group on every lookup.\n# All patterns are 8 symbols \u2014 too long to trigger accidentally.\n#\n# Group toggles use a \"count of trailing dashes\" scheme: start from 8 dots\n# (Keyboard) and add trailing dashes to reach the higher groups. The legacy\n# g1 / g2 / g3 codes are unchanged; the gaps are filled by g4\u2013g9.\n#\n#   ........  (0 dashes)  \u2192 g1  Keyboard\n#   .......-  (1 dash)    \u2192 g4  Scanning / Switch Control (iOS / Android)\n#   ......--  (2 dashes)  \u2192 g5\n#   .....---  (3 dashes)  \u2192 g6\n#   ....----  (4 dashes)  \u2192 g3  Macros\n#   ...-----  (5 dashes)  \u2192 g7\n#   ..------  (6 dashes)  \u2192 g8\n#   .-------  (7 dashes)  \u2192 g9  Switch (2-button hold, no Morse \u2014 config SWITCH_GROUP)\n#   --------  (8 dashes)  \u2192 g2  Mouse / Shortcuts\n#   ----....  (alias)     \u2192 g4  Scanning / Switch Control (second shortcut)\n\ng0 = init_group()\n\ng0[8][0b00000000] = \"group 1\"   # ........  \u2192 Keyboard\ng0[8][0b00000001] = \"group 4\"   # .......-  \u2192 Scanning / Switch Control\ng0[8][0b00000011] = \"group 5\"   # ......--  \u2192 Group 5 (placeholder)\ng0[8][0b00000111] = \"group 6\"   # .....---  \u2192 Group 6 (placeholder)\ng0[8][0b00001111] = \"group 3\"   # ....----  \u2192 Macros\ng0[8][0b00011111] = \"group 7\"   # ...-----  \u2192 Group 7 (placeholder)\ng0[8][0b00111111] = \"group 8\"   # ..------  \u2192 Group 8 (placeholder)\ng0[8][0b01111111] = \"group 9\"   # .-------  \u2192 Group 9 \u2014 Switch (sip/puff hold keys, no Morse)\ng0[8][0b11111111] = \"group 2\"   # --------  \u2192 Mouse/Shortcuts\ng0[8][0b11110000] = \"group 4\"   # ----....  \u2192 Scanning / Switch Control (second shortcut)\n\n# \u2500\u2500 Hotkeys for AeroMorse.ahk (AutoHotkey, Windows) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# These send a key combination that the AeroMorse.ahk script on the computer\n# acts on (Build Guide Appendix G). They do nothing unless it is running.\n# In Group 0 so they work from every group.\ng0[6][0b010101] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # .-.-.-  AeroMorse Display window on / off\ng0[6][0b001001] = Keycode.CONTROL, Keycode.ALT, Keycode.H   # ..-..-  AeroMorse Help window on / off\n\ngroups[0] = g0\n\n############################################\n# Begin Group 1\n# KEYBOARD (Letters, Numbers, Punctuation)\n############################################\n# Bit encoding: 0 = dot (sip / sw-1), 1 = dash (puff / sw-2), MSB = first symbol.\n#\n# Two letters deliberately use non-standard patterns to free up\n# high-frequency control keys on their original ITU Morse codes:\n#   --   (standard M) \u2192 BACKSPACE   M relocated to ----\n#   -.-. (standard C) \u2192 LEFT_CTRL   C relocated to ---.\n\ng1 = init_group()\n\ng1[5][0b00010]    = \"group 2\"   # ...-. \u2192 Switch to Mouse/Shortcuts\n\n# \u2500\u2500 Letters \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng1[2][0b01]='a'             # .-\ng1[4][0b1000]='b'           # -...\ng1[4][0b1110]='c'           # ---.   (non-standard; -.-. freed for LEFT_CONTROL)\ng1[3][0b100]='d'            # -..\ng1[1][0b0]='e'              # .\ng1[4][0b0010]='f'           # ..-.\ng1[3][0b110]='g'            # --.\ng1[4][0b0000]='h'           # ....\ng1[2][0b00]='i'             # ..\ng1[4][0b0111]='j'           # .---\ng1[3][0b101]='k'            # -.-\ng1[4][0b0100]='l'           # .-..\ng1[4][0b1111]='m'           # ----   (non-standard; -- freed for BACKSPACE)\ng1[2][0b10]='n'             # -.\ng1[3][0b111]='o'            # ---\ng1[4][0b0110]='p'           # .--.\ng1[4][0b1101]='q'           # --.-\ng1[3][0b010]='r'            # .-.\ng1[3][0b000]='s'            # ...\ng1[1][0b1]='t'              # -\ng1[3][0b001]='u'            # ..-\ng1[4][0b0001]='v'           # ...-\ng1[3][0b011]='w'            # .--\ng1[4][0b1001]='x'           # -..-\ng1[4][0b1011]='y'           # -.--\ng1[4][0b1100]='z'           # --..\n\n# \u2500\u2500 Numbers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Standard ITU 5-symbol patterns. 1\u20135 lead with dots, 6\u20130 lead with dashes.\ng1[5][0b01111]='1'          # .----\ng1[5][0b00111]='2'          # ..---\ng1[5][0b00011]='3'          # ...--\ng1[5][0b00001]='4'          # ....-\ng1[5][0b00000]='5'          # .....\ng1[5][0b10000]='6'          # -....\ng1[5][0b11000]='7'          # --...\ng1[5][0b11100]='8'          # ---..\ng1[5][0b11110]='9'          # ----.\ng1[5][0b11111]='0'          # -----\n\n# \u2500\u2500 Punctuation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng1[5][0b10001]='+'          # -...-\ng1[5][0b01110]='-'          # .---.\ng1[5][0b11101]='='          # ---.-\ng1[5][0b10011]='*'          # -..--\ng1[6][0b010000]='!'         # .-....\ng1[6][0b111001]='@'         # ---..-\ng1[6][0b001110]='#'         # ..---.\ng1[6][0b001111]='$'         # ..----\ng1[6][0b000101]='%'         # ...-.-\ng1[6][0b100011]='^'         # -...--\ng1[6][0b011100]='&'         # .---..\ng1[6][0b011111]='.'         # .-----\ng1[6][0b100000]=','         # -.....\ng1[6][0b011110]=':'         # .----.\ng1[6][0b100001]=';'         # -....-\ng1[6][0b000111]=')'         # ...---\ng1[6][0b111000]='('         # ---...\ng1[6][0b100111]=']'         # -..---\ng1[6][0b011000]='['         # .--...\ng1[5][0b11001]='}'          # --..-\ng1[5][0b00110]='{'          # ..--.\ng1[6][0b110011]='<'         # --..--\ng1[6][0b001100]='>'         # ..--..\ng1[6][0b101111]='?'         # -.----\ng1[6][0b000011]='/'         # ....--    (forward slash)\ng1[6][0b111100]='\\\\'        # ----..    (backslash)\ng1[6][0b000010]='|'         # ....-.\ng1[6][0b111101]='_'         # ----.-\ng1[6][0b000110]='\\\"'        # ...--.    (double quote)\ng1[6][0b001000]='\\''        # ..-...    (single quote)\ng1[6][0b110111]='`'         # --.---\ng1[6][0b111011]='~'         # ---.--\n\n# \u2500\u2500 Function Keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# 7-symbol patterns. Standand Numbers 1\u20130 lead with dashes. 1\u20132 trailed with dashes.\n#   F1  --.----   F6  ---....\n#   F2  --..---   F7  ----...\n#   F3  --...--   F8  -----..\n#   F4  --....-   F9  ------.\n#   F5  --.....   F10 -------\n#                 F11 .------\n#                 F12 ..-----\ng1[7][0b1101111]=Keycode.F1   # --.---- (--1)\ng1[7][0b1100111]=Keycode.F2   # --..--- (--2)\ng1[7][0b1100011]=Keycode.F3   # --...-- (--3)\ng1[7][0b1100001]=Keycode.F4   # --....- (--4)\ng1[7][0b1100000]=Keycode.F5   # --..... (--5)\ng1[7][0b1110000]=Keycode.F6   # ---.... (--6)\ng1[7][0b1111000]=Keycode.F7   # ----... (--7)\ng1[7][0b1111100]=Keycode.F8   # -----.. (--8)\ng1[7][0b1111110]=Keycode.F9   # ------. (--9)\ng1[7][0b1111111]=Keycode.F10  # ------- (--0)\ng1[7][0b0111111]=Keycode.F11  # .------ (1--)\ng1[7][0b0011111]=Keycode.F12  # ..----- (2--)\n\n# \u2500\u2500 Non-printable keyboard keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng1[5][0b01001]=Keycode.UP_ARROW      # .-..-    (au)\ng1[5][0b01100]=Keycode.DOWN_ARROW    # .--..    (ad)\ng1[6][0b010100]=Keycode.LEFT_ARROW   # .-.-..   (al)\ng1[5][0b01010]=Keycode.RIGHT_ARROW   # .-.-.    (ar)\ng1[7][0b0000000]=Keycode.HOME        # .......  (sh) (7 dots)\ng1[7][0b0001000]=Keycode.END         # ...-...  (sb)\ng1[6][0b000001]=Keycode.PAGE_UP      # .....-   (su)\ng1[6][0b000100]=Keycode.PAGE_DOWN    # ...-..   (sd)\ng1[4][0b0101]=Keycode.ENTER          # .-.-\ng1[6][0b110000]=Keycode.ESCAPE       # --....   (gs)\ng1[6][0b101100]=Keycode.DELETE       # -.--..   (kd)\ng1[5][0b10100]=Keycode.INSERT        # -.-..    (ku)\ng1[2][0b11]=Keycode.BACKSPACE        # --     (freed from M)\ng1[4][0b0011]=Keycode.SPACE          # ..--\ng1[7][0b1110010]=Keycode.TAB         # ---..-.  (sf)\ng1[5][0b00100] = \"repeat\"            # ..-..    repeat\n\n# \u2500\u2500 Modifier keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Sticky: press once to arm, next key fires with the modifier, then it releases.\n# Press again while armed to cancel.\ng1[4][0b1010]=Keycode.LEFT_CONTROL   # -.-. (freed from C)\ng1[6][0b110001]=Keycode.LEFT_SHIFT   # --...-\ng1[5][0b11011]=Keycode.LEFT_ALT      # --.--\ng1[6][0b011011]=Keycode.LEFT_GUI     # .--.--\ng1[6][0b111110]=Keycode.CAPS_LOCK    # -----.\ng1[6][0b110100]=Keycode.SCROLL_LOCK  # --.-..\ng1[7][0b1110001]=Keycode.KEYPAD_NUMLOCK  # ---...-\ng1[6][0b110110]=Keycode.PRINT_SCREEN # --.--.\n\ngroups[1] = g1\n\n############################################\n# Begin Group 2\n# MOUSE MOVES & WINDOWS SHORTCUTS\n############################################\n# Mouse movement patterns map to the numeric keypad layout:\n#\n#   7  8  9         Numpad   Small (2\u20133 sym)   Large (5-sym, same direction)\n#   4  5  6         \u2500\u2500\u2500\u2500\u2500\u2500   \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500   \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n#   1  2  3         7 \u2196       --...             diagonal only\n#                   8 \u2191       --                ---..\n#                   9 \u2197       ----.             diagonal only\n#                   4 \u2190       ..                ....-\n#                   5 \u00b7 (repeat)   .\n#                   6 \u2192       ...               -....\n#                   1 \u2199       .----             diagonal only\n#                   2 \u2193       ---               ..---\n#                   3 \u2198       ...--             diagonal only\n#\n#   Scroll up  .....-   Scroll down  ...-..\n\ng2 = init_group()\n\ng2[5][0b00010]    = \"group 1\"   # ...-. \u2192 Switch to Keyboard\n\n# \u2500\u2500 Mouse movement \u2014 cardinal, small (2\u20133 symbols) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[2][0b11] = \"mmove 0 -1 0\"       # --      numpad 8  \u2191\ng2[3][0b111] = \"mmove 0 1 0\"       # ---     numpad 2  \u2193\ng2[3][0b000] = \"mmove 1 0 0\"       # ...     numpad 6  \u2192\ng2[2][0b00] = \"mmove -1 0 0\"       # ..      numpad 4  \u2190\n\n# \u2500\u2500 Mouse movement \u2014 scroll (6 symbols) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[6][0b000001] = \"mmove 0 0 1\"    # .....-  scroll \u2191\ng2[6][0b000100] = \"mmove 0 0 -1\"   # ...-..  scroll \u2193\n\n# \u2500\u2500 Mouse movement \u2014 diagonal (5 symbols) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[5][0b11000] = \"mmove -1 -1 0\"   # --...   numpad 7  \u2196\ng2[5][0b11110] = \"mmove 1 -1 0\"    # ----.   numpad 9  \u2197\ng2[5][0b01111] = \"mmove -1 1 0\"    # .----   numpad 1  \u2199\ng2[5][0b00011] = \"mmove 1 1 0\"     # ...--   numpad 3  \u2198\n\n# \u2500\u2500 Mouse movement \u2014 cardinal, large (5 symbols) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[5][0b11100] = \"mmove 0 -1 0\"    # ---..   numpad 8  \u2191  large\ng2[5][0b00111] = \"mmove 0 1 0\"     # ..---   numpad 2  \u2193  large\ng2[5][0b00001] = \"mmove -1 0 0\"    # ....-   numpad 4  \u2190  large\ng2[5][0b10000] = \"mmove 1 0 0\"     # -....   numpad 6  \u2192  large\n\n# \u2500\u2500 Mouse buttons and movement control \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[1][0b0] = \"repeat\"              # .       numpad 5  repeat last action\ng2[5][0b00100] = \"repeat\"         # ..-..   alternate repeat\ng2[4][0b1100] = \"mslow\"            # --..    toggle slow-step mode\ng2[4][0b1101] = \"mfast\"            # --.-    toggle fast mode\ng2[2][0b01] = \"mclick left 1\"      # .-      left click\ng2[3][0b011] = \"mclick right 1\"    # .--     right click\ng2[3][0b001] = \"mclick left 2\"     # ..-     double-click left\ng2[4][0b0011] = \"mclick right 2\"   # ..--    double-click right\ng2[2][0b10] = \"mdrag left\"         # -.      toggle left-button drag\ng2[7][0b1010010] = \"devicereset\"   # -.-..-. restart the device (asks \"CONFIRM RESET Y/N?\", type y)\ng2[4][0b0001] = \"version\"          # ...-    show start-up screen (name, version, CircuitPython)\n\n# \u2500\u2500 Keypad & Arrow Keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[5][0b10001]=Keycode.KEYPAD_PLUS         # -...-\ng2[5][0b01110]=Keycode.KEYPAD_MINUS        # .---.\ng2[5][0b11101]=Keycode.EQUALS              # ---.-  (KEYPAD_EQUALS does nothing on Windows)\ng2[5][0b10011]=Keycode.KEYPAD_ASTERISK     # -..--\ng2[6][0b011111]=Keycode.KEYPAD_PERIOD      # .-----\ng2[6][0b000011]=Keycode.KEYPAD_FORWARD_SLASH  # ....--\ng2[6][0b111100]=Keycode.APPLICATION        # ----..  context-menu key\ng2[7][0b1110001]=Keycode.KEYPAD_NUMLOCK    # ---...-\ng2[4][0b0101]=Keycode.KEYPAD_ENTER         # .-.-\ng2[5][0b01001]=Keycode.UP_ARROW            # .-..-      (au)\ng2[5][0b01100]=Keycode.DOWN_ARROW          # .--..      (ad)\ng2[6][0b010100]=Keycode.LEFT_ARROW         # .-.-..     (al)\ng2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.      (ar)\n\n# \u2500\u2500 Page scroll \u2014 a TRUE page, unlike a scrollbar-track click \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# A track click pages or line-scrolls depending on the app; these keys page in\n# almost any app regardless of cursor position. Short 3-symbol patterns that\n# differ only in the last symbol: dot = down, dash = up.\ng2[3][0b100]=Keycode.PAGE_DOWN             # -..     page down\ng2[3][0b101]=Keycode.PAGE_UP               # -.-     page up\ng2[7][0b0000000]=Keycode.HOME              # .......  Home (same code as in the Keyboard group)\n\n# \u2500\u2500 Windows Shortcuts (tuples = all keys pressed simultaneously) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[6][0b110011]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --..--  free mouse from VM\ng2[5][0b00000]=Keycode.GUI, Keycode.TAB    # .....   task view (Win+Tab)\ng2[5][0b11111]=Keycode.ALT, Keycode.TAB    # -----   switch windows (Alt+Tab)\ng2[7][0b1110010]=Keycode.TAB               # ---..-.  Tab                    (sf)\ng2[6][0b110000]=Keycode.ESCAPE             # --....   Escape                 (gs)\ng2[7][0b1100000]=Keycode.F5                # --.....  refresh / F5           (--5)\n\n# \u2500\u2500 Pointer helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Find pointer: taps Ctrl by itself. With the Windows option \"Show location of\n# pointer when I press the CTRL key\" on (Mouse settings > Pointer Options),\n# Windows draws circles round the pointer. Does nothing if that option is off.\ng2[4][0b0010] = (Keycode.CONTROL,)         # ..-.    find pointer (tap Ctrl)\n# Centre pointer: sends Ctrl+Alt+Home, which a small AutoHotkey script on the\n# computer turns into \"put the pointer in the middle of the screen\" (Build\n# Guide Appendix G) - the supplied AeroMorse.ahk. Does nothing unless it is running.\ng2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer\n\n# \u2500\u2500 Modifier keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng2[4][0b1010]=Keycode.RIGHT_CONTROL        # -.-.\ng2[6][0b110001]=Keycode.RIGHT_SHIFT        # --...-\ng2[5][0b11011]=Keycode.RIGHT_ALT           # --.--\ng2[6][0b011011]=Keycode.RIGHT_GUI          # .--.--\n\ngroups[2] = g2\n\n############################################\n# Begin Group 3\n# MACRO STRINGS\n############################################\n# Patterns mirror the Group 1 alphabet so the same Morse muscle-memory\n# produces a macro string instead of a single character.\n# Single-char values are typed as individual key presses;\n# longer strings are typed through the keyboard layout writer.\n# Fill the empty placeholders with the user's frequently needed phrases.\n#\n# \u2500\u2500 Passwords / personal details \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Use  _secret('key', 'placeholder')  for anything private (see the Secret\n# macros section at the TOP of this file). Real values live in\n# macro_secrets.enc (PIN-locked) or macro_secrets.txt, never inline here \u2014 so a\n# shared morse_map.py leaks nothing. U = unlock, L = lock (PIN file only).\n\ng3 = init_group()\n\n# \u2500\u2500 ADD A NEW SECRET \u2014 copy the line below, remove the leading '# ', then: \u2500\u2500\u2500\u2500\u2500\n#   1. change the code in [ ] to a free one (morse_map_report.txt lists them)\n#   2. change  mykey  to a name of your own\n#   3. add that name and its value in the AeroMorse Secrets tool\n# g3[6][0b000000]=_secret('mykey')   # ......\n\n# \u2500\u2500 Named macros \u2014 personal details, pulled from your secrets file \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# The optional 2nd argument is the placeholder typed when the key isn't set \u2014\n# example values here (matching macro_secrets.example.txt), so a shared\n# morse_map.py never reveals real details.\ng3[2][0b01]  = _secret('name',    'Your Name')                    # .-    A\ng3[4][0b1000]= _secret('address', '123 Example St, City, ST 00000')  # -...  B\ng3[4][0b1110]= _secret('phone',   '555-555-0100')                # ---.  C (non-standard pattern)\ng3[1][0b0]   = _secret('email',   'you@example.com')             # .     E\n\n# \u2500\u2500 Placeholders \u2014 fill with user phrases; pattern = Group 1 letter \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng3[3][0b100]='phrase'             # -..   D\ng3[4][0b0010]='phrase'            # ..-.  F\ng3[3][0b110]='phrase'             # --.   G\ng3[4][0b0000]='phrase'            # ....  H\ng3[2][0b00]='phrase'              # ..    I\ng3[4][0b0111]='phrase'            # .---  J\ng3[3][0b101]='phrase'             # -.-   K\ng3[4][0b0100]='lock'              # .-..  L  lock secrets now (PIN file only)\ng3[4][0b1111]='phrase'            # ----  M\ng3[2][0b10]='phrase'              # -.    N\ng3[3][0b111]='phrase'             # ---   O\n# .--.  P  \u2192 assigned in the Passwords / logins block below (_secret)\ng3[4][0b1101]='phrase'            # --.-  Q\ng3[3][0b010]='phrase'             # .-.   R\ng3[3][0b000]='phrase'             # ...   S\ng3[1][0b1]='phrase'               # -     T\ng3[3][0b001]='unlock'             # ..-   U  enter PIN to unlock secrets (optional \u2014\n                                  #          using any secret while locked asks too)\ng3[4][0b0001]='phrase'            # ...-  V\n# .--   W  \u2192 assigned in the Passwords / logins block below (_secret)\ng3[4][0b1001]='phrase'            # -..-  X\ng3[4][0b1011]='phrase'            # -.--  Y\ng3[4][0b1100]='phrase'            # --..  Z\n\n# \u2500\u2500 Passwords / logins \u2014 values live ONLY in your secrets file \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Add or rename keys to match the names you enter in AeroMorse Secrets (or in\n# macro_secrets.txt). Until a key is set, its pattern types \"(set <key> in\n# AeroMorse Secrets)\", so a shared morse_map.py never reveals a real password.\n# (Examples below use the P and W letter patterns \u2014 change to suit.)\ng3[4][0b0110]=_secret('password1')   # .--.  P\ng3[3][0b011]=_secret('wifi')         # .--   W\n\n# \u2500\u2500 Numbers (same patterns as Group 1) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng3[5][0b01111]='1'          # .----\ng3[5][0b00111]='2'          # ..---\ng3[5][0b00011]='3'          # ...--\ng3[5][0b00001]='4'          # ....-\ng3[5][0b00000]='5'          # .....\ng3[5][0b10000]='6'          # -....\ng3[5][0b11000]='7'          # --...\ng3[5][0b11100]='8'          # ---..\ng3[5][0b11110]='9'          # ----.\ng3[5][0b11111]='0'          # -----\n\n# \u2500\u2500 Editing keys available in Macro mode \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng3[4][0b0101]=Keycode.ENTER      # .-.-\ng3[2][0b11]=Keycode.BACKSPACE    # --\n\ngroups[3] = g3\n\n############################################\n# Letters and numbers in Groups 4\u20138\n############################################\n# Groups 4\u20138 carry Group 1's A\u2013Z and 0\u20139 on the same codes, so your Morse muscle\n# memory works in every group. They are written out as real lines in each group\n# (before v1.24 a hidden helper copied them), so to make a code do something\n# else you only change what is between the quotes on its line. Punctuation,\n# function keys, navigation and modifiers are intentionally NOT repeated.\n\n\n############################################\n# Begin Group 4\n# SCANNING (Switch Control on iOS / Android)\n############################################\n# iOS and Android \"Switch Control\" accessibility scanning can be driven by\n# keyboard keys acting as switch actions. The 12 SHORTEST Morse patterns\n# are mapped to Enter, Space and F3\u2013F12, so the two most-used scan actions\n# (Select = Enter on a sip, Next = Space on a puff) take a single sip or puff. (Before v1.14\n# those two were F1 and F2 \u2014 re-assign them in the phone/tablet's switch\n# settings if it was set up with F1/F2.)\n# The remaining letters / numbers are listed below the F-keys, on the same\n# codes as Group 1, and can be customised.\n#\n#   Enter .    F5  -.     F9   .-.\n#   Space -    F6  --     F10  .--\n#   F3  ..     F7  ...    F11  -..\n#   F4  .-     F8  ..-    F12  -.-\n\ng4 = init_group()\n\ng4[1][0b0]   = Keycode.ENTER     # .\ng4[1][0b1]   = Keycode.SPACE     # -\ng4[2][0b00]  = Keycode.F3     # ..\ng4[2][0b01]  = Keycode.F4     # .-\ng4[2][0b10]  = Keycode.F5     # -.\ng4[2][0b11]  = Keycode.F6     # --\ng4[3][0b000] = Keycode.F7     # ...\ng4[3][0b001] = Keycode.F8     # ..-\ng4[3][0b010] = Keycode.F9     # .-.\ng4[3][0b011] = Keycode.F10    # .--\ng4[3][0b100] = Keycode.F11    # -..\ng4[3][0b101] = Keycode.F12    # -.-\n\n# \u2500\u2500 Letters and numbers \u2014 same codes as Group 1. Change what is between the quotes. \u2500\u2500\ng4[4][0b1000]='b'           # -...\ng4[4][0b1110]='c'           # ---.\ng4[4][0b0010]='f'           # ..-.\ng4[3][0b110]='g'            # --.\ng4[4][0b0000]='h'           # ....\ng4[4][0b0111]='j'           # .---\ng4[4][0b0100]='l'           # .-..\ng4[4][0b1111]='m'           # ----\ng4[3][0b111]='o'            # ---\ng4[4][0b0110]='p'           # .--.\ng4[4][0b1101]='q'           # --.-\ng4[4][0b0001]='v'           # ...-\ng4[4][0b1001]='x'           # -..-\ng4[4][0b1011]='y'           # -.--\ng4[4][0b1100]='z'           # --..\ng4[5][0b01111]='1'          # .----\ng4[5][0b00111]='2'          # ..---\ng4[5][0b00011]='3'          # ...--\ng4[5][0b00001]='4'          # ....-\ng4[5][0b00000]='5'          # .....\ng4[5][0b10000]='6'          # -....\ng4[5][0b11000]='7'          # --...\ng4[5][0b11100]='8'          # ---..\ng4[5][0b11110]='9'          # ----.\ng4[5][0b11111]='0'          # -----\n\ngroups[4] = g4\n\ngroups[5] = init_group()\n\n############################################\n# Group 5 \u2014 MEDIA (USB HID Consumer Controls)\n############################################\n# The 12 SHORTEST Morse patterns are reassigned to the most-used USB HID\n# Consumer Control codes \u2014 volume, play/pause, mute, track skip, etc. This\n# turns g5 into a media-remote group. The remaining letters and numbers are\n# listed at the end of the group, on the same codes as Group 1.\n#\n# Wrapped in CC(...) so the dispatcher routes them through the\n# ConsumerControl HID device, not the Keyboard.\n#\n#   .    PLAY_PAUSE         ..   VOLUME_DECREMENT    -.   PREVIOUS TRACK\n#   -    MUTE               --   VOLUME_INCREMENT    .-   NEXT TRACK\n#   ...  STOP               ..-  REWIND              .-.  FAST FORWARD\n#   .--  BRIGHTNESS +       -..  BRIGHTNESS -        -.-  EJECT\n#\n# The 4-symbol patterns add application launchers, keyed to first-letter\n# mnemonics in STANDARD ITU Morse (note: g1's own 'c' is the non-standard\n# ---. because -.-. is freed there for LEFT_CONTROL; the mnemonics below\n# refer to the ITU letters, not to g1's mapping):\n#\n#   -.-.  C  Calculator        -...  B  Browser\n#   ..-.  F  File explorer     .-..  L  mai-L (email)\n#\n# System SLEEP and POWER are intentionally not mapped \u2014 see the note below.\n\ng5 = groups[5]\n\n# \u2500\u2500 Media \u2014 12 shortest patterns (1\u20133 symbol) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ng5[1][0b0]   = CC(ConsumerControlCode.PLAY_PAUSE)            # .\ng5[1][0b1]   = CC(ConsumerControlCode.MUTE)                  # -\ng5[2][0b00]  = CC(ConsumerControlCode.VOLUME_DECREMENT)      # ..\ng5[2][0b01]  = CC(ConsumerControlCode.SCAN_NEXT_TRACK)       # .-\ng5[2][0b10]  = CC(ConsumerControlCode.SCAN_PREVIOUS_TRACK)   # -.\ng5[2][0b11]  = CC(ConsumerControlCode.VOLUME_INCREMENT)      # --\ng5[3][0b000] = CC(ConsumerControlCode.STOP)                  # ...\ng5[3][0b001] = CC(ConsumerControlCode.REWIND)                # ..-\ng5[3][0b010] = CC(ConsumerControlCode.FAST_FORWARD)          # .-.\ng5[3][0b011] = CC(ConsumerControlCode.BRIGHTNESS_INCREMENT)  # .--\ng5[3][0b100] = CC(ConsumerControlCode.BRIGHTNESS_DECREMENT)  # -..\ng5[3][0b101] = CC(ConsumerControlCode.EJECT)                 # -.-\n\n# \u2500\u2500 Application launch \u2014 4-symbol patterns \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# adafruit_hid only gained the AL_* names in recent bundles. Rather than skip\n# these entries on an older bundle, resolve each by name and fall back to its\n# raw usage ID from the USB HID Usage Tables, Consumer Page (0x0C). Those IDs\n# are fixed by the spec, so the fallback is always correct and these codes\n# work on every bundle version.\n#\n# These take the codes of the letters b / f / l\n# (-.-. was already free here, since g1 uses it for LEFT_CONTROL).\n# _cc() is defined at the top of this file, so launchers work in ANY group,\n# e.g. in Group 2:  g2[6][0b101010] = _cc('AL_CALCULATOR', 0x192)   # -.-.-.\n\ng5[4][0b1010] = _cc('AL_CALCULATOR',            0x192)   # -.-.  C  calculator\ng5[4][0b0010] = _cc('AL_LOCAL_MACHINE_BROWSER', 0x194)   # ..-.  F  file explorer\ng5[4][0b1000] = _cc('AL_INTERNET_BROWSER',      0x196)   # -...  B  web browser\ng5[4][0b0100] = _cc('AL_EMAIL_READER',          0x18A)   # .-..  L  mai-L\n\n# SLEEP (--.. Z) and POWER (.--. P) are deliberately NOT mapped. A 4-symbol\n# pattern is too easy to hit by accident in a group whose 1\u20133 symbol patterns\n# are routine media keys, and an unintended shutdown or sleep is far more\n# disruptive than a stray volume change. --.. and .--. therefore keep the\n# letters z and p below.\n\n# \u2500\u2500 Letters and numbers \u2014 same codes as Group 1. Change what is between the quotes. \u2500\u2500\ng5[4][0b1110]='c'           # ---.\ng5[3][0b110]='g'            # --.\ng5[4][0b0000]='h'           # ....\ng5[4][0b0111]='j'           # .---\ng5[4][0b1111]='m'           # ----\ng5[3][0b111]='o'            # ---\ng5[4][0b0110]='p'           # .--.\ng5[4][0b1101]='q'           # --.-\ng5[4][0b0001]='v'           # ...-\ng5[4][0b1001]='x'           # -..-\ng5[4][0b1011]='y'           # -.--\ng5[4][0b1100]='z'           # --..\ng5[5][0b01111]='1'          # .----\ng5[5][0b00111]='2'          # ..---\ng5[5][0b00011]='3'          # ...--\ng5[5][0b00001]='4'          # ....-\ng5[5][0b00000]='5'          # .....\ng5[5][0b10000]='6'          # -....\ng5[5][0b11000]='7'          # --...\ng5[5][0b11100]='8'          # ---..\ng5[5][0b11110]='9'          # ----.\ng5[5][0b11111]='0'          # -----\n\ngroups[5] = g5\n\n############################################\n# Groups 6, 7, 8 \u2014 YOUR placeholder groups (customise these)\n############################################\n# Each group below starts with Group 1's letters and numbers, written out line\n# by line, so your Morse muscle memory works right away. To make a code do\n# something else, just change what is between the quotes on its line \u2014 or\n# replace the quoted text with any of these:\n#   a phrase          'My favourite string here'\n#   a secret          _secret('mykey')          (then add mykey in AeroMorse Secrets)\n#   a key             Keycode.ENTER             or a combination: Keycode.CONTROL, Keycode.C\n#   an app launcher   _cc('AL_CALCULATOR', 0x192)\n#   a command         'mclick left 1'           (see Group 2 for the commands)\n# Reach a group with its Group 0 code:  g6 .....---   g7 ...-----   g8 ..------\n\ng6 = groups[6] = init_group()\ng7 = groups[7] = init_group()\ng8 = groups[8] = init_group()\ng9 = groups[9] = init_group()\n\n# \u2500\u2500 Group 6  (reach it with .....---) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Your entries:\ng6[3][0b010]=_secret('bank_login')   # .-.  R\n# Letters and numbers \u2014 change what is between the quotes:\ng6[2][0b01]='a'             # .-\ng6[4][0b1000]='b'           # -...\ng6[4][0b1110]='c'           # ---.\ng6[3][0b100]='d'            # -..\ng6[1][0b0]='e'              # .\ng6[4][0b0010]='f'           # ..-.\ng6[3][0b110]='g'            # --.\ng6[4][0b0000]='h'           # ....\ng6[2][0b00]='i'             # ..\ng6[4][0b0111]='j'           # .---\ng6[3][0b101]='k'            # -.-\ng6[4][0b0100]='l'           # .-..\ng6[4][0b1111]='m'           # ----\ng6[2][0b10]='n'             # -.\ng6[3][0b111]='o'            # ---\ng6[4][0b0110]='p'           # .--.\ng6[4][0b1101]='q'           # --.-\ng6[3][0b000]='s'            # ...\ng6[1][0b1]='t'              # -\ng6[3][0b001]='u'            # ..-\ng6[4][0b0001]='v'           # ...-\ng6[3][0b011]='w'            # .--\ng6[4][0b1001]='x'           # -..-\ng6[4][0b1011]='y'           # -.--\ng6[4][0b1100]='z'           # --..\ng6[5][0b01111]='1'          # .----\ng6[5][0b00111]='2'          # ..---\ng6[5][0b00011]='3'          # ...--\ng6[5][0b00001]='4'          # ....-\ng6[5][0b00000]='5'          # .....\ng6[5][0b10000]='6'          # -....\ng6[5][0b11000]='7'          # --...\ng6[5][0b11100]='8'          # ---..\ng6[5][0b11110]='9'          # ----.\ng6[5][0b11111]='0'          # -----\n\n# \u2500\u2500 Group 7  (reach it with ...-----) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Your entries:\ng7[3][0b010] = 'My favourite string here'   # .-.  R\ng7[3][0b000] = 'Frequently typed phrase'    # ...  S\n# Letters and numbers \u2014 change what is between the quotes:\ng7[2][0b01]='a'             # .-\ng7[4][0b1000]='b'           # -...\ng7[4][0b1110]='c'           # ---.\ng7[3][0b100]='d'            # -..\ng7[1][0b0]='e'              # .\ng7[4][0b0010]='f'           # ..-.\ng7[3][0b110]='g'            # --.\ng7[4][0b0000]='h'           # ....\ng7[2][0b00]='i'             # ..\ng7[4][0b0111]='j'           # .---\ng7[3][0b101]='k'            # -.-\ng7[4][0b0100]='l'           # .-..\ng7[4][0b1111]='m'           # ----\ng7[2][0b10]='n'             # -.\ng7[3][0b111]='o'            # ---\ng7[4][0b0110]='p'           # .--.\ng7[4][0b1101]='q'           # --.-\ng7[1][0b1]='t'              # -\ng7[3][0b001]='u'            # ..-\ng7[4][0b0001]='v'           # ...-\ng7[3][0b011]='w'            # .--\ng7[4][0b1001]='x'           # -..-\ng7[4][0b1011]='y'           # -.--\ng7[4][0b1100]='z'           # --..\ng7[5][0b01111]='1'          # .----\ng7[5][0b00111]='2'          # ..---\ng7[5][0b00011]='3'          # ...--\ng7[5][0b00001]='4'          # ....-\ng7[5][0b00000]='5'          # .....\ng7[5][0b10000]='6'          # -....\ng7[5][0b11000]='7'          # --...\ng7[5][0b11100]='8'          # ---..\ng7[5][0b11110]='9'          # ----.\ng7[5][0b11111]='0'          # -----\n\n# \u2500\u2500 Group 8  (reach it with ..------) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Your entries:\ng8[3][0b010] = 'My favourite string here'   # .-.  R\ng8[3][0b000] = 'Frequently typed phrase'    # ...  S\n# Letters and numbers \u2014 change what is between the quotes:\ng8[2][0b01]='a'             # .-\ng8[4][0b1000]='b'           # -...\ng8[4][0b1110]='c'           # ---.\ng8[3][0b100]='d'            # -..\ng8[1][0b0]='e'              # .\ng8[4][0b0010]='f'           # ..-.\ng8[3][0b110]='g'            # --.\ng8[4][0b0000]='h'           # ....\ng8[2][0b00]='i'             # ..\ng8[4][0b0111]='j'           # .---\ng8[3][0b101]='k'            # -.-\ng8[4][0b0100]='l'           # .-..\ng8[4][0b1111]='m'           # ----\ng8[2][0b10]='n'             # -.\ng8[3][0b111]='o'            # ---\ng8[4][0b0110]='p'           # .--.\ng8[4][0b1101]='q'           # --.-\ng8[1][0b1]='t'              # -\ng8[3][0b001]='u'            # ..-\ng8[4][0b0001]='v'           # ...-\ng8[3][0b011]='w'            # .--\ng8[4][0b1001]='x'           # -..-\ng8[4][0b1011]='y'           # -.--\ng8[4][0b1100]='z'           # --..\ng8[5][0b01111]='1'          # .----\ng8[5][0b00111]='2'          # ..---\ng8[5][0b00011]='3'          # ...--\ng8[5][0b00001]='4'          # ....-\ng8[5][0b00000]='5'          # .....\ng8[5][0b10000]='6'          # -....\ng8[5][0b11000]='7'          # --...\ng8[5][0b11100]='8'          # ---..\ng8[5][0b11110]='9'          # ----.\ng8[5][0b11111]='0'          # -----\n\n# \u2500\u2500 Group 9 \u2014 the SWITCH group (config.py SWITCH_GROUP = 9) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# No Morse here: a sip holds SWITCH_SIP_KEY and a puff holds SWITCH_PUFF_KEY, so\n# a code assigned to g9 could never be typed. None are defined. (Set\n# SWITCH_GROUP = 0 in config.py to use Group 9 as an ordinary group instead.)\n", "config": "# AeroMorse \u2014 User Configuration\n#\n# AeroMorse config.py \u2014 version 1.28 (released 2026-10-09)\n# Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse\n#\n# Edit a value, save, and the Feather auto-reloads. You should not need to\n# open code.py.\n#\n# Each setting has a one-line hint here. For the full explanation (what it\n# does, what other values mean, when to change it) see the Key Settings\n# table in **Build Guide \u00a710 Configuration** \u2014 every setting in this file\n# has a row in that table, with the same name.\n\nimport board   # board.D5 / D6 / A0 referenced below\n\n\n# \u2500\u2500 True/False are case-insensitive \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Python normally only accepts True / False (capitalised). These aliases let\n# you also write true, false, TRUE, or FALSE for any on/off setting below, so\n# a value like  USE_WIRELESS_DISPLAY = false  works instead of crashing the\n# board. (Do NOT put quotes around it \u2014 \"false\" in quotes is text, not off.)\ntrue  = TRUE  = True\nfalse = FALSE = False\n\n\n# \u2500\u2500 DEVICE NAME \u2014 what the computer calls this AeroMorse \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Shown in Windows Settings > Bluetooth & devices (and similar lists on\n# other computers) instead of \"Feather ESP32-S3 Reverse TFT\". Handy when you\n# have more than one, e.g. \"AeroMorse Green\" and \"AeroMorse Blue\".\n# Letters, digits, spaces and basic punctuation, up to 40 characters, in quotes.\n# Takes effect after you UNPLUG and replug the device (not on save). If\n# Windows still shows the old name, remove the device in that list and replug.\n\nDEVICE_NAME = \"AeroMorse\"\n\n\n# \u2500\u2500 INPUT \u2014 sensor / switches / thresholds \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nUSE_SENSOR        = True      # True = LPS33HW sensor; False = AT switches on D5/D6\nTHRESH_SIP        = 2         # hPa below baseline = dot (raise if false triggers)\nTHRESH_PUFF       = 2         # hPa above baseline = dash\nDEBOUNCE_SAMPLES  = 3         # consecutive agreeing readings to confirm a state change (a few ms each)\nBASELINE_DRIFT_S  = 30        # auto-zero: follows slow ambient pressure drift while idle; 0 disables.\n                              # (Nominal seconds; in practice it settles in roughly a quarter of that.)\n\n# Split on a dip \u2014 for two quick sips or puffs in a row that run together\n# (p .--. comes out as r .-.,  space ..-- as w .--). A sip/puff that drops\n# below REPEAT_SPLIT_PCT % of its peak and then climbs again by 1 hPa is\n# counted as two. Try 60. 0 = off.\nREPEAT_SPLIT_PCT  = 0         # 0 = off; 60 = split when it dips below 60 % of its peak\n\n# Diagnostics \u2014 for tracking down \"it types badly until I restart it\". Every\n# DIAG_LOG_S seconds one \"DIAG ...\" line of timing figures goes to the USB\n# serial log (nothing is typed on the computer). The first / worst / last\n# line are saved on `devicereset`, and by themselves every 5 minutes while\n# you type, so they survive an unplug; the next run prints them as\n# \"DIAG PREV ...\". Switch it off again (0) once the problem is found.\nDIAG_LOG_S        = 0         # 0 = off; 10 = one line every 10 seconds\n\nDOT_PIN           = board.D5  # switch-mode only \u2014 TIP of dot jack\nDASH_PIN          = board.D6  # switch-mode only \u2014 TIP of dash jack\n\n\n# \u2500\u2500 INPUT MODE \u2014 1 / 2 / 3 switch \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# 1 = single-switch timed,  2 = paddle (default),  3 = paddle + explicit Accept\n\nSWITCH_MODE          = 2\nONE_SWITCH_INPUT     = \"dot\"        # mode 1 only \u2014 \"dot\" or \"dash\" (any case)\nONE_SWITCH_DOT_MS    = 200          # mode 1 only \u2014 press \u2264 this ms = dot, longer = dash\nTHIRD_SWITCH_GESTURE = \"long_dash\"  # mode 3 only \u2014 \"long_dash\" or \"long_dot\" = Accept (any case)\n\n\n# \u2500\u2500 STRONG SIP / STRONG PUFF \u2014 distinct gesture for group jumps or actions \u2500\n# Sensor mode: peak pressure \u2265 THRESH_*_STRONG fires the action.\n# Switch mode: long-press of the corresponding switch fires the action,\n#              and overrides LONG_PRESS_CYCLES_GROUP on that switch.\n# Set ACTION = \"\" to disable.\n\nSTRONG_SIP_ACTION  = \"group 2\"        # e.g. \"group 2\" to jump to Mouse on strong sip (any case)\nSTRONG_PUFF_ACTION = \"group 1\"        # e.g. \"group 1\" to jump to Keyboard on strong puff (any case)\nTHRESH_SIP_STRONG  = 15        # hPa \u2014 sensor mode only\nTHRESH_PUFF_STRONG = 15        # hPa \u2014 sensor mode only\nSTRONG_OFF_IN_GROUPS = (4,)    # groups where strong sip/puff is OFF \u2014 a hard sip/puff\n                               # there is just a normal dot/dash. (4,) = Scanning, so a\n                               # hard sip/puff can't knock you out of Switch Control.\n                               # e.g. (4, 3) for several groups, () = on everywhere.\n# A strong sip/puff only counts as the FIRST breath of a code; in the middle of\n# a code a hard sip/puff is just a normal dot/dash (so ---.- with a hard sip works).\n\n\n# \u2500\u2500 SWITCH GROUP \u2014 sip / puff act like two plain switches \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# In this group there is no Morse: a sip presses SWITCH_SIP_KEY and a puff\n# presses SWITCH_PUFF_KEY the moment it starts, and HOLDS the key down until\n# the sip/puff ends \u2014 for switch-accessible games and scanning apps (e.g.\n# Benny's Hub: Space = move, Enter = select) that need a key held.\n# Get there with its Group 0 code (Group 9: .-------). It goes back to\n# SWITCH_EXIT_GROUP BY ITSELF after SWITCH_IDLE_EXIT_S seconds with no sip or\n# puff \u2014 just stop and wait when you're done. (Or hold one puff for\n# SWITCH_EXIT_PUFF_S seconds.) Hard or long sips/puffs never leave it otherwise.\n\nSWITCH_GROUP      = 9          # group number to use as the Switch group; 0 = none\n                               # (9 = the last group since v1.24; it was 7 before)\nSWITCH_SIP_KEY    = \"ENTER\"    # key held while sipping  (a Keycode name)\nSWITCH_PUFF_KEY   = \"SPACE\"    # key held while puffing  (a Keycode name)\nSWITCH_IDLE_EXIT_S = 20        # seconds with no sip/puff before leaving by itself (0 = never)\nSWITCH_EXIT_PUFF_S = 5.0       # or hold one puff this many seconds to leave\nSWITCH_EXIT_GROUP = 1          # group to go to when leaving (1 = Keyboard)\nSWITCH_COUNTDOWN_S = 10       # show e.g. \"KEYBOARD IN 5\" for the last N seconds before leaving (0 = off)\n\n\n# \u2500\u2500 TIMING \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nACCEPT_DELAY      = 0.3        # idle seconds before pattern commits (sip-puff often 0.3\u20130.7; lower = faster)\nMOUSE_ACCEPT_DELAY = 0.15      # like ACCEPT_DELAY but ONLY in Group 2 (mouse): shorter\n                              # so clicks fire sooner, while keyboard typing keeps\n                              # ACCEPT_DELAY. Must stay above your gap BETWEEN the\n                              # symbols of a pattern or mouse patterns split. Lower =\n                              # snappier clicks. Delete this line to disable (mouse\n                              # then uses ACCEPT_DELAY like everything else).\nLONG_PRESS        = 1.0        # seconds to hold for cycle / Accept gesture\n\n\n# \u2500\u2500 CODE REPEAT (Darci-style hold-to-repeat) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# When CODE_REPEAT = True, holding DIT or DAH emits one symbol per repeat\n# interval. SWITCH_MODE = 2 only.\n\nCODE_REPEAT             = False    # True = Darci-style hold-to-repeat\nDOT_REPEAT_MS           = 200      # ms per auto-repeated dot\nDASH_REPEAT_MS          = 600      # ms per auto-repeated dash (~3\u00d7 dot)\nCODE_REPEAT_MAX         = 8        # cap on symbols per held stream\nLONG_PRESS_CYCLES_GROUP = True     # False with CODE_REPEAT = True; cycle via g0 codes instead\n\n\n# \u2500\u2500 AUDIO \u2014 speaker pitches (Hz) and blip durations (s) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nAUDIO_PIN         = board.A0\n\nBEEP_DOT_FREQ     = 1200       # dot (sip) sidetone \u2014 higher pitch\nBEEP_DASH_FREQ    =  800       # dash (puff) sidetone \u2014 lower pitch\nCONFIRM_FREQ      = 1050       # short blip when an action fires\nGROUP_FREQ        =  550       # short blip on group change\n\nBEEP_CONFIRM_S    = 0.06       # confirm-blip duration\nBEEP_GROUP_S      = 0.14       # group-change blip duration\n\n\n# \u2500\u2500 MOUSE \u2014 group-2 movement speeds and repeat tick \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Effective pixels per step = raw direction \u00d7 SPEED \u00d7 MOUSE_SPEED_FACTOR\n\nMOUSE_SPEED_NORMAL = 2         # default speed in group 2\nMOUSE_SPEED_SLOW   = 1         # toggled via `mslow`\nMOUSE_SPEED_FAST   = 3         # toggled via `mfast`\nMOUSE_SPEED_FACTOR = 2         # overall scale\nMOUSE_REPEAT_DELAY = 0.040     # seconds between repeat ticks\n\nMOUSE_CLICK_MOD_DELAY = 0.030  # s to settle a modifier before/after a click\nMOUSE_CLICK_KEEPS_MODS = True  # True = armed mods survive a click (Ctrl+click\n                               # multi-select); False = one-shot, cleared after\nMOUSE_CLICK_HOLD = 0.060       # s to hold the button down per click. 0 = instant\n                               # press/release, which Windows scrollbar tracks &\n                               # some controls ignore; ~60 ms registers reliably\nMOUSE_CLICK_GAP  = 0.040       # s between the two clicks of a double-click\n\n\n# \u2500\u2500 REPEAT EXCLUSIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Keys that must NEVER auto-repeat, listed by adafruit_hid Keycode name.\n# Pressing `repeat` right after one of these does nothing (repeat needs a\n# repeatable action first). Page keys are here because an accidental repeat\n# scrolls far past where you were and you lose your place. Add others you\n# don't want to repeat, e.g. \"HOME\", \"END\", \"ESCAPE\", \"TAB\". Arrow keys are\n# intentionally NOT here \u2014 arrow + repeat is the preferred way to scroll.\n# A key combination can be listed too: join the names with +, e.g. \"ALT+TAB\"\n# or \"GUI+TAB\". That blocks exactly that combination (keys in any order); the\n# same keys on their own still follow the single-key entries.\nNO_REPEAT_KEYS = (\"PAGE_UP\", \"PAGE_DOWN\")\n\n\n# \u2500\u2500 SECRETS \u2014 PIN-locked passwords (macro_secrets.enc) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n# Only used when macro_secrets.enc (made with the AeroMorse Secrets PC tool) is\n# on the device. It is always locked at power-up; this adds an idle auto-lock.\n\nSECRETS_AUTOLOCK_MIN = 0       # minutes with no sip/puff before secrets re-lock;\n                               # 0 = stay unlocked until power-off or `lock` (Macro L)\n\n\n# \u2500\u2500 DISPLAY / WIRELESS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nUSE_DISPLAY          = True    # True = this board has a built-in screen (the default\n                              # #5691 Reverse TFT). Set False for a board with NO\n                              # screen (e.g. an ESP-NOW sender): the device still\n                              # types and still broadcasts to a wireless receiver;\n                              # only the local screen is skipped. (A missing screen\n                              # is also auto-detected, so a screenless board won't\n                              # crash even if this is left True.)\n                              # Also set False if the board HAS a screen but you\n                              # only watch the wireless display: the built-in\n                              # screen is blanked and its backlight switched off,\n                              # which removes screen-drawing pauses of 60-100 ms\n                              # that can swallow a quick sip or puff (v1.22+).\nDISPLAY_BRIGHTNESS   = 1.0      # screen backlight: 0.1 (dim) to 1.0 (full); applies on save\nDISPLAY_ROTATION     = 0       # degrees: 0 = USB left, 180 = USB right (also 90, 270)\nUSE_WIRELESS_DISPLAY = False   # True = ESP-NOW broadcast to a wireless receiver (adds ~80\u2013100 mA, ESP32-only). Set True only if you have a receiver.\nESPNOW_CHANNEL       = 1        # WiFi channel (1\u201313) \u2014 display's receiver_config.py ESPNOW_CHANNEL must match\nKEYBOARD_LAYOUT      = \"US\"    # the keyboard layout the COMPUTER is set to. \"US\" needs nothing extra.\n                              # If symbols come out wrong (@ and \" swapped, # giving a pound sign ...)\n                              # the computer uses another layout: copy that layout's file into /lib\n                              # and name it here, e.g. \"win_uk\", \"win_de\", \"win_fr\" (v1.28+; see the\n                              # Build Guide, Appendix I). Missing or faulty file = US is used.\nPC_DISPLAY           = False   # True = also report the display to the \"AeroMorse Display\" window on the\n                              # computer, over the USB cable (v1.26+). No extra hardware. Leave False\n                              # unless you use that program.\nPC_SOUND             = False   # True = the same program also plays the beeps (a tone for each dot and\n                              # dash, a blip when an action fires) through the COMPUTER's speakers \u2014\n                              # for a device with no speaker. Needs PC_DISPLAY = True, and \"Sound\"\n                              # switched on in the program's right-click menu.\n"};</script>
+  <script>
+    document.getElementById('file-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('file-name-display').textContent = `Loaded: ${file.name} — click any row to hear its Morse tones.`;
+      const reader = new FileReader();
+      reader.onload = function(e) { processMorseData(e.target.result); };
+      reader.readAsText(file);
+    });
+
+    function formatKeyPart(part) {
+      part = part.trim().replace(/^Keycode\./, '');
+
+      const exactMap = {
+        'UP_ARROW':   '↑',  'DOWN_ARROW':  '↓',
+        'LEFT_ARROW': '←',  'RIGHT_ARROW': '→',
+        'ENTER':      '⏎',  'TAB':         '⇥',
+        'BACKSPACE':  '⌫',  'BACKSLASH':   '\\',
+        'LEFT_GUI':  'LEFT ⊞/⌘', 'RIGHT_GUI': 'RIGHT ⊞/⌘',
+        'EQUALS': '=', 'MINUS': '-', 'COMMA': ',', 'PERIOD': '.', 'FORWARD_SLASH': '/',
+        'SEMICOLON': ';', 'QUOTE': "'", 'LEFT_BRACKET': '[', 'RIGHT_BRACKET': ']',
+        'GRAVE_ACCENT': '`'
+      };
+      if (Object.prototype.hasOwnProperty.call(exactMap, part)) return exactMap[part];
+
+      part = part.replace(/RIGHT_CONTROL/g,  'RCTRL');
+      part = part.replace(/LEFT_CONTROL/g,   'LCTRL');
+      part = part.replace(/CONTROL/g,        'CTRL');
+      part = part.replace(/RIGHT_SHIFT/g,    'RShift');
+      part = part.replace(/LEFT_SHIFT/g,     'LShift');
+      part = part.replace(/SHIFT/g,          'Shift');
+      part = part.replace(/RIGHT_ALT/g,      'RALT');
+      part = part.replace(/LEFT_ALT/g,       'LALT');
+      part = part.replace(/ALT/g,            'Alt');
+      part = part.replace(/RIGHT_GUI/g,      'RIGHT ⊞/⌘');
+      part = part.replace(/LEFT_GUI/g,       'LEFT ⊞/⌘');
+      part = part.replace(/GUI/g,            '⊞/⌘');
+      part = part.replace(/KEYPAD_NUMLOCK/g,        'KP NumLk');
+      part = part.replace(/KEYPAD_FORWARD_SLASH/g,  'KP /');
+      part = part.replace(/KEYPAD_ENTER/g,          'KP ⏎');
+      part = part.replace(/KEYPAD_PERIOD/g,         'KP .');
+      part = part.replace(/KEYPAD_PLUS/g,           'KP +');
+      part = part.replace(/KEYPAD_MINUS/g,          'KP -');
+      part = part.replace(/KEYPAD_EQUALS/g,         'KP =');
+      part = part.replace(/KEYPAD_ASTERISK/g,       'KP *');
+      part = part.replace(/KEYPAD/g,                'KP');
+      part = part.replace(/PRINT_SCREEN/g,  'PrtScn');
+      part = part.replace(/ESCAPE/g,        'ESC');
+      part = part.replace(/DELETE/g,        'DEL');
+      part = part.replace(/CAPS_LOCK/g,     'CAPS');
+      part = part.replace(/INSERT/g,        'INS');
+      part = part.replace(/SCROLL_LOCK/g,   'ScrLk');
+      part = part.replace(/NUMLOCK/g,       'NumLk');
+      part = part.replace(/PAGE_UP/g,       'PgUp');
+      part = part.replace(/PAGE_DOWN/g,     'PgDn');
+      part = part.replace(/APPLICATION/g,   'Menu');
+      part = part.replace(/_/g, ' ');
+      return part.trim();
+    }
+
+    /* ── String-command → badge label/class lookup ────────────────────────── */
+    const CMD_MAP = {
+      'group 0':  { label: '→ Group 0 - Base',      cls: 'grp' },
+      'group 1':  { label: '→ Group 1 - Keyboard',  cls: 'grp' },
+      'group 2':  { label: '→ Group 2 - Mouse',     cls: 'grp' },
+      'group 3':  { label: '→ Group 3 - Macros',    cls: 'grp' },
+      'group 4':  { label: '→ Group 4 - Scanning',  cls: 'grp' },
+      'group 5':  { label: '→ Group 5 - Media',     cls: 'grp' },
+      'group 6':  { label: '→ Group 6',             cls: 'grp' },
+      'group 7':  { label: '→ Group 7',             cls: 'grp' },
+      'group 8':  { label: '→ Group 8',             cls: 'grp' },
+      'group 9':  { label: '→ Group 9',             cls: 'grp' },
+
+      'mmove 0 -1 0':   { label: 'Move ↑',         cls: 'mse' },
+      'mmove 0 1 0':    { label: 'Move ↓',         cls: 'mse' },
+      'mmove -1 0 0':   { label: 'Move ←',         cls: 'mse' },
+      'mmove 1 0 0':    { label: 'Move →',         cls: 'mse' },
+      'mmove -1 -1 0':  { label: 'Move ↖',         cls: 'mse' },
+      'mmove 1 -1 0':   { label: 'Move ↗',         cls: 'mse' },
+      'mmove -1 1 0':   { label: 'Move ↙',         cls: 'mse' },
+      'mmove 1 1 0':    { label: 'Move ↘',         cls: 'mse' },
+      'mmove 0 0 1':    { label: 'Scroll ↑',       cls: 'mse' },
+      'mmove 0 0 -1':   { label: 'Scroll ↓',       cls: 'mse' },
+
+      'mclick left 1':  { label: 'Click left',     cls: 'mse' },
+      'mclick right 1': { label: 'Click right',    cls: 'mse' },
+      'mclick left 2':  { label: 'Dbl-click left', cls: 'mse' },
+      'mclick right 2': { label: 'Dbl-click right',cls: 'mse' },
+      'mdrag left':     { label: 'Toggle drag L',  cls: 'mse' },
+      'mdrag right':    { label: 'Toggle drag R',  cls: 'mse' },
+
+      'mslow':   { label: 'Slow speed',   cls: 'mse' },
+      'mfast':   { label: 'Fast speed',   cls: 'mse' },
+      'version':     { label: 'Show version screen',        cls: 'sys' },
+      'devicereset': { label: 'Restart device (confirm y)', cls: 'sys' },
+
+      'repeat':  { label: 'Repeat last',  cls: 'sys' },
+
+      'unlock':  { label: 'Unlock secrets (PIN)', cls: 'sec' },
+      'lock':    { label: 'Lock secrets',         cls: 'sec' },
+    };
+
+    /* ── Group 4 — iOS Switch Control labels for F1..F12 ──────────────────────
+       The "Switch Control" group sends F1..F12 because that's what iOS expects
+       to receive from an external switch interface. These badges show the
+       *iOS Switch Control action* each F-key triggers, so the printed cheat
+       sheet doubles as a reference card for the iOS user. Source: the
+       Cross-Platform Comparison table from 12-Switch Recommended Mapping.md. */
+    const IOS_F_KEY_LABELS = {
+      '⏎':     'Select Item',   /* single sip  = Enter (was F1 before v1.14) */
+      'SPACE': 'Next Item',     /* single puff = Space (was F2 before v1.14) */
+      'F3':  'Previous Item',
+      'F4':  'Scanner Menu',
+      'F5':  'Home',
+      'F6':  'Tap',
+      'F7':  'Long Press',
+      'F8':  'Scroll Down',
+      'F9':  'Scroll Up',
+      'F10': 'App Switcher',
+      'F11': 'Notif/Control Center',
+      'F12': 'Siri',
+    };
+
+    /* ── ConsumerControlCode name → readable label ─────────────────────────
+       Covers both forms used in morse_map.py:
+         CC(ConsumerControlCode.PLAY_PAUSE)      — media keys
+         _cc('AL_CALCULATOR', 0x192)             — launchers, name + spec-ID
+                                                   fallback for old bundles
+       AL_* is the HID spec's "Application Launch" prefix; spelling those out
+       verbatim would read "Al Local Machine Browser", so the common ones get
+       a hand-written label. */
+    const CC_LABELS = {
+      'AL_CALCULATOR':            'Calculator',
+      'AL_LOCAL_MACHINE_BROWSER': 'File Explorer',
+      'AL_INTERNET_BROWSER':      'Web Browser',
+      'AL_EMAIL_READER':          'Mail',
+      'AL_CONSUMER_CONTROL_CONFIGURATION': 'Media Player',
+      'SCAN_NEXT_TRACK':          'Next Track',
+      'SCAN_PREVIOUS_TRACK':      'Prev Track',
+      'VOLUME_INCREMENT':         'Volume +',
+      'VOLUME_DECREMENT':         'Volume -',
+      'BRIGHTNESS_INCREMENT':     'Brightness +',
+      'BRIGHTNESS_DECREMENT':     'Brightness -',
+      'PLAY_PAUSE':               'Play / Pause',
+      'FAST_FORWARD':             'Fast Forward',
+    };
+
+    /* Turn a ConsumerControlCode constant name into { label, cls }. */
+    function formatConsumerCode(name) {
+      name = name.trim().replace(/^ConsumerControlCode\./, '').replace(/^['"]|['"]$/g, '');
+      const isLauncher = name.indexOf('AL_') === 0;
+      let label = CC_LABELS[name];
+      if (!label) {
+        /* Fall back to title-casing, dropping the AL_ prefix if present. */
+        label = name.replace(/^AL_/, '')
+                    .replace(/_/g, ' ')
+                    .toLowerCase()
+                    .replace(/\b\w/g, c => c.toUpperCase());
+      }
+      return { label: label, cls: isLauncher ? 'app' : 'med' };
+    }
+
+    /* ── Print-only legend copy ────────────────────────────────────────────
+       Clones the on-screen legend strip (the badge colour key) so the same
+       key can be appended to the bottom of the first printed page. The on-
+       screen original is hidden in print, so the two never both appear. */
+    function buildLegendForPrint() {
+      const src = document.getElementById('legend');
+      const wrap = document.createElement('div');
+      wrap.className = 'legend-print';
+
+      const h = document.createElement('h3');
+      h.textContent = 'Legend';
+      wrap.appendChild(h);
+
+      const strip = document.createElement('div');
+      strip.className = 'legend-print-strip';
+      strip.innerHTML = src ? src.innerHTML : '';
+      wrap.appendChild(strip);
+      return wrap;
+    }
+
+    /* ── Switch group (config.py SWITCH_GROUP) ─────────────────────────────
+       In that group AeroMorse is NOT Morse: a sip holds one key and a puff holds
+       another. Whatever morse_map.py lists for that group can never be typed, so
+       the sheet shows the two real actions instead. The settings come from the
+       config.py next to this page when it can be read (the PDF builder serves
+       it); otherwise the shipped defaults below are used. SWITCH_GROUP = 0 means
+       no Switch group — the group is then printed from morse_map.py as usual. */
+    const SWITCH_CFG = { group: 9, sip: 'ENTER', puff: 'SPACE', idle: 20, exitPuff: 5,
+                         exitGroup: 1, countdown: 10 };
+    const SHORT_GROUP_NAMES = ['Base', 'Keyboard', 'Mouse', 'Macros', 'Scanning', 'Media',
+                               'Group 6', 'Group 7', 'Group 8', 'Group 9'];
+
+    function readSwitchConfig(cfgText) {
+      const num = (name) => {
+        const m = cfgText.match(new RegExp('^' + name + '\\s*=\\s*([0-9.]+)', 'm'));
+        return m ? parseFloat(m[1]) : null;
+      };
+      const str = (name) => {
+        const m = cfgText.match(new RegExp('^' + name + '\\s*=\\s*["\']([^"\']*)["\']', 'm'));
+        return m ? m[1].trim().toUpperCase() : null;
+      };
+      const set = (key, v) => { if (v !== null && !(typeof v === 'number' && isNaN(v))) SWITCH_CFG[key] = v; };
+      set('group', num('SWITCH_GROUP'));
+      set('sip', str('SWITCH_SIP_KEY'));
+      set('puff', str('SWITCH_PUFF_KEY'));
+      set('idle', num('SWITCH_IDLE_EXIT_S'));
+      set('exitPuff', num('SWITCH_EXIT_PUFF_S'));
+      set('exitGroup', num('SWITCH_EXIT_GROUP'));
+      set('countdown', num('SWITCH_COUNTDOWN_S'));
+    }
+
+    /* ── Shrink a label that would not fit its column ───────────────────────
+       A long label next to a long code (e.g. "→ Group 2 - Mouse" in the
+       three-column Group 1 page) used to be cut off at the column edge. Work
+       out the room the label has on a PRINTED page — column width minus the
+       dots and dashes in front of it — and, if the text is wider, reduce just
+       that label's font until it fits (never below 55 %). */
+    const PRINT_PAGE_PX = 725;        /* usable width of a printed Letter page, CSS px */
+    const _measureCtx = document.createElement('canvas').getContext('2d');
+    function fitLabelFont(el, symbolCount, colCount, kind, takenPx) {
+      const basePx = kind === 'keybd' ? 19.2 : 16;
+      const family = kind === 'keybd'
+        ? 'Consolas, "Courier New", monospace'
+        : '"Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+      _measureCtx.font = 'bold ' + basePx + 'px ' + family;
+      const need  = _measureCtx.measureText(el.textContent).width + basePx * 1.3 + 4;
+      const colW  = (PRINT_PAGE_PX - 20 * (colCount - 1)) / colCount;
+      const avail = colW - symbolCount * 19 - 14 - (takenPx || 0);
+      if (need > avail) {
+        el.style.fontSize = (basePx * Math.max(0.55, avail / need)).toFixed(1) + 'px';
+      }
+    }
+
+    function niceKeyName(name) {
+      return name.toLowerCase().split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    function processMorseData(dataStr) {
+      const container = document.getElementById('pages-container');
+      container.innerHTML = '';
+
+      const parsedGroups = { g0: [], g1: [], g2: [], g3: [], g4: [], g5: [], g6: [], g7: [], g8: [], g9: [] };
+      const groupNames = {
+        g0: "Group 0: System / Group Toggles",
+        g1: "Group 1: Keyboard",
+        g2: "Group 2: Mouse & Windows",
+        g3: "Group 3: Macros",
+        g4: "Group 4: Scanning - Enter, Space, F3-F12 (Switch Control)",
+        g5: "Group 5: Media + App Launchers (USB HID Consumer Controls)",
+        g6: "Group 6 (placeholder)",
+        g7: "Group 7 (placeholder)",
+        g8: "Group 8 (placeholder)",
+        g9: "Group 9 (placeholder)"
+      };
+
+      const switchKey = (SWITCH_CFG.group >= 1 && SWITCH_CFG.group <= 9) ? 'g' + SWITCH_CFG.group : null;
+      /* The "go to group N" badge of the Switch group says so, whichever group it is. */
+      if (switchKey && CMD_MAP['group ' + SWITCH_CFG.group]) {
+        CMD_MAP['group ' + SWITCH_CFG.group].label = '→ Group ' + SWITCH_CFG.group + ' - Switch';
+      }
+      if (switchKey) {
+        groupNames[switchKey] = 'Group ' + SWITCH_CFG.group + ': Switch - sip holds ' +
+          niceKeyName(SWITCH_CFG.sip) + ', puff holds ' + niceKeyName(SWITCH_CFG.puff) + ' (no Morse)';
+      }
+
+      const regex = /^\s*(g[0-9])\[(\d+)\]\[(0b[01]+)\]\s*=\s*(.*)/;
+
+      dataStr.split('\n').forEach(line => {
+        const match = line.match(regex);
+        if (!match) return;
+
+        const group  = match[1];
+        const length = parseInt(match[2], 10);
+        const binStr = match[3].replace('0b', '').padStart(length, '0');
+        const raw    = match[4].trim();
+
+        let key, cls = null;
+
+        if (raw.startsWith("'") || raw.startsWith('"')) {
+          const q = raw[0];
+          let end = -1;
+          for (let i = 1; i < raw.length; i++) {
+            if (raw[i] === '\\') { i++; continue; }
+            if (raw[i] === q)    { end = i; break; }
+          }
+          let strVal = end !== -1 ? raw.substring(1, end) : raw.slice(1);
+          strVal = strVal.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+
+          /* If the string is a known command, render as a coloured badge.
+             Otherwise it's typed-text — render in <keybd>. */
+          const cmd = CMD_MAP[strVal];
+          if (cmd) { key = cmd.label; cls = cmd.cls; }
+          else     { key = strVal;     cls = null;    }
+        } else if (raw.startsWith('CC(') || raw.startsWith('_cc(')) {
+          /* Group 5 Consumer Controls. Two spellings in morse_map.py:
+               CC(ConsumerControlCode.PLAY_PAUSE)
+               _cc('AL_CALCULATOR', 0x192)
+             For _cc the first argument is the constant name; the second is a
+             raw usage-ID fallback for older adafruit_hid bundles and is not
+             shown. Media keys get a 'med' badge, AL_* launchers get 'app'. */
+          /* Strip must match BOTH spellings exactly — 'CC(' is uppercase and
+             '_cc(' is lowercase, so a case-sensitive /^_?cc\(/ silently misses
+             the CC( form and leaks the prefix into the label. */
+          const inner = raw.split('#')[0].trim().replace(/^(?:CC|_cc)\(/, '').replace(/\)\s*$/, '');
+          const info  = formatConsumerCode(inner.split(',')[0]);
+          key = info.label;
+          cls = info.cls;
+        } else if (raw.startsWith('_secret(')) {
+          /* Private macro pulled from macro_secrets.py: _secret('key', 'ph').
+             The real value is NOT in this file, so the cheat sheet can only
+             ever show the KEY NAME — which is exactly what you want on a
+             printable sheet: it tells you which pattern types your password
+             without ever printing the password. Rendered as a lock badge. */
+          const mm = raw.match(/_secret\(\s*['"]([^'"]+)['"]/);
+          key = mm ? mm[1] : 'secret';
+          cls = 'sec';
+        } else {
+          const noComment = raw.split('#')[0].trim();
+          /* A one-key tuple such as (Keycode.CONTROL,) presses and releases
+             that key by itself — it is how "find pointer" taps Ctrl. */
+          const lone  = /^\(\s*Keycode\.\w+\s*,\s*\)$/.test(noComment);
+          const inner = noComment.replace(/^\(/, '').replace(/\)$/, '');
+          key = inner.split(',').map(formatKeyPart).filter(p => p).join(' + ');
+          if (lone) key = 'Tap ' + key;
+          cls = null;
+        }
+
+        /* Auto-classify modifier / lock keys as 'mod' badges */
+        if (cls === null && key) {
+          const modWords = ['Ctrl', 'CTRL', 'Shift', 'Alt', 'ALT', '⊞/⌘', 'CAPS', 'ScrLk', 'NumLk', 'PrtScn'];
+          if (modWords.some(w => key.includes(w))) cls = 'mod';
+        }
+
+        /* Group 1: display single letters A–Z in uppercase. They're stored
+           lowercase in morse_map.py so that typing actually produces lowercase
+           output by default, but the printed cheat sheet reads better when the
+           letter glyphs are large and capitalised. */
+        if (cls === null && /^[a-z]$/.test(key)) {
+          key = key.toUpperCase();
+        }
+
+        /* Group 4 only: if the key is Enter, Space or F3..F12, look up its iOS Switch Control
+           action so it can be rendered as a small purple badge next to the key. */
+        let iosLabel = null;
+        if (group === 'g4' && IOS_F_KEY_LABELS[key]) {
+          iosLabel = IOS_F_KEY_LABELS[key];
+        }
+
+        parsedGroups[group].push({ length, binStr, key, cls, iosLabel });
+      });
+
+      const sortKeys = (a, b) => {
+        const arrowOrder = { '←': 1, '↑': 2, '↓': 3, '→': 4 };
+        /* Sort: badges (grp / sys / mod / mse / med / app) sink to the bottom of
+           each page so the printable keyboard rows on top stay clean. Within
+           badge classes, group them so all 'Move ↑/↓/←/→' land together, and
+           so g5's launchers sit directly under its media keys. */
+        const getRank = item => {
+          const str = item.key;
+          if (str === '' || str === undefined) return 99;
+          if (item.cls === 'mse') return 50;
+          if (item.cls === 'med') return 51;
+          if (item.cls === 'app') return 52;
+          if (item.cls === 'sec') return 53;
+          if (item.cls === 'mod') return 54;
+          if (item.cls === 'sys') return 55;
+          if (item.cls === 'grp') return 56;
+          if (arrowOrder[str]) return 4;
+          if (str.length === 1 && /[a-zA-Z]/.test(str)) return 1;
+          if (str.length === 1 && /[0-9]/.test(str)) return 2;
+          if (str.length === 1) return 3;
+          return 5;
+        };
+        const ra = getRank(a), rb = getRank(b);
+        if (ra !== rb) return ra - rb;
+        if (ra === 4) return arrowOrder[a.key] - arrowOrder[b.key];
+        return a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: 'base' });
+      };
+
+      if (switchKey) {
+        parsedGroups[switchKey] = [
+          { binStr: '0', key: 'Hold ' + niceKeyName(SWITCH_CFG.sip)  + '  (while you sip)',  cls: null, iosLabel: null },
+          { binStr: '1', key: 'Hold ' + niceKeyName(SWITCH_CFG.puff) + '  (while you puff)', cls: null, iosLabel: null },
+        ];
+      }
+
+      let pagesGenerated = false;
+
+      ['g0', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9'].forEach(groupKey => {
+        const groupItems = parsedGroups[groupKey];
+        if (groupItems.length === 0) return;
+
+        pagesGenerated = true;
+        if (groupKey !== switchKey) groupItems.sort(sortKeys);
+
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        pageDiv.dataset.group = groupKey;
+        pageDiv.style.display = 'block';
+
+        const title = document.createElement('h2');
+        title.textContent = groupNames[groupKey];
+        pageDiv.appendChild(title);
+
+        const columnsDiv = document.createElement('div');
+        columnsDiv.className = 'columns';
+        const colCount = groupKey === 'g1' ? 3 : 2;
+        columnsDiv.classList.add(colCount === 3 ? 'cols-3' : 'cols-2');
+
+        /* Fit on ONE printed page when it nearly does. A Letter page holds about
+           FIT_ROWS rows per column at full size, or DENSE_ROWS with tighter row
+           spacing. A group that needs a few more rows (e.g. 26) used to spill its
+           last entries onto a second sheet; tighten the spacing and, if still
+           needed, shrink it just enough instead. Groups that would have to shrink
+           below FIT_MIN (far too many entries) stay at full size on two pages. */
+        const FIT_ROWS = 16, DENSE_ROWS = 23, FIT_MIN = 0.78;
+        const rowsNeeded = Math.ceil(groupItems.length / colCount);
+        if (rowsNeeded > FIT_ROWS && DENSE_ROWS / rowsNeeded >= FIT_MIN) {
+          columnsDiv.classList.add('dense');            /* 1st: tighter row spacing */
+          if (rowsNeeded > DENSE_ROWS) {                /* 2nd: shrink the rest of the way */
+            columnsDiv.style.zoom = (DENSE_ROWS / rowsNeeded).toFixed(3);
+          }
+        }
+
+        groupItems.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'item';
+          /* binStr: 0=dot(.) 1=dash(-) — store as dot/dash pattern for audio */
+          itemDiv.dataset.morse = item.binStr.replace(/0/g, '.').replace(/1/g, '-');
+          itemDiv.title = 'Click to hear Morse tones';
+
+          const seqDiv = document.createElement('div');
+          seqDiv.className = 'morse-seq';
+          for (const char of item.binStr) {
+            seqDiv.appendChild(document.createElement(char === '0' ? 'dot' : 'dash'));
+          }
+
+          const keyDiv = document.createElement('div');
+          keyDiv.className = 'key-output';
+          if (item.key === '') {
+            keyDiv.classList.add('unassigned');
+            keyDiv.textContent = '[Unassigned]';
+          } else if (item.cls) {
+            /* Coloured badge for group / mouse / media / modifier / system commands */
+            const badge = document.createElement('cmd');
+            badge.className = item.cls;
+            let prefix = '';
+            if (item.cls === 'mse') prefix = '\u{1F5B1}\u{FE0E} ';   /* mouse */
+            if (item.cls === 'med') prefix = '\u{1F3B5} ';            /* music note for media */
+            if (item.cls === 'app') prefix = '\u{1F5C2}\u{FE0E} ';    /* launcher */
+            if (item.cls === 'sec') prefix = '\u{1F512} ';            /* lock — private secret */
+            badge.textContent = prefix + item.key;
+            fitLabelFont(badge, item.binStr.length, colCount, 'cmd', 0);
+            keyDiv.appendChild(badge);
+          } else {
+            /* Group 4: prepend the iOS Switch Control action as a small purple
+               badge BEFORE the F-key pill, so the user reads "what iOS will do"
+               first and the literal F-key second. */
+            if (item.iosLabel) {
+              const iosBadge = document.createElement('cmd');
+              iosBadge.className = 'ios';
+              iosBadge.textContent = item.iosLabel;
+              iosBadge.style.marginRight = '8px';
+              keyDiv.appendChild(iosBadge);
+            }
+            const keybd = document.createElement('keybd');
+            keybd.textContent = item.key;
+            fitLabelFont(keybd, item.binStr.length, colCount, 'keybd',
+                         item.iosLabel ? item.iosLabel.length * 9 + 32 : 0);
+            keyDiv.appendChild(keybd);
+          }
+
+          /* Speaker icon — hidden in print via CSS */
+          const hint = document.createElement('span');
+          hint.className = 'audio-hint';
+          hint.setAttribute('aria-hidden', 'true');
+          hint.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+
+          itemDiv.appendChild(seqDiv);
+          itemDiv.appendChild(keyDiv);
+          itemDiv.appendChild(hint);
+          columnsDiv.appendChild(itemDiv);
+        });
+
+        pageDiv.appendChild(columnsDiv);
+
+        if (groupKey === switchKey) {
+          /* How this group works and how to leave it — there are no codes to list. */
+          const exitName = SHORT_GROUP_NAMES[SWITCH_CFG.exitGroup] || ('Group ' + SWITCH_CFG.exitGroup);
+          const lines = [
+            'No Morse codes in this group. The key goes down the moment a sip or puff starts and comes up when it ends - like two plain switches.',
+          ];
+          const ways = [];
+          if (SWITCH_CFG.idle > 0) ways.push('wait ' + SWITCH_CFG.idle + ' seconds without a sip or puff');
+          ways.push('hold one puff for ' + SWITCH_CFG.exitPuff + ' seconds');
+          lines.push('To leave (goes to ' + exitName + '): ' + ways.join(', or ') + '.' +
+            (SWITCH_CFG.countdown > 0 ? ' The screen counts down the last ' + SWITCH_CFG.countdown +
+              ' seconds, e.g. "' + exitName.toUpperCase() + ' IN 5".' : ''));
+          lines.forEach(text => {
+            const pEl = document.createElement('p');
+            pEl.className = 'switch-note';
+            pEl.style.cssText = 'margin: 18px 4px 0; font-size: 15px; line-height: 1.5; color: #333;';
+            pEl.textContent = text;
+            pageDiv.appendChild(pEl);
+          });
+        }
+
+        container.appendChild(pageDiv);
+      });
+
+      if (pagesGenerated) {
+        document.getElementById('print-btn').style.display = 'inline-block';
+        /* Attach the legend key to the bottom of the first page so the badge
+           colour codes are explained on the printout. */
+        const firstPage = container.firstElementChild;
+        if (firstPage) firstPage.appendChild(buildLegendForPrint());
+      }
+    }
+
+    /* ── HELP VIEW: tabs, one group at a time ──
+       Used when the map is built into the page (AeroMorse Help.html, made by
+       build_pdfs.py). Click a tab, press the group's number (0-9), or use the
+       left / right arrow keys. The last tab is remembered. */
+    function buildHelpTabs() {
+      const pages = Array.from(document.querySelectorAll('#pages-container .page'));
+      if (!pages.length) return;
+      document.body.classList.add('help');
+      /* everything reflows to the window width, so there is never anything
+         to scroll sideways to - keep a stray few pixels from adding a bar */
+      document.documentElement.style.overflowX = 'hidden';
+      document.title = 'AeroMorse Help';
+      const head = document.createElement('div');
+      head.id = 'help-head';
+      document.body.insertBefore(head, document.body.firstChild);
+      head.appendChild(document.getElementById('legend'));
+      const tabs = document.createElement('div');
+      tabs.id = 'help-tabs';
+      head.appendChild(tabs);
+      const buttons = [];
+      let current = 0;
+      function show(i) {
+        current = (i + pages.length) % pages.length;
+        pages.forEach((p, k) => p.classList.toggle('active', k === current));
+        buttons.forEach((b, k) => b.classList.toggle('active', k === current));
+        window.scrollTo(0, 0);
+        try { localStorage.setItem('aeromorseHelpTab', pages[current].dataset.group); } catch (e) {}
+      }
+      pages.forEach((p, i) => {
+        const n = parseInt(p.dataset.group.slice(1), 10);
+        const b = document.createElement('button');
+        b.type = 'button';
+        const nm = (n === SWITCH_CFG.group) ? 'Switch' : SHORT_GROUP_NAMES[n];
+        b.textContent = nm.indexOf('Group') === 0 ? nm : n + '  ' + nm;
+        b.addEventListener('click', function () { show(i); b.blur(); });
+        tabs.appendChild(b);
+        buttons.push(b);
+      });
+      /* Size: only the group's page grows and shrinks. The legend, the tabs
+         and the size buttons keep one fixed (large) size, so the + and -
+         buttons never move from under the pointer while you click them. The
+         size is remembered. */
+      head.style.zoom = 1.2;
+      const SIZES = { min: 0.8, max: 3.0, step: 0.1, start: 1.3 };
+      let size = SIZES.start;
+      try {
+        const z = parseFloat(localStorage.getItem('aeromorseHelpSize'));
+        if (z >= SIZES.min && z <= SIZES.max) size = z;
+      } catch (e) {}
+      const pct = document.createElement('span');
+      pct.className = 'help-pct';
+      /* How wide the page is in its own units: the window width divided by the
+         size. Below about 800 a two-column group no longer has room for its
+         labels, so it drops to one column (and the keyboard group from 3 to 2). */
+      function fitColumns() {
+        const box = document.getElementById('pages-container');
+        const w = box.getBoundingClientRect().width / size;
+        document.body.classList.toggle('help-narrow', w < 800);
+        document.body.classList.toggle('help-tiny', w < 540);
+      }
+      window.addEventListener('resize', fitColumns);
+      function setSize(z) {
+        size = Math.min(SIZES.max, Math.max(SIZES.min, Math.round(z * 10) / 10));
+        document.getElementById('pages-container').style.zoom = size;
+        pct.textContent = Math.round(size * 100) + '%';
+        fitColumns();
+        try { localStorage.setItem('aeromorseHelpSize', String(size)); } catch (e) {}
+      }
+      function sizeButton(label, title, delta) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.title = title;
+        b.addEventListener('click', function () { setSize(size + delta); b.blur(); });
+        return b;
+      }
+      /* the size buttons sit in the top right corner of the legend box */
+      const sizeBox = document.createElement('div');
+      sizeBox.id = 'help-size';
+      sizeBox.appendChild(sizeButton('\u2212', 'Smaller', -SIZES.step));
+      sizeBox.appendChild(pct);
+      sizeBox.appendChild(sizeButton('+', 'Bigger', SIZES.step));
+      const legendBox = document.getElementById('legend');
+      /* A shorter legend for the help window: no dot / dash entry, and the
+         two longest descriptions trimmed. The printed cheat sheet keeps the
+         full legend. */
+      Array.from(legendBox.querySelectorAll('.legend-item')).forEach(function (item) {
+        if (item.querySelector('dot')) { item.remove(); return; }
+        item.childNodes.forEach(function (n) {
+          if (n.nodeType === 3) {
+            n.nodeValue = n.nodeValue.replace(' (value hidden)', '')
+                                     .replace('iOS Switch Control action (Group 4)', 'iOS Switch Control');
+          }
+        });
+      });
+      legendBox.insertBefore(sizeBox, legendBox.firstChild);    /* first, so the items flow round it */
+      setSize(size);
+
+      const hint = document.createElement('div');
+      hint.className = 'help-hint';
+      hint.textContent = 'Click a tab or press its number.  Left / right arrow: next group.  + and \u2212: bigger / smaller.';
+      head.appendChild(hint);
+
+      /* Keep the group tabs on one row: at full size when they fit, otherwise
+         shrunk just enough for the window. Re-done whenever the window is resized. */
+      function fitTabs() {
+        tabs.style.zoom = 1;
+        /* measured on screen, so the sizes of the head and of the row compare directly */
+        const room = head.getBoundingClientRect().width - 2;
+        const need = tabs.getBoundingClientRect().width;
+        tabs.style.zoom = need > room ? Math.max(0.45, 0.99 * room / need).toFixed(3) : 1;
+      }
+      fitTabs();
+      window.addEventListener('resize', fitTabs);
+      /* also when the space itself changes without a window resize - e.g. the
+         scroll bar appearing once a long group is shown */
+      if (window.ResizeObserver) {
+        let lastW = 0;
+        new ResizeObserver(function () {
+          const w = Math.round(head.getBoundingClientRect().width);
+          if (w !== lastW) { lastW = w; fitTabs(); }
+        }).observe(head);
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.key >= '0' && e.key <= '9' && e.key.length === 1) {
+          const i = pages.findIndex(p => p.dataset.group === 'g' + e.key);
+          if (i >= 0) { show(i); e.preventDefault(); }
+        } else if (e.key === '+' || e.key === '=') { setSize(size + SIZES.step); e.preventDefault(); }
+        else if (e.key === '-' || e.key === '_') { setSize(size - SIZES.step); e.preventDefault(); }
+        else if (e.key === 'ArrowRight') { show(current + 1); e.preventDefault(); }
+        else if (e.key === 'ArrowLeft') { show(current - 1); e.preventDefault(); }
+      });
+      let start = 0;
+      try {
+        const saved = localStorage.getItem('aeromorseHelpTab');
+        const i = pages.findIndex(p => p.dataset.group === saved);
+        if (i >= 0) start = i;
+      } catch (e) {}
+      show(start);
+    }
+
+    /* ── MORSE AUDIO PLAYER ── */
+    (function () {
+      var DOT_SRC  = 'https://upload.wikimedia.org/wikipedia/commons/e/e7/E_morse_code.ogg';
+      var DASH_SRC = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/T_morse_code.ogg';
+
+      var dotAB = null, dashAB = null;
+      function prefetch(url, setter) {
+        fetch(url)
+          .then(function (r) { return r.arrayBuffer(); })
+          .then(setter)
+          .catch(function () {});
+      }
+      prefetch(DOT_SRC,  function (ab) { dotAB  = ab; });
+      prefetch(DASH_SRC, function (ab) { dashAB = ab; });
+
+      var ac = null;
+      var dotBuf = null, dashBuf = null;
+      var decoding = false;
+      var decodeQueue = [];
+
+      function getAC() {
+        if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+        return ac;
+      }
+
+      function ensureDecoded(cb) {
+        if (dotBuf && dashBuf) { cb(); return; }
+        decodeQueue.push(cb);
+        if (decoding) return;
+        decoding = true;
+        var ctx = getAC();
+        var n = 0;
+        function done() {
+          if (++n < 2) return;
+          decoding = false;
+          var q = decodeQueue.slice(); decodeQueue = [];
+          q.forEach(function (f) { f(); });
+        }
+        if (!dotBuf && dotAB) {
+          ctx.decodeAudioData(dotAB.slice(0), function (b) { dotBuf  = b; done(); }, done);
+        } else { done(); }
+        if (!dashBuf && dashAB) {
+          ctx.decodeAudioData(dashAB.slice(0), function (b) { dashBuf = b; done(); }, done);
+        } else { done(); }
+      }
+
+      function playPattern(pat) {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+        if (!dotAB || !dashAB) {
+          setTimeout(function () { playPattern(pat); }, 150);
+          return;
+        }
+        ensureDecoded(function () {
+          var ctx = getAC();
+          if (ctx.state === 'suspended') ctx.resume();
+          var t   = ctx.currentTime + 0.05;
+          var GAP = 0.06;
+          for (var i = 0; i < pat.length; i++) {
+            var buf = pat[i] === '-' ? dashBuf : dotBuf;
+            if (!buf) { t += 0.15 + GAP; continue; }
+            var src = ctx.createBufferSource();
+            src.buffer = buf;
+            src.connect(ctx.destination);
+            src.start(t);
+            t += buf.duration + GAP;
+          }
+        });
+      }
+
+      document.addEventListener('click', function (e) {
+        var item = e.target.closest('.item[data-morse]');
+        if (!item) return;
+        var p = item.dataset.morse;
+        if (p) playPattern(p);
+      });
+    }());
+
+    /* ── AUTO-LOAD morse_map.py from this file's directory on page load ──
+       If the .htm sits next to morse_map.py (e.g. both on CIRCUITPY, or both
+       in the project folder), the cheat sheet appears with zero clicks.
+       Falls back silently to the manual file picker if fetch fails — which
+       happens when:
+         · The .htm is opened from file:// in Chrome/Edge (file:// fetch
+           is blocked for security; Firefox allows it).
+         · morse_map.py is in a different directory.
+         · The page is served from a URL where morse_map.py isn't a sibling.
+    */
+    (function autoLoadSibling() {
+      /* AeroMorse Help.html carries the map inside the page: no file to fetch. */
+      if (window.AEROMORSE_EMBED) {
+        if (window.AEROMORSE_EMBED.config) readSwitchConfig(window.AEROMORSE_EMBED.config);
+        processMorseData(window.AEROMORSE_EMBED.map);
+        buildHelpTabs();
+        return;
+      }
+      fetch('config.py')
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .catch(function () { return ''; })
+        .then(function (cfgText) {
+          if (cfgText) readSwitchConfig(cfgText);
+          return fetch('morse_map.py');
+        })
+        .then(function (r) {
+          if (!r.ok) throw new Error('not found');
+          return r.text();
+        })
+        .then(function (text) {
+          processMorseData(text);
+          document.getElementById('file-name-display').textContent =
+            'Auto-loaded morse_map.py from this folder — click any row to hear its Morse tones.';
+        })
+        .catch(function () {
+          /* Silent: user can still pick the file manually. */
+        });
+    }());
+  </script>
+</body>
+</html>

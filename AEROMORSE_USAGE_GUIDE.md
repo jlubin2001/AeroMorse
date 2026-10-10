@@ -195,6 +195,10 @@ pick the one in your work folder. It shows every pattern of *your* map, group
 by group, as dots and dashes; click a row to hear its timing;
 **🖨️ Print Cheat Sheets** makes a paper copy (or *Microsoft Print to PDF*). Secrets show only their key name with a 🔒, never the value.
 
+**`AeroMorse Help.html`** is the same cheat sheet as a look-it-up window: legend
+at the top, one tab per group, made from your map whenever the cheat sheet
+PDF is built. §7 shows how to open and close it with one Morse code.
+
 *Optional:* **`Build my cheat sheet.bat`** (needs Python and a copy of the
 repo) prints `AeroMorse Cheat Sheet.pdf` from your map in one click.
 
@@ -351,16 +355,24 @@ How it works in practice:
 
 ## 7. Starting programs with a Morse code (AutoHotkey)
 
-AeroMorse types keys; it cannot start a program by itself. **AutoHotkey** is
-a free Windows program that fills the gap: it watches for a key combination
-you choose — say Ctrl+Alt+D — and runs whatever you tell it to. Give that
-key combination a Morse code, and one code from any group opens a program
-or closes it.
+AeroMorse types keys; it cannot start a program, or put the pointer at a
+place on the screen, by itself. **AutoHotkey** is a free Windows program
+that fills the gap: it watches for a key combination — say Ctrl+Alt+D —
+and does whatever a small script tells it to. Give that key combination a
+Morse code, and one code does the job.
 
-The example here switches the **AeroMorse Display** window (the device's
-screen in a window on the computer — Build Guide §5) on and off:
-open it if it is closed, close it if it is open. It takes four small steps,
-once. AutoHotkey is Windows-only.
+The project supplies the script ready to use, **`AeroMorse.ahk`**, with
+three hotkeys, and the supplied `morse_map.py` already has a code for each:
+
+| Hotkey | What it does | Morse code | Group |
+|--------|--------------|-----------|-------|
+| Ctrl+Alt+D | **AeroMorse Display** window (Build Guide §5) on / off | `.-.-.-` | 0 — works from every group |
+| Ctrl+Alt+H | **AeroMorse Help** — your cheat sheet with a tab per group — on / off | `..-..-` | 0 — works from every group |
+| Ctrl+Alt+Home | Mouse pointer to the middle of the screen | `.-.` | 2 — Mouse |
+
+Setting it up takes three small steps, once. AutoHotkey is Windows-only.
+Until the script is running the three codes do nothing useful — they send
+the key combination and nothing answers it.
 
 ### 7.1 Get AutoHotkey
 
@@ -368,109 +380,112 @@ Download **AutoHotkey v2** from
 **https://www.autohotkey.com** and run the installer (the defaults are
 fine). It is free and open-source.
 
-### 7.2 Make the script
+### 7.2 Put the script in your work folder
 
-Open Notepad, paste the lines below, and save the
-file as **`AeroMorse.ahk`** (any folder; *Save as type: All files*). Change
-the two paths to wherever your `AeroMorse Display.exe` is.
-
-```
-#Requires AutoHotkey v2.0
-
-; Ctrl+Alt+D - AeroMorse Display window ON / OFF
-^!d:: {
-    if ProcessExist("AeroMorse Display.exe") {
-        if WinExist("AeroMorse Display ahk_exe AeroMorse Display.exe")
-            WinClose()
-    } else
-        Run('"C:\AeroMorse\AeroMorse Display.exe"', "C:\AeroMorse")
-}
-```
+Copy **`AeroMorse.ahk`** from the project into your **AeroMorse work
+folder** — `Documents\AeroMorse`, the folder set up in §1 — next to
+`AeroMorse Display.exe` and `AeroMorse Help.html`. The script looks for
+those two files in its own folder, so **there is nothing in it to edit**.
 
 Double-click `AeroMorse.ahk` to start it. A green **H** icon appears near
-the clock, and Ctrl+Alt+D now opens and closes the window. In the script,
-`^` means Ctrl, `!` means Alt and `d` is the D key — change the letter if
-Ctrl+Alt+D is already used by something else on your computer.
+the clock and the three hotkeys work. If one of the two files is not in the
+folder, the hotkey shows a short note saying so, which closes by itself.
+
+Keeping the script in the work folder puts everything for your AeroMorse in
+one place. It lives on the computer, not on the device, so **a backup of the
+device does not include it** — when you back up, copy the work folder too.
 
 ### 7.3 Make it start with Windows
 
 Press **Win+R**, type **`shell:startup`**
 and press Enter — a folder opens. Put a **shortcut** to `AeroMorse.ahk` in
-that folder (right-click the file → *Show more options* → *Create
-shortcut*, then move the shortcut there). From the next sign-in the hotkey
-is always ready.
+that folder — a shortcut, not the script itself, which stays in your work
+folder (right-click the file → *Show more options* → *Create shortcut*,
+then move the shortcut there). From the next sign-in the hotkeys are always
+ready.
 
-### 7.4 Give it a Morse code
+### 7.4 The three hotkeys
 
-In `morse_map.py`, add one line to **Group 0**
-so the code works from every group. Pick a code that is free and that you
-find easy to enter (`morse_map_report.txt` lists the free ones):
+**Ctrl+Alt+D — AeroMorse Display on / off.** Opens the window if it is
+closed and closes it if it is open. It comes back at the size, place and
+see-through level you left it.
 
-```python
-g0[7][0b1001000] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # -..-...  AeroMorse Display on / off
-```
+**Ctrl+Alt+H — AeroMorse Help on / off.** `AeroMorse Help.html` is the
+cheat sheet made for looking things up while you work: the legend stays at
+the top with one **tab per group** under it, and only the group you pick is
+shown — no scrolling through pages.
 
-This is an ordinary change to `morse_map.py`, so follow
-[the recommended order](#3-the-recommended-order-for-any-change): back up,
-edit the work copy, run the validator, and copy the file to the device only
-after it says PASS. Entering the code then opens the window; entering it
-again closes it. The window comes back at the
-size, place and see-through level you left it.
+- Change group: click a tab, press the group's number (`0`–`9`), or use
+  the left / right arrow keys.
+- Change size: the **+** and **−** buttons in the top right corner, or
+  the `+` and `-` keys. Only the page grows; the buttons stay where they
+  are.
+- It remembers the tab and the size you left it at, and fits the tabs and
+  the columns to the width of the window.
 
-### 7.5 Other programs, and changing the script
+It opens in a plain Microsoft Edge window of its own, with no browser tabs
+or address bar; the same hotkey closes it. The file is made next to
+`AeroMorse Cheat Sheet.pdf` every time the cheat sheet is built (*Build my
+cheat sheet.bat*, or `python build_pdfs.py --folder` with your work
+folder), from **your** `morse_map.py`, so it always matches your map. The
+copy that comes with the project shows the supplied map.
 
-The same idea works for any program: copy the block in the script, change
-the letter and the path, and give the new key combination its own Group 0
-code. For example, this opens Notepad with Ctrl+Alt+N:
-
-```
-^!n:: Run("notepad.exe")
-```
-
-After editing the script, right-click the green **H** icon near the clock
-and choose *Reload Script* — the change takes effect at once.
-
-If a hotkey does nothing: check the green **H** icon is there (the script is
-running), that the path in the script is exactly where the program is, and
-that no other program already uses the same key combination.
-
-The script itself lives on the computer, not on the device, so **a backup of
-the device does not include it**. Keep a copy of `AeroMorse.ahk` in your
-work folder too.
-
-*(The same instructions are in the Build Guide, Appendix G.)*
-
-### 7.6 Not only programs: putting the pointer in the middle of the screen
-
-A hotkey can do things as well as start programs. One that is useful with a
-Morse mouse: when the pointer is lost in a corner or far from where you
-want it, one code jumps it to the middle of the screen. The device cannot
-do this by itself — a USB mouse only says "move a little this way", it
-never knows where the pointer is — but AutoHotkey can.
-
-Add this to the script (and reload it):
-
-```
-^!Home:: {
-    CoordMode("Mouse", "Screen")
-    MouseMove(A_ScreenWidth // 2, A_ScreenHeight // 2, 0)
-}
-```
-
-Ctrl+Alt+Home already has a code: the supplied `morse_map.py` gives it
-`.-.` in the Mouse group, with this line:
-
-```python
-g2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer
-```
-
-With more than one monitor it goes to the middle of the main one. Tried on
-the author's computer (Windows 11, one screen) from the test device.
+**Ctrl+Alt+Home — pointer to the middle of the screen.** For when the
+pointer is lost in a corner or far from where you want it. The device cannot
+do this by itself — a USB mouse only says "move a little this way" and
+never knows where the pointer is — but AutoHotkey can. With more than one
+monitor it goes to the middle of the main one.
 
 **Finding the pointer** needs no AutoHotkey: the Mouse-group code `..-.`
 taps Ctrl, and Windows draws circles round the pointer if *Show location of
 pointer when I press the CTRL key* is ticked (Control Panel → Mouse →
 Pointer Options).
+
+All three hotkeys were tried on the author's computer (Windows 11, Microsoft
+Edge), sent from an AeroMorse.
+
+### 7.5 The Morse codes
+
+These lines are already in the supplied `morse_map.py`. To use a different
+code, change the pattern on the line; `morse_map_report.txt` lists the free
+ones. A code in **Group 0** works from every group.
+
+```python
+g0[6][0b010101] = Keycode.CONTROL, Keycode.ALT, Keycode.D      # .-.-.-  AeroMorse Display on / off
+g0[6][0b001001] = Keycode.CONTROL, Keycode.ALT, Keycode.H      # ..-..-  AeroMorse Help on / off
+g2[3][0b010]    = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.     centre pointer
+```
+
+Changing the map is an ordinary edit: back up, edit the work copy, run the
+validator, and copy the file to the device only after it says PASS
+(§3).
+
+### 7.6 Your own hotkeys, and changing the script
+
+The same idea works for any program. Open `AeroMorse.ahk` in Notepad and
+add a line at the end; this one opens Notepad with Ctrl+Alt+N:
+
+```
+^!n:: Run("notepad.exe")
+```
+
+In a hotkey `^` means Ctrl, `!` means Alt and the letter is the key —
+change the letter if that combination is already used by something else on
+your computer. Then give the new combination a Morse code, as in the lines
+above.
+
+After editing the script, right-click the green **H** icon near the clock
+and choose *Reload Script* — the change takes effect at once.
+
+If a hotkey does nothing: check the green **H** icon is there (the script is
+running), that `AeroMorse.ahk` is in the same folder as the program or page
+it opens, and that no other program already uses the same key combination.
+
+When the project's `AeroMorse.ahk` is updated, hotkeys you added yourself
+are not carried over — keep a note of them, or keep them in a second
+script of your own.
+
+*(The same instructions are in the Build Guide, Appendix G.)*
 
 ---
 

@@ -113,6 +113,13 @@ g0[8][0b01111111] = "group 9"   # .-------  → Group 9 — Switch (sip/puff hol
 g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
 g0[8][0b11110000] = "group 4"   # ----....  → Scanning / Switch Control (second shortcut)
 
+# ── Hotkeys for AeroMorse.ahk (AutoHotkey, Windows) ──────────────────────────
+# These send a key combination that the AeroMorse.ahk script on the computer
+# acts on (Build Guide Appendix G). They do nothing unless it is running.
+# In Group 0 so they work from every group.
+g0[6][0b010101] = Keycode.CONTROL, Keycode.ALT, Keycode.D   # .-.-.-  AeroMorse Display window on / off
+g0[6][0b001001] = Keycode.CONTROL, Keycode.ALT, Keycode.H   # ..-..-  AeroMorse Help window on / off
+
 groups[0] = g0
 
 ############################################
@@ -356,7 +363,7 @@ g2[7][0b1100000]=Keycode.F5                # --.....  refresh / F5           (--
 g2[4][0b0010] = (Keycode.CONTROL,)         # ..-.    find pointer (tap Ctrl)
 # Centre pointer: sends Ctrl+Alt+Home, which a small AutoHotkey script on the
 # computer turns into "put the pointer in the middle of the screen" (Build
-# Guide Appendix G). Does nothing unless that script is running.
+# Guide Appendix G) - the supplied AeroMorse.ahk. Does nothing unless it is running.
 g2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────

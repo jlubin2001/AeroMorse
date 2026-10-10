@@ -296,6 +296,55 @@
     }
   }
 
+  /* ── Help view (AeroMorse Help.html) ─────────────────────────────────────
+     The same page with the map built in: the legend and one tab per group stay
+     at the top and only the chosen group is shown. Screen only - printing still
+     gives every group, one per page. */
+  #help-tabs, #help-size { display: none; }
+  @media screen {
+    body.help { margin: 0 20px 20px; }
+    body.help .controls-container { display: none; }
+    body.help #help-head {
+      position: sticky; top: 0; z-index: 10;
+      background: #e9ecef; padding: 6px 0 4px;
+    }
+    /* The size buttons float in the top right corner of the legend box and
+       the legend items flow beside and then underneath them, so no space is
+       left empty below the buttons. */
+    body.help .legend { display: block; text-align: center; max-width: none; margin-bottom: 6px; padding: 4px 10px; line-height: 1.9; }
+    body.help .page { padding-top: 12px; }
+    body.help .page h2 { margin-top: 0; }
+    body.help .legend .legend-item { display: inline-flex; margin: 0 7px; vertical-align: middle; line-height: 1.3; }
+    #help-size { float: right; display: flex; align-items: center; gap: 4px; margin: 2px 0 0 12px; line-height: 1.3; }
+    #help-size button {
+      font: inherit; font-size: 0.95em; font-weight: 700; min-width: 2em;
+      padding: 1px 8px; border: 2px solid #b8c0c8; border-radius: 6px;
+      background: white; color: #2c3e50; cursor: pointer;
+    }
+    #help-size button:hover { border-color: #2c3e50; }
+    #help-size .help-pct { min-width: 2.8em; text-align: center; font-size: 0.85em; font-weight: 600; color: #2c3e50; }
+    body.help #help-tabs {
+      /* always ONE row: fitTabs() shrinks the row just enough to fit the window */
+      display: flex; flex-wrap: nowrap; gap: 6px; align-items: center;
+      width: max-content; margin: 0 auto; white-space: nowrap;
+    }
+    #help-tabs button {
+      font: inherit; font-size: 0.85em; font-weight: 600;
+      padding: 4px 10px; border: 2px solid #b8c0c8; border-radius: 7px;
+      background: white; color: #2c3e50; cursor: pointer;
+    }
+    #help-tabs button:hover { border-color: #2c3e50; }
+    #help-tabs button.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+    #help-head .help-hint { text-align: center; font-size: 1em; color: #333; margin-top: 3px; }
+    /* fewer columns when the page is made bigger than the window has room for
+       (set by fitColumns() from the window width and the chosen size) */
+    body.help-narrow .cols-2 { column-count: 1 !important; }
+    body.help-narrow .cols-3 { column-count: 2 !important; }
+    body.help-tiny .cols-3 { column-count: 1 !important; }
+    body.help .page { display: none !important; }
+    body.help .page.active { display: block !important; }
+  }
+
   /* Responsive fallback */
   @media screen and (max-width: 768px) {
     .cols-3 { column-count: 2; }
@@ -734,6 +783,7 @@
 
         const pageDiv = document.createElement('div');
         pageDiv.className = 'page';
+        pageDiv.dataset.group = groupKey;
         pageDiv.style.display = 'block';
 
         const title = document.createElement('h2');
@@ -855,6 +905,148 @@
       }
     }
 
+    /* ── HELP VIEW: tabs, one group at a time ──
+       Used when the map is built into the page (AeroMorse Help.html, made by
+       build_pdfs.py). Click a tab, press the group's number (0-9), or use the
+       left / right arrow keys. The last tab is remembered. */
+    function buildHelpTabs() {
+      const pages = Array.from(document.querySelectorAll('#pages-container .page'));
+      if (!pages.length) return;
+      document.body.classList.add('help');
+      /* everything reflows to the window width, so there is never anything
+         to scroll sideways to - keep a stray few pixels from adding a bar */
+      document.documentElement.style.overflowX = 'hidden';
+      document.title = 'AeroMorse Help';
+      const head = document.createElement('div');
+      head.id = 'help-head';
+      document.body.insertBefore(head, document.body.firstChild);
+      head.appendChild(document.getElementById('legend'));
+      const tabs = document.createElement('div');
+      tabs.id = 'help-tabs';
+      head.appendChild(tabs);
+      const buttons = [];
+      let current = 0;
+      function show(i) {
+        current = (i + pages.length) % pages.length;
+        pages.forEach((p, k) => p.classList.toggle('active', k === current));
+        buttons.forEach((b, k) => b.classList.toggle('active', k === current));
+        window.scrollTo(0, 0);
+        try { localStorage.setItem('aeromorseHelpTab', pages[current].dataset.group); } catch (e) {}
+      }
+      pages.forEach((p, i) => {
+        const n = parseInt(p.dataset.group.slice(1), 10);
+        const b = document.createElement('button');
+        b.type = 'button';
+        const nm = (n === SWITCH_CFG.group) ? 'Switch' : SHORT_GROUP_NAMES[n];
+        b.textContent = nm.indexOf('Group') === 0 ? nm : n + '  ' + nm;
+        b.addEventListener('click', function () { show(i); b.blur(); });
+        tabs.appendChild(b);
+        buttons.push(b);
+      });
+      /* Size: only the group's page grows and shrinks. The legend, the tabs
+         and the size buttons keep one fixed (large) size, so the + and -
+         buttons never move from under the pointer while you click them. The
+         size is remembered. */
+      head.style.zoom = 1.2;
+      const SIZES = { min: 0.8, max: 3.0, step: 0.1, start: 1.3 };
+      let size = SIZES.start;
+      try {
+        const z = parseFloat(localStorage.getItem('aeromorseHelpSize'));
+        if (z >= SIZES.min && z <= SIZES.max) size = z;
+      } catch (e) {}
+      const pct = document.createElement('span');
+      pct.className = 'help-pct';
+      /* How wide the page is in its own units: the window width divided by the
+         size. Below about 800 a two-column group no longer has room for its
+         labels, so it drops to one column (and the keyboard group from 3 to 2). */
+      function fitColumns() {
+        const box = document.getElementById('pages-container');
+        const w = box.getBoundingClientRect().width / size;
+        document.body.classList.toggle('help-narrow', w < 800);
+        document.body.classList.toggle('help-tiny', w < 540);
+      }
+      window.addEventListener('resize', fitColumns);
+      function setSize(z) {
+        size = Math.min(SIZES.max, Math.max(SIZES.min, Math.round(z * 10) / 10));
+        document.getElementById('pages-container').style.zoom = size;
+        pct.textContent = Math.round(size * 100) + '%';
+        fitColumns();
+        try { localStorage.setItem('aeromorseHelpSize', String(size)); } catch (e) {}
+      }
+      function sizeButton(label, title, delta) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.title = title;
+        b.addEventListener('click', function () { setSize(size + delta); b.blur(); });
+        return b;
+      }
+      /* the size buttons sit in the top right corner of the legend box */
+      const sizeBox = document.createElement('div');
+      sizeBox.id = 'help-size';
+      sizeBox.appendChild(sizeButton('\u2212', 'Smaller', -SIZES.step));
+      sizeBox.appendChild(pct);
+      sizeBox.appendChild(sizeButton('+', 'Bigger', SIZES.step));
+      const legendBox = document.getElementById('legend');
+      /* A shorter legend for the help window: no dot / dash entry, and the
+         two longest descriptions trimmed. The printed cheat sheet keeps the
+         full legend. */
+      Array.from(legendBox.querySelectorAll('.legend-item')).forEach(function (item) {
+        if (item.querySelector('dot')) { item.remove(); return; }
+        item.childNodes.forEach(function (n) {
+          if (n.nodeType === 3) {
+            n.nodeValue = n.nodeValue.replace(' (value hidden)', '')
+                                     .replace('iOS Switch Control action (Group 4)', 'iOS Switch Control');
+          }
+        });
+      });
+      legendBox.insertBefore(sizeBox, legendBox.firstChild);    /* first, so the items flow round it */
+      setSize(size);
+
+      const hint = document.createElement('div');
+      hint.className = 'help-hint';
+      hint.textContent = 'Click a tab or press its number.  Left / right arrow: next group.  + and \u2212: bigger / smaller.';
+      head.appendChild(hint);
+
+      /* Keep the group tabs on one row: at full size when they fit, otherwise
+         shrunk just enough for the window. Re-done whenever the window is resized. */
+      function fitTabs() {
+        tabs.style.zoom = 1;
+        /* measured on screen, so the sizes of the head and of the row compare directly */
+        const room = head.getBoundingClientRect().width - 2;
+        const need = tabs.getBoundingClientRect().width;
+        tabs.style.zoom = need > room ? Math.max(0.45, 0.99 * room / need).toFixed(3) : 1;
+      }
+      fitTabs();
+      window.addEventListener('resize', fitTabs);
+      /* also when the space itself changes without a window resize - e.g. the
+         scroll bar appearing once a long group is shown */
+      if (window.ResizeObserver) {
+        let lastW = 0;
+        new ResizeObserver(function () {
+          const w = Math.round(head.getBoundingClientRect().width);
+          if (w !== lastW) { lastW = w; fitTabs(); }
+        }).observe(head);
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.key >= '0' && e.key <= '9' && e.key.length === 1) {
+          const i = pages.findIndex(p => p.dataset.group === 'g' + e.key);
+          if (i >= 0) { show(i); e.preventDefault(); }
+        } else if (e.key === '+' || e.key === '=') { setSize(size + SIZES.step); e.preventDefault(); }
+        else if (e.key === '-' || e.key === '_') { setSize(size - SIZES.step); e.preventDefault(); }
+        else if (e.key === 'ArrowRight') { show(current + 1); e.preventDefault(); }
+        else if (e.key === 'ArrowLeft') { show(current - 1); e.preventDefault(); }
+      });
+      let start = 0;
+      try {
+        const saved = localStorage.getItem('aeromorseHelpTab');
+        const i = pages.findIndex(p => p.dataset.group === saved);
+        if (i >= 0) start = i;
+      } catch (e) {}
+      show(start);
+    }
+
     /* ── MORSE AUDIO PLAYER ── */
     (function () {
       var DOT_SRC  = 'https://upload.wikimedia.org/wikipedia/commons/e/e7/E_morse_code.ogg';
@@ -943,6 +1135,13 @@
          · The page is served from a URL where morse_map.py isn't a sibling.
     */
     (function autoLoadSibling() {
+      /* AeroMorse Help.html carries the map inside the page: no file to fetch. */
+      if (window.AEROMORSE_EMBED) {
+        if (window.AEROMORSE_EMBED.config) readSwitchConfig(window.AEROMORSE_EMBED.config);
+        processMorseData(window.AEROMORSE_EMBED.map);
+        buildHelpTabs();
+        return;
+      }
       fetch('config.py')
         .then(function (r) { return r.ok ? r.text() : ''; })
         .catch(function () { return ''; })
