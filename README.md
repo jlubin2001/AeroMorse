@@ -479,9 +479,9 @@ Mouse speed is controlled by three modes:
 
 | Mode | Speed multiplier | How to activate |
 |------|-----------------|-----------------|
-| Normal | ×2 | Default; also restored by `mslow` / `mfast` toggle |
-| Slow | ×1 | `mslow` pattern `--..` (toggle) |
-| Fast | ×3 | `mfast` pattern — (see morse_map.py for assignment) |
+| Normal | ×2 | Default; also what you return to when `mslow` or `mfast` is sent a second time |
+| Slow | ×1 | `mslow`, pattern `--..` (send again for Normal) |
+| Fast | ×3 | `mfast`, pattern `--.-` (send again for Normal) |
 
 The effective pixels moved per step = **raw direction value × speed × 2**.
 
@@ -493,7 +493,7 @@ The effective pixels moved per step = **raw direction value × speed × 2**.
 | Right click | `.--` |
 | Double-click left | `..-` |
 | Double-click right | `..--` |
-| Toggle left-button drag | `-.` |
+| Drag: hold the left button / let it go | `-.` (see *Drag* below) |
 
 #### Repeat
 
@@ -513,16 +513,77 @@ Any new sip or puff while repeating immediately **stops** the repeat.
 
 #### Drag
 
-The drag toggle holds the left mouse button down.  Send the drag pattern again
-to release it.  The TFT status row shows **DRAG** while drag is active.
+Dragging with a normal mouse means *press the button, move, let go*. On
+AeroMorse the drag pattern `-.` does the pressing and the letting go for
+you: send it once and the left button is **held down**; send it again and
+the button is **released**. Everything you do with the mouse in between
+happens with the button held.
+
+**How to drag something:**
+
+1. Move the pointer onto the thing you want to drag — a window's title
+   bar, a file, a scrollbar's sliding block, the start of some text.
+2. Send `-.` — the button is now held. The status row shows **DRAG**.
+3. Move the pointer to where you want it to go, with the normal movement
+   patterns. Repeat (`.`) works here too, for a long glide.
+4. Send `-.` again — the button is released and the thing is dropped.
+   **DRAG** disappears from the status row.
+
+**What it is for:**
+
+| To do this | Grab here (step 1) | Then move |
+|------------|--------------------|-----------|
+| Move a window | its title bar | to the new place |
+| Resize a window | its edge or corner | outward or inward |
+| Move a file or icon | the file or icon | onto the folder or spot |
+| Select text | just before the first character | to just after the last |
+| Select several files | an empty spot beside them | across them (draws a box) |
+| Scroll with a scrollbar | the sliding block | up or down |
+| Move a slider (volume, video position) | the slider knob | along the track |
+
+**Good to know:**
+
+- **Use small steps near the end.** Slow speed (`mslow`, `--..`) makes it
+  much easier to stop exactly where you want before releasing.
+- **Always finish with `-.`.** Until you do, the computer believes the
+  button is still pressed, and anything the pointer passes over may be
+  selected or moved. If the pointer seems to be selecting things on its
+  own, look for **DRAG** on the status row and send `-.`.
+- **Changing group does not release the button.** The drag is still on
+  when you come back to the Mouse group.
+- **A click ends the drag** (v1.28+). If you click while **DRAG** is
+  showing, the held button is let go first, **DRAG** disappears, and then
+  the click is made as usual. So a drag started by accident does not get
+  in the way of your next click. (In earlier versions the click let the
+  button go but **DRAG** stayed on the status row until `-.` was sent.)
+- **To cancel a drag** in most Windows programs, press Escape (`--....`) before
+  releasing, then send `-.`.
+- A plain **click** is often enough and less work: clicking the empty part
+  of a scrollbar scrolls a page, and the scroll patterns move a page
+  without aiming at anything.
+
+**Right-button drag.** The firmware also accepts `mdrag right`, which holds
+the right button instead (in Windows, dropping a file this way offers a
+Copy / Move menu). It has no pattern in the supplied map; to add one, put a
+line such as this in the Group 2 section of `morse_map.py`:
+
+```python
+g2[3][0b110] = "mdrag right"       # --.     toggle right-button drag
+```
 
 #### Other Controls
 
 | Action | Pattern | Effect |
 |--------|---------|--------|
-| `mslow` | `--..` | Toggle slow-step mouse speed |
+| `mslow` | `--..` | Toggle slow-step mouse speed (slow ↔ normal) |
+| `mfast` | `--.-` | Toggle fast mouse speed (fast ↔ normal) |
+| Find pointer | `..-.` | Taps Ctrl by itself. If Windows' *Show location of pointer when I press the CTRL key* is on (Control Panel → Mouse → Pointer Options), circles are drawn round the pointer. Does nothing if that option is off |
+| Centre pointer | `.-.` | Sends Ctrl+Alt+Home, which a small AutoHotkey script turns into "put the pointer in the middle of the screen". Does nothing unless that script is running — see Build Guide Appendix G.6 |
 | `version` | `...-` | Show the start-up screen again — device name, AeroMorse version, CircuitPython version — until the next sip/puff |
 | `devicereset` | `-.-..-.` | Restart the device (same as unplug/replug). Switches to Group 1 and asks **CONFIRM RESET Y/N?** — type `y` (`-.--`) to restart; anything else, or 30 s with no input, cancels and returns to Mouse. Nothing is typed to the computer while it asks |
+
+The three speeds themselves are set in `config.py` (`MOUSE_SPEED_NORMAL`,
+`MOUSE_SPEED_SLOW`, `MOUSE_SPEED_FAST`).
 
 #### Arrow & Keypad Keys
 
@@ -547,6 +608,7 @@ effort for moving through a long document.
 |--------|---------|--------|
 | Page Down | `-..` | Scroll down one full page |
 | Page Up | `-.-` | Scroll up one full page |
+| Home | `.......` | Jump to the top of the page or the start of the line — the same code as in the Keyboard group |
 
 #### Windows Shortcuts
 
@@ -676,7 +738,11 @@ warning is needed.
 > `morse_map.py` if you want them, ideally on a longer pattern.
 
 Whether each code actually does anything is up to the host OS — Windows
-generally honours all four; macOS and Linux desktops vary. The remaining
+generally honours all four; macOS and Linux desktops vary. Many more such keys
+exist — browser back / forward / refresh, search, copy / paste, zoom and
+others — and any of them can be added to any group with one line, e.g.
+`_cc('AC_BACK', 0x224)`. See **Build Guide Appendix J** for a table of the
+useful ones and what to expect from them. The remaining
 letters and numbers in g5 are inherited from Group 1 as a placeholder and
 can be customised.
 
@@ -857,6 +923,7 @@ explaining what it does. The same Key Settings table also appears in
 | `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight, `0.1` (dim) to `1.0` (full). Takes effect when `config.py` is saved. Never goes below `0.1`, so the screen can't be blacked out by mistake. Useful when one board's screen is brighter than another's, or at night |
 | `DISPLAY_ROTATION` | `0` | Display orientation in degrees — `0` = USB on left, `180` = USB on right; also `90`, `270` |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
+| `KEYBOARD_LAYOUT` | `"US"` | Keyboard layout the **computer** is set to. If symbols come out wrong on a non-US computer, copy that layout's file into `/lib` and name it here, e.g. `"win_uk"` (v1.28+; Build Guide Appendix I). Falls back to US if the file is missing |
 | `PC_DISPLAY` | `False` | `True` = also report the display over USB to the **AeroMorse Display** window on the computer (v1.26+). No extra hardware |
 | `PC_SOUND` | `False` | `True` = the AeroMorse Display program also plays the beeps through the **computer's** speakers (v1.27+) — audio feedback with no speaker on the device. Needs `PC_DISPLAY = True` |
 

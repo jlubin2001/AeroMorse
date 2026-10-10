@@ -34,7 +34,9 @@ Appendices: [A — Groups](#appendix-a--groups-and-group-cycling) ·
 [E — Configuration reference](#appendix-e--configuration-reference) ·
 [F — #5477 + 3.5" FeatherWing](#appendix-f--building-with-5477--35-tft-featherwing-3651) ·
 [G — AutoHotkey](#appendix-g--autohotkey-starting-programs-with-a-morse-code) ·
-[H — Enclosure and tube strain relief](#appendix-h--enclosure-and-air-tube-strain-relief)
+[H — Enclosure and tube strain relief](#appendix-h--enclosure-and-air-tube-strain-relief) ·
+[I — Keyboard layout](#appendix-i--keyboard-layout-when-symbols-come-out-wrong) ·
+[J — More media, browser and app keys](#appendix-j--more-media-browser-and-app-launcher-keys)
 
 ---
 
@@ -201,10 +203,10 @@ phones with USB-C already accept AeroMorse as a **wired** USB keyboard/mouse.
 
 | Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|---------|-------|------|-------|
-| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✓ | ✓※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
-| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✓ | ✓※ | ✓ 2MB | ✓ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✓ | ✓※ | ✓ 2MB | ✓ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). EYESPI is also possible but needs the most code editing. |
-| ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✓ | — | ✓ 2MB | ✓ | Built-in 1.14" TFT — older S2 chip; no BLE |
+| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅※ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
+| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅※ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅※ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). EYESPI is also possible but needs the most code editing. |
+| ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | — | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip; no BLE |
 
 ※ BLE is included in CircuitPython 10.3.1 for these boards (needs 10.x and a
 bootloader that can flash it), but a BLE keyboard does **not** stay connected
@@ -221,7 +223,7 @@ STEMMA QT with no wiring change.
 
 | Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|---------|-------|------|-------|
-| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✓ | ✓ | ✓ **8MB** | ✓ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
+| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
 
 > The Metro ESP32-S3 #5500 has the most memory in this guide (16 MB flash,
 > 8 MB PSRAM). BLE is **not** unique to it — on CircuitPython 10.x the 4 MB
@@ -360,17 +362,17 @@ fundamentally need headers.
 
 | Component / option | Works without headers? | What's needed |
 |---|---|---|
-| **#5691 built-in TFT display** | ✓ Plug-and-play | Display soldered to board — nothing to wire |
-| **STEMMA QT OLED (#326, #938)** | ✓ Plug-and-play | STEMMA QT cable, no Feather wiring |
-| **STEMMA QT sensor (#4414 LPS33HW)** | ✓ Plug-and-play | STEMMA QT cable |
-| **FeatherWing displays (#3651, #5872, #3315)** | ✗ Not possible | The wing's holes can't grip bare pads — headers required |
-| **Standalone TFT breakouts (#2050, #1770…)** | ⚠ Solder 5–7 wires | Solder display wires directly to Feather pads |
-| **AT switches — Option B1 breadboard** | ✗ Not possible | Feather must sit *in* the breadboard via headers |
-| **AT switches — Option B2 TRRS breakout** | ⚠ Solder 3 wires | Solder breakout output wires to D5/D6/GND pads |
-| **AT switches — Option B3 #2915 Terminal Block** | ⚠ Solder 3 wires | Solder terminal-block wires to D5/D6/GND pads |
-| **Speaker — #3885 STEMMA Speaker** | ⚠ Solder 3 wires | Cut JST PH plug off, solder to A0/3V/GND pads |
-| **Speaker — Option S2 piezo (#2915 + #2790 + #1740/#1739)** | ⚠ Solder 2 wires only if no headers | If Feather has headers: 2 F-F jumpers from #2915 → A0/GND (zero soldering). If no headers: solder 2 wires from #2915 → A0/GND pads. Piezo side is screw-terminal either way. |
-| **Speaker — PAM8302 amp (#2130)** | ⚠ Solder 3 wires | Solder amp board to A0/3V/GND pads |
+| **#5691 built-in TFT display** | ✅ Plug-and-play | Display soldered to board — nothing to wire |
+| **STEMMA QT OLED (#326, #938)** | ✅ Plug-and-play | STEMMA QT cable, no Feather wiring |
+| **STEMMA QT sensor (#4414 LPS33HW)** | ✅ Plug-and-play | STEMMA QT cable |
+| **FeatherWing displays (#3651, #5872, #3315)** | ❌ Not possible | The wing's holes can't grip bare pads — headers required |
+| **Standalone TFT breakouts (#2050, #1770…)** | ⚠️ Solder 5–7 wires | Solder display wires directly to Feather pads |
+| **AT switches — Option B1 breadboard** | ❌ Not possible | Feather must sit *in* the breadboard via headers |
+| **AT switches — Option B2 TRRS breakout** | ⚠️ Solder 3 wires | Solder breakout output wires to D5/D6/GND pads |
+| **AT switches — Option B3 #2915 Terminal Block** | ⚠️ Solder 3 wires | Solder terminal-block wires to D5/D6/GND pads |
+| **Speaker — #3885 STEMMA Speaker** | ⚠️ Solder 3 wires | Cut JST PH plug off, solder to A0/3V/GND pads |
+| **Speaker — Option S2 piezo (#2915 + #2790 + #1740/#1739)** | ⚠️ Solder 2 wires only if no headers | If Feather has headers: 2 F-F jumpers from #2915 → A0/GND (zero soldering). If no headers: solder 2 wires from #2915 → A0/GND pads. Piezo side is screw-terminal either way. |
+| **Speaker — PAM8302 amp (#2130)** | ⚠️ Solder 3 wires | Solder amp board to A0/3V/GND pads |
 
 **STEMMA QT does not solve every problem.** STEMMA QT carries I²C, 3 V, and
 GND only — that is enough for sensors and I²C displays (OLEDs), but **not
@@ -418,7 +420,7 @@ https://www.adafruit.com/product/4414
 > Useful **background reading** on the sensor — calibration, threshold
 > tuning, and breath technique.
 >
-> ⚠ **Read it for concepts only — do NOT install its code.** That Adafruit
+> ⚠️ **Read it for concepts only — do NOT install its code.** That Adafruit
 > project is built around a *different board* and ships its own example
 > software. AeroMorse does **not** use any of it. Your firmware is solely
 > the AeroMorse `code.py` / `boot.py` / `morse_map.py` / `config.py` from
@@ -566,7 +568,7 @@ them.
 | 3.5" TFT FeatherWing #3651 on a #5477 | Needs a `display_setup.py` file; step-by-step in **Appendix F** — written from the parts' documentation, not from a tested build |
 | Other FeatherWings (#5872, #3315) | ⚠️ **Untested** — needs a `display_setup.py` file |
 | Standalone / breakout TFTs (#2050, #1743, #1770, #4311) | ⚠️ **Untested** — needs a `display_setup.py` file |
-| EYESPI displays (#5800, #5393) | ⚠️ **Untested** — needs a `display_setup.py` file |
+| EYESPI displays (#2090, #1480, #4311, #5394) on the #5613 breakout | ⚠️ **Untested** — needs a `display_setup.py` file and 7 soldered wires |
 | STEMMA QT OLEDs (#326, #938) | ⚠️ **Untested** with the current firmware — needs a `display_setup.py` file; text is small |
 | Wireless display (second board, ESP-NOW) | ✅ **Tested** — has its own ready-made `receiver.py`; see below |
 
@@ -687,7 +689,7 @@ plugs straight on (once headers are in place) with no additional wiring.
 
 ---
 
-### Standalone / breakout displays (5 wires required)
+### Standalone / breakout displays (7 wires required)
 
 > ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** Nothing
 > in this table has been built and tried by the project; see "Which displays
@@ -737,34 +739,80 @@ any standalone SPI breakout display — the advantage is that the flex cable
 is then available for routing the display to a different physical location
 more neatly.
 
-**EYESPI-compatible displays:**
+**Is it a good choice?** It is a workable way to add a second, somewhat
+larger screen, with one real advantage and two limits:
 
-> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** Nothing
-> in this table has been built and tried by the project; see "Which displays
-> are tested" and "Using a separate display" at the top of §5 before buying
-> one.
+- **Advantage — the screen is on a ribbon.** The display hangs on a thin
+  flat cable 50 to 200 mm long, so the screen can be mounted where you can
+  see it while the Feather sits somewhere else. It also works with **any**
+  Feather, including a #5691, and needs no header pins if the wires are
+  soldered straight to the pads.
+- **Limit — it is a soldering job.** Seven wires, soldered at the breakout
+  and again at the Feather.
+- **Limit — not very big.** The largest EYESPI screens are 2.8". For
+  the biggest text, the 3.5" FeatherWing (Appendix F) or the window on the
+  computer (below) do better.
 
-| Display | # | Size | Resolution | Driver | URL |
-|---------|---|------|-----------|--------|-----|
-| 2.0" 320×240 IPS TFT EYESPI | [5800](https://www.adafruit.com/product/5800) | 2.0" | 320×240 colour | ST7789 | https://www.adafruit.com/product/5800 |
-| 1.3" 240×240 IPS TFT EYESPI | [5393](https://www.adafruit.com/product/5393) | 1.3" | 240×240 colour | ST7789 | https://www.adafruit.com/product/5393 |
+On a #5691 the extra display **replaces** the built-in screen: the two share
+the same wires inside the board, so the built-in one goes dark.
 
-**EYESPI cables** (between #5613 breakout and display):
+**EYESPI displays picked for AeroMorse:**
 
-| Cable | # | Length | URL |
-|-------|---|--------|-----|
-| EYESPI Cable 50 mm | [5239](https://www.adafruit.com/product/5239) | 50 mm | https://www.adafruit.com/product/5239 |
-| EYESPI Cable 100 mm | [5240](https://www.adafruit.com/product/5240) | 100 mm | https://www.adafruit.com/product/5240 |
-| EYESPI Cable 200 mm | [5241](https://www.adafruit.com/product/5241) | 200 mm | https://www.adafruit.com/product/5241 |
+> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** None of
+> these has been built and tried by the project. `display_setup.example.py`
+> has a ready-made block for each.
 
-> **For most builders, a FeatherWing display or the built-in TFT on #5691
-> is a simpler choice.** The EYESPI path is useful if you specifically want
-> a certain display size/shape and a neat flex-cable run, and you are
-> comfortable soldering 7 wires to the #5613 breakout.
+| Display | # | Resolution | Driver | Text size next to the #5691's screen | About |
+|---------|---|-----------|--------|--------------------------------------|-------|
+| 2.8" TFT with cap touch | [2090](https://www.adafruit.com/product/2090) | 320×240 | ILI9341 | about 1.7× | $30 |
+| 2.2" TFT | [1480](https://www.adafruit.com/product/1480) | 320×240 | ILI9341 | about 1.3× | $25 |
+| 2.0" IPS TFT | [4311](https://www.adafruit.com/product/4311) | 320×240 | ST7789 | about 1.2× | $20 |
+| 1.9" IPS TFT (wide) | [5394](https://www.adafruit.com/product/5394) | 320×170 | ST7789 | about 1.3× | $18 |
 
-> **Code:** EYESPI displays are not auto-initialised — `board.DISPLAY` is not
-> populated. They are set up in a `display_setup.py` file with the
-> appropriate driver library (same as the standalone breakout displays above).
+"Text size" compares the height of the letters with the built-in 1.14"
+screen; all four show the same 20 characters across and 4 rows. The touch
+panel on the 2.8" is not used. IPS screens (the 2.0" and 1.9") stay
+readable from an angle; the other two are best viewed straight on.
+Adafruit's page for the 2.8" does not name its driver chip; ILI9341 is the
+driver Adafruit's own examples use for it.
+
+**What to buy besides the display:**
+
+| Qty | Item | # | URL |
+|-----|------|---|-----|
+| 1 | EYESPI Breakout Board | [5613](https://www.adafruit.com/product/5613) | https://www.adafruit.com/product/5613 |
+| 1 | EYESPI cable — 50 mm | [5462](https://www.adafruit.com/product/5462) | https://www.adafruit.com/product/5462 |
+| — | *or* 100 mm | [5239](https://www.adafruit.com/product/5239) | https://www.adafruit.com/product/5239 |
+| — | *or* 200 mm | [5240](https://www.adafruit.com/product/5240) | https://www.adafruit.com/product/5240 |
+| 7 | Short wires | — | — |
+
+**Wiring** (breakout pin → Feather pin; the pins are labelled on the
+breakout):
+
+| Breakout | Feather | |
+|----------|---------|---|
+| Vin | 3V | power |
+| Gnd | GND | ground |
+| SCK | SCK | clock |
+| MOSI | MOSI | data |
+| TCS | D9 | display select |
+| DC | D10 | data / command |
+| RST | D11 | reset |
+
+The other breakout pins (Lite, MISO, the SD-card and touch pins) are left
+unconnected; the backlight is on by default.
+
+**Then:** copy `display_setup.example.py` to the drive as `display_setup.py`,
+keep the block for your display, and copy that display's driver into `/lib`
+(see "Using a separate display" at the top of §5). **Set `DISPLAY_ROTATION`
+in `config.py` as well** — AeroMorse applies it after the display is set up.
+The ILI9341 screens are landscape at `0` (use `180` to turn them over); the
+ST7789 screens are portrait at `0`, so use `90` or `270`.
+
+> **For most builders, the built-in screen on the #5691 is the simpler
+> choice**, and the window on the computer the simplest way to bigger text.
+> The EYESPI path is for when you want a real second screen on a ribbon
+> cable and are comfortable soldering.
 
 ---
 
@@ -861,7 +909,7 @@ mounting. The e-ink is much more readable from across a room than the
 W1 #5691's small TFT, and the screen stays on with zero power draw
 between refreshes.
 
-> ⚠ **CircuitPython 10.x required.** The 2025 Edition MagTag (with
+> ⚠️ **CircuitPython 10.x required.** The 2025 Edition MagTag (with
 > the SSD1680 e-ink driver) **will NOT work with CircuitPython 9.2.x
 > or earlier**. You must install CircuitPython **10.x.x or later** on
 > the MagTag before `receiver_magtag.py` will run. More information at
@@ -874,12 +922,12 @@ board, dropping the two that change every loop iteration:
 
 | Field | Option W1 (TFT) | Option W2 (MagTag e-ink) |
 |---|---|---|
-| Group name (`[ KEYBOARD ]`) | ✓ | ✓ |
-| Live Morse buffer (`. - . .`) | ✓ | ✗ (e-ink too slow) |
-| Last action (`UP ARROW`) | ✓ | ✓ |
-| Modifiers / status (`SHIFT`) | ✓ | ✓ |
-| Pressure bar | ✓ | ✗ (continuous changes) |
-| Group colour indicator | ✓ (TFT colour) | ✓ (4 onboard NeoPixels) |
+| Group name (`[ KEYBOARD ]`) | ✅ | ✅ |
+| Live Morse buffer (`. - . .`) | ✅ | ❌ (e-ink too slow) |
+| Last action (`UP ARROW`) | ✅ | ✅ |
+| Modifiers / status (`SHIFT`) | ✅ | ✅ |
+| Pressure bar | ✅ | ❌ (continuous changes) |
+| Group colour indicator | ✅ (TFT colour) | ✅ (4 onboard NeoPixels) |
 
 The four NeoPixels show the **group colour** matching `code.py`'s
 `_GROUP_COLORS` palette — so even though the e-ink itself is grayscale,
@@ -1021,13 +1069,13 @@ Text size follows the screen: 240×135 gives the size you see on the #5691,
 | Cost | $35 | $35 |
 | Display | 240×135 colour TFT | **2.9" 296×128 e-ink** |
 | Refresh rate | 100 ms | ~2 s |
-| Live Morse preview | ✓ | ✗ (e-ink too slow) |
-| Pressure bar | ✓ | ✗ |
-| Group colours | ✓ Native | ✓ Via 4 NeoPixels |
+| Live Morse preview | ✅ | ❌ (e-ink too slow) |
+| Pressure bar | ✅ | ❌ |
+| Group colours | ✅ Native | ✅ Via 4 NeoPixels |
 | Assembly | Plug USB-C in | Plug USB-C in |
 | Best viewing distance | Arm's length | **Across a room** |
 | CircuitPython required | 9.x+ | **10.x+** |
-| Wireless power | ✓ LiPoly | ✓ LiPoly |
+| Wireless power | ✅ LiPoly | ✅ LiPoly |
 | Availability | adafruit.com | adafruit.com |
 
 ---
@@ -1263,6 +1311,24 @@ required.
 > | A breadboard (switch Option B1) | **Required** |
 >
 > See §3 "Building with no header pins" for the full table.
+
+---
+
+### Mounting hardware (optional, but you will want it)
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | Nylon screw and stand-off set, M2.5 — black | #3299 | https://www.adafruit.com/product/3299 |
+| — | *or* the same set in white | #3658 | https://www.adafruit.com/product/3658 |
+
+One set is far more than one device needs — a few hundred pieces: M2.5
+screws 4, 6 and 10 mm long, nuts, and hex stand-offs from 6 to 12 mm — and
+it covers every job in this guide: standing the Feather off the floor of an
+enclosure, screwing the sensor board down, and joining boards together
+(Appendix H). Nylon cannot short anything it touches. Black and white are
+the same parts; pick whichever suits your case. M2.5 fits the sensor board
+and the Feather's two larger mounting holes; the Feather's two smaller holes
+take M2 screws, which are not in this set.
 
 ---
 
@@ -2029,7 +2095,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.27 (released 2026-10-07)`. Open the file
+> `AeroMorse code.py — version 1.28 (released 2026-10-09)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -2177,7 +2243,7 @@ display-driver `.mpy` is needed.
 
 #### Option W2 — Adafruit MagTag (#4800, 2.9" e-ink)
 
-> ⚠ **CircuitPython 10.x required.** The 2025 Edition MagTag will NOT
+> ⚠️ **CircuitPython 10.x required.** The 2025 Edition MagTag will NOT
 > work with CircuitPython 9.2.x or earlier — see §5 Option W2 and the
 > warning banner at the top of `receiver_magtag.py`.
 
@@ -2349,6 +2415,7 @@ it interact with other settings" explanation, jump to Appendix E.
 | `DISPLAY_ROTATION` | `0` | Screen orientation in degrees: `0` = USB port on the **left** side of the display, `180` = USB port on the **right** side. `90` / `270` turn the text sideways |
 | `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
 | `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `ESPNOW_CHANNEL` in the display's `receiver_config.py` |
+| `KEYBOARD_LAYOUT` | `"US"` | The keyboard layout the **computer** is set to. Leave `"US"` unless symbols come out wrong (`@` and `"` swapped, `#` giving `£` …); then copy that layout's file into `/lib` and name it here, e.g. `"win_uk"` (v1.28+; Appendix I). A missing or faulty file falls back to US |
 | `PC_DISPLAY` | `False` | `True` = also report the display over the USB cable to the **AeroMorse Display** window on the computer (v1.26+; see §5). No extra hardware. Leave `False` unless you use that program |
 | `PC_SOUND` | `False` | `True` = the AeroMorse Display program also plays the beeps (dot / dash tone, action blip) through the **computer's** speakers (v1.27+; see §5) — audio feedback with no speaker on the device. Needs `PC_DISPLAY = True`, and *Sound* switched on in the program's menu |
 
@@ -2378,7 +2445,7 @@ a few seconds.
 2. Wait 3–5 seconds. The display shows the **start-up screen**:
 
     - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
-    - the AeroMorse version, e.g. `v1.27`
+    - the AeroMorse version, e.g. `v1.28`
     - the CircuitPython version, e.g. `CP 9.2.9`
 
 3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
@@ -2613,6 +2680,12 @@ also the closest match to Darci USB's end-of-character behaviour.
 
 ### On the computer
 
+**Some symbols come out wrong (`@` gives `"`, `#` gives `£`, letters swapped)**
+
+The computer is set to a keyboard layout other than US. Either switch the
+computer to a US keyboard, or set `KEYBOARD_LAYOUT` in `config.py` — see
+**Appendix I**.
+
 **Pop-ups on the computer when the device starts or restarts**
 
 AeroMorse shows up on the computer as a keyboard, a mouse **and a small USB
@@ -2819,7 +2892,7 @@ channel 1, common ones to try are 6 and 11):
   will stop seeing the receiver as a second keyboard.
 
 **Option W2 MagTag — e-ink stuck on "[ WAITING ]" or never updates**
-- ⚠ **First check CircuitPython version.** The 2025 Edition MagTag
+- ⚠️ **First check CircuitPython version.** The 2025 Edition MagTag
   requires **CircuitPython 10.x or later**. Open `boot_out.txt` on the
   MagTag's CIRCUITPY drive; if it says 9.x.x the e-ink driver won't
   work. Re-flash from circuitpython.org/downloads with the **MagTag
@@ -3448,6 +3521,15 @@ only if channel 1 is congested in your area. See §12 "How the ESP-NOW
 channel is selected" for the full mechanism and why the channel is
 pinned the way it is.
 
+**`KEYBOARD_LAYOUT`** (default `"US"`, v1.28+).
+Which keyboard layout the computer is set to, so that characters written in
+`morse_map.py` are typed with the right keys. `"US"` uses the table built
+into the firmware and needs no extra file. Any other value names a layout
+file in `/lib` — `"win_uk"` loads `keyboard_layout_win_uk` (the full file
+name is accepted too). If the file cannot be loaded the US table is used and
+the reason is printed at start-up. See Appendix I for where to get the files
+and what is and is not affected.
+
 **`PC_DISPLAY`** (default `False`, v1.26+).
 `True` makes the device also write its four display fields to the USB
 serial log, as one short line each time something changes, for the
@@ -3487,12 +3569,12 @@ recommended build.
 
 | Want | This combo |
 |---|---|
-| **Big, glance-able display** with much more text area than #5691's 240×135 | ✓ 480×320 is ~4.4× the pixel area |
-| Bright, colour, backlit display | ✓ HX8357D TFT with built-in backlight |
-| Same input + ESP-NOW capabilities as #5691 | ✓ ESP32-S3 chip family is identical |
-| Built-in display (no separate display to buy) | ✗ — display is a separate FeatherWing |
-| Display + Feather as a single PCB (panel-mount friendly) | ✗ — two PCBs stacked together |
-| Cheaper than #5691 | ✗ — #5477 + #3651 costs more than #5691 alone |
+| **Big, glance-able display** with much more text area than #5691's 240×135 | ✅ 480×320 is ~4.4× the pixel area |
+| Bright, colour, backlit display | ✅ HX8357D TFT with built-in backlight |
+| Same input + ESP-NOW capabilities as #5691 | ✅ ESP32-S3 chip family is identical |
+| Built-in display (no separate display to buy) | ❌ — display is a separate FeatherWing |
+| Display + Feather as a single PCB (panel-mount friendly) | ❌ — two PCBs stacked together |
+| Cheaper than #5691 | ❌ — #5477 + #3651 costs more than #5691 alone |
 
 Pick this combo if you want the **biggest display** and don't mind a
 two-board stack or one code-edit step. Pick #5691 instead for the
@@ -3757,6 +3839,38 @@ If a hotkey does nothing: check the green **H** icon is there (the script is
 running), that the path in the script is exactly where the program is, and
 that no other program already uses the same key combination.
 
+### G.6 Not only programs: putting the pointer in the middle of the screen
+
+A hotkey can do things as well as start programs. One that is useful with a
+Morse mouse: when the pointer is lost in a corner or far from where you
+want it, one code jumps it to the middle of the screen. The device cannot
+do this by itself — a USB mouse only says "move a little this way", it
+never knows where the pointer is — but AutoHotkey can.
+
+Add this to the script (and reload it):
+
+```
+^!Home:: {
+    CoordMode("Mouse", "Screen")
+    MouseMove(A_ScreenWidth // 2, A_ScreenHeight // 2, 0)
+}
+```
+
+Ctrl+Alt+Home already has a code: the supplied `morse_map.py` gives it
+`.-.` in the Mouse group, with this line:
+
+```python
+g2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer
+```
+
+With more than one monitor it goes to the middle of the main one. Tried on
+the author's computer (Windows 11, one screen) from the test device.
+
+**Finding the pointer** needs no AutoHotkey: the Mouse-group code `..-.`
+taps Ctrl, and Windows draws circles round the pointer if *Show location of
+pointer when I press the CTRL key* is ticked (Control Panel → Mouse →
+Pointer Options).
+
 ---
 
 ## Appendix H — Enclosure and air-tube strain relief
@@ -3781,10 +3895,10 @@ strain relief anyway (H.3).
 
 ### H.1 The author's enclosure — the ATMakers "HoseBox"
 
-<img src="images/enclosure-closed.jpg" alt="Green 3D-printed box with the screen and three buttons showing through a window in the lid, USB cable at one end and the tube fitting at the other" width="230">
+<img src="images/enclosure-closed.jpg" alt="Green 3D-printed box with the screen and three buttons showing through a window in the lid, USB cable at one end and the tube fitting at the other" width="520">
 
-*Closed: the screen and the three buttons show through the lid. USB cable at
-the top, tube fitting at the bottom.*
+*Closed: the screen and the three buttons show through the lid. USB cable on
+the left, tube fitting on the right.*
 
 The author's two devices sit in a 3D-printed box designed by **ATMakers**
 (Bill Binko, the maker of [AirTalker](https://github.com/ATMakersOrg/AirTalker),
@@ -3809,7 +3923,8 @@ How it is laid out:
 | **Clip in the other end holding a push-in tube fitting** | **This is the strain relief.** A short piece of tube runs *inside* the box from the fitting to the sensor port. Your long tube plugs into the fitting on the *outside*. A tug on the tube pulls on the box, not on the sensor — and the tube can be unplugged and replaced without opening anything |
 
 Besides the printed parts it uses small nylon screws and stand-offs (an M2.5
-set such as [#3299](https://www.adafruit.com/product/3299)) and one push-in
+set — [#3299](https://www.adafruit.com/product/3299) black or
+[#3658](https://www.adafruit.com/product/3658) white, see §7) and one push-in
 ("push-to-connect") pneumatic tube fitting. The fitting's exact size is not
 recorded here yet — match it to your tube.
 
@@ -3872,27 +3987,51 @@ by **badabby**, on Printables.
   may not be sold. For that reason the files are not copied into the
   AeroMorse repository — download them from the designer's page.
 
+**A newer case, made for the S3 board — not tried yet.**
+[Adafruit ESP32-S3 reverse tft](https://www.printables.com/model/1842132-adafruit-esp32-s3-reverse-tft)
+by **iamatulsingh**, on Printables (published September 2026), is designed
+for the #5691 itself and is also a two-part case: a base and a lid
+(`adafruit_esp32s3_reverse_tft-base.stl` and `-lid.stl`). The designer
+suggests 0.2 mm layers, 3 walls, 15–25 % infill, in PLA or PETG. Its
+licence is Creative Commons Attribution-ShareAlike 4.0, which also allows
+commercial use. The author thinks it looks the better of the two but **has
+not printed or used it**, so whether it needs screws, and how well it fits,
+is for you to find out — reports welcome.
+
 ### H.3 No enclosure yet? Do the strain relief anyway
 
-These need no printed parts. The first is from Adafruit's own sip-and-puff
-guide; the other two are ordinary good practice and have not been tested by
-the project in daily use.
+These need no printed parts, only a couple of small cable ties. The first
+two are from Adafruit's own sip-and-puff guide
+([LPS33 sip-and-puff](https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff));
+the third is ordinary good practice.
 
-1. **Tie the tube onto the port.** Adafruit's guide
-   ([LPS33 sip-and-puff](https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff))
-   shows a small cable tie tightened around the tube where it sits on the
-   port, so it cannot slide off and stays sealed. Cut the tube end square
-   first, push it on with a gentle twist, then tighten the tie. Adafruit
-   notes this is not what the port was designed for — it is made to seal
-   against an enclosure with an O-ring — but it works.
-2. **Anchor the tube close to the sensor.** Fix the tube to something solid
-   within a few centimetres of the sensor — a cable tie through one of the
-   sensor board's mounting holes, or a cable clip on whatever the board is
-   mounted to — and leave a small slack loop between that anchor and the
-   port. A pull on the tube then stops at the anchor.
-3. **Fix the sensor board down.** Do not let it hang from its STEMMA QT
-   cable. Screw it to a small plate or box through its mounting holes, so a
-   pull that does get through cannot drag the board or unplug the cable.
+1. **Tie the tube onto the port** (Adafruit guide, "Assemble the sensor").
+   A small cable tie tightened around the tube where it sits on the port
+   stops it sliding off and keeps it sealed. Cut the tube end square first,
+   push it on with a gentle twist, then tighten the tie. Adafruit notes
+   this is not what the port was designed for — it is made to seal against
+   an enclosure with an O-ring — but it works.
+2. **Tie the tube to the USB cable — this is the strain relief** (Adafruit
+   guide, ["Plug it all together"](https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff/plug-it-all-together),
+   under *Optional but Suggested*). Plug the USB cable into the Feather,
+   fold the tube back so it lies alongside the cable, and hold the two
+   together with a second cable tie. A tug on the tube is then taken by the
+   sturdy USB cable instead of by the little sensor port. Two things to
+   watch:
+    - leave the tube a **gentle bend**, not a kink, between the sensor and
+      the tie, so air still flows; a slight twist helps it curve clear of
+      the screen;
+    - make the tie **snug, not tight** — firm enough to hold, not so hard
+      that it squashes the tube shut.
+3. **Fix the sensor board to the Feather.** Do not let the sensor hang from
+   its STEMMA QT cable. Adafruit's guide screws its boards together through
+   their mounting holes with M2.5 nylon screws and nuts; a small plate or
+   box does the same job. With the boards joined, a pull that does get
+   through cannot drag the sensor or unplug its cable.
+
+The author has not used methods 2 and 3 day to day — his devices are in the
+enclosure above — so treat them as Adafruit's recommendation rather than
+something tested here.
 
 Check the tube now and then for moisture, and that it is still fully on the
 port — a tube that has crept half off is a common cause of missed dots and
@@ -3910,6 +4049,183 @@ electronics.
 Any small project box also works if you would rather not print: what
 matters is that the boards are held still, the screen can be seen, and the
 tube is anchored to the box rather than to the sensor.
+
+---
+
+## Appendix I — Keyboard layout: when symbols come out wrong
+
+**The symptom.** Letters and numbers are right, but some symbols are not:
+you enter the code for `@` and get `"`, `#` gives `£`, `\` or `|` give
+something else — or, on a French or German computer, some letters are
+swapped too (`a` and `q`, `y` and `z`).
+
+**The cause.** A USB keyboard does not send characters. It sends *which key
+was pressed*, and the computer decides what that key means from its own
+keyboard-layout setting. AeroMorse presses the keys that produce each
+character on a **US** keyboard. On a computer set to another layout the same
+keys mean something else. Nothing is faulty; the two simply disagree.
+
+There are two ways to make them agree.
+
+### I.1 Easiest: set the computer to a US keyboard
+
+If you can, add the "English (United States) — US" keyboard in the
+computer's language settings and select it while using AeroMorse. Nothing
+on the device changes. This suits anyone who types mostly in English.
+
+### I.2 Or: tell AeroMorse which layout the computer uses (v1.28+)
+
+1. **Get the layout file.** Layout files for CircuitPython are published by
+   the community project
+   **[Neradoc/Circuitpython_Keyboard_Layouts](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts)**
+   (free, MIT licence). On its *Releases* page download the zip that matches
+   your CircuitPython version — for CircuitPython 9.x,
+   `circuitpython-keyboard-layouts-9.x-mpy-….zip`.
+2. **Copy one file to the device.** In the zip, find the file for the
+   computer's layout and copy it into the **`lib`** folder on the CIRCUITPY
+   drive. Only that one file is needed.
+
+   | Computer's keyboard layout | File | Setting |
+   |---|---|---|
+   | United Kingdom | `keyboard_layout_win_uk` | `"win_uk"` |
+   | German | `keyboard_layout_win_de` | `"win_de"` |
+   | French (AZERTY) | `keyboard_layout_win_fr` | `"win_fr"` |
+   | Spanish | `keyboard_layout_win_es` | `"win_es"` |
+   | Italian | `keyboard_layout_win_it` | `"win_it"` |
+   | Danish | `keyboard_layout_win_da` | `"win_da"` |
+   | Swedish | `keyboard_layout_win_sw` | `"win_sw"` |
+   | Portuguese | `keyboard_layout_win_po` | `"win_po"` |
+   | Brazilian | `keyboard_layout_win_br` | `"win_br"` |
+   | Czech | `keyboard_layout_win_cz` | `"win_cz"` |
+   | Hungarian | `keyboard_layout_win_hu` | `"win_hu"` |
+   | Turkish | `keyboard_layout_win_tr` | `"win_tr"` |
+   | French, on a Mac | `keyboard_layout_mac_fr` | `"mac_fr"` |
+   | US Dvorak | `keyboard_layout_us_dvo` | `"us_dvo"` |
+
+   The `win_` files are made for Windows; other systems usually agree with
+   them for the common symbols, but not always.
+3. **Name it in `config.py`:**
+
+   ```python
+   KEYBOARD_LAYOUT = "win_uk"
+   ```
+
+4. Run the validator, copy `config.py` to the device, and try the symbols
+   that were wrong.
+
+**If the file is missing, misnamed or faulty, the device still types** — it
+goes back to the US layout and prints the reason in its start-up log (a
+line beginning `KEYBOARD_LAYOUT:`). When it works the log says
+`Keyboard layout: keyboard_layout_win_uk`.
+
+### I.3 What the setting does and does not change
+
+- **Changed:** everything written in `morse_map.py` as a character or as
+  text — `'@'`, `'a'`, a phrase, a secret. Each character is typed with
+  the key (and Shift or AltGr) that produces it on the chosen layout. A
+  letter or digit sent with an armed Ctrl / Alt / Win also uses the right
+  key, so Ctrl+A is still Ctrl+A on a French keyboard.
+- **Not changed:** entries written as key names — `Keycode.ENTER`,
+  `Keycode.EQUALS`, `Keycode.CONTROL, Keycode.ALT, Keycode.D`. Those name a
+  key *position* and always press that position. `Keycode.Q` is the key
+  where a US keyboard has Q, which is A on a French one. For anything
+  layout-sensitive, write the character instead of the key name.
+- **Not possible:** a character that is not on the chosen layout at all
+  (for instance `£` on the US layout) is skipped, not typed wrongly.
+
+> **Tested how far?** On the project's test device the UK and French files
+> were loaded and the keys sent for a set of characters were checked against
+> what those layouts expect — `@` and `"` swap on UK, `a` and `q` swap on
+> French, Ctrl+A follows — and the fall-back to US was checked for a missing
+> and a faulty file. It has **not** been tried on a computer actually set to
+> a non-US layout, and the layout files themselves are the community
+> project's work. If a symbol still comes out wrong, please report it.
+
+---
+
+## Appendix J — More media, browser and app-launcher keys
+
+Group 5 (Media) comes with volume, play / pause, track, brightness and four
+app launchers. Those are **Consumer Control** keys — the same kind of key as
+the extra buttons on a multimedia keyboard. The USB standard defines a few
+hundred more, and **AeroMorse can already send any of them**; they just are
+not assigned to a code out of the box.
+
+### J.1 How to add one
+
+In `morse_map.py`, in any group, use `_cc()` with a name of your choosing and
+the key's number:
+
+```python
+g2[6][0b101011] = _cc('AC_BACK', 0x224)      # -.-.--  browser Back
+```
+
+- The **number** is what matters (`0x224` is "Back" in the USB standard).
+- The **name** is only tried first, for newer key libraries that know it;
+  if it is unknown the number is used. Any name works.
+- No extra file or library is needed.
+
+Pick a free code for it (`morse_map_report.txt` lists them), then validate
+and copy as for any change to the map (Usage Guide §3).
+
+### J.2 Keys worth knowing
+
+| What it does | Line to use | On screen |
+|---|---|---|
+| Browser: back | `_cc('AC_BACK', 0x224)` | BROWSER BACK |
+| Browser: forward | `_cc('AC_FORWARD', 0x225)` | BROWSER FWD |
+| Browser: reload the page | `_cc('AC_REFRESH', 0x227)` | BROWSER REFRESH |
+| Browser: stop loading | `_cc('AC_STOP', 0x226)` | BROWSER STOP |
+| Browser: home page | `_cc('AC_HOME', 0x223)` | BROWSER HOME |
+| Browser: favourites / bookmarks | `_cc('AC_BOOKMARKS', 0x22A)` | BOOKMARKS |
+| Search | `_cc('AC_SEARCH', 0x221)` | SEARCH |
+| Calculator | `_cc('AL_CALCULATOR', 0x192)` | CALCULATOR |
+| File explorer ("This PC") | `_cc('AL_LOCAL_MACHINE_BROWSER', 0x194)` | FILE EXPLORER |
+| Web browser | `_cc('AL_INTERNET_BROWSER', 0x196)` | WEB BROWSER |
+| Mail | `_cc('AL_EMAIL_READER', 0x18A)` | MAIL |
+| Media player | `_cc('AL_CONSUMER_CONTROL_CONFIGURATION', 0x183)` | MEDIA PLAYER |
+| Calendar | `_cc('AL_CALENDAR', 0x18E)` | CALENDAR |
+| Copy / Cut / Paste | `_cc('AC_COPY', 0x21B)` / `0x21C` / `0x21D` | COPY / CUT / PASTE |
+| Undo | `_cc('AC_UNDO', 0x21A)` | UNDO |
+| New / Open / Save / Print | `_cc('AC_NEW', 0x201)` / `0x202` / `0x207` / `0x208` | NEW / OPEN / SAVE / PRINT |
+| Find | `_cc('AC_FIND', 0x21F)` | FIND |
+| Zoom in / out | `_cc('AC_ZOOM_IN', 0x22D)` / `0x22E` | ZOOM IN / ZOOM OUT |
+
+Media keys already in Group 5 can be reused in other groups by their plain
+names, for example `CC(ConsumerControlCode.MUTE)` or
+`CC(ConsumerControlCode.VOLUME_INCREMENT)`.
+
+A key that is not in the table shows on the screen as `CC` and its number.
+
+**The full list** — about 225 named keys — is in the community file
+[consumer_control_extended.py](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts/blob/main/libraries/helpers/consumer_control_extended.py)
+(Neradoc, MIT licence). You do not need to copy that file to the device;
+read the number you want from it and use it in `_cc()` as above.
+
+### J.3 What to expect
+
+> **Whether a key does anything is up to the computer, not AeroMorse.** The
+> device sends the key correctly either way; the operating system and the
+> program in front decide whether to act on it.
+>
+> - **Windows** acts on the browser keys, Search, and the launchers for
+>   Calculator, File Explorer, Mail and Media player in most programs.
+>   Copy / Paste / Save / Print and the like are honoured by some programs
+>   (Microsoft Office, for one) and ignored by many others — for those, a
+>   normal key combination such as `Keycode.CONTROL, Keycode.C` is the
+>   dependable choice.
+> - **macOS, Linux, phones and tablets** support fewer, mainly the media
+>   keys.
+> - **Tried by the project:** the Group 5 media keys and the Calculator
+>   launcher, on Windows. The rest of the table is from the USB standard and
+>   has not been tried key by key.
+>
+> If a key does nothing, nothing is wrong with the device — that computer
+> simply does not use it.
+
+**Leave these alone unless you mean it:** `SLEEP` (`0x32`) and `POWER`
+(`0x30`) put the computer to sleep or switch it off. If you add one, give it
+a long code that cannot be entered by accident.
 
 ---
 

@@ -1,4 +1,4 @@
-# AeroMorse morse_map.py — version 1.27 (released 2026-10-07)
+# AeroMorse morse_map.py — version 1.28 (released 2026-10-09)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # This file defines every Morse pattern → action mapping. Edit it to remap keys.
 
@@ -309,6 +309,7 @@ g2[5][0b10000] = "mmove 1 0 0"     # -....   numpad 6  →  large
 g2[1][0b0] = "repeat"              # .       numpad 5  repeat last action
 g2[5][0b00100] = "repeat"         # ..-..   alternate repeat
 g2[4][0b1100] = "mslow"            # --..    toggle slow-step mode
+g2[4][0b1101] = "mfast"            # --.-    toggle fast mode
 g2[2][0b01] = "mclick left 1"      # .-      left click
 g2[3][0b011] = "mclick right 1"    # .--     right click
 g2[3][0b001] = "mclick left 2"     # ..-     double-click left
@@ -338,6 +339,7 @@ g2[5][0b01010]=Keycode.RIGHT_ARROW         # .-.-.      (ar)
 # differ only in the last symbol: dot = down, dash = up.
 g2[3][0b100]=Keycode.PAGE_DOWN             # -..     page down
 g2[3][0b101]=Keycode.PAGE_UP               # -.-     page up
+g2[7][0b0000000]=Keycode.HOME              # .......  Home (same code as in the Keyboard group)
 
 # ── Windows Shortcuts (tuples = all keys pressed simultaneously) ──────────────
 g2[6][0b110011]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --..--  free mouse from VM
@@ -346,6 +348,16 @@ g2[5][0b11111]=Keycode.ALT, Keycode.TAB    # -----   switch windows (Alt+Tab)
 g2[7][0b1110010]=Keycode.TAB               # ---..-.  Tab                    (sf)
 g2[6][0b110000]=Keycode.ESCAPE             # --....   Escape                 (gs)
 g2[7][0b1100000]=Keycode.F5                # --.....  refresh / F5           (--5)
+
+# ── Pointer helpers ───────────────────────────────────────────────────────────
+# Find pointer: taps Ctrl by itself. With the Windows option "Show location of
+# pointer when I press the CTRL key" on (Mouse settings > Pointer Options),
+# Windows draws circles round the pointer. Does nothing if that option is off.
+g2[4][0b0010] = (Keycode.CONTROL,)         # ..-.    find pointer (tap Ctrl)
+# Centre pointer: sends Ctrl+Alt+Home, which a small AutoHotkey script on the
+# computer turns into "put the pointer in the middle of the screen" (Build
+# Guide Appendix G). Does nothing unless that script is running.
+g2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
 g2[4][0b1010]=Keycode.RIGHT_CONTROL        # -.-.

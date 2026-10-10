@@ -68,22 +68,55 @@ def setup():
 #     return ILI9341(bus, width=320, height=240)
 
 
-# ── Breakout TFTs on 5 wires (#2050 HX8357D, #1770 / #1743 ILI9341) ───────────
+# ── Breakout TFTs wired pin by pin (#2050 HX8357D, #1770 / #1743 ILI9341) ─────
 # Same as the two blocks above, with the pins YOU wired. The Build Guide's
 # wiring table uses CS = D9, DC = D10, RST = D11:
 #     bus = fourwire.FourWire(spi, command=board.D10, chip_select=board.D9, reset=board.D11)
 
 
-# ── 2.0" IPS TFT #4311 / EYESPI #5800 (320 x 240, ST7789) ─────────────────────
-# Library: adafruit_st7789.mpy.
+# ══ EYESPI displays on the #5613 EYESPI breakout ══════════════════════════════
+# Seven wires from the breakout to the Feather (Build Guide section 5):
+#     Vin -> 3V    Gnd -> GND    SCK -> SCK    MOSI -> MOSI
+#     TCS -> D9    DC  -> D10    RST -> D11
+# AeroMorse applies DISPLAY_ROTATION from config.py AFTER setup(), so set it
+# there too: the ILI9341 screens are landscape at 0 (180 turns them over); the
+# ST7789 screens are portrait at 0 - use 90 or 270 for landscape.
+# On a #5691 this display takes over from the built-in screen, which goes dark.
+
+# ── 2.8" TFT with cap touch #2090, or 2.2" TFT #1480 (320 x 240, ILI9341) ─────
+# Library: adafruit_ili9341.mpy.   config.py: DISPLAY_ROTATION = 0 (or 180)
+# def setup():
+#     import busio
+#     import fourwire
+#     from adafruit_ili9341 import ILI9341
+#     displayio.release_displays()
+#     spi = busio.SPI(board.SCK, MOSI=board.MOSI)
+#     bus = fourwire.FourWire(spi, command=board.D10, chip_select=board.D9, reset=board.D11)
+#     return ILI9341(bus, width=320, height=240)
+
+# ── 2.0" IPS TFT #4311 (320 x 240, ST7789) ────────────────────────────────────
+# Library: adafruit_st7789.mpy.    config.py: DISPLAY_ROTATION = 90 (or 270)
 # def setup():
 #     import busio
 #     import fourwire
 #     from adafruit_st7789 import ST7789
 #     displayio.release_displays()
-#     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+#     spi = busio.SPI(board.SCK, MOSI=board.MOSI)
 #     bus = fourwire.FourWire(spi, command=board.D10, chip_select=board.D9, reset=board.D11)
-#     return ST7789(bus, width=320, height=240, rotation=270)
+#     return ST7789(bus, width=240, height=320)
+
+# ── 1.9" IPS TFT #5394 (320 x 170, ST7789) ────────────────────────────────────
+# Library: adafruit_st7789.mpy.    config.py: DISPLAY_ROTATION = 90 (or 270)
+# The picture on this narrow panel starts 35 pixels in (colstart); if it sits
+# off to one side, that is the number to adjust.
+# def setup():
+#     import busio
+#     import fourwire
+#     from adafruit_st7789 import ST7789
+#     displayio.release_displays()
+#     spi = busio.SPI(board.SCK, MOSI=board.MOSI)
+#     bus = fourwire.FourWire(spi, command=board.D10, chip_select=board.D9, reset=board.D11)
+#     return ST7789(bus, width=170, height=320, colstart=35)
 
 
 # ── OLED #326 (0.96") / #938 (1.3")  (128 x 64, SSD1306, STEMMA QT) ───────────

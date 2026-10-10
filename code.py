@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.27   (released 2026-10-07)
+#  AeroMorse code.py   —   version 1.28   (released 2026-10-09)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -105,6 +105,34 @@ from config import *  # noqa: F401,F403
 
 kbd    = Keyboard(usb_hid.devices)
 layout = KeyboardLayoutUS(kbd)
+
+# Keyboard layout (config.py KEYBOARD_LAYOUT, v1.28+). A USB keyboard sends key
+# POSITIONS; the computer turns them into characters using its own layout
+# setting. The US table above is right for a computer set to a US keyboard. On
+# one set to UK, German, French ... several symbols come out wrong (@ and " swap
+# on a UK layout, for instance). KEYBOARD_LAYOUT names a layout file in /lib -
+# e.g. "win_uk" for keyboard_layout_win_uk - that holds the table for that
+# computer. If it is missing or faulty the US table stays in use: the device
+# always types.
+_LAYOUT_NAME = "US"
+try:
+    _kl = str(KEYBOARD_LAYOUT).strip()
+except NameError:
+    _kl = "US"                   # older config.py without the setting
+if _kl and _kl.upper() != "US":
+    if _kl.endswith(".py") or _kl.endswith(".mpy"):
+        _kl = _kl.rsplit(".", 1)[0]
+    if not _kl.startswith("keyboard_layout_"):
+        _kl = "keyboard_layout_" + _kl.lower()
+    try:
+        layout = __import__(_kl).KeyboardLayout(kbd)
+        _LAYOUT_NAME = _kl
+        print("Keyboard layout: " + _kl)
+    except ImportError as _e:
+        print("KEYBOARD_LAYOUT: %s not found in /lib (%s) - using the US layout" % (_kl, _e))
+    except Exception as _e:
+        print("KEYBOARD_LAYOUT: %s could not be used (%s: %s) - using the US layout"
+              % (_kl, type(_e).__name__, _e))
 mouse  = Mouse(usb_hid.devices)
 try:
     cc_device = ConsumerControl(usb_hid.devices)
@@ -742,13 +770,22 @@ def _exec_text(text):
     global _armed_mods
     if len(text) == 1 and _armed_mods:
         kc = _ALPHA_KEYS.get(text.lower()) or _DIGIT_KEYS.get(text)
+        if kc and _LAYOUT_NAME != "US":
+            # Where that letter / digit sits on the chosen layout (A and Q swap
+            # on a French keyboard, so Ctrl+A must press a different key).
+            try:
+                _kcs = layout.keycodes(text.lower())
+                if len(_kcs) == 1:
+                    kc = _kcs[0]
+            except Exception:
+                pass
         if kc:
             kbd.press(*_armed_mods, kc)
             kbd.release_all()
             _armed_mods.clear()
             return
     _armed_mods.clear()
-    # One character at a time, so a character the US layout can't type (e.g. an
+    # One character at a time, so a character the layout can't type (e.g. an
     # invisible control character that slipped into a macro) is skipped instead
     # of stopping the device. layout.write() would raise part-way through.
     skipped = 0
@@ -802,6 +839,14 @@ def _exec_command(cmd):
         # before it, so a hold or gap can run long (if the loop is busy) but
         # never short.
         wait = MOUSE_CLICK_GAP if _click_q else 0.0         # after a click still in progress
+        if _drag_active:
+            # A click while a drag is on ends the drag first: let the held
+            # button go, clear DRAG from the status row, then click as usual.
+            # (Before v1.28 the click released the button but DRAG stayed
+            # shown, and the next drag pattern then did nothing.)
+            mouse.release_all()
+            _drag_active = False
+            wait = MOUSE_CLICK_GAP                          # drop first, then click
         if _armed_mods:
             # Keyboard and mouse are separate USB HID interfaces, so the host
             # can process their reports out of order. Without a settle delay
@@ -1002,6 +1047,13 @@ _CC_NAMES.update({
     0x18D: "CONTACTS",     0x19F: "CONTROL PANEL",  0x1A7: "DOCUMENTS",
     0x221: "SEARCH",       0x223: "BROWSER HOME",   0x224: "BROWSER BACK",
     0x225: "BROWSER FWD",  0x227: "BROWSER REFRESH",
+    0x226: "BROWSER STOP", 0x22A: "BOOKMARKS",      0x22B: "HISTORY",
+    0x22D: "ZOOM IN",      0x22E: "ZOOM OUT",       0x230: "FULL SCREEN",
+    0x201: "NEW",          0x202: "OPEN",           0x203: "CLOSE",
+    0x207: "SAVE",         0x208: "PRINT",          0x21A: "UNDO",
+    0x21B: "COPY",         0x21C: "CUT",            0x21D: "PASTE",
+    0x21F: "FIND",         0x184: "WORD PROCESSOR", 0x186: "SPREADSHEET",
+    0x19E: "LOCK SCREEN",  0x1A1: "TASK MANAGER",   0x32:  "SLEEP",
 })
 
 # adafruit_hid gives several aliases to the same integer — LEFT_GUI is also

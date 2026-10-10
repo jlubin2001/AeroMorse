@@ -523,8 +523,11 @@ _KNOWN_CONFIG = set((
     "CONFIRM_FREQ GROUP_FREQ BEEP_CONFIRM_S BEEP_GROUP_S MOUSE_SPEED_NORMAL "
     "MOUSE_SPEED_SLOW MOUSE_SPEED_FAST MOUSE_SPEED_FACTOR MOUSE_REPEAT_DELAY "
     "MOUSE_CLICK_MOD_DELAY MOUSE_CLICK_KEEPS_MODS MOUSE_CLICK_HOLD MOUSE_CLICK_GAP "
-    "NO_REPEAT_KEYS DISPLAY_ROTATION USE_WIRELESS_DISPLAY ESPNOW_CHANNEL PC_DISPLAY PC_SOUND"
+    "NO_REPEAT_KEYS DISPLAY_ROTATION USE_WIRELESS_DISPLAY ESPNOW_CHANNEL"
 ).split())
+# Newer settings code.py copes without (it uses its built-in default), so an
+# older config.py that lacks them is NOT warned about.
+_OPTIONAL_CONFIG = set("PC_DISPLAY PC_SOUND KEYBOARD_LAYOUT".split())
 
 def _install_board_stub():
     board = types.ModuleType('board')
@@ -721,6 +724,12 @@ def check_config_settings(c):
          "should be a number from 0.1 (dim) to 1.0 (full). (Values outside that are "
          "clamped, so the screen never goes fully dark.)")
     want('ESPNOW_CHANNEL',       lambda v: is_num(v) and 1 <= v <= 13, "should be 1-13.")
+    want('KEYBOARD_LAYOUT',
+         lambda v: isinstance(v, str) and 0 < len(v.strip()) <= 40
+         and all(ch.isalnum() or ch in '_.' for ch in v.strip()),
+         "should be \"US\", or the name of a layout file in /lib in quotes, e.g. "
+         "\"win_uk\" for keyboard_layout_win_uk. (The device still works; it "
+         "uses the US layout.)")
     want('DEVICE_NAME',
          lambda v: isinstance(v, str) and 0 < len(v.strip()) <= 40
          and all(32 <= ord(ch) < 127 for ch in v),
@@ -741,7 +750,7 @@ def check_config_settings(c):
                      "with + like \"ALT+TAB\"." % (_entry, ', '.join(_bad) or 'not text'))
 
     check_warn('config.py: settings sanity',
-               not missing, 'checked %d known settings' % len(_KNOWN_CONFIG & present))
+               not missing, 'checked %d known settings' % len((_KNOWN_CONFIG | _OPTIONAL_CONFIG) & present))
 
 def run_config_checks():
     section('config.py')

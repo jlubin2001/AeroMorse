@@ -345,7 +345,7 @@ How it works in practice:
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.27 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.28 …`); keep all four at the same version.
 
 ---
 
@@ -439,6 +439,38 @@ the device does not include it**. Keep a copy of `AeroMorse.ahk` in your
 work folder too.
 
 *(The same instructions are in the Build Guide, Appendix G.)*
+
+### 7.6 Not only programs: putting the pointer in the middle of the screen
+
+A hotkey can do things as well as start programs. One that is useful with a
+Morse mouse: when the pointer is lost in a corner or far from where you
+want it, one code jumps it to the middle of the screen. The device cannot
+do this by itself — a USB mouse only says "move a little this way", it
+never knows where the pointer is — but AutoHotkey can.
+
+Add this to the script (and reload it):
+
+```
+^!Home:: {
+    CoordMode("Mouse", "Screen")
+    MouseMove(A_ScreenWidth // 2, A_ScreenHeight // 2, 0)
+}
+```
+
+Ctrl+Alt+Home already has a code: the supplied `morse_map.py` gives it
+`.-.` in the Mouse group, with this line:
+
+```python
+g2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer
+```
+
+With more than one monitor it goes to the middle of the main one. Tried on
+the author's computer (Windows 11, one screen) from the test device.
+
+**Finding the pointer** needs no AutoHotkey: the Mouse-group code `..-.`
+taps Ctrl, and Windows draws circles round the pointer if *Show location of
+pointer when I press the CTRL key* is ticked (Control Panel → Mouse →
+Pointer Options).
 
 ---
 

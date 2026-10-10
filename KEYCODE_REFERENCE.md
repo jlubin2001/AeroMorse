@@ -151,6 +151,13 @@ KEYPAD_ENTER      KEYPAD_EQUALS    KEYPAD_BACKSLASH
 
 ---
 
+## Media, browser and app-launcher keys are not Keycodes
+
+Volume, play / pause, browser Back, Calculator and the like are a different
+kind of key ("Consumer Control"). They are written with `CC(...)` or
+`_cc('NAME', number)`, not `Keycode.`. See the **Build Guide, Appendix J**
+for the list and how to add one.
+
 ## Gotchas that trip people up
 
 - **The space key is `SPACEBAR`** (there's no plain `SPACE`… well, `SPACE` is an

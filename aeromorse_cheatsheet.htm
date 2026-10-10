@@ -655,7 +655,12 @@
           cls = 'sec';
         } else {
           const noComment = raw.split('#')[0].trim();
-          key = noComment.split(',').map(formatKeyPart).filter(p => p).join(' + ');
+          /* A one-key tuple such as (Keycode.CONTROL,) presses and releases
+             that key by itself — it is how "find pointer" taps Ctrl. */
+          const lone  = /^\(\s*Keycode\.\w+\s*,\s*\)$/.test(noComment);
+          const inner = noComment.replace(/^\(/, '').replace(/\)$/, '');
+          key = inner.split(',').map(formatKeyPart).filter(p => p).join(' + ');
+          if (lone) key = 'Tap ' + key;
           cls = null;
         }
 
