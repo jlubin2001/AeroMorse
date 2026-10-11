@@ -4068,7 +4068,7 @@ and copy as for any change to the map (Usage Guide §3).
 | Undo | `_cc('AC_UNDO', 0x21A)` | UNDO |
 | New / Open / Save / Print | `_cc('AC_NEW', 0x201)` / `0x202` / `0x207` / `0x208` | NEW / OPEN / SAVE / PRINT |
 | Find | `_cc('AC_FIND', 0x21F)` | FIND |
-| Zoom in / out | `_cc('AC_ZOOM_IN', 0x22D)` / `0x22E` | ZOOM IN / ZOOM OUT |
+| Zoom in / out | `_cc('AC_ZOOM_IN', 0x22D)` / `0x22E` — **does nothing on Windows**; use `Keycode.CONTROL, Keycode.EQUALS` and `Keycode.CONTROL, Keycode.MINUS` instead | ZOOM IN / ZOOM OUT |
 
 Media keys already in Group 5 can be reused in other groups by their plain
 names, for example `CC(ConsumerControlCode.MUTE)` or
@@ -4096,8 +4096,13 @@ read the number you want from it and use it in `_cc()` as above.
 > - **macOS, Linux, phones and tablets** support fewer, mainly the media
 >   keys.
 > - **Tried by the project:** the Group 5 media keys and the Calculator
->   launcher, on Windows. The rest of the table is from the USB standard and
->   has not been tried key by key.
+>   launcher work on Windows. **Zoom in / Zoom out were tried on Windows and
+>   did nothing** — to zoom the page use Ctrl with plus or minus
+>   (`Keycode.CONTROL, Keycode.EQUALS` / `Keycode.CONTROL, Keycode.MINUS`), or
+>   for the Windows Magnifier the Windows key with plus or minus
+>   (`Keycode.GUI, Keycode.KEYPAD_PLUS` / `Keycode.GUI, Keycode.KEYPAD_MINUS`).
+>   The rest of the table is from the USB standard and has not been tried key
+>   by key.
 >
 > If a key does nothing, nothing is wrong with the device — that computer
 > simply does not use it.
