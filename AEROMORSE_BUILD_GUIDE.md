@@ -136,9 +136,6 @@ Once you have chosen each, jump to the relevant wiring section in Step 8.
 
 > **Recommended combination for most builders (USB HID, display included):**
 > ESP32-S3 Reverse TFT Feather #5691 · LPS33HW sensor #4414 · STEMMA Speaker #3885
->
-> **If you need Bluetooth wireless HID:**
-> Metro ESP32-S3 #5500 · 1.3" OLED #938 · LPS33HW sensor #4414 · STEMMA Speaker #3885
 
 ---
 
@@ -151,74 +148,55 @@ to computers. Only Feather boards with **native USB** support this. Classic
 ESP32 boards (including Adafruit #5900 Feather ESP32 V2) use a separate USB-to-
 serial chip that cannot emulate a keyboard. Those boards will not work.
 
-### BLE HID note — CircuitPython 10.x
+### Bluetooth — not supported
 
-**The chip supports it, but CircuitPython's BLE keyboard support on the
-ESP32-S3 is still not reliable — tested, see below.** The ESP32-S3 hardware
-fully supports Bluetooth LE; the problems are in CircuitPython's ESP32 BLE
-code. Several were fixed (issues #9430, #9669, and #10739, the last marked
-fixed in 10.3.0), but on CircuitPython 10.3.1 a BLE keyboard still does not
-stay connected to an Android phone.
-
-> **Tested 2026-09-26** — #5691 with TinyUF2 0.35.0 + CircuitPython 10.3.1,
-> host a Samsung Galaxy A15 (Android 16), using `test_ble.py` from this repo:
-> - The board advertises and the phone pairs (`paired=True`).
-> - **No keystrokes ever reached the phone** — not on any connection, even
->   while the board reported it was paired — although CircuitPython raised no
->   error when sending them.
-> - The link then **drops about 6.5 s after every connection**, and every
->   reconnect starts **unpaired** again — the board doesn't keep the pairing —
->   so it loops connect → pair → drop.
->
-> **Result: not usable yet.** Reported upstream on
-> [adafruit/circuitpython #10739](https://github.com/adafruit/circuitpython/issues/10739).
-> An iPad or Windows host has not been tested.
-> Run `test_ble.py` to check a newer CircuitPython or a different host. For a
-> phone or tablet today, use a **USB-C cable** — AeroMorse works as a wired
-> keyboard/mouse.
-
-**4 MB flash boards include BLE on 10.x.** Earlier builds sometimes left the
-BLE stack out of 4 MB firmware images to save space. As of **CircuitPython
-10.3.1**, circuitpython.org lists the `_bleio` (BLE) module — together with
-`espnow` and `usb_hid` — for all three 4 MB boards below (#5691, #5483,
-#5477). Always confirm on your board's circuitpython.org page under
-"Built-in modules available".
-
-**Before you can use BLE:**
-- **You need CircuitPython 10.x** — BLE HID is not reliable on 9.x.
-- **An older bootloader may refuse to flash 10.x.** A #5691 with the 2023
-  TinyUF2 bootloader (0.12.3) accepted 9.2.9 but silently ignored a 10.x
-  `.uf2` — the drive stayed `FTHRS3BOOT` and never rebooted. Update the
-  TinyUF2 bootloader first, then flash 10.x.
-- **Use the matching 10.x library bundle** in `lib/`.
-
-**AeroMorse status:** `code.py` sends **USB HID only**. BLE HID (pairing with
-a phone or iPad) is not implemented, and won't be until the CircuitPython
-problem above is resolved. Running the ESP-NOW wireless display and BLE at the
-same time shares one 2.4 GHz radio and has not been tested either. iPads and
-phones with USB-C already accept AeroMorse as a **wired** USB keyboard/mouse.
+AeroMorse sends **USB HID only**; it does not work as a Bluetooth keyboard.
+The chip can do Bluetooth, but a Bluetooth keyboard on these boards was tested
+in September 2026 (CircuitPython 10.3.1) and did not stay connected. For a
+phone or tablet, use a **USB-C cable** — AeroMorse works as a wired keyboard
+and mouse. The test record is in
+[BLE_STATUS.md](https://github.com/jlubin2001/AeroMorse/blob/main/BLE_STATUS.md).
 
 ---
 
 ### Boards that work
 
-| Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
-|-------|-----------|---------|---------|-------|------|-------|
-| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅※ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
-| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅※ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅※ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). EYESPI is also possible but needs the most code editing. |
-| ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | — | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip; no BLE |
-
-※ BLE is included in CircuitPython 10.3.1 for these boards (needs 10.x and a
-bootloader that can flash it), but a BLE keyboard does **not** stay connected
-reliably yet — see the tested result in the BLE HID note above. AeroMorse
-firmware does not use BLE. The ESP32-S2 (#5300) has no Bluetooth hardware.
+| Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
+|-------|-----------|---------|-------|------|-------|
+| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
+| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). EYESPI is also possible but needs the most code editing. |
+| ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip |
 
 ### A non-Adafruit board that works — and needs no soldering
 
-| Board | USB HID | WiFi | Notes |
-|-------|---------|------|-------|
-| Cytron Maker Feather AIoT S3 (ESP32-S3), bought with pre-soldered headers | ✅ | ✅ | Tested as a **two-switch** device on CircuitPython 10.3.1. No screen; buzzer built in, or a STEMMA Speaker #3885. Needs a few board-specific settings — all in [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches). Not tested with the pressure sensor. |
+| Board | Where to buy | USB HID | PSRAM | WiFi | Notes |
+|-------|--------------|---------|-------|------|-------|
+| Cytron Maker Feather AIoT S3, with pre-soldered headers | [Cytron](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | ✅ | ✅ **8MB** | ✅ | No built-in display. Buzzer built in. **Sold with its headers already fitted**, so a switch build needs no soldering — every wire pushes in. Tested as a **two-switch** device; not tested with the pressure sensor. Full build in [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches). |
+
+What you get, and what to know before ordering:
+
+- **Processor and memory:** an ESP32-S3-WROOM-1-N8R8 module — 8 MB flash and
+  8 MB PSRAM, more than the 4 MB / 2 MB of the Adafruit Feathers above.
+- **Headers:** Cytron sells it two ways. Order the version **with pre-soldered
+  headers**; the "Basic" version has none. The headers are sockets on top with
+  long pins underneath, so the board stands in a breadboard and jumper wires
+  push into the sockets.
+- **Sound:** a piezo buzzer on the board (GPIO12), with a mute switch on the
+  **underside** of the board. A STEMMA Speaker #3885 can be added for louder
+  sound.
+- **Maker Ports:** three small sockets compatible with Qwiic and STEMMA QT
+  (and Grove with a conversion cable). Two lie flat and are powered from
+  "VPeripheral", which the software can switch on and off; one stands upright
+  and always has 3.3 V.
+- **Wireless display:** works — the ESP-NOW broadcast (§5) was tested from
+  this board.
+- **CircuitPython:** 10.3.1, from
+  [circuitpython.org/board/cytron_maker_feather_aiot_s3](https://circuitpython.org/board/cytron_maker_feather_aiot_s3/).
+- **Cost to the USA:** Cytron ships from Malaysia. In the author's order,
+  shipping and duty roughly **tripled** the board's price.
+- **Settings:** it needs a few board-specific lines in `config.py` — all in
+  [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches).
 
 ### Metro form factor boards
 
@@ -228,14 +206,13 @@ will not plug directly onto them.** Use a standalone TFT breakout (SPI wires)
 or the STEMMA QT OLED instead. The pressure sensor plugs straight in via
 STEMMA QT with no wiring change.
 
-| Board | Adafruit # | USB HID | BLE HID | PSRAM | WiFi | Notes |
-|-------|-----------|---------|---------|-------|------|-------|
-| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
+| Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
+|-------|-----------|---------|-------|------|-------|
+| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
 
 > The Metro ESP32-S3 #5500 has the most memory in this guide (16 MB flash,
-> 8 MB PSRAM). BLE is **not** unique to it — on CircuitPython 10.x the 4 MB
-> Feathers (#5691 / #5483 / #5477) include BLE too. Choose the Metro for the
-> extra memory or the larger form factor.
+> 8 MB PSRAM). Choose the Metro for the extra memory or the larger form
+> factor.
 
 ---
 
@@ -323,10 +300,7 @@ https://www.adafruit.com/product/5477
 **If you want the most memory (Metro form factor):**
 
 The **Metro ESP32-S3 #5500** has the most memory in this guide (8 MB PSRAM,
-16 MB flash). Like the Feathers above, it supports USB HID and includes BLE on
-CircuitPython 10.x. The extra memory does not fix the BLE keyboard problem —
-that's in CircuitPython's ESP32 BLE code (see the tested result in the BLE HID
-note in §3), and AeroMorse firmware does not use BLE.
+16 MB flash). Like the Feathers above, it supports USB HID.
 
 The #5500 has no built-in display — connect the STEMMA QT OLED or a standalone
 TFT breakout. The ESP-NOW wireless display (Section 5) works on it identically
@@ -354,7 +328,7 @@ fits comfortably.
 |---------|--------|
 | Simplest build, colour TFT included, USB only | #5691 Reverse TFT Feather |
 | Same but screen faces up | #5483 TFT Feather |
-| BLE HID (in addition to USB HID) | **Not reliable yet** on ESP32-S3 / CircuitPython (see the BLE HID note in §3) — use a USB-C cable to phones/tablets for now |
+| To use it with a phone or tablet | Any board here, over a **USB-C cable** — Bluetooth is not supported (§3) |
 | Most memory (8 MB PSRAM) | #5500 Metro ESP32-S3 |
 
 ---
@@ -1848,6 +1822,15 @@ JST-PH 2-pin LiPoly connector and onboard charging as the #5691).
 > If you see **FTHRS3BOOT** (or similar) every time you plug in without
 > double-tapping, the Feather has no code loaded — this is normal, continue
 > with Step 9.2.
+
+> ⚠️ **If nothing happens when you drag a CircuitPython 10.x `.uf2` onto the
+> drive** — it stays `FTHRS3BOOT` and the board never restarts — the board's
+> bootloader is too old for 10.x. A #5691 with the 2023 TinyUF2 bootloader
+> (0.12.3) accepted CircuitPython 9.2.9 but silently ignored a 10.x file.
+> Either stay on **9.2.9** (AeroMorse runs on it), or update the TinyUF2
+> bootloader first and then flash 10.x. Updating the bootloader **can erase the
+> CIRCUITPY drive**, so back the device up first. Use the library bundle that
+> matches the CircuitPython you end up on (§9.2).
 
 ---
 
@@ -4294,7 +4277,7 @@ Display** window on the computer (§5).
 
 | Qty | Item | Notes |
 |---|---|---|
-| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath |
+| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** — [cytron.io](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath. Cytron ships from Malaysia: in the author's order to the USA, shipping and duty roughly **tripled** the board's price |
 | 1 | Half-size breadboard (400 tie points) | Only a stand for the board. No wire goes into the breadboard in this build |
 | 2 | 3.5 mm stereo jack breakout board with a 5-pin header (pins numbered 1–5) | One per switch. The ones used here are sold as "3.5mm Audio Jacks" boards, 25 × 16 mm |
 | 4 | Male-to-female jumper wires | Two colours help: one colour for ground, one for signal |
@@ -4312,11 +4295,13 @@ sockets used in §K.6.*
 
 | Feature | On this board | What it means for AeroMorse |
 |---|---|---|
+| Processor | ESP32-S3-WROOM-1-N8R8 module: 8 MB flash, 8 MB PSRAM | Same chip family as the recommended #5691, with more memory |
 | Screen | None | `USE_DISPLAY = False`; keep `PC_DISPLAY = True` |
-| Buzzer | Built in, on `board.BUZZER` (GPIO12), with a small mute slide switch | `AUDIO_PIN = board.BUZZER`; no speaker to wire. A STEMMA Speaker on socket `A0` is the louder alternative |
+| Buzzer | Built in, on `board.BUZZER` (GPIO12), with a small mute slide switch on the **underside** of the board | `AUDIO_PIN = board.BUZZER`; no speaker to wire. A STEMMA Speaker on socket `A0` is the louder alternative |
 | Ground sockets | **Only one** `GND` on the headers | The two jacks each borrow a spare socket as their ground (§K.5), which leaves `GND` free for a speaker |
 | Sensor bus pull-up resistors | None on the board | Needs `code.py` **v1.29 or later**: an older one stops at start-up when nothing is plugged into the sensor port (§K.4) |
 | Sensor / Maker port power | Switched by `board.VP_EN` (GPIO11) | Only matters if you add a sensor (§K.8) |
+| Maker Ports | Three, compatible with Qwiic and STEMMA QT (and Grove with a conversion cable): two horizontal ones powered from VPeripheral, one vertical one powered from 3.3 V | Not used in this build. The two horizontal ports only have power while `board.VP_EN` is high (§K.8) |
 | Bootloader drive name | `MFAS3BOOT` | Where the CircuitPython `.uf2` is copied |
 
 The dot and dash pins are named differently on the silkscreen than in
@@ -4332,8 +4317,9 @@ The dot and dash pins are named differently on the silkscreen than in
 
 ### K.4 Software
 
-1. **CircuitPython 10.3.1.** Download the `.uf2` for "Maker Feather AIoT S3"
-   from circuitpython.org. Double-press the board's **RESET** button; a drive
+1. **CircuitPython 10.3.1.** Download the `.uf2` from the board's page,
+   [circuitpython.org/board/cytron_maker_feather_aiot_s3](https://circuitpython.org/board/cytron_maker_feather_aiot_s3/).
+   Double-press the board's **RESET** button; a drive
    called `MFAS3BOOT` appears. Copy the `.uf2` onto it. The board restarts and
    a `CIRCUITPY` drive appears. (The board used here arrived with CircuitPython
    8.0 from 2022, which is too old — the update is not optional.)
@@ -4459,7 +4445,7 @@ more than a second changes group (Appendix A).
 | One switch works, the other does nothing | That jack's signal wire is one socket off, or its ground wire is not in `A2` (dot) / `A4` (dash) | Count the sockets again from the USB end, or change `DOT_PIN` / `DASH_PIN` to the socket the wire is really in |
 | Neither switch does anything | The ground lines are missing from `config.py`, so `A2` and `A4` are not acting as grounds | Add the lines from §K.5 |
 | A beep or a letter repeats non-stop the moment a switch is plugged in | The signal wire is on the jack's ring pin, which a mono plug connects to ground | Move that wire from pin 5 to pin 2 (or the other way round) |
-| Typing works but there is no sound (buzzer) | The buzzer's mute slide switch is off | Slide it the other way. Sound through the computer also works: `PC_SOUND = True` and the AeroMorse Display program (§5) |
+| Typing works but there is no sound (buzzer) | The buzzer's mute slide switch is off. It is on the **underside** of the board, hidden while the board sits in a breadboard | Unplug the USB cable, lift the board out, slide the switch the other way, and press the board back into the same holes. Sound through the computer also works: `PC_SOUND = True` and the AeroMorse Display program (§5) |
 | Typing works but there is no sound (STEMMA Speaker) | `AUDIO_PIN` is still `board.BUZZER`, the white wire is not in `A0`, the red wire is not in `3V3`, or the Volume screw is turned right down | Check each in turn |
 | The AeroMorse Display window does not find this board | An `AeroMorse Display.exe` from before v1.29 only looks for Adafruit boards | Download the current one from the repo. Or start the old one with the port named: `"AeroMorse Display.exe" --port COM16` (use the board's own COM number, from Device Manager) |
 | The AeroMorse Display window shows your other AeroMorse instead | It remembers the device it showed last | Right-click the window → **Switch to another AeroMorse** |
