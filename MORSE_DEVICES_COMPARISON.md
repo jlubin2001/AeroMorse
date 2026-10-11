@@ -21,7 +21,7 @@ Companion documents:
 | Vendor | AdapTek Interface | WesTest Engineering | Ace Centre | Open-source (Jim Lubin) |
 | Status | EOL (1990s era, DOS) | EOL (early 2000s) | **Active** | **Active** |
 | Hardware | Dedicated rack-mount box | Dedicated enclosed box | Adafruit ItsyBitsy nRF52840 + Ace Centre x80 add-on | Adafruit Feather + sensor / jacks (off-the-shelf) |
-| Connection | PC parallel + serial | USB | **USB + BLE** | **USB** (BLE possible — see boards) |
+| Connection | PC parallel + serial | USB | **USB + BLE** | **USB** only (Bluetooth tested, not usable yet — see [BLE_STATUS.md](BLE_STATUS.md)) |
 | Switch jacks | 3 × 3.5 mm mono (SW1/SW2/SW3) | 3 × 3.5 mm mono | 2 × 3.5 mm mono on x80 (plus a buzzer) | 2 × 3.5 mm mono *or* sip-and-puff sensor |
 | Sip-and-puff | Via external SP interface | Via external SP interface | Not built in | **Built in** (LPS33HW #4414) |
 | Speaker | Headset jack | Headset jack | On-board buzzer | Built-in speaker, distinct dot/dash pitches |
@@ -91,7 +91,7 @@ How the device organises functions beyond plain typing.
 | Mouse control | ✓ Event system | ✓ Mouse Mode (uses Windows Mouse Keys) | ✓ Switch Control mode (separate from Morse) | ✓ Group 2 — native USB HID mouse events |
 | Macros / phrases | ✓ Time Code "Meanings" (up to 4 chars) | ✓ Code Set assignments (4-char limit) | ✓ Shortcut strings in `morse_code_shortcuts.py` | ✓ Group 3 — unlimited length, any keycode tuple |
 | Sticky modifiers | ✓ | ✓ | ✓ | ✓ (single-tap arms, double-tap locks) |
-| Multi-device pairing | — | — | ✓ **BLE switch — up to N devices** (saving parameters required) | — (USB only by default) |
+| Multi-device pairing | — | — | ✓ **BLE switch — up to N devices** (saving parameters required) | — (USB only) |
 
 ---
 
