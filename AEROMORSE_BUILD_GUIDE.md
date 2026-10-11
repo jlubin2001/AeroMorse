@@ -2085,7 +2085,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.29 (released 2026-10-10)`. Open the file
+> `AeroMorse code.py — version 1.30 (released 2026-10-11)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -2390,6 +2390,12 @@ it interact with other settings" explanation, jump to Appendix E.
 | `MOUSE_CLICK_HOLD` | `0.060` | Seconds the button is held per click — a zero-length click is ignored by Windows scrollbar tracks |
 | `MOUSE_CLICK_GAP` | `0.040` | Seconds between the two clicks of a double-click |
 
+**Shift + arrows**
+
+| Setting | Shipped | Hint |
+|---------|---------|------|
+| `SHIFT_SELECT` | `True` | (v1.30+) `True` = after Shift, the arrow / Home / End / Page keys keep Shift on, so Shift then arrows highlights text; it lets go at the next other key. `False` = Shift lets go after one key |
+
 **Repeat exclusions**
 
 | Setting | Shipped | Hint |
@@ -2436,7 +2442,7 @@ a few seconds.
 2. Wait 3–5 seconds. The display shows the **start-up screen**:
 
     - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
-    - the AeroMorse version, e.g. `v1.29`
+    - the AeroMorse version, e.g. `v1.30`
     - the CircuitPython version, e.g. `CP 9.2.9`
 
 3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
@@ -3471,6 +3477,22 @@ Seconds between the two clicks of a double-click (`mclick left 2` /
 double-click therefore takes `HOLD + GAP + HOLD` ≈ 160 ms, well within
 Windows' default 500 ms double-click window. Raise it only if
 double-clicks are being seen as two single clicks.
+
+### Shift + arrows
+
+**`SHIFT_SELECT`** (default `True`, v1.30+).
+A sticky modifier normally lets go after the one key that follows it.
+With this on, Shift is the exception when a *navigation* key follows —
+an arrow, Home, End, Page Up or Page Down: the armed modifiers stay on,
+so Shift, arrow, arrow, arrow … keeps extending the highlighted text,
+and Shift, arrow, `repeat` extends it continuously. Arming Ctrl together
+with Shift selects a word at a time. The modifiers let go by themselves
+at the next key that is not a navigation key — Ctrl (so Ctrl then C is a
+plain copy), Delete, a letter — or when Shift is sent again. Everything
+else is unchanged: Shift then a letter is still one capital, and Ctrl
+then an arrow is still a single word jump. `False` restores the
+behaviour before v1.30, where Shift let go after one key. A `config.py`
+without this line behaves as `True`.
 
 ### Repeat exclusions
 

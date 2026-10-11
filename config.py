@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.29 (released 2026-10-10)
+# AeroMorse config.py — version 1.30 (released 2026-10-11)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -175,6 +175,15 @@ MOUSE_CLICK_GAP  = 0.040       # s between the two clicks of a double-click
 # or "GUI+TAB". That blocks exactly that combination (keys in any order); the
 # same keys on their own still follow the single-key entries.
 NO_REPEAT_KEYS = ("PAGE_UP", "PAGE_DOWN")
+
+
+# ── SHIFT + ARROWS — highlight text from the keyboard ─────────────────────
+# True: after Shift, the arrow keys (and Home, End, Page Up / Down) keep Shift
+# on, so Shift, arrow, arrow, arrow ... keeps extending the highlight - and so
+# does Shift, arrow, repeat. Shift lets go by itself at the next other key
+# (Ctrl for Ctrl+C, Delete, a letter) or when you send Shift again.
+# False: Shift lets go after one key, as before v1.30.
+SHIFT_SELECT = True
 
 
 # ── SECRETS — PIN-locked passwords (macro_secrets.enc) ────────────────────

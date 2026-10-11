@@ -436,6 +436,15 @@ The modifier symbol will appear on the TFT display.  The next key pressed fires
 with that modifier held, then the modifier automatically releases.  Press the
 modifier pattern again while it is armed to **disarm** it without firing.
 
+**Shift + arrows highlights text** (v1.30+). After Shift, the arrow keys — and
+Home, End, Page Up and Page Down — keep Shift on instead of letting it go, so
+Shift, arrow, arrow, arrow … keeps extending the highlight. Shift, arrow,
+`repeat` extends it continuously. Arm Ctrl as well as Shift to select a word at
+a time. Shift lets go by itself at the next key that is not one of those —
+Ctrl (so Ctrl then C is a plain copy), Delete, a letter — or when you send
+Shift again. Set `SHIFT_SELECT = False` in `config.py` for the old behaviour,
+where Shift let go after a single key.
+
 | Modifier | Pattern |
 |----------|---------|
 | Left Control | `-.-.` |
@@ -551,11 +560,16 @@ happens with the button held.
   own, look for **DRAG** on the status row and send `-.`.
 - **Changing group does not release the button.** The drag is still on
   when you come back to the Mouse group.
-- **A click ends the drag** (v1.28+). If you click while **DRAG** is
-  showing, the held button is let go first, **DRAG** disappears, and then
-  the click is made as usual. So a drag started by accident does not get
-  in the way of your next click. (In earlier versions the click let the
-  button go but **DRAG** stayed on the status row until `-.` was sent.)
+- **A click ends the drag** (v1.30+). If you send a left click while a left-button
+  **DRAG** is showing, the held button is simply let go and **DRAG**
+  disappears — the same as sending `-.`. Nothing is clicked a second time,
+  so **text you highlighted by dragging stays highlighted**. A double-click
+  lets the button go and then clicks once. A click with the *other* button
+  lets the held button go and is then made in full — handy for a right-click
+  on what you just selected.
+  (v1.28 and v1.29 let the button go and then clicked again as well, which
+  un-highlighted the text. Before v1.28 the button was let go but **DRAG**
+  stayed on the status row until `-.` was sent.)
 - **To cancel a drag** in most Windows programs, press Escape (`--....`) before
   releasing, then send `-.`.
 - A plain **click** is often enough and less work: clicking the empty part
@@ -912,6 +926,7 @@ explaining what it does. The same Key Settings table also appears in
 | `MOUSE_CLICK_KEEPS_MODS` | `True` | `True` = an armed modifier stays armed across mouse clicks, so **Ctrl+click multi-select** works — arm Ctrl once, click each file, then toggle Ctrl off. `False` = one-shot (modifier clears after a single click) |
 | `MOUSE_CLICK_HOLD` | `0.060` | Seconds the button is held down per click. A zero-length click (press+release together) is ignored by **Windows scrollbar tracks** and some controls; ~60 ms registers reliably. Raise if scrollbar/track clicks still don't take |
 | `MOUSE_CLICK_GAP` | `0.040` | Seconds between the two clicks of a double-click |
+| `SHIFT_SELECT` | `True` | `True` = after Shift, the arrow / Home / End / Page keys keep Shift on, so Shift then arrows highlights text; it lets go at the next other key (v1.30+). `False` = Shift lets go after one key. |
 | `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that must never auto-repeat — pressing `repeat` right after one does nothing. Page keys are excluded so an accidental repeat doesn't scroll far past your place. Add e.g. `"HOME"`, `"END"`, `"ESCAPE"`, `"TAB"`. A key combination can be listed too (v1.20+): join the names with `+`, e.g. `"ALT+TAB"` — that blocks exactly that combination, while the same keys on their own are unaffected. Arrow keys are intentionally omitted — arrow + repeat is a normal way to scroll |
 
 ### Display / wireless

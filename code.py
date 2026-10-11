@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.29   (released 2026-10-10)
+#  AeroMorse code.py   —   version 1.30   (released 2026-10-11)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -617,9 +617,29 @@ _consuming_press = False
 
 _armed_mods   = set()   # sticky modifier keycodes currently armed
 
+# Shift + arrows highlights text (config.py SHIFT_SELECT, v1.30+). A sticky
+# modifier normally lets go after the one key that follows it. With Shift armed
+# and a NAVIGATION key following (arrows, Home, End, Page Up / Down) the armed
+# modifiers are kept instead, so Shift, arrow, arrow, arrow ... keeps extending
+# the highlight, and so does Shift, arrow, repeat. They let go by themselves at
+# the next key that is NOT a navigation key - Ctrl (for Ctrl+C), Delete, a
+# letter - or when Shift is sent again. _nav_hold is True while they are being
+# kept on for that reason. An older config.py without the setting: on.
+try:
+    _SHIFT_SELECT = bool(SHIFT_SELECT)
+except NameError:
+    _SHIFT_SELECT = True
+_NAV_KEYS = frozenset({
+    Keycode.LEFT_ARROW, Keycode.RIGHT_ARROW, Keycode.UP_ARROW, Keycode.DOWN_ARROW,
+    Keycode.HOME, Keycode.END, Keycode.PAGE_UP, Keycode.PAGE_DOWN,
+})
+_SHIFT_KEYS = frozenset({Keycode.LEFT_SHIFT, Keycode.RIGHT_SHIFT})
+_nav_hold = False
+
 # Mouse state
 _mouse_speed    = MOUSE_SPEED_NORMAL
 _drag_active    = False
+_drag_btn       = 0        # the button a drag is holding (Mouse.LEFT_BUTTON / RIGHT_BUTTON)
 _last_mouse_vec  = (0, 0, 0)   # last mmove already scaled (x, y, wheel)
 _last_repeatable = None         # last keycode / combo / text to repeat (None = mouse-only)
 _mouse_repeating = False
@@ -753,32 +773,61 @@ def _mouse_repeat_tick():
 
 # ── Action execution ───────────────────────────────────────────────────────────
 
+def _is_nav(keycodes):
+    """True when the keys about to be pressed are navigation keys only (any
+    modifiers among them aside), e.g. RIGHT_ARROW or (CONTROL, RIGHT_ARROW)."""
+    plain = [k for k in keycodes if k not in _STICKY_MODS]
+    for k in plain:
+        if k not in _NAV_KEYS:
+            return False
+    return bool(plain)
+
+
+def _drop_nav_hold():
+    """Let go of modifiers that were only being kept on for Shift + arrows."""
+    global _nav_hold
+    if _nav_hold:
+        _armed_mods.clear()
+        _nav_hold = False
+
+
+def _press_keys(keycodes):
+    """Press keys together with any armed sticky modifiers, then release all.
+    The modifiers are one-shot, except Shift + navigation keys (see _nav_hold)."""
+    global _nav_hold
+    nav = _is_nav(keycodes)
+    if not nav:
+        _drop_nav_hold()
+    if _armed_mods:
+        kbd.press(*_armed_mods, *keycodes)
+        if _SHIFT_SELECT and nav and (_armed_mods & _SHIFT_KEYS):
+            _nav_hold = True
+        else:
+            _armed_mods.clear()
+            _nav_hold = False
+    else:
+        kbd.press(*keycodes)
+    kbd.release_all()
+
+
 def _exec_keycode(kc):
     """Press a single Keycode, honouring sticky modifiers."""
-    global _armed_mods
+    global _armed_mods, _nav_hold
     if kc in _STICKY_MODS:
         if kc in _armed_mods:
-            _armed_mods.discard(kc)
+            _armed_mods.discard(kc)       # sent again: let it go
+            if not _armed_mods:
+                _nav_hold = False
         else:
+            _drop_nav_hold()              # a new modifier starts afresh (Ctrl for Ctrl+C)
             _armed_mods.add(kc)
         return
-    if _armed_mods:
-        kbd.press(*_armed_mods, kc)
-        _armed_mods.clear()
-    else:
-        kbd.press(kc)
-    kbd.release_all()
+    _press_keys((kc,))
 
 
 def _exec_combo(keycodes):
     """Press a tuple of keycodes simultaneously, plus any armed mods."""
-    global _armed_mods
-    if _armed_mods:
-        kbd.press(*_armed_mods, *keycodes)
-        _armed_mods.clear()
-    else:
-        kbd.press(*keycodes)
-    kbd.release_all()
+    _press_keys(tuple(keycodes))
 
 
 def _exec_text(text):
@@ -786,6 +835,7 @@ def _exec_text(text):
     so that e.g. armed Ctrl + 'c' sends Ctrl+C.  Multi-char macros discard mods.
     """
     global _armed_mods
+    _drop_nav_hold()                      # text is never part of Shift + arrows
     if len(text) == 1 and _armed_mods:
         kc = _ALPHA_KEYS.get(text.lower()) or _DIGIT_KEYS.get(text)
         if kc and _LAYOUT_NAME != "US":
@@ -820,7 +870,7 @@ def _exec_command(cmd):
     """Execute a device command: group / mmove / mclick / mdrag / repeat /
     mslow / mfast / unlock / lock / version / devicereset
     """
-    global active_group, _mouse_speed, _drag_active
+    global active_group, _mouse_speed, _drag_active, _drag_btn
     global _last_mouse_vec, _last_repeatable, _mouse_repeating, _armed_mods
     parts = cmd.split()
     verb  = parts[0]
@@ -858,14 +908,25 @@ def _exec_command(cmd):
         # never short.
         wait = MOUSE_CLICK_GAP if _click_q else 0.0         # after a click still in progress
         if _drag_active:
-            # A click while a drag is on ends the drag first: let the held
-            # button go, clear DRAG from the status row, then click as usual.
-            # (Before v1.28 the click released the button but DRAG stayed
-            # shown, and the next drag pattern then did nothing.)
+            # A click while a drag is on ends the drag: let the held button
+            # go and clear DRAG from the status row.
+            # v1.30+: a click with the SAME button the drag is holding is that release
+            # and nothing more - the computer sees the button come up exactly
+            # where the pointer is, so text highlighted by the drag stays
+            # highlighted. (v1.28-1.29 released the button and then made a
+            # fresh click as well, which un-highlighted the text. Before v1.28
+            # the button was released but DRAG stayed shown, and the next drag
+            # pattern then did nothing.) A double-click still gives one click
+            # after the release, and a click with the OTHER button is made in
+            # full - e.g. a right-click on the text just selected.
             mouse.release_all()
             _drag_active = False
             wait = MOUSE_CLICK_GAP                          # drop first, then click
-        if _armed_mods:
+            if btn == _drag_btn:
+                count -= 1
+        if count < 1:
+            pass                                            # the release was the whole click
+        elif _armed_mods:
             # Keyboard and mouse are separate USB HID interfaces, so the host
             # can process their reports out of order. Without a settle delay
             # the click often lands before the modifier registers and the host
@@ -880,7 +941,7 @@ def _exec_command(cmd):
             _click_add(wait, 0, btn)                        # press
             _click_add(MOUSE_CLICK_HOLD, 1, btn)            # release after the hold
             wait = MOUSE_CLICK_GAP                          # separates a double-click
-        if _armed_mods:
+        if _armed_mods and count > 0:
             # Let the click land, then let go of the modifier keys. Modifiers
             # normally auto-clear after one use, but Ctrl+click multi-select
             # needs the modifier to survive click after click — so with
@@ -898,6 +959,7 @@ def _exec_command(cmd):
         else:
             mouse.press(btn)
             _drag_active = True
+            _drag_btn = btn
         _last_mouse_vec  = (0, 0, 0)    # drag toggle is not repeatable
         _last_repeatable = None
 
