@@ -972,6 +972,64 @@ def check_pattern_lengths():
                else '%d mismatch(es) - see warnings' % bad)
 
 
+def _comment_start(line):
+    """Column where the line's comment starts, or None. Python's own tokenizer
+    is used so a # inside a quoted macro is not mistaken for a comment."""
+    import io as _io, tokenize as _tok
+    try:
+        for tok in _tok.generate_tokens(_io.StringIO(line).readline):
+            if tok.type == _tok.COMMENT:
+                return tok.start[1]
+    except Exception:
+        pass
+    return None
+
+
+def check_comment_patterns():
+    """Each line carries its pattern twice: the binary number the device uses,
+    and dots and dashes in the comment for people. When they disagree, either
+    the comment was not updated after a change (harmless) or the NUMBER is not
+    what was meant (the device will not do what the comment promises). Only a
+    person can tell which, so say what each one is and how to fix either."""
+    src = open(MORSE_MAP_PATH, 'r', encoding='utf-8-sig').read()
+    rx = re.compile(r'^\s*(g\d+)\[(\d+)\]\[0[bB]([01]+)\]\s*=')
+    found = []
+    for lineno, raw in enumerate(src.split('\n'), 1):
+        raw = raw.rstrip('\r')
+        m = rx.match(raw)
+        if not m:
+            continue
+        length, digits = int(m.group(2)), m.group(3)
+        if len(digits) != length:
+            continue                      # already reported by check_pattern_lengths
+        col = _comment_start(raw)
+        if col is None:
+            continue
+        pm = re.match(r'[.\-]+', raw[col + 1:].lstrip(' '))
+        if not pm:
+            continue                      # a comment without a pattern is fine
+        said = pm.group(0)
+        is_ = ''.join('-' if d == '1' else '.' for d in digits)
+        if said != is_:
+            meant = '%s[%d][0b%s]' % (m.group(1), len(said),
+                                      ''.join('1' if ch == '-' else '0' for ch in said))
+            found.append((lineno, '%s[%d][0b%s]' % (m.group(1), length, digits), said, is_, meant))
+    for lineno, key, said, is_, meant in found[:12]:
+        warn("morse_map.py line %d: the comment says  %s  but the code %s is  %s . "
+             "The device uses the code, so it answers to  %s . If that is what you "
+             "want, only the comment is out of date - \"Fix my map comments\" "
+             "(morse_map_comments.py) updates it. If you meant  %s , the NUMBER is "
+             "wrong: change it to %s."
+             % (lineno, said, key, is_, is_, said, meant))
+    if len(found) > 12:
+        warn("morse_map.py: %d more line(s) where the comment's dots and dashes do "
+             "not match the code. Run \"Fix my map comments\" with --check "
+             "(morse_map_comments.py --check) to list them all." % (len(found) - 12))
+    check_warn('morse_map.py: comments match codes', not found,
+               'the dots and dashes in every comment match its code' if not found
+               else '%d comment(s) disagree with the code - see warnings' % len(found))
+
+
 _REMOVED_COMMANDS = {
     'mreset': 'removed in v1.12 (use "devicereset" to restart the device)',
 }
@@ -1005,6 +1063,7 @@ def run_morse_map_checks():
         return
     check_secrets(m)
     check_pattern_lengths()
+    check_comment_patterns()
     check_removed_commands()
     collect_warnings(m)
 
