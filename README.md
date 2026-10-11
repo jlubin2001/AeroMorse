@@ -85,13 +85,17 @@ If you are a current Darci user or know someone who is, AeroMorse provides:
 - ✅ **Lower cost** — ~$50–$100 in off-the-shelf parts vs. ~$1000+ commercial
   device.
 - ✅ **Built-in sip-and-puff** — no external interface required.
+- ✅ **One-, two- and three-switch input** — the same three arrangements Darci
+  offers, chosen with `SWITCH_MODE` in `config.py`. The third "switch" is a
+  long press on one of the two inputs, not a third jack.
 - ✅ **Active development** — open source, customisable, and supported.
 - ✅ **Optional wireless remote display** — see the user's screen from
   across the room (no equivalent on Darci).
 
 Read **[`AEROMORSE_VS_DARCI.md`](AEROMORSE_VS_DARCI.md)** for a full
-feature-by-feature comparison, an honest list of what AeroMorse cannot do
-(single-switch timed input, 3-switch end-of-character mode), and a migration
+feature-by-feature comparison, an honest list of where Darci may still suit
+you better (three separate physical switch jacks, a ruggedized commercial
+enclosure with a warranty, a smoother sine-wave tone), and a migration
 checklist.
 
 To preserve Darci muscle memory, rename **`morse_map_darci.py`** to
