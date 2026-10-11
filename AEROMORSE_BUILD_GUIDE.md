@@ -879,67 +879,6 @@ Morse map.
 
 ---
 
-#### Option W2 — Adafruit MagTag (2.9" e-ink, plug-and-play)
-
-**Adafruit MagTag 2025 Edition — 2.9" Grayscale E-Ink WiFi Display
-[#4800](https://www.adafruit.com/product/4800) — $34.95**
-
-A 2.9" 296×128 grayscale e-ink display on an ESP32-S2, with four
-onboard NeoPixels, USB-C, LiPoly charging, and magnet-friendly
-mounting. The e-ink is much more readable from across a room than the
-W1 #5691's small TFT, and the screen stays on with zero power draw
-between refreshes.
-
-> ⚠️ **CircuitPython 10.x required.** The 2025 Edition MagTag (with
-> the SSD1680 e-ink driver) **will NOT work with CircuitPython 9.2.x
-> or earlier**. You must install CircuitPython **10.x.x or later** on
-> the MagTag before `receiver_magtag.py` will run. More information at
-> https://learn.adafruit.com/adafruit-magtag.
-
-**What you see vs Option W1.** E-ink physically cannot refresh fast
-enough for AeroMorse's 10 Hz pattern preview. The W2 receiver
-intentionally shows **three** of the four fields broadcast by the main
-board, dropping the two that change every loop iteration:
-
-| Field | Option W1 (TFT) | Option W2 (MagTag e-ink) |
-|---|---|---|
-| Group name (`[ KEYBOARD ]`) | ✅ | ✅ |
-| Live Morse buffer (`. - . .`) | ✅ | ❌ (e-ink too slow) |
-| Last action (`UP ARROW`) | ✅ | ✅ |
-| Modifiers / status (`SHIFT`) | ✅ | ✅ |
-| Pressure bar | ✅ | ❌ (continuous changes) |
-| Group colour indicator | ✅ (TFT colour) | ✅ (4 onboard NeoPixels) |
-
-The four NeoPixels show the **group colour** matching `code.py`'s
-`_GROUP_COLORS` palette — so even though the e-ink itself is grayscale,
-you can tell at a glance which mode the device is in from across a room.
-
-**Refresh policy.** The receiver throttles refreshes to once every
-~2 seconds and only redraws when a field has actually changed. A fast
-burst of typing won't queue 50 refreshes — only the last state at the
-moment the throttle expires gets drawn. The "last action" line will
-therefore lag the actual typing by 1–2 s; for live keystroke viewing
-use Option W1 instead.
-
-**When to choose W2 over W1:**
-- Across-the-room readability (e-ink contrast is far better than a
-  small TFT at distance).
-- The display will sit unused for long periods between updates — e-ink
-  burns no power except during the brief refresh.
-- A caregiver / family member's glance display where 1–2 s lag is fine.
-- Sleek aesthetic (the MagTag is designed for wall mounting).
-
-**Files needed on the MagTag:** see **§9.4.1 Option W2** for the
-complete file tree. In short: `receiver_magtag.py` → `code.py`, the
-**same** `boot.py` from the sender (auto-detects receiver role), and
-the `adafruit_magtag/` library folder (which pulls in several support
-libraries — listed in the `receiver_magtag.py` file header).
-
-> The MagTag is also available with a header strip and other variants;
-> for this build any 2025 Edition MagTag (SSD1680) works.
-
----
-
 #### A window on the computer — "AeroMorse Display" (v1.26+, no hardware)
 
 If the screen you want to see the AeroMorse on is **the computer's own
@@ -1031,7 +970,6 @@ least to most effort:
 | Choice | Screen | What you need | Status |
 |---|---|---|---|
 | **The computer's own monitor** | any size | The "AeroMorse Display" program above and `PC_DISPLAY = True` — no hardware | ✅ Tested |
-| **MagTag (Option W2)** | 2.9" e-ink | Just the MagTag and `receiver_magtag.py` | ✅ Supported — but e-ink refreshes every ~2 s, so no live dots and dashes |
 | **A board with a larger built-in colour screen** | 2" and up | Any ESP32-S3 board whose screen CircuitPython drives by itself (`board.DISPLAY`) and whose circuitpython.org page lists the `espnow` module. Copy `receiver.py` as `code.py` exactly as for Option W1 — no display file needed | ⚠️ Untested — should work, please report |
 | **A Feather plus a FeatherWing TFT** (e.g. #5477 + 3.5" #3651) | up to 3.5" | Header pins soldered on the Feather, the display's driver in `/lib`, and a `display_setup.py` (see "Using a separate display" above) next to `receiver.py` | ⚠️ Untested |
 
@@ -1042,22 +980,6 @@ built in. An ESP32-S2 or ESP32-S3 chip is required for ESP-NOW.
 
 Text size follows the screen: 240×135 gives the size you see on the #5691,
 320×240 the same size with more room around it, 480×320 twice that size.
-
-#### Wireless display comparison
-
-| | Option W1 — Second #5691 | Option W2 — MagTag #4800 |
-|--|--|--|
-| Cost | $35 | $35 |
-| Display | 240×135 colour TFT | **2.9" 296×128 e-ink** |
-| Refresh rate | 100 ms | ~2 s |
-| Live Morse preview | ✅ | ❌ (e-ink too slow) |
-| Pressure bar | ✅ | ❌ |
-| Group colours | ✅ Native | ✅ Via 4 NeoPixels |
-| Assembly | Plug USB-C in | Plug USB-C in |
-| Best viewing distance | Arm's length | **Across a room** |
-| CircuitPython required | 9.x+ | **10.x+** |
-| Wireless power | ✅ LiPoly | ✅ LiPoly |
-| Availability | adafruit.com | adafruit.com |
 
 ---
 
@@ -1400,7 +1322,7 @@ several GND pins — any of them work).
 
 ---
 
-### Wireless display — choose ONE (optional, for remote viewing)
+### Wireless display (optional, for remote viewing)
 
 > **Skip this section if you will view the display on the main board.**
 > Only needed when the sensor is mounted out of sight and you need a
@@ -1420,13 +1342,6 @@ several GND pins — any of them work).
 | 1 | LiPoly Battery 400 mAh — slim flat pack | #3898 | ~3–5 hrs | https://www.adafruit.com/product/3898 |
 | — | *or* LiPoly Battery 500 mAh | #1578 | ~4–6 hrs | https://www.adafruit.com/product/1578 |
 | — | *or* LiPoly Battery 1200 mAh | #258 | ~9–14 hrs | https://www.adafruit.com/product/258 |
-
-#### Option W2 — Adafruit MagTag (e-ink, plug-and-play)
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | MagTag 2025 Edition — 2.9" Grayscale E-Ink WiFi Display | #4800 | https://www.adafruit.com/product/4800 |
-| 1 | USB-C cable + power bank or charger (or any of the LiPoly batteries listed under W1) | — | — |
 
 ---
 
@@ -1786,18 +1701,6 @@ second of either board powering on.
 Power source: any USB-C phone charger, USB power bank, or one of the
 LiPoly batteries listed in §5 Option W1.
 
-#### Option W2 — Adafruit MagTag (#4800)
-
-No hardware assembly needed — the MagTag ships ready to power on. Mount
-it where it will be glanced at from across the room (its e-ink panel is
-far more readable at distance than the W1 TFT). Once §9.4.1 is complete
-it will start mirroring the main board's group / last action / status
-within a few seconds of either board powering on.
-
-Power source: any USB-C phone charger, USB power bank, or one of the
-LiPoly batteries listed in §5 Option W1 (the MagTag has the same
-JST-PH 2-pin LiPoly connector and onboard charging as the #5691).
-
 ---
 
 ## 9. Software Installation
@@ -2089,8 +1992,8 @@ latest, correct files.
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
-> `config.py` all at the **same** version. The wireless-display programs
-> (`receiver.py`, `receiver_magtag.py`) share the same version number, so
+> `config.py` all at the **same** version. The wireless-display program
+> (`receiver.py`) carries the same version number, so
 > every AeroMorse file from one release says the same version. The main
 > device's startup screen shows its version (e.g. `v1.9`) until the first
 > sip, puff or switch press.
@@ -2181,7 +2084,7 @@ act as a keyboard or mouse; you do not load `morse_map.py` or
 | File on your computer | Copy to the receiver as |
 |----------------------|------------------------|
 | `boot.py` | `boot.py` (same file used on the sender) |
-| `receiver.py` (W1) **or** `receiver_magtag.py` (W2) | `code.py` (rename when copying) |
+| `receiver.py` | `code.py` (rename when copying) |
 | `receiver_config.py` | `receiver_config.py` — the display's own settings: wireless channel, screen brightness and rotation, no-signal / sleep / auto-restart times. Optional (defaults are built in), but copy it so you can change them. The main device does **not** use it |
 
 > **One `boot.py` for every board.** The same `boot.py` from the sender
@@ -2228,38 +2131,6 @@ display-driver `.mpy` is needed.
 > `adafruit_hid/`, `adafruit_bus_device/`, `adafruit_register/`,
 > `neopixel.mpy`, and `adafruit_lps35hw.mpy` are **not** required on the
 > receiver — leaving them off saves flash and avoids confusion.
-
----
-
-#### Option W2 — Adafruit MagTag (#4800, 2.9" e-ink)
-
-> ⚠️ **CircuitPython 10.x required.** The 2025 Edition MagTag will NOT
-> work with CircuitPython 9.2.x or earlier — see §5 Option W2 and the
-> warning banner at the top of `receiver_magtag.py`.
-
-The W2 receiver file is `receiver_magtag.py` (a different file from the
-W1 `receiver.py` because the display layout and refresh model are
-fundamentally different — fewer fields, slower throttled refresh).
-
-```
-CIRCUITPY/    (on the W2 MagTag receiver)
-├── boot.py                            (= same boot.py as the sender)
-├── code.py                            (= renamed copy of receiver_magtag.py)
-└── lib/
-    ├── adafruit_magtag/                (e-ink + peripherals)
-    ├── adafruit_display_text/
-    ├── adafruit_bitmap_font/
-    ├── adafruit_io/                    (pulled in by adafruit_magtag)
-    ├── adafruit_portalbase/            (pulled in by adafruit_magtag)
-    ├── adafruit_fakerequests.mpy       (pulled in by adafruit_magtag)
-    ├── adafruit_lis3dh.mpy             (onboard accelerometer driver)
-    ├── neopixel.mpy
-    └── simpleio.mpy
-```
-
-Most of the libraries are pulled in transitively by `adafruit_magtag/`;
-copy them all from the CircuitPython 10.x library bundle. The
-`receiver_magtag.py` file header lists the exact required set.
 
 ---
 
@@ -2797,10 +2668,9 @@ drive — without it you could no longer edit or update the device.
   occasional wedge — check the channel match and range (below), and
   watch the sender's serial console to confirm it is actually
   broadcasting.
-- To change or disable this, edit the receiver firmware: `_AUTO_RESET`
-  in `receiver.py` (Option W1) or `AUTO_RESET_TIMEOUT` in
-  `receiver_magtag.py` (Option W2). Raise the value to reset less
-  eagerly, or set it very high to effectively disable auto-reset.
+- To change or disable this, set `AUTO_RESET_S` in the display's
+  `receiver_config.py`. Raise the value to reset less eagerly, or set it
+  very high to effectively disable auto-reset.
 
 **How the ESP-NOW channel is selected**
 
@@ -2887,38 +2757,6 @@ channel 1, common ones to try are 6 and 11):
   `morse_map.py` onto the receiver by mistake, delete it and reboot
   the receiver — `boot.py` will then leave USB HID off and the host
   will stop seeing the receiver as a second keyboard.
-
-**Option W2 MagTag — e-ink stuck on "[ WAITING ]" or never updates**
-- ⚠️ **First check CircuitPython version.** The 2025 Edition MagTag
-  requires **CircuitPython 10.x or later**. Open `boot_out.txt` on the
-  MagTag's CIRCUITPY drive; if it says 9.x.x the e-ink driver won't
-  work. Re-flash from circuitpython.org/downloads with the **MagTag
-  10.x** UF2. See https://learn.adafruit.com/adafruit-magtag.
-- Confirm `adafruit_magtag/` (the folder, not a single .mpy) is in
-  `/lib`, plus its support libraries (see §9.4.1 Option W2).
-- Confirm `boot.py` on the MagTag is **the same `boot.py` from the
-  sender** (it auto-detects the receiver role from the absence of
-  `morse_map.py`). If you accidentally copied `morse_map.py` onto the
-  MagTag, boot.py will treat it as a sender and enable USB HID —
-  delete the file and reboot.
-- Note: once the MagTag has mirrored at least once, it **auto-resets
-  after 30 s of lost signal** to recover from a wedged radio — see
-  "Wireless display resets itself" above. A MagTag that has *never*
-  received signal this boot (e.g. sender powered off) will not
-  auto-reset; it waits quietly until the sender returns.
-
-**Option W2 MagTag — pattern preview and pressure bar never appear**
-- That's **by design**, not a bug. E-ink refresh is too slow (~1–2 s
-  per redraw) to render the 10 Hz pattern preview or pressure bar
-  meaningfully. The MagTag receiver shows only the group name, last
-  action, and modifiers — the fields that don't change at 10 Hz. For
-  live preview viewing use Option W1 (second #5691 colour TFT).
-
-**Option W2 MagTag — last action lags the actual typing by 1–2 seconds**
-- Also by design. The MagTag receiver throttles e-ink refreshes to
-  once every ~2 s so a fast burst of typing doesn't queue a backlog of
-  refreshes. Only the last state at the moment the throttle expires is
-  drawn. If you need live keystroke feedback use Option W1.
 
 **CircuitPython versions on the two boards**
 - ESP-NOW sends plain bytes with no awareness of CircuitPython versions.
@@ -3528,7 +3366,7 @@ Feather sideways.
 
 **`USE_WIRELESS_DISPLAY`** (default `False`).
 `True` enables the WiFi radio at boot and broadcasts the display state
-via ESP-NOW for an Option W1 / W2 receiver to mirror. Default is
+via ESP-NOW for an Option W1 receiver to mirror. Default is
 `False` because most builds are a single board — **set it `True` only
 when you actually have a receiver paired.** Adds roughly 80–100 mA to
 the current draw while running. Has no effect on non-ESP32 boards — the
@@ -4301,7 +4139,7 @@ Display** window on the computer (§5).
 |---|---|---|
 | 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** — [cytron.io](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath. Cytron ships from Malaysia: in the author's order to the USA, shipping and duty roughly **tripled** the board's price |
 | 1 | Half-size breadboard (400 tie points) | Only a stand for the board. No wire goes into the breadboard in this build |
-| 2 | 3.5 mm stereo jack breakout board with a 5-pin header (pins numbered 1–5) | One per switch. The ones used here are sold as "3.5mm Audio Jacks" boards, 25 × 16 mm |
+| 2 | 3.5 mm stereo jack board with a 5-pin header (pins numbered 1–5). Sold as "3.5mm TRS Audio Jack PCB Adapter to 5Pin Header" or "3.5mm Stereo Audio Socket Adapter Boards (with pre-soldered headers)" — the ones used here: [amazon.com/dp/B0G7GSQDRR](https://www.amazon.com/dp/B0G7GSQDRR/) | One per switch. Buy the kind with the header pins **already soldered on**. The board is marked "3.5mm Audio Jacks" and measures 25 × 16 mm |
 | 4 | Male-to-female jumper wires | Two colours help: one colour for ground, one for signal |
 | 1 | USB-C **data** cable | A charge-only cable will not work |
 | 2 | AT switches with 3.5 mm mono plugs | |
@@ -4476,15 +4314,25 @@ more than a second changes group (Appendix A).
 ### K.8 Adding the pressure sensor later (not tested)
 
 The LPS33HW sensor (#4414) should plug into the Cytron's I2C Maker port with a
-STEMMA QT cable, but this has not been tried. Two things are known to be
-needed: `USE_SENSOR = True`, and the port's power switched on **before** the
-sensor starts, by adding to `config.py`:
+STEMMA QT cable, but this has not been tried. Two changes to `config.py` are
+known to be needed:
+
+1. Change the existing line `USE_SENSOR = False` to `USE_SENSOR = True`.
+2. Switch the port's power on **before** the sensor starts. Add these three
+   lines **directly below the ground lines from §K.5** — the block that ends
+   with `_gnds.append(_g)`, a little below the `DASH_PIN` line:
 
 ```python
 import digitalio as _dio2
 _vp = _dio2.DigitalInOut(board.VP_EN)
 _vp.switch_to_output(value=True)
 ```
+
+Start each of the three lines at the left edge, with no spaces in front. If
+your `config.py` has no ground lines (you are not using switch jacks), put
+them just below the `DASH_PIN` line instead. Anywhere below the `import board`
+line near the top of the file works; this spot keeps the board-specific lines
+together.
 
 If you build this, please report how it goes.
 

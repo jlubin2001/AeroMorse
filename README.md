@@ -820,7 +820,7 @@ first sip, puff or switch press switches to the normal display above.
 > broadcasting these same four rows to a wireless receiver (see
 > `USE_WIRELESS_DISPLAY`). A missing screen is auto-detected too, so a screenless
 > board won't crash even if the flag is left on. Handy for a screenless ESP-NOW
-> *sender* that mirrors to a #5691 (or MagTag) *receiver*.
+> *sender* that mirrors to a #5691 *receiver*.
 
 ---
 
@@ -941,7 +941,7 @@ explaining what it does. The same Key Settings table also appears in
 | `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender): the device still types over USB and still broadcasts to a wireless receiver — only the local screen is skipped. A missing `board.DISPLAY` is also **auto-detected**, so a screenless board won't crash even if this is left `True` Also set `False` on a board that **has** a screen when you only watch the wireless display (v1.22+): the built-in screen is blanked and its backlight switched off, removing screen-drawing pauses of 60–100 ms that can swallow a quick sip or puff (the backlight comes back on if the program stops with an error) |
 | `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight, `0.1` (dim) to `1.0` (full). Takes effect when `config.py` is saved. Never goes below `0.1`, so the screen can't be blacked out by mistake. Useful when one board's screen is brighter than another's, or at night |
 | `DISPLAY_ROTATION` | `0` | Display orientation in degrees — `0` = USB on left, `180` = USB on right; also `90`, `270` |
-| `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
+| `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
 | `KEYBOARD_LAYOUT` | `"US"` | Keyboard layout the **computer** is set to. If symbols come out wrong on a non-US computer, copy that layout's file into `/lib` and name it here, e.g. `"win_uk"` (v1.28+; Build Guide Appendix I). Falls back to US if the file is missing |
 | `PC_DISPLAY` | `False` | `True` = also report the display over USB to the **AeroMorse Display** window on the computer (v1.26+). No extra hardware |
 | `USE_SPEAKER` | `True` | `False` = the device's own speaker / buzzer stays silent (v1.29+). Sound through the computer (`PC_SOUND`) is separate and carries on. |
@@ -1141,8 +1141,7 @@ g2[2][0b11] = "mmove 0 -2 0"  # double the up-step
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
 | `boot.py` | Runs once at power-on. **Same file on every board** — auto-detects its role from whether `morse_map.py` is present on the drive. Sender → enables USB HID (Keyboard, Mouse, Consumer Control). Receiver → leaves HID off, and optionally hides CIRCUITPY + serial from the host if an empty `/hide` file is present on the drive. |
 | `receiver.py` | Wireless display mirror firmware — Option W1 (second #5691 colour TFT). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
-| `receiver_magtag.py` | Wireless display mirror firmware — Option W2 (Adafruit MagTag #4800 e-ink). Bigger, glance-able from across a room, but no live pattern preview / pressure bar due to e-ink refresh limits. **Requires CircuitPython 10.x on the MagTag.** Copy as `code.py` to the MagTag. |
-| `receiver_config.py` | **Settings for the wireless display board only** (either type): `ESPNOW_CHANNEL` (must match the main device's `config.py`), and for the colour display `DISPLAY_BRIGHTNESS`, `DISPLAY_ROTATION`, `SLEEP_AFTER_S`; for both `NO_SIGNAL_S`, `AUTO_RESET_S`; for the MagTag `REFRESH_MIN_S`. Copy it next to the display's `code.py`. If it's missing or a value is wrong, the built-in default is used and the display keeps working. |
+| `receiver_config.py` | **Settings for the wireless display board only**: `ESPNOW_CHANNEL` (must match the main device's `config.py`), `DISPLAY_BRIGHTNESS`, `DISPLAY_ROTATION`, `SLEEP_AFTER_S`, `NO_SIGNAL_S` and `AUTO_RESET_S`. Copy it next to the display's `code.py`. If it's missing or a value is wrong, the built-in default is used and the display keeps working. |
 | `display_setup.example.py` | **Only for a display that is not built into the board** (TFT FeatherWing, breakout, OLED). Copy it to the drive as `display_setup.py` and keep the block for your display; `code.py` and `receiver.py` pick it up by themselves and size the layout to the screen (v1.26+). Not needed — and not to be copied — on the #5691 or any board with a built-in screen. The example blocks are untested |
 
 ### Documentation

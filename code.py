@@ -467,10 +467,10 @@ def _audio_tick():
 
 
 # ── ESP-NOW wireless display ───────────────────────────────────────────────────
-# Broadcasts TFT state to an Option W1 (second #5691 Reverse TFT Feather) or
-# Option W2 (Adafruit MagTag #4800 e-ink) receiver. Entirely optional — if the
-# espnow / wifi modules are absent nothing changes. See Build Guide §5
-# "Wireless Display" for the per-option file tree and battery choices.
+# Broadcasts TFT state to an Option W1 receiver (a second #5691 Reverse TFT
+# Feather running receiver.py). Entirely optional — if the espnow / wifi
+# modules are absent nothing changes. See Build Guide §5 "Wireless Display"
+# for the file tree and battery choices.
 
 _ESPNOW_ENABLED = False
 _broadcast_peer = None

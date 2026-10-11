@@ -5,7 +5,7 @@
 #
 # Behavior is auto-detected from the filesystem, so you can drop this same
 # file on any board (Reverse TFT Feather sender, Reverse TFT Feather
-# receiver, MagTag receiver) without editing.
+# receiver) without editing.
 #
 # ┌─────────────────────────────────────────────────────────────────────┐
 # │ Role        │ Detection                  │ What boot.py does          │
