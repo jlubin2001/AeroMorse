@@ -21,6 +21,9 @@ comments are only for reading.
     python morse_map_comments.py <file.py>       fix that file
     python morse_map_comments.py --check [...]   only list what would change
 
+morse_map_comments.exe is the same program for a computer without Python: put
+it next to morse_map.py and double-click it (or "Fix my map comments.bat").
+
 Before changing anything it saves a copy next to the file, named
 morse_map.py.before-comments-YYYYMMDD-HHMMSS.bak.
 
@@ -141,5 +144,16 @@ def main():
     return 0
 
 
+def _pause():
+    # A pause so the window doesn't vanish when double-clicked as an .exe.
+    if getattr(sys, "frozen", False):
+        try:
+            input("  Press Enter to close...")
+        except EOFError:
+            pass
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    _rc = main()
+    _pause()
+    sys.exit(_rc)
