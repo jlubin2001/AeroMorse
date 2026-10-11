@@ -536,6 +536,20 @@ def _install_board_stub():
         setattr(board, _p, 'board.%s' % _p)
     board.__getattr__ = lambda name: 'board.%s' % name  # PEP 562 fallback
     sys.modules['board'] = board
+    # config.py may also set a pin up itself - Build Guide Appendix K holds
+    # spare pins low as extra grounds with digitalio. That module exists only
+    # on the device, so stand in for it here: anything asked of it is accepted.
+    class _Anything:
+        def __init__(self, *a, **k):
+            pass
+        def __call__(self, *a, **k):
+            return _Anything()
+        def __getattr__(self, name):
+            return _Anything()
+    dio = types.ModuleType('digitalio')
+    dio.DigitalInOut = _Anything
+    dio.__getattr__ = lambda name: _Anything()           # Direction, Pull, DriveMode ...
+    sys.modules.setdefault('digitalio', dio)
 
 def check_config_encoding():
     raw = open(CONFIG_PATH, 'rb').read()
