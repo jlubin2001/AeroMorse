@@ -48,6 +48,19 @@ APP = "AeroMorse Display"
 MARK = "~AM\t"                            # start of a status line from code.py
 SOUND_MARK = "~AS\t"                      # start of a sound line (PC_SOUND = True)
 ADAFRUIT_VID = 0x239A
+ESPRESSIF_VID = 0x303A                    # non-Adafruit ESP32 boards, e.g. Cytron Maker Feather AIoT S3
+
+
+def _maybe_aeromorse(p):
+    """A serial port worth listening to. Adafruit boards, and boards from other
+    makers that use Espressif's USB vendor id with a product id Espressif
+    assigned to that maker (0x8000 and up). The chip's own built-in debug port
+    (0x1001 and the like) is left alone - opening it can restart a board that
+    is nothing to do with AeroMorse. Whatever is opened still has to send an
+    AeroMorse status line before it is shown."""
+    if p.vid == ADAFRUIT_VID:
+        return True
+    return p.vid == ESPRESSIF_VID and (p.pid or 0) >= 0x8000
 BG = "#000020"
 GROUP_COLORS = {"BASE": "#606060", "KEYBOARD": "#0080FF", "MOUSE": "#00C040", "MACRO": "#FF8000",
                 "SCANNING": "#FF00FF", "MEDIA": "#FFFF00", "GROUP 6": "#00FFFF", "GROUP 7": "#FF0080",
@@ -270,7 +283,7 @@ class Reader(threading.Thread):
         self.avoid_serial = None          # the device to try LAST when switching
 
     def _candidates(self):
-        ports = [p for p in list_ports.comports() if p.vid == ADAFRUIT_VID]
+        ports = [p for p in list_ports.comports() if _maybe_aeromorse(p)]
         if self.fixed_port:
             return [(self.fixed_port, None)]
         if self.want_serial:
@@ -471,7 +484,10 @@ class Window:
 
     def remember(self):
         self.cfg.update(on_top=bool(self.v_top.get()), title_bar=bool(self.v_bar.get()),
-                        opacity=int(self.v_alpha.get()), geometry=self.root.geometry())
+                        opacity=int(self.v_alpha.get()))
+        geo = self.root.geometry()
+        if not geo.startswith("1x1+"):       # 1x1 = not drawn yet (start-up): saving that would
+            self.cfg["geometry"] = geo       # bring the window back invisible after a crash
         save_settings(self.cfg)
 
     def fit(self):
@@ -539,6 +555,7 @@ class Window:
         if isinstance(self.reader, Reader):
             self.reader.avoid_serial = old       # try the other device(s) first
             self.reader.want_serial = None
+            self.reader.fixed_port = None        # started with --port: "switch" lets go of that port too
             self.reader.rescan = True
         self.last_data = 0.0
 

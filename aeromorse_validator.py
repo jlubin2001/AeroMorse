@@ -527,7 +527,7 @@ _KNOWN_CONFIG = set((
 ).split())
 # Newer settings code.py copes without (it uses its built-in default), so an
 # older config.py that lacks them is NOT warned about.
-_OPTIONAL_CONFIG = set("PC_DISPLAY PC_SOUND KEYBOARD_LAYOUT".split())
+_OPTIONAL_CONFIG = set("PC_DISPLAY PC_SOUND KEYBOARD_LAYOUT USE_SPEAKER".split())
 
 def _install_board_stub():
     board = types.ModuleType('board')
@@ -593,7 +593,7 @@ def check_config_import():
 # those (and Python's True/False, or 1/0) are valid; anything else is flagged.
 _BOOL_SETTINGS = ("USE_SENSOR CODE_REPEAT "
                   "LONG_PRESS_CYCLES_GROUP MOUSE_CLICK_KEEPS_MODS USE_WIRELESS_DISPLAY "
-                  "USE_DISPLAY PC_DISPLAY PC_SOUND").split()
+                  "USE_DISPLAY PC_DISPLAY PC_SOUND USE_SPEAKER").split()
 _VALID_BOOL_TOKENS = {'True', 'False', 'true', 'false', 'TRUE', 'FALSE', '1', '0'}
 
 def check_config_bool_source():

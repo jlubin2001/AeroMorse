@@ -36,7 +36,8 @@ Appendices: [A — Groups](#appendix-a--groups-and-group-cycling) ·
 [G — AutoHotkey](#appendix-g--autohotkey-starting-programs-with-a-morse-code) ·
 [H — Enclosure and tube strain relief](#appendix-h--enclosure-and-air-tube-strain-relief) ·
 [I — Keyboard layout](#appendix-i--keyboard-layout-when-symbols-come-out-wrong) ·
-[J — More media, browser and app keys](#appendix-j--more-media-browser-and-app-launcher-keys)
+[J — More media, browser and app keys](#appendix-j--more-media-browser-and-app-launcher-keys) ·
+[K — Solderless Cytron build](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches)
 
 ---
 
@@ -212,6 +213,12 @@ phones with USB-C already accept AeroMorse as a **wired** USB keyboard/mouse.
 bootloader that can flash it), but a BLE keyboard does **not** stay connected
 reliably yet — see the tested result in the BLE HID note above. AeroMorse
 firmware does not use BLE. The ESP32-S2 (#5300) has no Bluetooth hardware.
+
+### A non-Adafruit board that works — and needs no soldering
+
+| Board | USB HID | WiFi | Notes |
+|-------|---------|------|-------|
+| Cytron Maker Feather AIoT S3 (ESP32-S3), bought with pre-soldered headers | ✅ | ✅ | Tested as a **two-switch** device on CircuitPython 10.3.1. No screen; buzzer built in, or a STEMMA Speaker #3885. Needs a few board-specific settings — all in [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches). Not tested with the pressure sensor. |
 
 ### Metro form factor boards
 
@@ -2095,7 +2102,7 @@ latest, correct files.
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.28 (released 2026-10-09)`. Open the file
+> `AeroMorse code.py — version 1.29 (released 2026-10-10)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -2377,6 +2384,7 @@ it interact with other settings" explanation, jump to Appendix E.
 
 | Setting | Shipped | Hint |
 |---------|---------|------|
+| `USE_SPEAKER` | `True` | (v1.29+) `False` = the device's own speaker / buzzer stays silent; sound through the computer (`PC_SOUND`) is separate |
 | `AUDIO_PIN` | `board.A0` | GPIO the speaker is on |
 | `BEEP_DOT_FREQ` | `1200` | Hz — dot (sip) sidetone |
 | `BEEP_DASH_FREQ` | `800` | Hz — dash (puff) sidetone |
@@ -2445,7 +2453,7 @@ a few seconds.
 2. Wait 3–5 seconds. The display shows the **start-up screen**:
 
     - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
-    - the AeroMorse version, e.g. `v1.28`
+    - the AeroMorse version, e.g. `v1.29`
     - the CircuitPython version, e.g. `CP 9.2.9`
 
 3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
@@ -3372,6 +3380,14 @@ symbol stream doesn't accidentally trigger a group cycle.
 
 ### Audio
 
+**`USE_SPEAKER`** (default `True`, v1.29+).
+`False` switches the device's own speaker or buzzer off: no sidetone and no
+blips from the device. It does not affect sound through the computer
+(`PC_SOUND` with the AeroMorse Display program, §5), so you can have the
+beeps from the computer only, from the device only, from both, or from
+neither. Use it for a quiet room, or for a board whose built-in buzzer you
+do not want. A `config.py` without this line behaves as `True`.
+
 **`AUDIO_PIN`** (default `board.A0`).
 PWM output pin for the speaker. All speaker options (S1 STEMMA Speaker,
 S2 jack-and-piezo, S3 PAM8302 amp) wire to A0 / GND. The output is a
@@ -4246,6 +4262,223 @@ read the number you want from it and use it in `_cc()` as above.
 **Leave these alone unless you mean it:** `SLEEP` (`0x32`) and `POWER`
 (`0x30`) put the computer to sleep or switch it off. If you add one, give it
 a long code that cannot be entered by accident.
+
+## Appendix K — Solderless build: Cytron Maker Feather AIoT S3 with two switches
+
+A complete two-switch AeroMorse with **no soldering at all**: a Cytron Maker
+Feather AIoT S3 bought with its headers already fitted, two 3.5 mm jack
+boards, and four push-on jumper wires. There is no screen and no pressure
+sensor; the beeps come from the board's own buzzer — or from a STEMMA Speaker
+(#3885) if you want them louder — and the display is the **AeroMorse
+Display** window on the computer (§5).
+
+> **Tested:** built and checked on 2026-10-10 with CircuitPython 10.3.1 and
+> AeroMorse v1.28 plus the changes that became v1.29. Both switches type, and
+> sound was checked both ways: the
+> board's own buzzer, and a STEMMA Speaker #3885. The wireless display (§5)
+> also works from this board. The pressure sensor (§K.8) has **not** been
+> tried on it.
+
+### K.1 When this build is the right pick
+
+| Want | This build |
+|---|---|
+| No soldering, no tools | ✅ every connection is a push fit |
+| Two AT switches (dot and dash) | ✅ one 3.5 mm jack each, ordinary mono switch plugs |
+| Sound without buying a speaker | ✅ buzzer is on the board |
+| Louder sound, with a volume control | ✅ optional STEMMA Speaker #3885 — three push-in wires |
+| A screen on the device | ❌ none — use the AeroMorse Display window on the computer |
+| Sip-and-puff | ❌ not tested on this board — use the recommended #5691 build |
+
+### K.2 Parts
+
+| Qty | Item | Notes |
+|---|---|---|
+| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath |
+| 1 | Half-size breadboard (400 tie points) | Only a stand for the board. No wire goes into the breadboard in this build |
+| 2 | 3.5 mm stereo jack breakout board with a 5-pin header (pins numbered 1–5) | One per switch. The ones used here are sold as "3.5mm Audio Jacks" boards, 25 × 16 mm |
+| 4 | Male-to-female jumper wires | Two colours help: one colour for ground, one for signal |
+| 1 | USB-C **data** cable | A charge-only cable will not work |
+| 2 | AT switches with 3.5 mm mono plugs | |
+| 1 | *Optional:* STEMMA Speaker [#3885](https://www.adafruit.com/product/3885) | Louder than the buzzer, with a volume screw |
+| 1 | *Optional, with the speaker:* JST PH 3-pin to male header cable [#3893](https://www.adafruit.com/product/3893) | Its three pins push straight into the Cytron's sockets |
+
+<img src="images/cytron-board.jpg" alt="Purple Cytron Maker Feather AIoT S3 pressed into a white half-size breadboard, USB-C cable at the left, the socket labels RST 3V3 VP GND A0 A1 A2 A3 A4 A5 printed along the lower header" width="520">
+
+*The board on its breadboard. The labels along the lower header name the
+sockets used in §K.6.*
+
+### K.3 What is different about this board
+
+| Feature | On this board | What it means for AeroMorse |
+|---|---|---|
+| Screen | None | `USE_DISPLAY = False`; keep `PC_DISPLAY = True` |
+| Buzzer | Built in, on `board.BUZZER` (GPIO12), with a small mute slide switch | `AUDIO_PIN = board.BUZZER`; no speaker to wire. A STEMMA Speaker on socket `A0` is the louder alternative |
+| Ground sockets | **Only one** `GND` on the headers | The two jacks each borrow a spare socket as their ground (§K.5), which leaves `GND` free for a speaker |
+| Sensor bus pull-up resistors | None on the board | Needs `code.py` **v1.29 or later**: an older one stops at start-up when nothing is plugged into the sensor port (§K.4) |
+| Sensor / Maker port power | Switched by `board.VP_EN` (GPIO11) | Only matters if you add a sensor (§K.8) |
+| Bootloader drive name | `MFAS3BOOT` | Where the CircuitPython `.uf2` is copied |
+
+The dot and dash pins are named differently on the silkscreen than in
+`config.py`:
+
+| Socket label on the board | GPIO | Name in `config.py` |
+|---|---|---|
+| A0 | 10 | `board.A0` |
+| A1 | 9 | `board.A1` |
+| A2 | 6 | `board.A2` or `board.D6` |
+| A3 | 5 | `board.A3` or `board.D5` |
+| A4 | 4 | `board.A4` |
+
+### K.4 Software
+
+1. **CircuitPython 10.3.1.** Download the `.uf2` for "Maker Feather AIoT S3"
+   from circuitpython.org. Double-press the board's **RESET** button; a drive
+   called `MFAS3BOOT` appears. Copy the `.uf2` onto it. The board restarts and
+   a `CIRCUITPY` drive appears. (The board used here arrived with CircuitPython
+   8.0 from 2022, which is too old — the update is not optional.)
+2. **Libraries.** From the **10.x** library bundle (§9.2), copy into
+   `CIRCUITPY/lib`: `adafruit_hid`, `adafruit_display_text`,
+   `adafruit_bitmap_font`, `adafruit_bus_device`, `adafruit_register`,
+   `adafruit_lps35hw.mpy` and `neopixel.mpy`.
+3. **AeroMorse files.** Copy `boot.py`, `code.py`, `morse_map.py` and
+   `config.py` as in §9.4.
+**Step 4 — unplug the USB cable and plug it back in** so `boot.py` takes
+effect.
+
+> **This board needs AeroMorse v1.29 or later.** An older `code.py` stops
+> here at start-up with `RuntimeError: No pull up found on SDA or SCL`,
+> because the board has no pull-up resistors on its sensor port.
+
+### K.5 `config.py` settings
+
+Change these lines in `config.py` (everything else stays as it is):
+
+```python
+DEVICE_NAME          = "AeroMorse Cytron"   # any name you like
+USE_SENSOR           = False                # two switches, no pressure sensor
+DOT_PIN              = board.D5             # socket A3
+DASH_PIN             = board.A1             # socket A1
+AUDIO_PIN            = board.BUZZER         # the buzzer on the board
+USE_DISPLAY          = False                # no screen
+USE_WIRELESS_DISPLAY = False                # unless you have a wireless display
+PC_DISPLAY           = True                 # show the display on the computer
+```
+
+**With a STEMMA Speaker** use `AUDIO_PIN = board.A0` instead of
+`board.BUZZER`. The buzzer on the board then stays silent.
+
+**For no sound from the device at all** set `USE_SPEAKER = False` (v1.29+).
+
+Then add these lines just below the `DASH_PIN` line. The board has only one
+`GND` socket and each socket takes one wire, so these lines hold sockets
+**A4** and **A2** at 0 V to serve as the grounds for the two jacks:
+
+```python
+import digitalio as _dio
+_gnds = []
+for _p in (board.A4, board.A2):
+    _g = _dio.DigitalInOut(_p)
+    _g.switch_to_output(value=False)
+    _gnds.append(_g)
+```
+
+A switch contact draws far less than a milliamp, so a pin is perfectly good as
+its ground. A **speaker is different** — it must use the real `GND` socket,
+which this arrangement leaves free for it.
+
+### K.6 Wiring
+
+> ⚠️ **Unplug the USB cable before you touch the wires.** The `3V3` and `VP`
+> sockets sit right beside `GND`; a wire pushed into one of them by mistake
+> while the board is powered can damage it.
+
+<img src="images/cytron-jacks.jpg" alt="Two small blue 3.5 mm jack boards side by side, each with a row of five pins numbered 1 to 5, and a red and a brown jumper wire with a socket on one end and a pin on the other" width="520">
+
+*The two jack boards and one pair of male-to-female jumper wires.*
+
+On these jack boards **pin 1 is the sleeve (ground)** and **pin 5 is the tip
+(the switch signal)**. Pins 2, 3 and 4 stay empty.
+
+Each wire's **socket end** pushes onto a jack-board pin; its **pin end**
+pushes down into a socket on top of the Cytron's **long** header — the one
+labelled `RST 3V3 VP GND A0 A1 A2 A3 A4 A5 …`.
+
+| Jack board | Jack pin | Wire | Cytron socket |
+|---|---|---|---|
+| A — **dot** switch | 1 | ground colour | `A2` |
+| A — **dot** switch | 5 | signal colour | `A3` |
+| B — **dash** switch | 1 | ground colour | `A4` |
+| B — **dash** switch | 5 | signal colour | `A1` |
+
+**Optional — STEMMA Speaker #3885.** Click the #3893 cable's white plug into
+the speaker board, then push its three pins into the same header:
+
+| Speaker cable wire | Cytron socket |
+|---|---|
+| Black (ground) | `GND` |
+| Red (power) | `3V3` — **not** `VP` next to it |
+| White (signal) | `A0` |
+
+With everything fitted, the sockets read like this, counting from the USB end:
+
+| Socket | Wire |
+|---|---|
+| 1st — `RST` | empty |
+| 2nd — `3V3` | speaker red |
+| 3rd — `VP` | empty |
+| 4th — `GND` | speaker black |
+| 5th — `A0` | speaker white |
+| 6th — `A1` | dash jack signal |
+| 7th — `A2` | dot jack ground |
+| 8th — `A3` | dot jack signal |
+| 9th — `A4` | dash jack ground |
+
+Without a speaker, `3V3`, `GND` and `A0` stay empty too.
+
+Check before plugging the USB back in: nothing in `RST` or `VP`, and nothing in
+the short header on the other side of the board (`BAT EN USB 14 21 …`).
+
+> Any free `A` socket works for a signal wire as long as `config.py` names the
+> same one. If a wire ends up one socket off, it is often easier to change
+> `DOT_PIN` / `DASH_PIN` than to move the wire.
+
+The speaker's loudness is set with the small **Volume** screw on the speaker
+board — turn it gently with a small screwdriver.
+
+### K.7 First test and troubleshooting
+
+Click into an empty Notepad window, then plug in the USB cable, then one
+switch at a time. A short press of the dot switch beeps and types `e`; a short
+press of the dash switch gives a lower beep and types `t`. Holding either for
+more than a second changes group (Appendix A).
+
+| What happens | Cause | Fix |
+|---|---|---|
+| Nothing at all, and the serial log (§9.3) shows `No pull up found on SDA or SCL` | `code.py` is older than v1.29 | Download the current files from the repo (§9.4) |
+| One switch works, the other does nothing | That jack's signal wire is one socket off, or its ground wire is not in `A2` (dot) / `A4` (dash) | Count the sockets again from the USB end, or change `DOT_PIN` / `DASH_PIN` to the socket the wire is really in |
+| Neither switch does anything | The ground lines are missing from `config.py`, so `A2` and `A4` are not acting as grounds | Add the lines from §K.5 |
+| A beep or a letter repeats non-stop the moment a switch is plugged in | The signal wire is on the jack's ring pin, which a mono plug connects to ground | Move that wire from pin 5 to pin 2 (or the other way round) |
+| Typing works but there is no sound (buzzer) | The buzzer's mute slide switch is off | Slide it the other way. Sound through the computer also works: `PC_SOUND = True` and the AeroMorse Display program (§5) |
+| Typing works but there is no sound (STEMMA Speaker) | `AUDIO_PIN` is still `board.BUZZER`, the white wire is not in `A0`, the red wire is not in `3V3`, or the Volume screw is turned right down | Check each in turn |
+| The AeroMorse Display window does not find this board | An `AeroMorse Display.exe` from before v1.29 only looks for Adafruit boards | Download the current one from the repo. Or start the old one with the port named: `"AeroMorse Display.exe" --port COM16` (use the board's own COM number, from Device Manager) |
+| The AeroMorse Display window shows your other AeroMorse instead | It remembers the device it showed last | Right-click the window → **Switch to another AeroMorse** |
+| The computer shows the old board name | Windows remembers it | Remove the device in Bluetooth & devices and replug |
+
+### K.8 Adding the pressure sensor later (not tested)
+
+The LPS33HW sensor (#4414) should plug into the Cytron's I2C Maker port with a
+STEMMA QT cable, but this has not been tried. Two things are known to be
+needed: `USE_SENSOR = True`, and the port's power switched on **before** the
+sensor starts, by adding to `config.py`:
+
+```python
+import digitalio as _dio2
+_vp = _dio2.DigitalInOut(board.VP_EN)
+_vp.switch_to_output(value=True)
+```
+
+If you build this, please report how it goes.
 
 ---
 

@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.28   (released 2026-10-09)
+#  AeroMorse code.py   —   version 1.29   (released 2026-10-10)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -150,6 +150,14 @@ try:
 except AttributeError:
     i2c = board.I2C()
     print("No STEMMA QT port on this board — using board.I2C() on SDA/SCL")
+except Exception as _e:
+    # v1.29+. e.g. "No pull up found on SDA or SCL": a board with no pull-up resistors
+    # of its own (Cytron Maker Feather AIoT S3) and nothing plugged into the
+    # sensor port. Fine for a switch build; a sensor build stops here as before.
+    if USE_SENSOR:
+        raise
+    i2c = None
+    print("Sensor bus not started (%s) — not needed, USE_SENSOR = False" % _e)
 
 if USE_SENSOR and not _LPS_AVAILABLE:
     print("adafruit_lps35hw missing — switching to USE_SENSOR = False")
@@ -363,6 +371,16 @@ if USE_SENSOR:
 # Frequency is switched per beep (dot / dash / confirm / group). 50% duty
 # (0x8000) drives the STEMMA Speaker #3885 amp or a passive piezo cleanly;
 # 0% duty (0) is silence.
+
+# config.py USE_SPEAKER = False (v1.29+) switches the device's own speaker / buzzer off.
+# Sound through the computer (PC_SOUND) is separate and carries on. An older
+# config.py without the setting: speaker on, as before.
+try:
+    if not USE_SPEAKER:
+        _AUDIO_AVAILABLE = False
+        print("USE_SPEAKER = False - device speaker off")
+except NameError:
+    pass
 
 if _AUDIO_AVAILABLE:
     _audio_out = pwmio.PWMOut(AUDIO_PIN, frequency=BEEP_DOT_FREQ,

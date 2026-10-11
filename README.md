@@ -925,6 +925,7 @@ explaining what it does. The same Key Settings table also appears in
 | `USE_WIRELESS_DISPLAY` | `False` | `True` enables the ESP-NOW broadcast for an Option W1 / W2 receiver. Default is off — flip to `True` only when you actually have a receiver paired. Adds ~80–100 mA when on |
 | `KEYBOARD_LAYOUT` | `"US"` | Keyboard layout the **computer** is set to. If symbols come out wrong on a non-US computer, copy that layout's file into `/lib` and name it here, e.g. `"win_uk"` (v1.28+; Build Guide Appendix I). Falls back to US if the file is missing |
 | `PC_DISPLAY` | `False` | `True` = also report the display over USB to the **AeroMorse Display** window on the computer (v1.26+). No extra hardware |
+| `USE_SPEAKER` | `True` | `False` = the device's own speaker / buzzer stays silent (v1.29+). Sound through the computer (`PC_SOUND`) is separate and carries on. |
 | `PC_SOUND` | `False` | `True` = the AeroMorse Display program also plays the beeps through the **computer's** speakers (v1.27+) — audio feedback with no speaker on the device. Needs `PC_DISPLAY = True` |
 
 ---

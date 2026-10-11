@@ -349,7 +349,7 @@ How it works in practice:
 - One `macro_secrets.enc` (and one PIN) can go on every device —
   *Copy to device* asks which one.
 - The four files carry a version line near the top
-  (`AeroMorse code.py — version 1.28 …`); keep all four at the same version.
+  (`AeroMorse code.py — version 1.29 …`); keep all four at the same version.
 
 ---
 

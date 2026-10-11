@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.28 (released 2026-10-09)
+# AeroMorse config.py — version 1.29 (released 2026-10-10)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -133,6 +133,8 @@ LONG_PRESS_CYCLES_GROUP = True     # False with CODE_REPEAT = True; cycle via g0
 
 # ── AUDIO — speaker pitches (Hz) and blip durations (s) ───────────────────
 
+USE_SPEAKER       = True       # False = the device's own speaker / buzzer stays silent.
+                               # Sound through the computer (PC_SOUND, below) is separate. (v1.29+)
 AUDIO_PIN         = board.A0
 
 BEEP_DOT_FREQ     = 1200       # dot (sip) sidetone — higher pitch
