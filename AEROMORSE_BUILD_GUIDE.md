@@ -193,8 +193,14 @@ What you get, and what to know before ordering:
   this board.
 - **CircuitPython:** 10.3.1, from
   [circuitpython.org/board/cytron_maker_feather_aiot_s3](https://circuitpython.org/board/cytron_maker_feather_aiot_s3/).
-- **Cost to the USA:** Cytron ships from Malaysia. In the author's order,
-  shipping and duty roughly **tripled** the board's price.
+- **Cost to the USA:** Cytron ships from Malaysia by DHL. The checkout shows
+  the shipping charge, and asks you to accept that any import duty is yours
+  to pay — but it does not say how much that will be. The duty, with DHL's
+  own fee for handling it, is billed separately by DHL after the parcel
+  ships. On the author's order (September 2026, $33 of parts) shipping was
+  about as much as the parts, and the DHL customs bill was about as much
+  again — roughly three times the price of the parts in all. Allow for that
+  when comparing prices.
 - **Settings:** it needs a few board-specific lines in `config.py` — all in
   [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches).
 
@@ -4147,7 +4153,7 @@ Display** window on the computer (§5).
 
 | Qty | Item | Notes |
 |---|---|---|
-| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** — [cytron.io](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath. Cytron ships from Malaysia: in the author's order to the USA, shipping and duty roughly **tripled** the board's price |
+| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** — [cytron.io](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath. Cytron ships from Malaysia: to the USA, allow for DHL shipping and a separate customs bill on top of the price shown — see "Cost to the USA" in §3 |
 | 1 | Half-size breadboard (400 tie points) | Only a stand for the board. No wire goes into the breadboard in this build |
 | 2 | 3.5 mm stereo jack board with a 5-pin header (pins numbered 1–5). Sold as "3.5mm TRS Audio Jack PCB Adapter to 5Pin Header" or "3.5mm Stereo Audio Socket Adapter Boards (with pre-soldered headers)" — the ones used here: [amazon.com/dp/B0G7GSQDRR](https://www.amazon.com/dp/B0G7GSQDRR/) | One per switch. Buy the kind with the header pins **already soldered on**. The board is marked "3.5mm Audio Jacks" and measures 25 × 16 mm |
 | 4 | Male-to-female jumper wires | Two colours help: one colour for ground, one for signal |
