@@ -165,7 +165,7 @@ and mouse. The test record is in
 |-------|-----------|---------|-------|------|-------|
 | ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
 | ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). EYESPI is also possible but needs the most code editing. |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip |
 
 ### A non-Adafruit board that works — and needs no soldering
@@ -293,11 +293,6 @@ the bag. Pair it with one of:
   Larger, colour, much more screen area than the OLED; the text grows to
   fit by itself. For the full **#5477 + #3651** combo see **Appendix F**
   at the end of this guide. Untested.
-- **EYESPI TFT** (Build Guide §5 "EYESPI displays") — possible but the most
-  involved option: needs a #5613 breakout, ~7 wires soldered at the
-  breakout end (and soldered at the Feather end too unless the Feather has
-  header pins), a flex cable, and a `display_setup.py` file. Use only if you specifically
-  want EYESPI's flex-cable advantages.
 
 https://www.adafruit.com/product/5477
 
@@ -555,7 +550,6 @@ them.
 | 3.5" TFT FeatherWing #3651 on a #5477 | Needs a `display_setup.py` file; step-by-step in **Appendix F** — written from the parts' documentation, not from a tested build |
 | Other FeatherWings (#5872, #3315) | ⚠️ **Untested** — needs a `display_setup.py` file |
 | Standalone / breakout TFTs (#2050, #1743, #1770, #4311) | ⚠️ **Untested** — needs a `display_setup.py` file |
-| EYESPI displays (#2090, #1480, #4311, #5394) on the #5613 breakout | ⚠️ **Untested** — needs a `display_setup.py` file and 7 soldered wires |
 | STEMMA QT OLEDs (#326, #938) | ⚠️ **Untested** with the current firmware — needs a `display_setup.py` file; text is small |
 | Wireless display (second board, ESP-NOW) | ✅ **Tested** — has its own ready-made `receiver.py`; see below |
 
@@ -573,7 +567,7 @@ display set-up.
 1. Copy **`display_setup.example.py`** from the repo to the CIRCUITPY drive
    and rename the copy **`display_setup.py`**.
 2. Open it. It holds a ready-made block for each display family (3.5" and
-   2.4" FeatherWings, breakout TFTs, ST7789 / EYESPI, OLED). Keep the one
+   2.4" FeatherWings, breakout TFTs, OLED). Keep the one
    for your display and check the pin names against your wiring.
 3. Copy that display's driver library into `/lib` (named in the block, and in
    the table at the end of this section).
@@ -693,113 +687,6 @@ plugs straight on (once headers are in place) with no additional wiring.
 Standalone displays are useful when you want the display mounted separately from
 the Feather — for example, a display on an arm at eye level with the Feather
 tucked out of the way.
-
----
-
-### EYESPI displays (advanced — SPI wiring via breakout adapter)
-
-EYESPI is Adafruit's standardised **18-pin FPC connector** for SPI displays.
-Several Adafruit TFT displays have an EYESPI socket, which makes cabling
-cleaner: instead of individual jumper wires for each SPI signal, a single
-flat flex cable connects the display to an **EYESPI Breakout Board**.
-
-> **#5613 — Adafruit EYESPI Breakout Board — 18 Pin FPC Connector — $1.95**
-> https://www.adafruit.com/product/5613
->
-> This is a small passive adapter board. It has an 18-pin EYESPI FPC socket
-> on one side and through-hole pads (breadboard-friendly) on the other,
-> breaking out all 18 EYESPI signals to individual pins. **It is not a
-> microcontroller and cannot run code** — it is purely a wiring adapter.
-
-**How it works with a Feather:**
-
-```
-[ Any Feather ]──7 wires──[ #5613 breakout ]──EYESPI cable──[ EYESPI display ]
-```
-
-You still need ~7 wires from the Feather's SPI pins (MOSI, SCK, CS, DC, RST,
-3V, GND) to the #5613 breakout's through-hole pads. They are **soldered at
-the breakout end**; at the Feather end they are soldered to the pads, or
-pushed onto header pins with female jumper wires if the Feather has pins. The breakout then sends those signals through the flat flex cable to
-the display. This is functionally the same amount of wiring as connecting
-any standalone SPI breakout display — the advantage is that the flex cable
-is then available for routing the display to a different physical location
-more neatly.
-
-**Is it a good choice?** It is a workable way to add a second, somewhat
-larger screen, with one real advantage and two limits:
-
-- **Advantage — the screen is on a ribbon.** The display hangs on a thin
-  flat cable 50 to 200 mm long, so the screen can be mounted where you can
-  see it while the Feather sits somewhere else. It also works with **any**
-  Feather, including a #5691, and needs no header pins if the wires are
-  soldered straight to the pads.
-- **Limit — it is a soldering job.** Seven wires, soldered at the breakout
-  and again at the Feather.
-- **Limit — not very big.** The largest EYESPI screens are 2.8". For
-  the biggest text, the 3.5" FeatherWing (Appendix F) or the window on the
-  computer (below) do better.
-
-On a #5691 the extra display **replaces** the built-in screen: the two share
-the same wires inside the board, so the built-in one goes dark.
-
-**EYESPI displays picked for AeroMorse:**
-
-> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** None of
-> these has been built and tried by the project. `display_setup.example.py`
-> has a ready-made block for each.
-
-| Display | # | Resolution | Driver | Text size next to the #5691's screen | About |
-|---------|---|-----------|--------|--------------------------------------|-------|
-| 2.8" TFT with cap touch | [2090](https://www.adafruit.com/product/2090) | 320×240 | ILI9341 | about 1.7× | $30 |
-| 2.2" TFT | [1480](https://www.adafruit.com/product/1480) | 320×240 | ILI9341 | about 1.3× | $25 |
-| 2.0" IPS TFT | [4311](https://www.adafruit.com/product/4311) | 320×240 | ST7789 | about 1.2× | $20 |
-| 1.9" IPS TFT (wide) | [5394](https://www.adafruit.com/product/5394) | 320×170 | ST7789 | about 1.3× | $18 |
-
-"Text size" compares the height of the letters with the built-in 1.14"
-screen; all four show the same 20 characters across and 4 rows. The touch
-panel on the 2.8" is not used. IPS screens (the 2.0" and 1.9") stay
-readable from an angle; the other two are best viewed straight on.
-Adafruit's page for the 2.8" does not name its driver chip; ILI9341 is the
-driver Adafruit's own examples use for it.
-
-**What to buy besides the display:**
-
-| Qty | Item | # | URL |
-|-----|------|---|-----|
-| 1 | EYESPI Breakout Board | [5613](https://www.adafruit.com/product/5613) | https://www.adafruit.com/product/5613 |
-| 1 | EYESPI cable — 50 mm | [5462](https://www.adafruit.com/product/5462) | https://www.adafruit.com/product/5462 |
-| — | *or* 100 mm | [5239](https://www.adafruit.com/product/5239) | https://www.adafruit.com/product/5239 |
-| — | *or* 200 mm | [5240](https://www.adafruit.com/product/5240) | https://www.adafruit.com/product/5240 |
-| 7 | Short wires | — | — |
-
-**Wiring** (breakout pin → Feather pin; the pins are labelled on the
-breakout):
-
-| Breakout | Feather | |
-|----------|---------|---|
-| Vin | 3V | power |
-| Gnd | GND | ground |
-| SCK | SCK | clock |
-| MOSI | MOSI | data |
-| TCS | D9 | display select |
-| DC | D10 | data / command |
-| RST | D11 | reset |
-
-The other breakout pins (Lite, MISO, the SD-card and touch pins) are left
-unconnected; the backlight is on by default.
-
-**Then:** copy `display_setup.example.py` to the drive as `display_setup.py`,
-keep the block for your display, and copy that display's driver into `/lib`
-(see "Using a separate display" at the top of §5). **Set `DISPLAY_ROTATION`
-in `config.py` as well** — AeroMorse applies it after the display is set up.
-The ILI9341 screens are landscape at `0` (use `180` to turn them over); the
-ST7789 screens are portrait at `0`, so use `90` or `270`.
-
-> **For most builders, the built-in screen on the #5691 is the simpler
-> choice**, and the window on the computer the simplest way to bigger text.
-> The EYESPI path is for when you want a real second screen on a ribbon
-> cable and are comfortable soldering.
 
 ---
 
