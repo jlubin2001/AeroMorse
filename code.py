@@ -10,15 +10,14 @@
 # ════════════════════════════════════════════════════════════════════════════
 #
 # Hardware reference — see AEROMORSE_BUILD_GUIDE.md for all options:
-#   Feather board       — Build Guide §3  (default: #5691 Reverse TFT Feather)
-#   Display             — Build Guide §5  (built-in TFT on #5691, or external OLED)
-#   Wireless display    — Build Guide §5 "Wireless Display — ESP-NOW Remote Mirror"
-#                         (toggle with USE_WIRELESS_DISPLAY below)
-#   Input method        — Build Guide §4  (Option A sensor / Option B switches)
-#     Option A          — #4414 LPS33HW pressure sensor on STEMMA QT (sip-and-puff)
-#     Option B1/B2/B3   — TRRS / 3.5mm jacks for AT switches (B3 = #2915 terminal block)
-#   Speaker             — Build Guide §6  (S1 #3885 STEMMA / S2 piezo / S3 amp+speaker)
-#   Assembly steps      — Build Guide §8  (8A display, 8B sensor, 8C switches, 8D speaker)
+#   Standard build      — Build Guide §2  (#5691 Reverse TFT Feather + #4414 sensor)
+#   Input method        — Build Guide §4  (4.1 sip-and-puff / 4.2 switches)
+#   Display             — Build Guide §5  (5.1 built-in screen / 5.2 window on the
+#                         computer / 5.3 wireless display, USE_WIRELESS_DISPLAY)
+#   Audio feedback      — Build Guide §6  (6.2 through the computer / 6.3 speaker)
+#   Assembly steps      — Build Guide §8
+#   Other boards, displays, switch and speaker wiring — Build Guide
+#                         Appendices L, F and D
 #
 # Input modes
 #   USE_SENSOR    — True = LPS33HW sip-and-puff (default), False = two AT switches
@@ -467,9 +466,9 @@ def _audio_tick():
 
 
 # ── ESP-NOW wireless display ───────────────────────────────────────────────────
-# Broadcasts TFT state to an Option W1 receiver (a second #5691 Reverse TFT
+# Broadcasts TFT state to a wireless display (a second #5691 Reverse TFT
 # Feather running receiver.py). Entirely optional — if the espnow / wifi
-# modules are absent nothing changes. See Build Guide §5 "Wireless Display"
+# modules are absent nothing changes. See Build Guide §5.3 "A wireless display"
 # for the file tree and battery choices.
 
 _ESPNOW_ENABLED = False

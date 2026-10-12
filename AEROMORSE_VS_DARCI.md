@@ -212,9 +212,9 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 | Command confirmation beep | Yes | Yes (`CONFIRM_FREQ`) |
 | Group/Mode change tone | (per LED) | Distinct low tone (`GROUP_FREQ`) |
 | Volume | Not adjustable | Not adjustable directly — set by speaker choice (#3885 has a built-in 1 W amp; piezo options are quieter) |
-| On-board speaker | None — headset out only | #3885 STEMMA Speaker (Option S1), or piezo (S2), or PAM8302 amp + speaker (S3) |
-| External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — any speaker that already terminates in a 3.5 mm mono plug plugs straight in (see Build Guide §6 Option S2) |
-| Sound with no speaker fitted | — | **Through the computer's speakers** (v1.27+): set `PC_DISPLAY = True` and `PC_SOUND = True`, run the *AeroMorse Display* program and switch *Sound* on in its right-click menu. Sine tones, three volume levels. See Build Guide §5 |
+| On-board speaker | None — headset out only | #3885 STEMMA Speaker (Build Guide §6.3), or a piezo or PAM8302 amp + speaker (Appendix D) (S3) |
+| External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — any speaker that already terminates in a 3.5 mm mono plug plugs straight in (see Build Guide Appendix D, Option S2) |
+| Sound with no speaker fitted | — | **Through the computer's speakers** (v1.27+): set `PC_DISPLAY = True` and `PC_SOUND = True`, run the *AeroMorse Display* program and switch *Sound* on in its right-click menu. Sine tones, three volume levels. See Build Guide §6.2 |
 | Sticky-key indicator | LED on box | Text on the screen (`Shift`, `Ctrl`, etc.) |
 | Current character preview | None | Screen shows the growing dot/dash sequence |
 | Pressure bar | None (no sip-and-puff) | Magnitude-encoded fill bar on the TFT (green for puff, orange for sip) |
@@ -294,7 +294,7 @@ emits dashes at ~1.7 per second; group switches happen only when an
 | 2 × 3.5 mm jacks (#1699 or #2915 each) | Dot switch (D5) / Dash switch (D6) |
 | STEMMA QT chain | Pressure sensor (#4414), OLED (#326) |
 | 3-pin speaker connector | On-board speaker out (A0 + 3V + GND) — #3885 STEMMA Speaker |
-| Optional 3.5 mm audio jack (#2915) | External speaker out (A0 + GND) — accepts any 3.5 mm-plug piezo or small speaker. See Build Guide §6 Option S2. |
+| Optional 3.5 mm audio jack (#2915) | External speaker out (A0 + GND) — accepts any 3.5 mm-plug piezo or small speaker. See Build Guide Appendix D, Option S2. |
 | USB-C | To computer |
 
 **Darci accessories plug directly into AeroMorse with no rewiring:**

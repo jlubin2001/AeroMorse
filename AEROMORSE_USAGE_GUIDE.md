@@ -215,8 +215,8 @@ lists:
 ### Reference documents
 - **Keycode Reference** (PDF) — every `Keycode.NAME` you can use in
   `morse_map.py`, and how to type shifted symbols.
-- **Build Guide** (PDF) — hardware, wiring, every `config.py` setting (§10) and
-  troubleshooting (§12).
+- **Build Guide** (PDF) — the standard build and its choices, software
+  install, every `config.py` setting (Appendix E) and troubleshooting (§12).
 - **README** — group-by-group pattern tables and the full secrets guide.
 - **Switch Mode Guide** — Group 9, where a sip holds Enter and a puff holds
   Space like two plain switches (switch games such as
@@ -265,7 +265,7 @@ device starts or restarts** in the README / Build Guide for the steps.
 
 Same order as above (skip steps 3, 5, 6 and 10). Things to know:
 
-- Settings are explained in the file itself and in **Build Guide §10**.
+- Settings are explained in the file itself and in **Build Guide Appendix E**.
 - `config.py` is **per device**. Two devices can need different sensor
   settings (for example a different puff threshold). Before editing, copy
   *that* device's `config.py` into the work folder (step 2), and copy it back
@@ -366,7 +366,7 @@ three hotkeys, and the supplied `morse_map.py` already has a code for each:
 
 | Hotkey | What it does | Morse code | Group |
 |--------|--------------|-----------|-------|
-| Ctrl+Alt+D | **AeroMorse Display** window (Build Guide §5) on / off | `.-.-.-` | 0 — works from every group |
+| Ctrl+Alt+D | **AeroMorse Display** window (Build Guide §5.2) on / off | `.-.-.-` | 0 — works from every group |
 | Ctrl+Alt+H | **AeroMorse Help** — your cheat sheet with a tab per group — on / off | `..-..-` | 0 — works from every group |
 | Ctrl+Alt+Home | Mouse pointer to the middle of the screen | `.-.` | 2 — Mouse |
 

@@ -237,7 +237,7 @@ Download the bundle that matches your CircuitPython version number (shown in
 - Your Feather board arrived without header pins pre-soldered
 
 The breadboard option (Option B1) needs no soldering **only if the Feather
-already has header pins**. Option B3 (#2915 terminal block) needs at most
+already has header pins**. The #2915 terminal block (Build Guide §4.2) needs at most
 three solder joints, and none if the Feather has header pins.
 
 > **New to soldering?** Read Adafruit's free beginner guide before you start:

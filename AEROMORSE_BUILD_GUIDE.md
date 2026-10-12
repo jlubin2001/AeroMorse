@@ -3,776 +3,346 @@
 
 > **Software & this guide live here:** https://github.com/jlubin2001/AeroMorse
 > — always download the firmware (`code.py`, `boot.py`, `morse_map.py`,
-> `config.py`) from that repo. See **§9.4** for the download steps.
+> `config.py`) from that repo. See **Step 9.3** for the download steps.
 
-This guide walks a first-time, non-technical builder through every decision and
-every step needed to assemble a working AeroMorse device. Read the whole guide
-once before buying anything — your hardware choices affect each other.
+This guide is built around **one build — the one the project's author uses
+every day** — and three choices you can make differently: how you give
+input, how you see the display, and whether you hear audio feedback. If the
+standard build suits you, sections 2, 9 and 11 are all you need.
 
 ---
 
 ## Table of Contents
 
-1. [What AeroMorse Does](#1-what-aeromorse-does)
-2. [How This Guide Works](#2-how-this-guide-works)
-3. [Compatible Feather Boards](#3-compatible-feather-boards)
-4. [Input Method Options](#4-input-method-options)
-5. [Display Options](#5-display-options)
-   - [Wireless Display — ESP-NOW Remote Mirror](#wireless-display--esp-now-remote-mirror)
-6. [Speaker Options](#6-speaker-options)
-7. [Complete Parts Lists](#7-complete-parts-lists)
-8. [Step-by-Step Assembly](#8-step-by-step-assembly)
-9. [Software Installation](#9-software-installation)
-10. [Configuration](#10-configuration)
+1. [What AeroMorse does](#1-what-aeromorse-does)
+2. [The standard build](#2-the-standard-build)
+3. [Three choices: input, display, audio feedback](#3-three-choices-input-display-audio-feedback)
+4. [Choice 1 — Input](#4-choice-1--input)
+5. [Choice 2 — Display](#5-choice-2--display)
+6. [Choice 3 — Audio feedback](#6-choice-3--audio-feedback)
+7. [Shopping list](#7-shopping-list)
+8. [Putting it together](#8-putting-it-together)
+9. [Software](#9-software)
+10. [Settings for your choices](#10-settings-for-your-choices)
 11. [First Power-On Test](#11-first-power-on-test)
 12. [Troubleshooting](#12-troubleshooting)
 
-Appendices: [A — Groups](#appendix-a--groups-and-group-cycling) ·
+Appendices — using and customising:
+[A — Groups](#appendix-a--groups-and-group-cycling) ·
 [B — Display layout](#appendix-b--display-layout) ·
 [C — Macros](#appendix-c--customising-macros) ·
-[D — Breadboard wiring](#appendix-d--breadboard-wiring-walkthrough) ·
 [E — Configuration reference](#appendix-e--configuration-reference) ·
-[F — #5477 + 3.5" FeatherWing](#appendix-f--building-with-5477--35-tft-featherwing-3651) ·
 [G — AutoHotkey](#appendix-g--autohotkey-starting-programs-with-a-morse-code) ·
 [H — Enclosure and tube strain relief](#appendix-h--enclosure-and-air-tube-strain-relief) ·
 [I — Keyboard layout](#appendix-i--keyboard-layout-when-symbols-come-out-wrong) ·
-[J — More media, browser and app keys](#appendix-j--more-media-browser-and-app-launcher-keys) ·
-[K — Solderless Cytron build](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches)
+[J — More media, browser and app keys](#appendix-j--more-media-browser-and-app-launcher-keys)
+
+Appendices — other hardware:
+[K — Solderless Cytron build](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches) (tested) ·
+[D — Other switch and speaker wiring](#appendix-d--other-switch-and-speaker-wiring) ·
+[F — Other displays](#appendix-f--other-displays) ·
+[L — Other boards](#appendix-l--other-boards) ·
+[M — Header pins](#appendix-m--header-pins)
+
+Appendix — when something goes wrong:
+[N — Seeing the device's error messages (Thonny)](#appendix-n--seeing-the-devices-error-messages-thonny)
 
 ---
 
-## 1. What AeroMorse Does
-
-AeroMorse is an open-source CircuitPython project directed by Jim Lubin — a
-ventilator-dependent quadriplegic who has used Morse code for computer access
-since 1989. Inspired by [AirTalker](https://github.com/ATMakersOrg/AirTalker), it turns an Adafruit Feather microcontroller into a
-USB HID keyboard and mouse that connects via USB-C and appears to the host as
-a standard keyboard and mouse with no drivers required. Works on **Windows,
-macOS, Linux, iPadOS, Android, and ChromeOS**.
-
-**How this project was built — what's confirmed vs documented.** Jim is the
-user, project lead, and source of all design decisions: hardware choices,
-input-mode requirements, Morse code-set conventions, accessibility trade-offs,
-and ongoing user feedback (his own and from other AAC users — Darci USB
-veterans in particular). The firmware (`code.py`), this build guide, and the
-comparison documents were written by **Claude Opus 4.7** (Anthropic) acting as
-the coding assistant — a "vibe coding" workflow in which Jim directs and
-Claude writes. Jim does not write the firmware himself, and has not personally
-soldered or assembled every hardware combination listed here. Several options
-— particularly some board / display / speaker combinations — are documented
-from datasheets and Claude's understanding of the parts rather than from a
-verified build.
-
-**If you build a configuration, please report back via a GitHub issue —
-whether it works or doesn't.** Confirmed-vs-theoretical is the single most
-useful signal this project can collect right now.
-
-Input is by **sip-and-puff** (LPS33HW pressure sensor) or **two standard AT
-switches**. A short sip (or switch 1) is a dot; a short puff (or switch 2) is
-a dash. A small colour screen (built into the recommended board) shows the
-active group, the Morse pattern as it builds, and the last action. An optional speaker beeps for every dot and dash.
-
-Ten groups organize all functions — `g0` plus `g1–g9`:
-
-- **Group 0** — always-available system layer; 8-symbol patterns jump
-  directly to any other group from anywhere
-- **Group 1** — **Keyboard**: letters, numbers, punctuation, function keys,
-  navigation, sticky modifiers (default group at boot)
-- **Group 2** — **Mouse**: movement, clicks, drag, repeat, and Windows
-  shortcuts
-- **Group 3** — **Macro**: user-defined text strings
-- **Group 4** — **Scanning**: Enter, Space and F3–F12 on the 12 shortest
-  codes — for iOS / Android Switch Control
-- **Group 5** — **Media**: USB HID Consumer Controls — play/pause, volume,
-  mute, track skip, brightness, plus launchers for calculator, file
-  explorer, browser, and mail
-- **Groups 6, 7, 8** — **Placeholders** carrying Group 1's letters and numbers,
-  written out line by line in `morse_map.py`, ready for you to customise
-- **Group 9** — **Switch**: no Morse — a sip holds Enter and a puff holds
-  Space for as long as you keep going, like two real switches (games and
-  switch apps). See [AEROMORSE_SWITCH_MODE_GUIDE.md](AEROMORSE_SWITCH_MODE_GUIDE.md).
-  (It was Group 7 before v1.24.)
-
-Groups cycle with a long sip or puff. An optional **ESP-NOW wireless display**
-mirrors the main screen on a second board up to ~30 m away — useful when the
-sensor is mounted behind the user.
-
-Existing **Darci USB** users can drop in `morse_map_darci.py` to use their
-familiar code set. All Morse assignments are fully customizable in
-`morse_map.py`. Parts cost approximately **$50–$100** in off-the-shelf
-components.
-
-### Morse code basics
-
-| Symbol | Input | Display |
-|--------|-------|---------|
-| Dot | Short sip or press | `.` |
-| Dash | Short puff or press | `-` |
-| Letter gap | Pause ≥ 0.2 s | (pattern fires) |
-
-Example: sip · puff · puff = `. - -` = the letter **W**
-
-You do not need to know Morse code from memory to begin — the device can be used
-with a printed reference card while you learn.
-
----
-
-## 2. How This Guide Works
-
-AeroMorse has modular hardware. You pick:
-
-1. **A Feather microcontroller board** (the brain — required)
-2. **An input method** (sip-and-puff sensor or AT switches — required)
-3. **A display** (what you see — optional but recommended)
-4. **A speaker** (audio feedback — optional)
-
-Once you have chosen each, jump to the relevant wiring section in Step 8.
-
-> **Is the AeroMorse going to be someone's only way to use a computer?**
-> Then consider building **two**. The second is a spare that is working the
-> minute the first one fails, and a safe place to try a new version or a new
-> setting without risking the device that is depended on. It is how the
-> project's author works. See the Usage Guide, §6 "More than one device".
-
-> **Recommended combination for most builders (USB HID, display included):**
-> ESP32-S3 Reverse TFT Feather #5691 · LPS33HW sensor #4414 · STEMMA Speaker #3885
-
----
-
-## 3. Compatible Feather Boards
-
-### Why not every Feather works
-
-AeroMorse uses **USB HID** — the USB standard that lets keyboards and mice talk
-to computers. Only Feather boards with **native USB** support this. Classic
-ESP32 boards (including Adafruit #5900 Feather ESP32 V2) use a separate USB-to-
-serial chip that cannot emulate a keyboard. Those boards will not work.
-
-### Bluetooth — not supported
-
-AeroMorse sends **USB HID only**; it does not work as a Bluetooth keyboard.
-The chip can do Bluetooth, but a Bluetooth keyboard on these boards was tested
-in September 2026 (CircuitPython 10.3.1) and did not stay connected. For a
-phone or tablet, use a **USB-C cable** — AeroMorse works as a wired keyboard
-and mouse. The test record is in
-[BLE_STATUS.md](https://github.com/jlubin2001/AeroMorse/blob/main/BLE_STATUS.md).
-
----
-
-### Boards that work
-
-| Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
-|-------|-----------|---------|-------|------|-------|
-| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
-| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (§5). |
-| ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip |
-
-### A non-Adafruit board that works — and needs no soldering
-
-| Board | Where to buy | USB HID | PSRAM | WiFi | Notes |
-|-------|--------------|---------|-------|------|-------|
-| Cytron Maker Feather AIoT S3, with pre-soldered headers | [Cytron](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | ✅ | ✅ **8MB** | ✅ | No built-in display. Buzzer built in. **Sold with its headers already fitted**, so a switch build needs no soldering — every wire pushes in. Tested as a **two-switch** device; not tested with the pressure sensor. Full build in [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches). |
-
-What you get, and what to know before ordering:
-
-- **Processor and memory:** an ESP32-S3-WROOM-1-N8R8 module — 8 MB flash and
-  8 MB PSRAM, more than the 4 MB / 2 MB of the Adafruit Feathers above.
-- **Headers:** Cytron sells it two ways. Order the version **with pre-soldered
-  headers**; the "Basic" version has none. The headers are sockets on top with
-  long pins underneath, so the board stands in a breadboard and jumper wires
-  push into the sockets.
-- **Sound:** a piezo buzzer on the board (GPIO12), with a mute switch on the
-  **underside** of the board. A STEMMA Speaker #3885 can be added for louder
-  sound.
-- **Maker Ports:** three small sockets compatible with Qwiic and STEMMA QT
-  (and Grove with a conversion cable). Two lie flat and are powered from
-  "VPeripheral", which the software can switch on and off; one stands upright
-  and always has 3.3 V.
-- **Wireless display:** works — the ESP-NOW broadcast (§5) was tested from
-  this board.
-- **CircuitPython:** 10.3.1, from
-  [circuitpython.org/board/cytron_maker_feather_aiot_s3](https://circuitpython.org/board/cytron_maker_feather_aiot_s3/).
-- **Cost to the USA:** Cytron ships from Malaysia by DHL. The checkout shows
-  the shipping charge, and asks you to accept that any import duty is yours
-  to pay — but it does not say how much that will be. The duty, with DHL's
-  own fee for handling it, is billed separately by DHL after the parcel
-  ships. On the author's order (September 2026, $33 of parts) shipping was
-  about as much as the parts, and the DHL customs bill was about as much
-  again — roughly three times the price of the parts in all. Allow for that
-  when comparing prices.
-- **Settings:** it needs a few board-specific lines in `config.py` — all in
-  [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches).
-
-### Metro form factor boards
-
-Metro boards use the Arduino Uno footprint (68×53 mm) — larger than a Feather.
-They work for AeroMorse but with one key difference: **FeatherWing displays
-will not plug directly onto them.** Use a standalone TFT breakout (SPI wires)
-or the STEMMA QT OLED instead. The pressure sensor plugs straight in via
-STEMMA QT with no wiring change.
-
-| Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
-|-------|-----------|---------|-------|------|-------|
-| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
-
-> The Metro ESP32-S3 #5500 has the most memory in this guide (16 MB flash,
-> 8 MB PSRAM). Choose the Metro for the extra memory or the larger form
-> factor.
-
----
-
-### Boards that do NOT work for USB HID
-
-| Board | Reason |
-|-------|--------|
-| Feather ESP32 V2 #5400 | No native USB — uses CP2102N serial chip |
-| Feather ESP32 Huzzah #3405 | No native USB |
-| Feather ESP8266 #2821 | No native USB |
-
----
-
-### Recommended board: Adafruit ESP32-S3 Reverse TFT Feather #5691
-
-**Why this one:**
-
-- **Display already built in** — the 240×135 colour TFT is soldered to the
-  board, facing down for panel mounting; no separate display to buy or wire
-- Has **PSRAM** (2 MB extra RAM) — handles all display and sensor work without
-  running out of memory
-- Has a **STEMMA QT** port — the LPS33HW pressure sensor plugs straight in with
-  no soldering
-- **WiFi + ESP-NOW** built in — supports the wireless remote display option
-  (Section 5) without any extra hardware on the main board
-- USB HID works out of the box — appears as keyboard and mouse to any computer
-- CircuitPython support is excellent and actively maintained
-- Available from Adafruit:
-  https://www.adafruit.com/product/5691
-
-> **Watch out — #5691 is not breadboard-friendly once you solder headers.**
-> The TFT is on the back of the board, so once header pins are soldered and
-> the Feather is pressed into a breadboard, the screen ends up facing the
-> breadboard and is unreadable. #5691 is designed for **panel-mount enclosures**
-> (a cutout in a case with the screen showing through), not for prototyping
-> on a solderless breadboard. If you plan to develop on a breadboard before
-> moving to an enclosure, use **#5483** (built-in TFT facing up — screen
-> still visible when the Feather is on a breadboard) or **#5477** with an
-> external display.
-
----
-
-**If you want a built-in TFT and plan to use a breadboard (or no enclosure):**
-
-The **ESP32-S3 TFT Feather #5483** is electrically identical to #5691, but
-its TFT faces the same side as the components, so the screen still faces up
-when the board stands in a breadboard. **A breadboard needs header pins on
-the Feather** — they come loose in the bag and have to be soldered on
-first (see "Building with no header pins" below). Without a breadboard the
-#5483 needs no pins at all, exactly like the #5691. Everything else —
-PSRAM, STEMMA QT, ESP-NOW, USB HID — is the same.
-https://www.adafruit.com/product/5483
-
----
-
-**If you want a bare Feather (no built-in display) for the cleanest breadboard
-or for maximum display flexibility:**
-
-The **ESP32-S3 Feather #5477** is the same chip without a soldered-on TFT,
-so — **once header pins are soldered on** — it sits flat in a breadboard.
-Like most Feathers it arrives as a bare board with the pin strips loose in
-the bag. Pair it with one of:
-
-- **STEMMA QT OLED #326 (0.96") or #938 (1.3")** — plug-and-play via the
-  STEMMA QT chain (the same chain that carries the sensor). Needs a
-  `display_setup.py` file on the drive (v1.26+, example provided — see §5).
-  Monochrome 128×64, small text. Untested.
-- **FeatherWing TFT (#3651, #5872, or #3315)** — no wiring, but **the
-  Feather must have header pins soldered on**: the wing has sockets that
-  the Feather's pins push into, and a bare Feather has nothing to push in.
-  Also needs a `display_setup.py` file (§5).
-  Larger, colour, much more screen area than the OLED; the text grows to
-  fit by itself. For the full **#5477 + #3651** combo see **Appendix F**
-  at the end of this guide. Untested.
-
-https://www.adafruit.com/product/5477
-
----
-
-**If you want the most memory (Metro form factor):**
-
-The **Metro ESP32-S3 #5500** has the most memory in this guide (8 MB PSRAM,
-16 MB flash). Like the Feathers above, it supports USB HID.
-
-The #5500 has no built-in display — connect the STEMMA QT OLED or a standalone
-TFT breakout. The ESP-NOW wireless display (Section 5) works on it identically
-to the Feather boards.
-https://www.adafruit.com/product/5500
-
----
-
-**A note on PSRAM:**
-
-PSRAM is extra RAM soldered alongside the main chip. The ESP32-S3 chip
-itself has 512 KB of built-in RAM; a colour TFT display needs a
-*framebuffer* (a block of RAM holding every pixel) that can easily
-exceed that. Every Feather and Metro board still listed above has at
-least **2 MB of PSRAM** (the #5500 Metro has 8 MB), so the framebuffer
-lives in PSRAM and the built-in 512 KB stays free for code. Any
-supported display size — 128×64 OLED through 480×320 FeatherWing —
-fits comfortably.
-
----
-
-**Quick decision guide:**
-
-| I want… | Choose |
-|---------|--------|
-| Simplest build, colour TFT included, USB only | #5691 Reverse TFT Feather |
-| Same but screen faces up | #5483 TFT Feather |
-| To use it with a phone or tablet | Any board here, over a **USB-C cable** — Bluetooth is not supported (§3) |
-| Most memory (8 MB PSRAM) | #5500 Metro ESP32-S3 |
-
----
-
-### Building with no header pins — what works
-
-Many Feather boards ship as bare PCBs with no header pins soldered. If you
-don't want to solder headers (and your supplier didn't pre-install them),
-some build paths still work via STEMMA QT plug-and-play, some require
-soldering a few wires directly to the Feather's PCB pads, and some
-fundamentally need headers.
-
-| Component / option | Works without headers? | What's needed |
-|---|---|---|
-| **#5691 built-in TFT display** | ✅ Plug-and-play | Display soldered to board — nothing to wire |
-| **STEMMA QT OLED (#326, #938)** | ✅ Plug-and-play | STEMMA QT cable, no Feather wiring |
-| **STEMMA QT sensor (#4414 LPS33HW)** | ✅ Plug-and-play | STEMMA QT cable |
-| **FeatherWing displays (#3651, #5872, #3315)** | ❌ Not possible | The wing's holes can't grip bare pads — headers required |
-| **Standalone TFT breakouts (#2050, #1770…)** | ⚠️ Solder 5–7 wires | Solder display wires directly to Feather pads |
-| **AT switches — Option B1 breadboard** | ❌ Not possible | Feather must sit *in* the breadboard via headers |
-| **AT switches — Option B2 TRRS breakout** | ⚠️ Solder 3 wires | Solder breakout output wires to D5/D6/GND pads |
-| **AT switches — Option B3 #2915 Terminal Block** | ⚠️ Solder 3 wires | Solder terminal-block wires to D5/D6/GND pads |
-| **Speaker — #3885 STEMMA Speaker** | ⚠️ Solder 3 wires | Cut JST PH plug off, solder to A0/3V/GND pads |
-| **Speaker — Option S2 piezo (#2915 + #2790 + #1740/#1739)** | ⚠️ Solder 2 wires only if no headers | If Feather has headers: 2 F-F jumpers from #2915 → A0/GND (zero soldering). If no headers: solder 2 wires from #2915 → A0/GND pads. Piezo side is screw-terminal either way. |
-| **Speaker — PAM8302 amp (#2130)** | ⚠️ Solder 3 wires | Solder amp board to A0/3V/GND pads |
-
-**STEMMA QT does not solve every problem.** STEMMA QT carries I²C, 3 V, and
-GND only — that is enough for sensors and I²C displays (OLEDs), but **not
-for audio** (analog signal must come from A0) or **arbitrary switches**
-(digital inputs need GPIO pins).
-
-> An I²C GPIO expander board (AW9523 #4886, MCP23017 #5346, PCF8575 #5611)
-> *could* host AT switches via STEMMA QT, but you still need to wire jacks
-> to the expander's GPIO pads — and `code.py` would need a new library and
-> rewritten input routines. **More work, no benefit** vs. soldering three
-> wires directly to D5/D6/GND on the Feather.
-
-**Recommended fully-header-less build:**
-
-- Feather: **#5691** (built-in TFT — no wiring)
-- Sensor: **#4414 LPS33HW** via STEMMA QT (or skip if using AT switches)
-- AT switches: **#2915 Terminal Block** + 3 wires soldered to D5/D6/GND pads
-- Speaker: 3 wires soldered to A0/3V/GND pads (or skip — display alone is fine)
-
-Total soldering for the full build: **3–6 wires to Feather pads** (skip the
-sensor row if you use switches, skip both if you don't want a speaker).
-Each pad is ~1.5 mm — much easier to solder than the pin holes for headers.
-
-> **No soldering at all?** Skip the speaker and use the **#5691 + sensor
-> only** combination. The OLED/TFT shows every dot and dash visually. Cost:
-> a #5691 + #4414 + STEMMA QT cable, ~$30 (electronics only — no enclosure,
-> see Appendix H), zero solder joints. Add a
-> third-party 3.5 mm Y-splitter and your existing AT switches won't work
-> in this config — sensor mode is the no-solder path.
-
----
-
-## 4. Input Method Options
-
-### Option A — Sip-and-Puff (LPS33HW pressure sensor)
-
-A small barometric pressure sensor detects the tiny pressure change when you
-breathe into or out of a short plastic tube. No hand or head movement required.
-
-**Sensor:** Adafruit LPS33HW Water-Resistant Pressure Sensor — STEMMA QT
-https://www.adafruit.com/product/4414
-
-> **Adafruit learn guide — LPS33 sip-and-puff with CircuitPython:**
-> https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff
-> Useful **background reading** on the sensor — calibration, threshold
-> tuning, and breath technique.
->
-> ⚠️ **Read it for concepts only — do NOT install its code.** That Adafruit
-> project is built around a *different board* and ships its own example
-> software. AeroMorse does **not** use any of it. Your firmware is solely
-> the AeroMorse `code.py` / `boot.py` / `morse_map.py` / `config.py` from
-> https://github.com/jlubin2001/AeroMorse (see §9.4). Ignore any
-> "install this code" step in the Adafruit guide.
-
-**Tube options:**
-
-| Option | ID | OD | Material | Source |
-|--------|----|----|----------|--------|
-| Adafruit Silicone Tubing #3659 | 2.5 mm | 4.7 mm | Food-safe silicone | https://www.adafruit.com/product/3659 |
-| Aquarium airline tubing | 4.8 mm (3/16") | 7.9 mm (5/16") | PVC or silicone | Pet store / hardware store |
-| Medical sip-and-puff tubing | 4.8 mm (3/16") | 7.9 mm (5/16") | Medical PVC | Medical supply |
-
-**Adafruit #3659** is the easiest option — sold on the same site as the sensor,
-food-safe silicone, fits snugly over the sensor's pressure port. Order at least
-30 cm (12 inches); 1 m gives you plenty to cut to length and retry.
-
-**Aquarium airline tubing** is the budget alternative, available at any pet
-store for ~$3–5 per metre. The larger outer diameter grips the sensor port
-slightly differently — wrap a thin layer of silicone tape around the port nipple
-first if the fit feels loose.
-
-Cut to a comfortable length — most users prefer 20–40 cm (8–16 inches).
-
-> The tube pushes over the small nipple on the LPS33HW breakout board. No
-> adhesive is needed — but **friction alone is not enough for daily use**.
-> The port is tiny and every tug on the tube pulls on it. Plan a strain
-> relief (an enclosure that anchors the tube, or at least a cable tie); see
-> **Appendix H**.
-
----
-
-### Option B — Accessibility (AT) Switches via TRRS Jack
-
-Standard assistive technology switches with a **3.5 mm mono plug** connect to
-the Feather through a TRRS jack breakout. Pressing the dot switch = dot;
-pressing the dash switch = dash.
-
-Any AT switch compatible with Ablenet, Inclusive Technology, Specs Switches, or
-similar systems will work. One switch (dot only) is enough to navigate slowly;
-two switches (dot + dash) are strongly recommended for practical use.
-
-**Two wiring options for the TRRS jack:**
-
-#### Option B1 — Breadboard (solderless only if the Feather already has header pins)
-
-A build using a half-size breadboard, a single TRRS jack (#1699), and three
-jumper wires. Lowest-cost path and reversible, but bulky and best suited to
-bench testing rather than long-term use.
-
-> ⚠️ **This option needs a Feather with header pins.** The Feather stands
-> *in* the breadboard on its two rows of pins, so "solderless" is true only
-> if those pins are already on the board. Most Feathers ship as a bare
-> board with a loose pin strip in the bag — the pins then have to be
-> soldered on first (about 28 joints), or the board bought "with headers".
-> A bare Feather cannot be used on a breadboard at all.
->
-> **Not for the recommended #5691.** Its screen is on the underside, so once
-> it is pushed into a breadboard the screen faces down into the breadboard
-> and cannot be read. On a breadboard use the #5483 (screen faces up)
-> instead.
->
-> **No header pins, or a #5691?** Use **Option B3** below — three wires,
-> and no breadboard.
-
-**Detailed step-by-step breadboard instructions are in
-[Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
-at the end of this guide.**
-
-For most builders Option B3 (#2915 Terminal Block) is simpler and tidier — try
-that first.
-
-#### Option B2 — Soldered TRRS breakout (compact, durable)
-
-Solders three short wires to an Adafruit TRRS Jack Breakout board (T, R1, S
-— Ring 2 is unused). The other ends go to the Feather: **soldered to its
-pads** (3 more joints), or — only if the Feather has header pins — pushed
-onto the pins using wires with a female socket on that end.
-
-Parts needed:
-- Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
-- 3 short wires ~8 cm (different colours help)
-- Soldering iron + solder
-
-| TRRS pad | Feather pin | Wire colour suggestion |
-|----------|-------------|----------------------|
-| T (Tip) | D5 | Red |
-| R1 (Ring 1) | D6 | Blue |
-| S (Sleeve) | GND | Black |
-| R2 | *(no wire — pad left bare)* | — |
-
-> **Both switch options work with the same `code.py`** — set `USE_SENSOR = False`
-> in the configuration section.
-
----
-
-#### Option B3 — #2915 TRRS Terminal Block (no breadboard, minimal soldering) ⭐ Recommended for #5691
-
-**Adafruit #2915 — $2.50**
-https://www.adafruit.com/product/2915
-
-A 3.5 mm TRRS jack with **built-in screw terminals** — no PCB, no soldering on the jack side at all. Strip a wire, insert it, tighten the screw with a small screwdriver. This is the best option for the #5691 Reverse TFT Feather because it avoids the breadboard entirely and does not require the #2926 Terminal Block FeatherWing (which is incompatible with the Reverse TFT Feather).
-
-| #2915 terminal | Feather pin | Function |
-|----------------|-------------|----------|
-| Tip | D5 | Dot switch |
-| Ring | D6 | Dash switch |
-| Sleeve | GND | Ground |
-| Ring 2 | — | Leave empty |
-
-**If your #5691 has header pins soldered** — use female-to-female jumper wires. One end screws into the #2915 terminal; the other end plugs directly onto the Feather pin. **Zero soldering.**
-
-**If your #5691 has no header pins** — solder the three wires directly to the D5, D6, and GND pads on the Feather. The jack side still needs no soldering. Only 3 solder joints total.
-
-Parts needed:
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | TRRS Jack Terminal Block | #2915 | https://www.adafruit.com/product/2915 |
-| 3 | Female-to-female jumper wires (if Feather has pins) | #266 | https://www.adafruit.com/product/266 |
-| — | *or* 3 short wires ~15 cm + soldering iron (if no header pins) | — | — |
-
-> **Note:** The #2915 accepts both mono and TRRS plugs. Most AT switches use
-> a 3.5 mm mono plug (tip + sleeve only), which connects the Tip and Sleeve
-> terminals when pressed — exactly what AeroMorse expects.
-
----
-
-## 5. Display Options
-
-### Which displays are tested
-
-**Only the built-in screen works straight out of the box.** `code.py`
-drives the screen that is part of the board (`board.DISPLAY`) with no extra
-file. Every other display on this page is supported by CircuitPython's
-`displayio` system and *can* be used, by adding one small file — see "Using a
-separate display" below — but the project has not built or tested any of
-them.
-
-| Display | Status |
-|---|---|
-| Built-in screen on the **#5691** Reverse TFT Feather | ✅ **Tested** — the author's daily device. Works as shipped, no code change |
-| Built-in screen on the #5483 / #5300 TFT Feathers | Expected to work as shipped (same `board.DISPLAY`, same size) — not tested by the project |
-| 3.5" TFT FeatherWing #3651 on a #5477 | Needs a `display_setup.py` file; step-by-step in **Appendix F** — written from the parts' documentation, not from a tested build |
-| Other FeatherWings (#5872, #3315) | ⚠️ **Untested** — needs a `display_setup.py` file |
-| Standalone / breakout TFTs (#2050, #1743, #1770, #4311) | ⚠️ **Untested** — needs a `display_setup.py` file |
-| STEMMA QT OLEDs (#326, #938) | ⚠️ **Untested** with the current firmware — needs a `display_setup.py` file; text is small |
-| Wireless display (second board, ESP-NOW) | ✅ **Tested** — has its own ready-made `receiver.py`; see below |
-
-**If you want a display that simply works, choose the #5691** — and if you
-need a bigger or more distant screen, see "Want a bigger wireless display?"
-further down this section.
-
-### Using a separate display — `display_setup.py` (v1.26+)
-
-A display that is not built into the board is set up by **one small extra
-file on the CIRCUITPY drive, `display_setup.py`**. You never edit `code.py`
-for a display, and updating AeroMorse to a new version does not undo your
-display set-up.
-
-1. Copy **`display_setup.example.py`** from the repo to the CIRCUITPY drive
-   and rename the copy **`display_setup.py`**.
-2. Open it. It holds a ready-made block for each display family (3.5" and
-   2.4" FeatherWings, breakout TFTs, OLED). Keep the one
-   for your display and check the pin names against your wiring.
-3. Copy that display's driver library into `/lib` (named in the block, and in
-   the table at the end of this section).
-4. Save. The device restarts.
+## 1. What AeroMorse does
+
+AeroMorse turns a small circuit board into a USB keyboard and mouse that you
+work with Morse code. A short sip is a dot and a short puff is a dash — or,
+with two switches, one switch is the dot and the other is the dash. It plugs
+into the computer with a USB-C cable and needs no drivers. It works on
+Windows, macOS, Linux, iPadOS, Android and ChromeOS. It is a **wired** device:
+Bluetooth is not supported (Appendix L explains why).
+
+It is an open-source project directed by Jim Lubin, a ventilator-dependent
+quadriplegic who has used Morse code for computer access since 1989, and it
+is his own daily device. It was inspired by
+[AirTalker](https://github.com/ATMakersOrg/AirTalker).
 
 What you get:
 
-- **The layout fits itself to the screen.** Text size, row positions and the
-  pressure bar are worked out from the screen's width and height — about
-  20 characters across and 4 rows — so a 480×320 screen gets text twice the
-  size of the built-in one, with nothing to adjust.
-- **A mistake cannot stop the device typing.** If the file has an error, a
-  library is missing or the display does not answer, AeroMorse falls back to
-  the built-in screen (if the board has one) or runs without a screen, and
-  prints the reason in its start-up log.
-- **The same file works on a wireless-display board** — `receiver.py` looks
-  for `display_setup.py` too.
-- The validator checks `display_setup.py` for typing mistakes when it finds
-  one in the folder.
+- **Keyboard** — letters, numbers, punctuation, function keys, modifiers.
+- **Mouse** — movement, clicks, drag, scrolling.
+- **Macros** — phrases and passwords on one code.
+- **Media and app keys** — volume, play / pause, calculator and so on.
+- **Scanning and Switch groups** — for iOS / Android Switch Control and for
+  switch games.
 
-The file's one rule: it must contain `def setup():` and `setup()` must return
-the display. The blocks in the example have **not been run on real
-hardware** — they are written from each display's documentation — so treat
-them as a starting point, and please report what works.
+These are arranged in ten groups; Appendix A explains them. Every code can
+be changed in one file, `morse_map.py`. Darci USB users can start from
+`morse_map_darci.py` and keep their familiar codes.
 
-Boards with a built-in screen (#5691, #5483, #5300) must **not** have a
-`display_setup.py` — they need nothing.
+You do not need to know Morse code to begin. A printed cheat sheet, and a
+help window on the computer, show every code.
 
-### Understanding the columns
+**The parts for the standard build cost about $42** at Adafruit's prices in
+October 2026, not counting a USB cable, shipping, or an enclosure.
 
-- **Form factor:** a FeatherWing plugs directly onto the Feather with no
-  wiring — **but only onto a Feather that has header pins soldered on**.
-  A breakout / standalone display needs 7 wires, soldered at the display end.
-- **Interface:** SPI displays have no I²C address conflicts with the sensor.
-- **Resolution:** Higher = more text/detail. The Morse buffer, group name, last
-  action, and status line all fit comfortably on 320×240 or larger.
+> **How this guide was made, and what is tested.** Jim directs the project
+> and decides how it works; the firmware and this guide are written by
+> Claude (Anthropic) under his direction. The **standard build in section 2
+> is the one Jim uses every day**. Each choice after that says plainly
+> whether it has been built and tested. Hardware that nobody on the project
+> has built is in the appendices, marked untested. If you build something,
+> please report how it went in a GitHub issue.
 
----
-
-### Built-in display — no separate display needed
-
-| Board | # | Display size | Resolution | Screen orientation | URL |
-|-------|---|-------------|-----------|-------------------|-----|
-| ESP32-S3 TFT Feather | [5483](https://www.adafruit.com/product/5483) | 1.14" | 240×135 colour | Faces up — same side as components | https://www.adafruit.com/product/5483 |
-| ESP32-S3 Reverse TFT Feather | [5691](https://www.adafruit.com/product/5691) | 1.14" | 240×135 colour | Faces down — opposite side to components | https://www.adafruit.com/product/5691 |
-| ESP32-S2 TFT Feather | [5300](https://www.adafruit.com/product/5300) | 1.14" | 240×135 colour | Faces up — same side as components | https://www.adafruit.com/product/5300 |
-
-All three have the display soldered onto the board and accessed via
-`board.DISPLAY` — no wiring, no extra purchase, no library to add.
-
-**Which orientation to choose:**
-- **#5483 (standard)** — screen faces the same direction as the USB port and
-  pins. Best for handheld use or when you want to see the display while working
-  with the board.
-- **#5691 (reverse)** — screen faces the opposite side. Designed for mounting
-  behind a panel with a cutout so only the screen shows through. Useful if you
-  want to build AeroMorse into an enclosure.
-- **#5300 (ESP32-S2)** — same orientation as #5483 but older chip. Only choose
-  it if #5483 and #5691 are both unavailable.
-
-All three are functionally identical for AeroMorse.
-
-> **Code file:** #5483, #5691, and #5300 all use the **repo root**
-> `code.py` (which drives the built-in TFT via `board.DISPLAY`).
+> **Will this be someone's only way to use a computer?** Consider building
+> two. The second is a spare that works the minute the first fails, and a
+> safe place to try a change. See the Usage Guide, section 6.
 
 ---
 
-### FeatherWing displays (plug directly on Feather — easiest wiring, requires headers)
+## 2. The standard build
 
-> ⚠️ **These need a `display_setup.py` file, and none is tested.** The
-> #3651 has a step-by-step walkthrough in Appendix F (not from a tested
-> build). See "Using a separate display" at the top of §5.
+This is the build the project is designed around and tested on every day. It
+has **no soldering and no tools**: two boards, one cable between them, and a
+tube.
 
-| Display | # | Size | Resolution | Interface | URL |
-|---------|---|------|-----------|-----------|-----|
-| 3.5" TFT Resistive Touch | [3651](https://www.adafruit.com/product/3651) | 3.5" | 480×320 colour | SPI | https://www.adafruit.com/product/3651 |
-| 3.5" TFT Capacitive Touch | [5872](https://www.adafruit.com/product/5872) | 3.5" | 480×320 colour | SPI | https://www.adafruit.com/product/5872 |
-| 2.4" TFT Resistive Touch | [3315](https://www.adafruit.com/product/3315) | 2.4" | 320×240 colour | SPI | https://www.adafruit.com/product/3315 |
+| Part | Adafruit # | Price |
+|------|-----------|-------|
+| ESP32-S3 Reverse TFT Feather — the board, with a small colour screen built in | [#5691](https://www.adafruit.com/product/5691) | $24.95 |
+| LPS33HW pressure sensor — senses the sip and puff | [#4414](https://www.adafruit.com/product/4414) | $12.50 |
+| STEMMA QT cable, 100 mm — joins the two boards | [#4210](https://www.adafruit.com/product/4210) | $0.95 |
+| Silicone tubing, 1 m — the sip-and-puff tube | [#3659](https://www.adafruit.com/product/3659) | $3.50 |
+| USB-C cable that carries **data** (not a charge-only cable) | any | — |
+| **Total** | | **$41.90** |
 
-> **Header pins required on the Feather.** A FeatherWing has two rows of
-> female header sockets on its underside that slide down onto the male pins
-> on top of the Feather. If your Feather shipped as a bare PCB with empty
-> pin holes, those holes must be filled with soldered male headers before a
-> FeatherWing can be used — there is nothing for the wing to grip otherwise.
-> The right part is the pair of **male pin strips that normally come loose
-> in the bag with the Feather**; if yours are missing, any 0.1" break-away
-> male header works ([#392](https://www.adafruit.com/product/392)). (Not the
-> #2886 "Feather header kit" — those are *female* sockets.) Adafruit's own
-> pages for the #5477 and #5691 do not offer a pre-soldered version; some
-> resellers do — look for "headers soldered" in the listing. If you cannot or
-> would rather not solder, choose a STEMMA QT OLED (#326 / #938) or the
-> built-in TFT on #5691 instead — both are plug-and-play with no headers.
+Prices throughout this guide are Adafruit's single-item prices on
+12 October 2026, before shipping and tax. They change; check the product
+page.
 
-> FeatherWings have a touchscreen controller that uses I²C. You will not use
-> touch input with AeroMorse — the display portion works via SPI independently
-> and will not conflict with the pressure sensor.
+**Putting it together takes four steps:**
 
-**Recommended for table mounting: #3651** — largest FeatherWing, bright colour,
-plugs straight on (once headers are in place) with no additional wiring.
+1. Push one end of the STEMMA QT cable into the socket on the Feather. It
+   only fits one way; do not force it.
+2. Push the other end into either socket on the pressure sensor.
+3. Push the tube over the small raised port on the sensor.
+4. Plug the USB-C cable into the Feather and the computer.
 
----
+Then go to **section 9, Software**.
 
-### Standalone / breakout displays (7 wires required)
+Two things to plan for before daily use, neither needed for a first test:
 
-> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** Nothing
-> in this table has been built and tried by the project; see "Which displays
-> are tested" and "Using a separate display" at the top of §5 before buying
-> one.
+- **A strain relief for the tube.** The tube is held on only by friction,
+  and every tug pulls on the sensor. Appendix H shows how to anchor it.
+- **An enclosure.** Appendix H describes the one Jim uses and others.
 
-| Display | # | Size | Resolution | Driver | URL |
-|---------|---|------|-----------|--------|-----|
-| 3.5" TFT with Touch | [2050](https://www.adafruit.com/product/2050) | 3.5" | 480×320 colour | HX8357D | https://www.adafruit.com/product/2050 |
-| 3.2" TFT with Touch | [1743](https://www.adafruit.com/product/1743) | 3.2" | 320×240 colour | ILI9341 | https://www.adafruit.com/product/1743 |
-| 2.8" TFT with Touch | [1770](https://www.adafruit.com/product/1770) | 2.8" | 320×240 colour | ILI9341 | https://www.adafruit.com/product/1770 |
-| 2.0" IPS TFT | [4311](https://www.adafruit.com/product/4311) | 2.0" | 320×240 colour | ST7789 | https://www.adafruit.com/product/4311 |
-
-Standalone displays are useful when you want the display mounted separately from
-the Feather — for example, a display on an arm at eye level with the Feather
-tucked out of the way.
+**If this is the build you want, you can skip sections 3 to 6.** They are
+for people who need something different.
 
 ---
 
-### OLED displays (STEMMA QT plug-and-play, monochrome, no colour)
+## 3. Three choices: input, display, audio feedback
 
-| Display | # | Size | Resolution | Driver | URL |
-|---------|---|------|-----------|--------|-----|
-| 0.96" Monochrome OLED | [326](https://www.adafruit.com/product/326) | 0.96" | 128×64 | SSD1306 | https://www.adafruit.com/product/326 |
-| 1.3" Monochrome OLED | [938](https://www.adafruit.com/product/938) | **1.3"** | 128×64 | SSD1306 | https://www.adafruit.com/product/938 |
+People need different ways to give input, to see what the device is doing,
+and to hear it. Each of these is a separate choice, and any combination
+works. The first row of each table is the standard build.
 
-Both connect via STEMMA QT — no soldering. Both use the same SSD1306 driver, the
-same library, and the same I²C address (0x3C), so the two are interchangeable:
-whatever works for one works for the other.
+**Input — how you make dots and dashes**
 
-**#326 (0.96")** is compact and easy to mount on a tube holder.
-**#938 (1.3")** is 35% larger with identical wiring and code — a better choice
-if you want a slightly bigger display without the complexity of a TFT.
+| Choice | Extra parts | Soldering | Tested |
+|--------|-------------|-----------|--------|
+| **Sip-and-puff** (standard) | none | none | ✅ Jim's daily device |
+| **Switches**, no soldering | a different board (Cytron) and two jacks | none | ✅ built and tested |
+| **Switches** on the standard board | a jack with screw terminals, 3 wires, a splitter cable | 3 joints | ⚠️ not tested |
 
-> **These need a `display_setup.py` file** (see "Using a separate display"
-> at the top of §5; the example file has an OLED block). The layout shrinks
-> itself to 128×64, which makes the text small — about 2 mm tall on the
-> 0.96" screen. (The very first AeroMorse code, "v2", was written for the
-> #326 OLED; it was retired in v1.14.) An OLED has **not been tested** with
-> the current firmware. If you just want it to work, use the #5691.
+**Display — how you see the code as you enter it**
 
----
+| Choice | Extra parts | Soldering | Tested |
+|--------|-------------|-----------|--------|
+| **Built-in screen** (standard) | none | none | ✅ |
+| **A window on the computer** — any size | none (Windows program) | none | ✅ Jim's daily set-up |
+| **A wireless display** — a second small screen placed where you can see it | a second #5691 | none | ✅ Jim's daily set-up |
 
-### Wireless Display — ESP-NOW Remote Mirror
+**Audio feedback — hearing each dot and dash**
 
-Use this option when the **sensor must be behind you** (tube runs behind the
-wheelchair, head support, or mounting arm) but you need to **see the display
-in front of you**. A second small board receives the display state wirelessly
-and shows it on its own screen — no cable runs between them.
+| Choice | Extra parts | Soldering | Tested |
+|--------|-------------|-----------|--------|
+| **None** (standard) — the screen shows everything | none | none | ✅ |
+| **Through the computer's speakers** | none (Windows program) | none | ✅ |
+| **A speaker on the device** | STEMMA Speaker and its cable | 3 joints on a #5691; none on the Cytron board | ✅ on the Cytron board · ⚠️ not tested on a #5691 |
 
-**How it works:** The main board broadcasts the four display fields (group name,
-Morse buffer, last action, status) over **ESP-NOW** once every 100 ms. ESP-NOW
-is a fast, connectionless wireless protocol built into every ESP32 chip — it
-requires no router, no pairing, no configuration. The second board just
-listens. Range is approximately 30 m indoors.
+The choices do not depend on each other. For example, Jim's own set-up is
+sip-and-puff, a wireless display **and** the window on the computer, with
+the built-in screen switched off and no speaker.
 
-> Each board runs **at least CircuitPython 9** (earlier versions did not
-> include the `espnow` module). Beyond that, the two boards are completely
-> independent — see §12 "Wireless display → CircuitPython versions on the
-> two boards" if you need the full compatibility details.
+> **A word on header pins.** Feather boards arrive bare, with two strips of
+> pins loose in the bag. **Nothing in this guide's main sections needs those
+> pins soldered on.** They matter only for some of the untested hardware in
+> the appendices (Appendix M).
 
 ---
 
-#### Option W1 — Second ESP32-S3 Reverse TFT Feather #5691 ⭐ Recommended
+## 4. Choice 1 — Input
 
-**https://www.adafruit.com/product/5691 — $34.95**
+### 4.1 Sip-and-puff (standard)
 
-This is the exact same board as the main AeroMorse unit. The built-in
-240×135 colour TFT mirrors the main display perfectly — same four rows, same
-font size, same group colours (blue for Keyboard, green for Mouse, orange for
-Macro). No extra display hardware to buy or wire.
+A small pressure sensor detects the change in pressure when you sip or puff
+on a tube. No hand or head movement is needed. The parts and the four steps
+are in section 2.
 
-| Advantages | Notes |
-|-----------|-------|
-| Identical display to the main board | Each board runs its own CircuitPython independently |
-| No extra display purchase or wiring | See library note above if versions differ |
-| Full colour with group indicator colours | Can run from USB-C charger/power bank or LiPoly battery |
-| No new libraries needed | Does **not** act as a keyboard (has its own `boot.py`) |
+**Tube.** The Adafruit silicone tubing (#3659, 2.5 mm inside) fits the
+sensor's port snugly and is the easiest choice. Aquarium airline tubing and
+medical sip-and-puff tubing (3/16" inside) also work; if the fit is loose,
+wrap a turn of silicone tape round the port first. Most people use 20 to
+40 cm.
 
-**Powering the receiver wirelessly — LiPoly battery options:**
+**Setting:** none — sip-and-puff is the default.
 
-The #5691 has a built-in JST-PH battery connector and charges over USB-C. Plug in any of the batteries below and the receiver runs completely cable-free.
+Adafruit's own guide to this sensor is good background reading on breath
+technique: <https://learn.adafruit.com/st-lps33-and-circuitpython-sip-and-puff>.
+Read it for ideas only. **Do not install its code** — it is for a different
+board.
 
-| Adafruit # | Capacity | Est. runtime | Size / notes | Price | URL |
-|-----------|---------|-------------|-------------|-------|-----|
-| #3898 | 400 mAh | ~3–5 hrs | **Slim flat pack** — designed to sit flush against the back of a Feather; thinnest option | $6.95 | https://www.adafruit.com/product/3898 |
-| #1578 | 500 mAh | ~4–6 hrs | Small pouch, slightly thicker than #3898; good balance of size and runtime for half-day use | $7.95 | https://www.adafruit.com/product/1578 |
-| #258 | 1200 mAh | ~9–14 hrs | Full-day runtime; fits in a small case or pouch; recommended for all-day use | $9.95 | https://www.adafruit.com/product/258 |
+### 4.2 Switches
 
-> Runtime estimates assume ~80–130 mA active draw (ESP32-S3 + TFT on + ESP-NOW receiving).
-> Recharging happens automatically when the USB-C cable is plugged back in — no separate charger needed.
+Assistive-technology switches have a **3.5 mm mono plug**. Any of them
+works. Two switches is the usual arrangement — one for dot, one for dash —
+and one switch is also possible.
 
-**Files needed on the second board:** See **§9.4.1 Option W1** for the
-complete file tree and step-by-step setup. In short: `receiver.py` →
-`code.py`, the **same** `boot.py` from the sender (auto-detects the
-receiver role because no `morse_map.py` is present), and one library
-folder (`adafruit_display_text/`) under `/lib`. No HID library, no
-Morse map.
+There are two ways to connect them. The first is the one the project has
+built and tested.
+
+#### Way 1 — a board that needs no soldering (tested)
+
+A different board, the **Cytron Maker Feather AIoT S3**, is sold with its
+pins already fitted, so every wire pushes on. **Each switch gets its own
+3.5 mm jack**, so the switches plug straight in and no splitter cable is
+needed. The board has a buzzer built in. It has no screen; use the window on
+the computer (section 5.2).
+
+The complete build — parts, wiring, settings — is in **Appendix K**.
+
+One thing to know before ordering: Cytron ships from Malaysia, and to the
+USA the shipping and import charges came to about twice the price of the
+parts.
+
+#### Way 2 — on the standard #5691, three soldered wires (not tested)
+
+> ⚠️ **Nobody on the project has built this.** It is written from the
+> parts' documentation. If you build it, please report how it went.
+
+One 3.5 mm jack with screw terminals takes both switches. Nothing is
+soldered at the jack; three wires run from it to the Feather and are
+soldered to three pads there.
+
+| Part | Where |
+|------|-------|
+| TRRS jack with screw terminals | Adafruit [#2915](https://www.adafruit.com/product/2915), $2.50 |
+| 3 short wires, about 15 cm | — |
+| For two switches: a **3.5 mm stereo to dual mono cable** | sold online as "3.5mm stereo to dual mono" |
+
+The jack's four screw terminals are labelled for audio, not for switches.
+This is what each one is:
+
+| Label on the jack | Part of the plug | Feather pad | Is |
+|-------------------|------------------|-------------|-----|
+| Left | tip | D5 | dot switch |
+| Right | first ring | D6 | dash switch |
+| GND | sleeve | GND | ground |
+| *(no label)* | second ring | — | leave empty |
+
+The labels are taken from Adafruit's description of the part and have not
+been checked against one. Look at yours before wiring.
+
+**Plugging the switches in:**
+
+| You have | Plug in | Setting |
+|----------|---------|---------|
+| **Two switches** | The stereo to dual mono cable goes into the jack; one switch goes into each of its two sockets. The cable's *left* socket is the dot and its *right* socket is the dash | `SWITCH_MODE = 2` (the default) |
+| **One switch** | The switch goes straight into the jack — no cable | `SWITCH_MODE = 1` |
+
+One jack carries two switches because a stereo plug has two signal contacts
+and a mono plug has one; the cable gives each switch one of the two. This
+is the same arrangement Adafruit describes for its TRRS Trinkey:
+<https://learn.adafruit.com/using-the-trrs-trinkey-as-an-assistive-technology-device/parts-list>.
+That guide also shows a third switch, on the jack's remaining contact.
+AeroMorse does not read a third switch, so leave that out.
+
+> **Do not plug a single mono switch straight into the jack while
+> `SWITCH_MODE` is 2.** A mono plug's long sleeve touches the dash contact
+> as well as ground, so the device would see the dash switch held down all
+> the time. With `SWITCH_MODE = 1` only the dot contact is read and a
+> single switch is fine.
+
+**Setting for either way:** `USE_SENSOR = False` in `config.py`.
+
+Which socket of the cable is the dot, and the warning about a single mono
+plug, follow from how the plugs are made. Like the rest of Way 2 they have
+not been tried on hardware.
+
+#### One switch, or two switches with an "accept"
+
+Besides the usual two-switch mode, AeroMorse can be worked with a single
+switch (a short press is a dot, a long press is a dash), or with two
+switches plus an explicit "accept" gesture. These are the `SWITCH_MODE`
+setting — see section 10.
+
+*Other ways to wire switches — a breadboard, a soldered jack board — are in
+Appendix D.*
 
 ---
 
-#### A window on the computer — "AeroMorse Display" (v1.26+, no hardware)
+## 5. Choice 2 — Display
+
+The display shows four things: the group you are in, the dots and dashes as
+you enter them, the last action, and a status line.
+
+### 5.1 The built-in screen (standard)
+
+The #5691's screen works as soon as the software is installed. There is
+nothing to buy or connect.
+
+**Setting, only if the text is upside down for the way you mount it:**
+`DISPLAY_ROTATION = 0` puts the USB socket on the left of the screen, `180`
+puts it on the right.
+
+### 5.2 A window on the computer
+
+**AeroMorse Display** is a small Windows program that shows the same four
+things in a window on the computer's own monitor. You can make it any size,
+put it anywhere, keep it on top of other programs and make it see-through.
+It needs no extra hardware — the information travels down the USB cable the
+device is already plugged in with.
+
+This is the easy way to get **big text**.
+
+1. In `config.py` set `PC_DISPLAY = True`.
+2. On the computer, start `AeroMorse Display.exe`. It finds the device by
+   itself.
+
+Limits: Windows only, and it shows the AeroMorse plugged into that computer.
+
+Section 5.4 has the details: the window's menu, resizing it, and opening it
+with a Morse code.
+
+### 5.3 A wireless display
+
+Use this when you cannot see the device itself — for example when the tube
+and sensor are behind you. A **second #5691** sits where you can see it and
+shows the same screen, with no cable between the two. Range is about 30 m
+indoors.
+
+| Part | Adafruit # | Price |
+|------|-----------|-------|
+| A second ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | $24.95 |
+| Power for it: a USB charger or power bank… | any | — |
+| …or a battery that plugs into the board: | | |
+| 400 mAh, slim — about 3 to 5 hours | [#3898](https://www.adafruit.com/product/3898) | $6.95 |
+| 500 mAh — about 4 to 6 hours | [#1578](https://www.adafruit.com/product/1578) | $7.95 |
+| 1200 mAh — about 9 to 14 hours | [#258](https://www.adafruit.com/product/258) | $9.95 |
+
+There is nothing to assemble. The second board gets its own small set of
+files — Step 9.4 has them. Both boards need CircuitPython 9 or later.
+
+**Settings on the main device:** `USE_WIRELESS_DISPLAY = True`, and
+`ESPNOW_CHANNEL` the same number on both boards.
+
+### 5.4 The window on the computer, in detail
 
 If the screen you want to see the AeroMorse on is **the computer's own
 monitor**, you need no second board at all. **AeroMorse Display** is a small
@@ -795,7 +365,7 @@ any size and place anywhere.
   AeroMorse*, *Close*. Your
   choices and the window's place are remembered.
 - **It only listens.** The program never sends anything to the device, so it
-  cannot stop or disturb it — unlike Thonny (§9.3). The information travels
+  cannot stop or disturb it — unlike Thonny (Appendix N). The information travels
   over the USB cable the device is already plugged in with.
 - **It cannot get lost off the screen.** The window opens where you left it.
   If that place is no longer on any screen — it was last on a second monitor
@@ -815,7 +385,7 @@ Running from source instead: `python aeromorse_display.py` (needs
 `pyserial`). `--port COM8` listens to one port only; `--demo` shows made-up
 data with no device.
 
-##### Sound through the computer's speakers (v1.27+)
+#### Sound through the computer's speakers
 
 AeroMorse Display can also **play the device's beeps on the computer** — a
 tone for as long as each dot or dash is held (higher for a dot, lower for a
@@ -851,276 +421,124 @@ Good to know:
   tones, a dot clearly shorter than a dash. It has not yet been judged by
   someone who keys Morse by ear at speed. Reports are welcome.
 
-##### Opening and closing the window with a Morse code
+#### Opening and closing the window with a Morse code
 
 One Morse code can switch the window on and off, using the free **AutoHotkey**
 program on the computer. The steps — where to get AutoHotkey, a ready-made
 script, making it start with Windows, and the line for `morse_map.py` — are in
 **[Appendix G — AutoHotkey](#appendix-g--autohotkey-starting-programs-with-a-morse-code)**.
 
-#### Want a bigger wireless display?
+### 5.5 Using more than one, or switching the built-in screen off
 
-The wireless display is the easy place to get a bigger screen: it is a
-separate board, so nothing you try there can affect typing. Since v1.26
-`receiver.py` sizes its text to whatever screen it finds. Your choices, from
-least to most effort:
+The three displays work together in any combination. If you only ever watch
+the wireless display or the computer window, set `USE_DISPLAY = False` to
+switch the built-in screen off. That is not just tidiness: drawing the
+built-in screen takes the device's attention for a moment, and switching it
+off cured missed sips and puffs on Jim's device.
 
-| Choice | Screen | What you need | Status |
-|---|---|---|---|
-| **The computer's own monitor** | any size | The "AeroMorse Display" program above and `PC_DISPLAY = True` — no hardware | ✅ Tested |
-| **A board with a larger built-in colour screen** | 2" and up | Any ESP32-S3 board whose screen CircuitPython drives by itself (`board.DISPLAY`) and whose circuitpython.org page lists the `espnow` module. Copy `receiver.py` as `code.py` exactly as for Option W1 — no display file needed | ⚠️ Untested — should work, please report |
-| **A Feather plus a FeatherWing TFT** (e.g. #5477 + 3.5" #3651) | up to 3.5" | Header pins soldered on the Feather, the display's driver in `/lib`, and a `display_setup.py` (see "Using a separate display" above) next to `receiver.py` | ⚠️ Untested |
-
-Before buying a board for the second row, open its page on
-circuitpython.org and check two things under "Built-in modules available":
-`espnow` is listed, and the board description says the display is
-built in. An ESP32-S2 or ESP32-S3 chip is required for ESP-NOW.
-
-Text size follows the screen: 240×135 gives the size you see on the #5691,
-320×240 the same size with more room around it, 480×320 twice that size.
+*Other displays — a 3.5" screen that plugs onto the board, separate screens
+wired by hand, small OLED screens — are in Appendix F. None has been tested
+by the project, and the window on the computer does the same job with no
+hardware.*
 
 ---
 
-### Display driver library required per display chip
+## 6. Choice 3 — Audio feedback
 
-| Chip | Library | Used by |
-|------|---------|---------|
-| Built-in (board.DISPLAY) | *(none — built in)* | #5691 Reverse TFT Feather — uses the repo root `code.py` |
-| SSD1306 | `adafruit_displayio_ssd1306` | #326 (0.96" OLED) and #938 (1.3" OLED) |
-| ILI9341 | `adafruit_ili9341` | #3315, #1770, #1743 |
-| HX8357D | `adafruit_hx8357` | #3651, #5872, #2050 |
-| ST7789 | `adafruit_st7789` | #4311 |
+Some people enter Morse by ear and want a tone for each dot and dash. Others
+never miss it.
 
-> **Note:** Any display other than a built-in one needs a `display_setup.py`
-> file naming its driver (see "Using a separate display" at the top of §5).
-> Apart from the built-in screen, these combinations are **untested**.
+### 6.1 None (standard)
 
----
+The screen shows every dot and dash. There is nothing to do. If no speaker
+is fitted you can set `USE_SPEAKER = False`, though leaving it on does no
+harm.
 
-## 6. Speaker Options
+### 6.2 Through the computer's speakers
 
-> **No speaker, but want the beeps?** If the device is plugged into a
-> Windows computer, the **AeroMorse Display** program can play them through
-> the computer's speakers instead — no parts, no wiring. See §5 "Sound
-> through the computer's speakers" (v1.27+).
+The same **AeroMorse Display** program (section 5.2) can play the beeps
+through the computer: a tone for as long as each dot or dash lasts, higher
+for a dot and lower for a dash, and a short blip when a code is accepted.
+No parts, no wiring.
 
-The speaker gives audio feedback — a tone for every dot and dash, and a
-different tone when a pattern fires. It is optional but strongly recommended:
-hearing the rhythm helps with timing.
+1. In `config.py` set `PC_DISPLAY = True` and `PC_SOUND = True`.
+2. Start AeroMorse Display, right-click the window and choose
+   *Sound → Quiet, Medium* or *Loud*.
 
-> **All speaker options connect to the same three Feather signals: A0
-> (audio), 3V (power — S1/S3 only), and GND.** If your Feather has header
-> pins they plug in via breadboard or jumper wires. If your Feather has bare
-> PCB pads, the speaker wires are soldered directly to those pads. See
-> §8D for the full wiring procedure including the no-headers path.
+The window does not have to be visible, only running. The sound starts a
+few hundredths of a second after the sip or puff — close to a speaker on
+the device, but not quite as immediate. Use wired speakers; Bluetooth adds
+a noticeable delay. Section 5.4 has more on the sound.
 
-### Option S1 — STEMMA Speaker (easiest) ⭐ Recommended
+### 6.3 A speaker on the device
 
-**Adafruit STEMMA Speaker #3885** — $5.95
-https://www.adafruit.com/product/3885
+For sound that does not depend on the computer, or for someone who keys
+fast and relies on the tone for timing.
 
-- 1 W built-in amplifier, 8 Ω driver, 3-pin JST PH 2 mm socket
-- Powered from 3 – 5 V (the Feather's 3V or USB pin both work)
-- Loud enough to hear across a quiet room
+| Part | Adafruit # | Price |
+|------|-----------|-------|
+| STEMMA Speaker, with its own small amplifier and volume control | [#3885](https://www.adafruit.com/product/3885) | $5.95 |
+| Its cable — **sold separately** | [#4046](https://www.adafruit.com/product/4046) | $0.95 |
 
-> **Cable is sold separately.** Order **Adafruit #4046 — JST PH 2 mm 3-Pin
-> Socket to Color-Coded Cable, 200 mm — $0.95** along with the speaker.
-> https://www.adafruit.com/product/4046
-> One end is the JST PH socket that plugs into the speaker board; the other
-> end is three tinned, color-coded wires that go to the Feather. Without
-> this cable, #3885 is just a bare board with a socket on it.
+The cable plugs into the speaker. Its other end is three bare wires, which
+are soldered to three pads on the Feather:
 
-Wiring (#4046 cable to Feather):
+| Wire | Feather pad |
+|------|-------------|
+| Black | GND |
+| White | A0 |
+| Red | 3V |
 
-| Wire (color) | Feather pin |
-|-------------------|-------------|
-| Black (GND) | GND |
-| White (Audio / signal) | A0 |
-| Red (VIN) | 3V (or USB / 5V) |
+**Setting:** none — the speaker is on by default (`USE_SPEAKER = True`).
 
----
+The Cytron board in section 4.2 has a buzzer built in and needs no speaker.
 
-### Option S2 — Passive piezo with detachable 3.5 mm connection (solderless if the Feather has header pins)
+> ⚠️ **Tested on the Cytron board only.** There the speaker's three wires
+> push onto the board's pins, and it has been built and heard working.
+> Soldering it to a #5691, as described above, has **not** been tried by
+> the project. If you do it, please report how it went.
 
-A passive piezo wired via a **3.5 mm jack-and-plug pair**, so the piezo
-end can be unplugged and swapped. Quieter than Option S1, but every
-connection on the jack and the piezo is a screw terminal. **The only
-possible soldering is at the Feather:** with header pins, two jumper wires
-push on and nothing is soldered; with a bare Feather, two wires are
-soldered to the A0 and GND pads. Any speaker that
-already terminates in a 3.5 mm mono plug also plugs straight into the
-same #2915 jack with no adapter.
-
-> **Important:** Buy a *passive* piezo, not an *active* one. An active
-> buzzer has a built-in oscillator and will only click, not produce a
-> tone. The two piezos below are confirmed passive and work directly
-> from the Feather's A0 pin via PWM — no resistor, no capacitor, no
-> amplifier (a piezo is a high-impedance capacitive load).
-
-#### Parts
-
-| Qty | Item | Adafruit # | Price | Role |
-|-----|------|-----------|-------|------|
-| 1 | TRRS Jack Terminal Block | [#2915](https://www.adafruit.com/product/2915) | $2.50 | Jack on the Feather side (screw terminals) |
-| 1 | 3.5 mm Stereo Audio Plug Terminal Block | [#2790](https://www.adafruit.com/product/2790) | $2.50 | Plug on the piezo side (screw terminals) |
-| 1 | Small Enclosed Piezo with Leads | [#1740](https://www.adafruit.com/product/1740) | $0.95 | Compact piezo, good for tucking in an enclosure |
-| — | *or* Large Enclosed Piezo with Leads | [#1739](https://www.adafruit.com/product/1739) | $0.95 | Slightly larger housing, a little louder |
-| 2 | Female-to-female jumper wires (if Feather has headers) | [#266](https://www.adafruit.com/product/266) | — | Connect #2915 to Feather A0 / GND |
-
-Total: ~$6 if you already own jumpers.
-
-#### Wiring
-
-```
-   Piezo  ──+── red wire ──┐    #2790 plug    #2915 jack
-            ──── black ────┤  ┌───────────┐  ┌───────────┐
-                           ├──┤ Tip       ╞══╡ Tip       ├─── A0
-                           ├──┤ Sleeve    ╞══╡ Sleeve    ├─── GND
-                           └──┤ Ring  (—) │  │ Ring/R2(—)│
-                              └───────────┘  └───────────┘
-                              screw terminals  screw terminals
-```
-
-#### Connection table
-
-| Side | Terminal | Connects to | Notes |
-|---|---|---|---|
-| **#2790 plug** (piezo side) | Tip | Piezo "+" lead (red) | Polarity match |
-| | Sleeve | Piezo "−" lead (black) | |
-| | Ring | — | Leave empty |
-| **#2915 jack** (Feather side) | Tip | Feather **A0** | Audio signal |
-| | Sleeve | Feather **GND** | Audio return |
-| | Ring | — | Leave empty (mono plug) |
-| | Ring 2 | — | Leave empty |
-
-#### Why this works without signal conditioning
-
-The piezo is a capacitive, high-impedance load — direct PWM drive from
-A0 (square wave at 800–1200 Hz) makes the piezo flex audibly with no
-need for a series resistor, AC-coupling capacitor, or amplifier. Same
-electrical path as the bare-lead piezo of older Option S2 builds; the
-jack-and-plug pair just adds detachability.
-
-#### Already have a 3.5 mm-plug piezo or speaker?
-
-If your speaker already terminates in a 3.5 mm mono plug, skip the
-#2790 plug — the existing plug goes straight into the #2915 jack. You
-still need the jack itself wired to A0 / GND on the Feather.
-
-#### Common configurations — how many #2915 jacks you need
-
-| Build | #2915 jacks needed | What each one is wired for |
-|---|---|---|
-| **Sip-and-puff + on-board STEMMA Speaker (#3885)** | **0** | Sensor uses STEMMA QT; speaker uses JST PH (#4046 cable). No 3.5 mm jack involved. |
-| **Sip-and-puff + removable 3.5 mm-plug piezo (Option S2)** | **1** (Audio) | Tip → A0, Sleeve → GND |
-| **AT switches + on-board STEMMA Speaker (#3885)** | **1** (Switches) | Tip → D5, Ring → D6, Sleeve → GND |
-| **AT switches + removable 3.5 mm-plug piezo** | **2** (Switches + Audio) | Jack 1: Tip → D5, Ring → D6, Sleeve → GND  ·  Jack 2: Tip → A0, Sleeve → GND |
-| **AT switches + PAM8302 amp + speaker (Option S3)** | **1** (Switches) | Tip → D5, Ring → D6, Sleeve → GND. PAM8302 wires to A0/3V/GND directly. |
-
-#### Wiring guide for each role
-
-**Switches jack** (one #2915, mono or TRS-Y plugs in):
-
-| #2915 terminal | Feather pin | Plug type used | What it does |
-|---|---|---|---|
-| Tip | **D5** | mono switch *or* TRS Y-splitter ring 1 | Dot input |
-| Ring | **D6** | TRS Y-splitter ring 2 | Dash input |
-| Ring 2 | — | (leave empty) | — |
-| Sleeve | **GND** | mono switch sleeve / TRS sleeve | Ground / switch return |
-
-> A single mono switch plugged into the same jack gives **dot only**
-> (D5 alone). For both dot and dash, use a TRS Y-splitter (mono-to-
-> stereo) with one switch on each branch.
-
-**Audio jack** (one #2915, 3.5 mm-plug piezo plugs in):
-
-| #2915 terminal | Feather pin | Plug type used | What it does |
-|---|---|---|---|
-| Tip | **A0** | piezo's Tip lead | Audio (PWM signal) |
-| Ring | — | (leave empty) | — |
-| Ring 2 | — | (leave empty) | — |
-| Sleeve | **GND** | piezo's Sleeve lead | Audio return |
-
-> If your piezo doesn't already have a 3.5 mm plug, pair it with the
-> #2790 plug-side terminal block — that gives you a solderless chain from
-> the jack to the piezo (see the parts table at the top of Option S2). The
-> two wires to the Feather are solderless only if the Feather has header pins.
-
-#### Connecting either jack to the Feather
-
-Two short wires per jack from the screw terminals to the matching
-Feather pin (or pad, if your Feather has no headers). The §8D speaker
-assembly already covers the headers-vs-pads choice — same procedure
-for the switches jack.
-
-For builders running **both** jacks (the AT-switches + audio
-combination): wire each jack to its set of pins independently. The
-Tip terminal of the switches jack goes to D5 *only*. The Tip terminal
-of the audio jack goes to A0 *only*. No shared wires between the two
-jacks except GND, which both jacks return to.
+*Other speakers — a piezo on a detachable plug, a separate amplifier board —
+are in Appendix D.*
 
 ---
 
-### Option S3 — Small speaker + separate amplifier board
+## 7. Shopping list
 
-For louder output or a specific speaker size:
+Start with the standard build and add only what your choices need.
 
-- **Adafruit Mono 2.5 W Class D Amplifier PAM8302 #2130**
-  https://www.adafruit.com/product/2130
-- Any small 4 Ω or 8 Ω speaker (3 W or less)
-- Amplifier A+ → A0, A− → GND, VIN → 3V, GND → GND
-- Speaker connects to the amplifier output terminals
+| For | Buy | Adafruit # | Price |
+|-----|-----|-----------|-------|
+| **Every build** | ESP32-S3 Reverse TFT Feather | #5691 | $24.95 |
+| | USB-C **data** cable | any | — |
+| **Sip-and-puff** (standard) | LPS33HW pressure sensor | #4414 | $12.50 |
+| | STEMMA QT cable, 100 mm | #4210 | $0.95 |
+| | Silicone tubing, 1 m | #3659 | $3.50 |
+| **Switches**, no soldering (tested) | *see Appendix K — a different board replaces the #5691* | — | — |
+| **Switches** on the #5691 (not tested) | TRRS jack with screw terminals | #2915 | $2.50 |
+| | 3 short wires | — | — |
+| | for two switches, a 3.5 mm stereo to dual mono cable | sold online | — |
+| **Wireless display** | a second #5691 | #5691 | $24.95 |
+| | a USB charger or power bank, or a battery | #3898, #1578 or #258 | $6.95 to $9.95 |
+| **Speaker on the device** | STEMMA Speaker | #3885 | $5.95 |
+| | its cable | #4046 | $0.95 |
+| **Window or sound on the computer** | nothing | — | free |
+| **Recommended extras** | Nylon screw and stand-off set, M2.5 — white | #3658 | $14.95 |
+| | *or* the same set in black | #3299 | $16.95 |
+| | An enclosure and a tube strain relief | Appendix H | — |
 
-> **This option involves soldering.** The amplifier board's own pin strip
-> and screw terminal are supplied loose, and its four wires to the Feather
-> are soldered to the pads unless the Feather has header pins. Choose
-> Option S1 or S2 for less soldering.
+**What the common builds add up to** (Adafruit parts only):
 
----
+| Build | Parts | Total |
+|-------|-------|-------|
+| Standard: sip-and-puff, built-in screen | #5691, #4414, #4210, #3659 | $41.90 |
+| Standard plus a wireless display on a charger | the above and a second #5691 | $66.85 |
+| Standard plus a speaker | the above standard build, #3885 and #4046 | $48.80 |
 
-## 7. Complete Parts Lists
+To check that a USB cable carries data: plug the board in with it. If a
+drive appears on the computer, it does.
 
-Pick one item from each section. Everything in **Core hardware** is always
-required.
-
-> **Not in these lists: an enclosure.** The lists cover the electronics. A
-> box to hold them, and a strain relief for the air tube, are extra and are
-> not priced here — see **Appendix H**. Plan for them before the device
-> goes into daily use.
-
----
-
-### Core hardware (always required)
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | Feather microcontroller (see Section 3) | #5691 recommended (screen built in) | https://www.adafruit.com/product/5691 |
-| 1 | USB-C cable — **data + power** (not charge-only) | any | — |
-
-> To confirm a USB cable transfers data: plug it in; if a drive appears on your
-> computer, it is a data cable. Charge-only cables show nothing.
-
-> **Header pins.** Most Feathers arrive as a bare board with two male pin
-> strips loose in the bag — nothing is soldered. Whether you need them
-> soldered on depends on what you choose below:
->
-> | You choose | Header pins on the Feather |
-> |---|---|
-> | #5691 + sip-and-puff sensor (STEMMA QT cable) | **Not needed** — nothing is soldered at all |
-> | AT switches on the #2915 terminal block, speaker S1 / S2 | Not needed, but then 2–3 wires are soldered to the Feather's pads. With pins, jumper wires push on instead |
-> | A FeatherWing display | **Required** |
-> | A breadboard (switch Option B1) | **Required** |
->
-> See §3 "Building with no header pins" for the full table.
-
----
-
-### Mounting hardware (optional, but you will want it)
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | Nylon screw and stand-off set, M2.5 — black | #3299 | https://www.adafruit.com/product/3299 |
-| — | *or* the same set in white | #3658 | https://www.adafruit.com/product/3658 |
+### Mounting hardware
 
 One set is far more than one device needs — a few hundred pieces: M2.5
 screws 4, 6 and 10 mm long, nuts, and hex stand-offs from 6 to 12 mm — and
@@ -1131,159 +549,12 @@ the same parts; pick whichever suits your case. M2.5 fits the sensor board
 and the Feather's two larger mounting holes; the Feather's two smaller holes
 take M2 screws, which are not in this set.
 
----
-
-### Input method — choose ONE
-
-#### Sip-and-Puff sensor parts
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | LPS33HW Water-Resistant Pressure Sensor — STEMMA QT | #4414 | https://www.adafruit.com/product/4414 |
-| 1 | STEMMA QT 4-pin cable 100 mm | #4210 | https://www.adafruit.com/product/4210 |
-| 1 m | Silicone Tubing — 2.5 mm ID, 4.7 mm OD (recommended) | #3659 | https://www.adafruit.com/product/3659 |
-| — | *or* Aquarium airline tubing — 3/16" ID, 5/16" OD | — | pet store / hardware store |
-
-#### AT switch — breadboard (the Feather must have header pins)
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | Half-Size Breadboard | #64 | https://www.adafruit.com/product/64 |
-| 1 | Breadboard-Friendly 3.5 mm Stereo Jack | #1699 | https://www.adafruit.com/product/1699 |
-| 3 | Short male-to-male jumper wires | — | — |
-
-**Alternative — two jacks, no Y-splitter:**
-Instead of one jack + a Y-splitter, you can use **two #1699 jacks** — one per
-switch. Each switch plugs directly into its own dedicated jack. This is
-slightly simpler to wire and removes the Y-splitter from the parts list.
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | Half-Size Breadboard | #64 | https://www.adafruit.com/product/64 |
-| **2** | Breadboard-Friendly 3.5 mm Stereo Jack | #1699 | https://www.adafruit.com/product/1699 |
-| 4 | Short male-to-male jumper wires | — | — |
-
-Wiring with two jacks:
-
-| Jack | Leg | Feather pin |
-|------|-----|-------------|
-| Jack 1 (dot switch) | TIP | D5 |
-| Jack 1 (dot switch) | SLEEVE | GND |
-| Jack 2 (dash switch) | TIP | D6 |
-| Jack 2 (dash switch) | SLEEVE | GND |
-
-The RING leg on each jack is left unconnected. Both SLEEVE legs can share the
-same GND pin on the Feather, or use two separate GND holes (the Feather has
-several GND pins — any of them work).
-
-#### AT switch — soldered TRRS breakout
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | TRRS Jack Breakout Board | #5764 | https://www.adafruit.com/product/5764 |
-| 4 | Short wires ~8 cm | — | — |
-
-#### AT switch — #2915 TRRS Terminal Block (no breadboard) ⭐ Recommended for #5691
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | TRRS Jack Terminal Block | #2915 | https://www.adafruit.com/product/2915 |
-| 3 | Female-to-female jumper wires (if Feather has header pins) | #266 | https://www.adafruit.com/product/266 |
-| — | *or* 3 short wires ~15 cm + soldering iron (if no header pins) | — | — |
-
----
-
-### Display — choose ONE
-
-> **If you chose the #5691 Reverse TFT Feather, skip this section entirely —
-> the display is already part of that board.**
-
-> ⚠️ **Every display in this table needs a `display_setup.py` file, and none
-> has been tested by the project** (the #3651 has written instructions in
-> Appendix F). Read "Which displays are tested" in §5 before ordering.
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | 3.5" TFT FeatherWing Resistive (largest; **Feather needs header pins**) | #3651 | https://www.adafruit.com/product/3651 |
-| — | *or* 3.5" TFT FeatherWing Capacitive (**Feather needs header pins**) | #5872 | https://www.adafruit.com/product/5872 |
-| — | *or* 2.4" TFT FeatherWing Resistive (**Feather needs header pins**) | #3315 | https://www.adafruit.com/product/3315 |
-| — | *or* 3.5" TFT Breakout (standalone, needs 7 soldered wires) | #2050 | https://www.adafruit.com/product/2050 |
-| — | *or* 2.8" TFT Breakout (standalone) | #1770 | https://www.adafruit.com/product/1770 |
-| — | *or* 1.3" OLED — STEMMA QT (larger OLED; plugs in, no header pins) | #938 | https://www.adafruit.com/product/938 |
-| — | *or* 0.96" OLED — STEMMA QT (compact; plugs in, no header pins) | #326 | https://www.adafruit.com/product/326 |
-
-**If you choose the OLED #326**, you also need:
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | STEMMA QT 4-pin cable 400 mm | #5385 | https://www.adafruit.com/product/5385 |
-
----
-
-### Wireless display (optional, for remote viewing)
-
-> **Skip this section if you will view the display on the main board.**
-> Only needed when the sensor is mounted out of sight and you need a
-> separate display in front of you.
-
-#### Option W1 — Second Reverse TFT Feather (recommended)
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| 1 | ESP32-S3 Reverse TFT Feather | #5691 | https://www.adafruit.com/product/5691 |
-| 1 | USB-C cable + power bank or charger | — | Powers the display board (if not using a battery) |
-
-**Optional — run the receiver completely wireless (choose one battery):**
-
-| Qty | Item | Adafruit # | Est. runtime | URL |
-|-----|------|-----------|-------------|-----|
-| 1 | LiPoly Battery 400 mAh — slim flat pack | #3898 | ~3–5 hrs | https://www.adafruit.com/product/3898 |
-| — | *or* LiPoly Battery 500 mAh | #1578 | ~4–6 hrs | https://www.adafruit.com/product/1578 |
-| — | *or* LiPoly Battery 1200 mAh | #258 | ~9–14 hrs | https://www.adafruit.com/product/258 |
-
----
-
-### Speaker — choose ONE (optional but recommended)
-
-| Qty | Item | Adafruit # | URL |
-|-----|------|-----------|-----|
-| **Option S1** | STEMMA Speaker | #3885 | https://www.adafruit.com/product/3885 |
-| | JST PH 3-pin Socket to Color-Coded Cable, 200 mm (required with #3885) | #4046 | https://www.adafruit.com/product/4046 |
-| **Option S2** | TRRS Jack Terminal Block (Feather side) | #2915 | https://www.adafruit.com/product/2915 |
-| | 3.5 mm Stereo Audio Plug Terminal Block (piezo side) | #2790 | https://www.adafruit.com/product/2790 |
-| | Small Enclosed Piezo with Leads (passive) | #1740 | https://www.adafruit.com/product/1740 |
-| | *or* Large Enclosed Piezo with Leads (passive, louder) | #1739 | https://www.adafruit.com/product/1739 |
-| **Option S3** | PAM8302 Amplifier + small 8 Ω speaker | #2130 | https://www.adafruit.com/product/2130 |
-
----
-
 ### Tools
 
-> **Software tools (Thonny etc.) are covered in §9.3 "Install Thonny" — they
-> belong with the software-install steps, not the parts list.**
-
-#### Hardware tools — solderless build (Option B1 breadboard)
-
-**If your Feather already has header pins soldered:** No special tools needed —
-the pins press straight into the breadboard.
-
-**If your Feather has no header pins (bare holes):** You have two options:
-
-| Option | What to do | Cost |
-|--------|-----------|------|
-| **Get headers soldered** | Take the Feather and the included loose header strip to a local makerspace, library maker lab, or electronics repair shop — most will solder headers for free or a few dollars. This is the most reliable long-term solution. | Free–$5 |
-| **Order with headers pre-installed** | Some resellers sell Feather boards with the headers already soldered — look for "headers soldered" in the listing. Adafruit's own pages for the #5691 and #5477 do not offer this. | Varies |
-
-> **Why not test hook clips?** Test hook clips (EZ-hook / Goupchn style)
-> need something cylindrical to hook around — a wire lead, header pin, or
-> IC leg. They cannot reliably grip a flat through-hole pad: there is
-> nothing protruding for the hook to bite, and the hook is too large to
-> engage inside the 0.7–1.0 mm through-hole. They will slide off with the
-> lightest tug. Use one of the two options above instead.
-
----
-
-#### Hardware tools — soldered build (Option B2 TRRS breakout, or soldering headers)
+**The standard build needs no tools.** The two soldered choices — switches
+on the standard board, and a speaker — need the tools below. If you do not
+own them, many makerspaces, library maker labs and repair shops will solder
+three wires for little or nothing.
 
 | Tool | Notes | Adafruit # | URL |
 |------|-------|-----------|-----|
@@ -1296,9 +567,7 @@ the pins press straight into the breadboard.
 > **New to soldering?** Adafruit has a free beginner's guide:
 > https://learn.adafruit.com/adafruit-guide-excellent-soldering
 
----
-
-#### Useful for any build (optional but handy)
+**Useful for any build:**
 
 | Tool | Purpose | Notes |
 |------|---------|-------|
@@ -1309,299 +578,51 @@ the pins press straight into the breadboard.
 
 ---
 
-## 8. Step-by-Step Assembly
+## 8. Putting it together
 
-### Before you start
+Do the parts that match your choices. Nothing needs to be plugged into the
+computer until the end.
 
-Lay out all your parts. Do not plug anything in yet.
+**Sip-and-puff** — the four steps in section 2.
 
-**Do you need header pins on the Feather?** Only for some builds. The
-recommended build — #5691 with the sip-and-puff sensor on a STEMMA QT cable
-— needs **no header pins and no soldering**. Header pins are *required*
-for a FeatherWing display or a breadboard, and they turn the 2–3 soldered
-wires of the switch jack and the speaker into push-on jumper wires. If your
-build needs them and your board came bare (most do), the pins must be
-soldered on before you start; many local makerspaces or electronics shops
-will do this for free if you ask.
+**Switches, no soldering** — Appendix K.
 
----
+**Switches on the #5691** *(not tested)*
 
-### Step 8A — Connect the display
+1. Strip both ends of three wires.
+2. Screw one end of each into the **Left**, **Right** and **GND** terminals
+   of the jack. Leave the unlabelled terminal empty.
+3. Solder the other ends to the Feather's pads: Left to **D5**, Right to
+   **D6**, GND to **GND**. The pad names are printed on the board.
+4. Two switches: plug the stereo to dual mono cable into the jack, and a
+   switch into each of its sockets. One switch: plug it straight into the
+   jack and set `SWITCH_MODE = 1`.
 
-> The #5691's built-in screen needs no connecting — skip to Step 8B. The
-> displays below are **untested with AeroMorse** and also need a
-> `display_setup.py` file before they show anything (§5 "Using a separate
-> display").
+**Wireless display** — nothing to assemble. Stand the second board where
+you can see it and give it power.
 
-#### If you chose a FeatherWing display (#3651, #5872, or #3315)
+**Speaker on the device**
 
-**The Feather must already have its header pins soldered on.** A bare
-Feather cannot be attached to a FeatherWing.
+1. Plug the cable into the speaker.
+2. Solder its three bare wires to the Feather's pads: black to **GND**,
+   white to **A0**, red to **3V**.
 
-1. Hold the FeatherWing with the display facing up.
-2. Line up the Feather's two rows of header pins with the two rows of
-   sockets on the back of the FeatherWing.
-3. Press firmly and evenly until the two boards sit flush. The pins should
-   go in all the way.
+**Window or sound on the computer** — nothing to assemble.
 
-That is all — no wires needed.
-
-#### If you chose the OLED #326
-
-1. Plug one end of the **100 mm STEMMA QT cable** into the STEMMA QT port on
-   the Feather. The connector is keyed and only fits one way — do not force it.
-2. Plug the other end into either STEMMA QT port on the **LPS33HW sensor**.
-3. Plug one end of the **400 mm STEMMA QT cable** into the remaining port on the
-   LPS33HW.
-4. Plug the other end into the STEMMA QT port on the **OLED** (#326).
-
-Chain: **Feather → 100 mm cable → LPS33HW → 400 mm cable → OLED**
-
-#### If you chose a standalone TFT breakout (#2050, #1770, etc.)
-
-You need 7 short wires, one for each row of the table. **This is a
-soldering job:** the wires are soldered at the display (breakouts arrive
-with their pin strip loose), and at the Feather they are soldered to the
-pads — or, if the Feather has header pins, pushed onto them with female
-jumper wires:
-
-| Display pin | Feather pin |
-|-------------|-------------|
-| SCK | SCK |
-| MOSI (or SI) | MOSI |
-| CS | D9 |
-| DC | D10 |
-| RST | D11 |
-| GND | GND |
-| VIN | 3V |
-
-> Pin labels vary slightly between breakout boards. Match by function name, not
-> physical position. Refer to the Adafruit product guide for your specific board.
+When the parts are together, go on to the software.
 
 ---
 
-### Step 8B — Connect the pressure sensor (sip-and-puff only)
+## 9. Software
 
-If you are using AT switches instead, skip this step.
+Three steps, the same for every build: put CircuitPython on the board, copy
+a few libraries, copy the AeroMorse files. A fourth step is only for a
+wireless display.
 
-**If you also have the OLED** the sensor is already in the STEMMA QT chain from
-Step 8A. No extra wiring needed.
-
-**If you are using a TFT FeatherWing or standalone TFT** (no OLED in the chain):
-
-1. Plug the **100 mm STEMMA QT cable** into the Feather's STEMMA QT port.
-2. Plug the other end into either port on the **LPS33HW sensor**.
-
-The sensor I²C address is 0x5C — it will not conflict with any display.
-
-**If your board has no STEMMA QT port** (e.g. the Feather nRF52840 Express),
-wire the sensor to the board's I²C pins instead. Which cable depends on the
-Feather:
-
-- **Feather with header pins, not in a breadboard:** a STEMMA QT cable with
-  **female sockets** ([#4397](https://www.adafruit.com/product/4397)) — the
-  sockets push onto the pins.
-- **Feather standing in a breadboard:** a STEMMA QT cable with **male pins**
-  ([#4209](https://www.adafruit.com/product/4209)) — the pins push into the
-  breadboard rows beside the Feather.
-- **Bare Feather, no header pins:** cut one end off a STEMMA QT cable and
-  solder its four wires to the pads.
-
-
-| LPS33HW (STEMMA QT wire) | Feather pin |
-|--------------------------|-------------|
-| Red — power | **3V** |
-| Black — ground | **GND** |
-| Blue — SDA (data) | **SDA** |
-| Yellow — SCL (clock) | **SCL** |
-
-No config change is needed. From firmware **v1.4**, `code.py` uses
-`board.STEMMA_I2C()` when the board has a STEMMA QT port and otherwise falls
-back to `board.I2C()` on the SDA/SCL pins — the serial console prints a note
-when it does. (Earlier firmware crashed at startup on such boards.)
-
-**Attach the sip-and-puff tube:**
-
-Push one end of the tubing over the small raised nipple on the top of the
-LPS33HW board. The fit should be snug. Cut the other end at a comfortable
-length and place it where you can sip and puff into it naturally.
-
-> **Give the tube a strain relief before relying on the device.** Pushed on
-> like this, the tube is held only by friction on a port a few millimetres
-> tall, and a tug on the tube pulls straight on the sensor. An enclosure
-> that anchors the tube is best; a cable tie is the minimum. See
-> **Appendix H — Enclosure and air-tube strain relief**.
-
----
-
-### Step 8C — Connect the AT switches (switch mode only)
-
-If you are using the sip-and-puff sensor instead, skip this step.
-
-#### Option B1 — Breadboard
-
-See [Appendix D — Breadboard Wiring Walkthrough](#appendix-d--breadboard-wiring-walkthrough)
-for the full step-by-step procedure with diagrams.
-
-#### Option B2 — TRRS breakout (soldered)
-
-1. Solder a short wire to each pad: T (red), R1 (blue), S (black). Leave R2
-   bare.
-2. Connect the other ends to the Feather — solder each to its pad, or, if
-   the Feather has header pins, use wires with a female socket end and push
-   them onto the pins:
-
-| Wire colour | Feather pin |
-|-------------|-------------|
-| Red (T) | D5 |
-| Blue (R1) | D6 |
-| Black (S) | GND |
-
-3. Plug AT switches directly into the TRRS jack:
-   - Dot switch: tip-to-sleeve connection = D5 goes low = dot
-   - Dash switch: ring1-to-sleeve connection = D6 goes low = dash
-
-#### Option B3 — #2915 TRRS Terminal Block
-
-**If your #5691 has header pins (no soldering at all):**
-
-1. Cut 3 female-to-female jumper wires to a comfortable length (~15 cm).
-2. On the #2915, loosen the Tip, Ring, and Sleeve screws with a small
-   flathead screwdriver.
-3. Insert one wire end into each terminal and tighten the screw firmly.
-4. Plug the other (female) ends directly onto the Feather header pins:
-   - Tip wire → D5
-   - Ring wire → D6
-   - Sleeve wire → GND
-5. Plug AT switches into the #2915 jack.
-
-**If your #5691 has no header pins (3 solder joints):**
-
-1. Cut 3 short wires (~15 cm), strip both ends.
-2. Screw one end of each wire into the Tip, Ring, and Sleeve terminals on
-   the #2915.
-3. Solder the other ends directly to the D5, D6, and GND pads on the
-   Feather.
-4. Plug AT switches into the #2915 jack.
-
----
-
-### Step 8D — Connect the speaker
-
-All three speaker options end at the same three Feather signals: **A0**
-(audio), **3V** (power, only for S1 and S3), and **GND**. How those three
-signals are connected depends entirely on whether your Feather has header
-pins.
-
-#### If your Feather has header pins (or sits in a breadboard)
-
-**STEMMA Speaker #3885 + #4046 cable** — the #4046 cable ends in three
-tinned bare wires (black / white / red). The tinned tips are stiff enough
-to push directly into a breadboard, but for the most reliable contact,
-either (a) solder a short pin or male header onto each wire tip, or
-(b) crimp/solder each wire into a female jumper that slides onto the
-Feather's header pin. Match black → GND, white → A0, red → 3V.
-
-| #4046 cable wire | Feather pin |
-|-------------------|-------------|
-| Black (GND) | GND |
-| White (Audio / signal) | A0 |
-| Red (VIN) | 3V |
-
-**Option S2 piezo (#2915 + #2790 + #1740/#1739)** — the piezo's bare
-leads go into the #2790 plug's screw terminals (red/+ → Tip, black/− →
-Sleeve). The #2790 plug then plugs into the #2915 jack. On the Feather
-side, two short F-F jumper wires from the #2915 terminals to header pins:
-Tip terminal → **A0**, Sleeve terminal → **GND**. No resistor, no cap.
-
-**PAM8302 amplifier (#2130) + speaker** — same pin mapping as the STEMMA
-Speaker (A0, 3V, GND), but soldered to the amp's A+ / VIN / GND pads first.
-Speaker connects to the amp's two output terminals (polarity not critical).
-
-#### If your Feather has no header pins (bare PCB pads)
-
-The tinned ends of the #4046 cable have nothing to plug into on a header-
-less Feather. You have two practical paths — pick one. Both require a
-small soldering job **on the Feather**, but neither is harder than
-soldering header pins.
-
-**Path 1 — Solder the speaker wires directly to the Feather (recommended)**
-
-Cleanest, lowest profile, and the most permanent.
-
-1. Identify the **A0**, **3V**, and **GND** pads on the Feather (printed on
-   the underside).
-2. Plug the #4046 cable's JST PH socket end into the #3885 speaker. The
-   other end of #4046 already has three tinned bare wires — no cutting
-   needed. (For the Option S2 piezo build, strip two short wires for the
-   #2915 → Feather link; the piezo itself stays attached to the #2790
-   plug via screw terminals. For PAM8302, solder the wires to the amp's
-   A+ / VIN / GND pads first.)
-3. Trim each tinned wire to ~15 cm if longer than you need, and re-tin
-   the cut ends with a touch of solder.
-4. Tin each Feather pad with a touch of solder.
-5. Press each tinned wire onto its matching pad and reflow with the iron:
-   - Black (GND) → GND pad
-   - White / Audio → A0 pad
-   - Red (VIN) → 3V pad   *(#3885 and PAM8302 only — piezo skips this)*
-6. Tug each wire gently to confirm it is fixed.
-
-> A 30 W iron, 0.5 mm solder, and a steady hand are plenty. The pads are
-> larger and more forgiving than header-pin holes.
-
-**Path 2 — Solder header pins to the Feather first**
-
-Use this path if you also want headers for the AT switch jumper wires, or
-to make the speaker removable later.
-
-1. Solder header pins onto the Feather's A0, 3V, and GND positions only —
-   you don't need a full row of pins, just the three the speaker needs.
-2. Then follow the "header pins" instructions above:
-   - #3885 STEMMA Speaker — male pins plug into a breadboard, or use three
-     female-to-female jumpers from the speaker cable to the Feather pins.
-   - Option S2 piezo (#2915 + #2790 + piezo) — two F-F jumpers from the
-     #2915 jack's Tip and Sleeve screw terminals to the Feather's A0
-     and GND pins. The piezo itself attaches to #2790's screw terminals.
-   - PAM8302 — wire the amp board to A0 / 3V / GND via female jumpers.
-
-> A local makerspace, library maker lab, or electronics repair shop will
-> usually solder a few pins for free or a few dollars. See §8 "Before you
-> start" for more on getting headers done if you don't own an iron.
-
-**Path 3 — Skip the speaker entirely**
-
-The speaker is optional. The OLED / TFT display already shows every dot,
-dash, group, and last action — many users do not miss the audio at all.
-Set up the rest of the device first; add the speaker later if you decide
-you want it.
-
-#### Quick reference — all paths, all options
-
-| Feather has headers? | #3885 + #4046 cable | Option S2 piezo (#2915 + #2790 + #1740/#1739) | PAM8302 + speaker |
-|---|---|---|---|
-| **Yes (breadboard or pins)** | Tin/cap 3 wire ends, push into breadboard rows for A0/3V/GND, or use F-F jumpers | 2 F-F jumpers from #2915 (Tip / Sleeve) → A0 / GND pins. Piezo wired to #2790 by screw terminals. **Zero soldering.** | Wire amp to A0/3V/GND via breadboard or F-F jumpers |
-| **No (bare pads)** | Solder #4046 tinned wires directly to A0/3V/GND pads | Solder 2 wires from #2915 (Tip / Sleeve) screw terminals to Feather A0 / GND pads. Piezo side still screw-terminal. | Solder amp board to A0/3V/GND pads |
-
----
-
-### Step 8E — Set up the wireless display board hardware (optional)
-
-Skip this step if you are not using a wireless display. Software setup
-for the receiver is covered separately in **§9.4.1**.
-
-#### Option W1 — Second Reverse TFT Feather
-
-No hardware assembly needed — the board ships ready to power on. Mount
-the second Feather face-up where you can see the TFT. Once §9.4.1 is
-complete it will start mirroring the main board's display within one
-second of either board powering on.
-
-Power source: any USB-C phone charger, USB power bank, or one of the
-LiPoly batteries listed in §5 Option W1.
-
----
-
-## 9. Software Installation
+You do not need any special program for this — the board appears on the
+computer as a drive, and you copy files to it. (A program called Thonny can
+show the device's error messages if something goes wrong. It is in
+Appendix N, and it is not needed for a normal install.)
 
 ### Step 9.1 — Install CircuitPython on the Feather
 
@@ -1689,182 +710,17 @@ adafruit_lps35hw.mpy
 > in its `lib/` folder for the exact filenames above. You do not download
 > them separately.
 
-**Copy ONE of these only if you have an external display:**
-
-| Display | Additional driver file |
-|---------|------------------------|
-| OLED #326 or #938 | `adafruit_displayio_ssd1306.mpy` |
-| TFT #3651, #5872, #2050 | `adafruit_hx8357.mpy` |
-| TFT #3315, #1770, #1743 | `adafruit_ili9341.mpy` |
-| TFT #4311 | `adafruit_st7789.mpy` |
-| Built-in TFT (#5691 / #5483 / #5300) | *no extra driver — uses `board.DISPLAY`* |
+**That is everything the standard build needs.** A separate display from
+Appendix F needs one more driver file, named there.
 
 > You only need the items listed above — you do not need to copy the entire
 > bundle, which is very large.
 
 ---
 
-### Step 9.3 — Install Thonny and watch the serial console
+### Step 9.3 — Copy the AeroMorse project files
 
-Before copying the AeroMorse project files in §9.4, install **Thonny** —
-a free, beginner-friendly code editor that doubles as a serial console.
-The serial console is how the Feather reports errors when it tries to
-load `code.py`, the libraries, or `morse_map.py`. **Without watching the
-console, a problem in §9.4 looks like "nothing happens" instead of a
-specific error message you can act on.**
-
-> ⚠️ **Connecting Thonny STOPS AeroMorse.** When Thonny connects to the
-> Feather it interrupts whatever program is running, so `code.py` stops and
-> the device **no longer types or moves the mouse** until it is restarted.
-> During a first build that is harmless — you are using an ordinary keyboard
-> and mouse. But **if AeroMorse is how you operate this computer, connecting
-> Thonny to it locks you out**: the `>>>` prompt in the Shell means AeroMorse
-> is *stopped*, not ready.
->
-> **To get it going again:** have a helper unplug the Feather's USB cable and
-> plug it back in (or click in Thonny's Shell and press Ctrl+D, which needs a
-> working keyboard or mouse). Nothing is lost or damaged.
->
-> **If AeroMorse is your only access:**
->
-> - Do not connect Thonny to it unless a helper, or a second keyboard / mouse
->   you can use, is at hand.
-> - You do not need Thonny to change settings. `config.py` and `morse_map.py`
->   can be edited straight on the CIRCUITPY drive with any text editor
->   (Notepad, Notepad++, …); saving restarts the device by itself.
-> - To only *watch* what the device prints, **untick "Interrupt working
->   program on connect"** in the same window (*Run → Configure interpreter…*,
->   or *Tools → Options → Interpreter*) **before** you choose the port and
->   click OK. Thonny then just listens: the Shell shows each code as you
->   enter it, and AeroMorse keeps typing (confirmed on a device in daily
->   use). Thonny remembers the setting. Even then, the Run button, Ctrl+C
->   in the Shell, and *File → Open → CircuitPython device* all stop
->   AeroMorse, and the Stop / Restart button interrupts it (see below).
-> - When the device restarts (`devicereset`, or a replug) Thonny's Shell
->   prints **"Connection lost — Use Stop/Restart to reconnect"** and then
->   shows nothing more. That message is only about Thonny: AeroMorse itself
->   has restarted and is working normally. To make Thonny listen again,
->   click **Stop / Restart**: on our test device this restarted the program
->   on the Feather (Shell shows `soft reboot`, then the start-up lines — a
->   few seconds of calibration, so do not sip or puff) and AeroMorse carried
->   on working. Because that button does interrupt the program first, have a
->   helper nearby the first time you try it on a device you depend on; if
->   the Shell ends at `>>>` instead, AeroMorse is stopped and needs a replug.
-> - The same applies to any other serial program (PuTTY, `screen`, Mu):
->   sending Ctrl+C to the device stops it.
-
-#### Step 9.3.1 — Download and install Thonny
-
-1. Go to **https://thonny.org** and click the download button for your
-   operating system (Windows, macOS, or Linux).
-2. Run the installer. No special options are needed — accept defaults.
-3. Launch Thonny after installation completes.
-
-> Mu Editor was previously recommended by Adafruit but has announced
-> end-of-life in 2026. Thonny is the current recommended alternative.
-
-#### Step 9.3.2 — Confirm the Feather is plugged in
-
-The Feather should still be connected from §9.1 / §9.2. The **CIRCUITPY**
-drive must be visible in File Explorer (Windows) or Finder (Mac). If it
-isn't, unplug and replug the USB-C cable.
-
-#### Step 9.3.3 — Point Thonny at CircuitPython
-
-1. In Thonny, click **Run → Configure interpreter…**
-   (or click the interpreter name shown at the bottom-right of the
-   Thonny window).
-2. In the top dropdown, select **CircuitPython (generic)**.
-3. In the **Port** dropdown, select the port your Feather is on:
-   - **Windows:** a COM port, e.g. `COM3` or `COM7` — try each if unsure
-   - **macOS:** something like `/dev/cu.usbmodem14101`
-   - **Linux:** something like `/dev/ttyACM0`
-4. Click **OK**. **This stops any program running on the Feather** — on a
-   device that already has AeroMorse on it, typing and the mouse stop
-   working at this moment (see the warning at the top of §9.3).
-5. The bottom **Shell** panel should now show `>>>` — this is the REPL
-   prompt, confirming Thonny is talking to the Feather. While `>>>` is
-   showing, AeroMorse is not running; press Ctrl+D in the Shell (§9.3.5) or
-   replug the USB cable to start it again.
-
-> **Can't find the right port?**
-> Windows: open Device Manager → Ports (COM & LPT) — the Feather appears
-> as "USB Serial Device" or "CircuitPython CDC Control".
-> Mac: open Terminal and type `ls /dev/cu.*` — look for `usbmodem`.
-
-#### Step 9.3.4 — Leave the Shell panel visible
-
-The Shell panel at the bottom of the Thonny window will display
-everything `code.py` prints (errors, calibration messages, debug output).
-Keep this panel visible while you complete §9.4. If a file copy fails,
-or a library is missing, the Shell will print an exact error message
-naming the file and line number — much easier to act on than guessing.
-
-A healthy startup after §9.4 looks like this in the Shell:
-
-```
-Calibrating — do not sip or puff ...
-Baseline: 1013.241  sip<1008.241  puff>1018.241
-Calibration complete — ready for input.
-```
-
-If you see a red `Traceback (most recent call last):` line instead, the
-last line of the traceback names the problem (e.g.
-`ImportError: no module named 'adafruit_lps35hw'` — means that library
-file is missing from `/lib`; re-do §9.2). Note: in some Thonny versions
-tracebacks render in plain text rather than red.
-
-#### Step 9.3.5 — Capturing a fresh boot trace (Ctrl+D)
-
-The Shell panel only shows messages that fire *while Thonny is
-listening*. The first time you connect, the device has usually already
-booted — the `Calibrating…` and `Baseline:` lines you want to see have
-already scrolled past. You don't need to physically replug the cable or
-hit a reset button to recapture them.
-
-**Click in the Shell panel, then press Ctrl+D.** That sends a CircuitPython
-"soft reset" — the device re-runs `boot.py` and `code.py` from scratch
-and prints everything to the Shell as it happens. Use it any time you:
-
-- want to see the boot output again,
-- have edited `code.py` and want a clean restart (saving normally
-  triggers an auto-reload, but Ctrl+D gives you a confirmed clean run),
-- need to capture a traceback for diagnosing a problem.
-
-**A healthy Ctrl+D in sensor mode looks like:**
-
-```
-soft reboot
-Auto-reload is on. ...
-code.py output:
-Calibrating — do not sip or puff ...
-Baseline: 1013.241  sip<1008.241  puff>1018.241
-Input mode: 2-switch  (1-sw input = dot, 3-sw accept = long_dash)
-Code repeat: off  long-press cycles group: True
-ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
-```
-
-> If `ESP-NOW: init failed (ESP-NOW error 0x3065)` shows up, that's a
-> known CircuitPython 9.0.3 bug — see §12 "Wireless display" for the
-> workaround.
-
-#### Useful Thonny shortcuts
-
-| Action | Shortcut |
-|--------|---------|
-| Save file (and trigger Feather restart) | Ctrl+S / Cmd+S |
-| Stop running program / go to REPL — **AeroMorse stops typing** | Ctrl+C (in Shell) |
-| Restart program from REPL — AeroMorse works again | Ctrl+D (in Shell) |
-| Open file from CIRCUITPY drive | File → Open → CircuitPython device |
-
-> Further Thonny details (REPL examples, alternative editors like VS
-> Code) are in `TOOLS_AND_GUIDES.md`.
-
----
-
-### Step 9.4 — Copy the AeroMorse project files
-
-#### Step 9.4.0 — Download the AeroMorse software (do this first)
+#### Download the AeroMorse software (do this first)
 
 The AeroMorse firmware (`code.py`, `boot.py`, `morse_map.py`, `config.py`
 and the wireless-receiver files) is **not** part of the Adafruit library
@@ -1906,7 +762,7 @@ latest, correct files.
 
 **The repo root `code.py` is the active firmware** — it drives the built-in
 240×135 colour TFT of the #5691 Reverse TFT, #5483 and #5300 with no extra
-file, and a separate display through an optional `display_setup.py` (see §5).
+file, and a separate display through an optional `display_setup.py` (see Appendix F).
 
 Copy these four files from the **repo root** to the root of the
 CIRCUITPY drive (not inside any subfolder):
@@ -1920,8 +776,8 @@ morse_map.py
 
 > **`config.py` holds every user-tunable setting** — sensor thresholds,
 > switch mode, code repeat, audio pitches, etc. You edit `config.py`
-> to change behaviour, not `code.py`. See §10 for the full settings
-> reference.
+> to change behaviour, not `code.py`. See section 10, and Appendix E for
+> the full reference.
 
 > **If you are a Darci USB user starting from `morse_map_darci.py`:**
 > Copy `morse_map_darci.py` to the CIRCUITPY drive, then **rename it to
@@ -1944,11 +800,7 @@ CIRCUITPY/
     ├── adafruit_register/                  (always — required by sensor + display libs)
     ├── adafruit_display_text/              (always — text labels on the screen)
     ├── neopixel.mpy                        (always — onboard NeoPixel)
-    ├── adafruit_lps35hw.mpy                (only if using sip-and-puff sensor)
-    ├── adafruit_displayio_ssd1306.mpy      (only if using OLED #326 or #938)
-    ├── adafruit_hx8357.mpy                 (only if using TFT #3651, #5872, or #2050)
-    ├── adafruit_ili9341.mpy                (only if using TFT #3315, #1770, or #1743)
-    └── adafruit_st7789.mpy                 (only if using TFT #4311)
+    └── adafruit_lps35hw.mpy                (only if using sip-and-puff sensor)
 ```
 
 > Built-in TFT boards (#5691 / #5483 / #5300) get nothing extra from the
@@ -1964,10 +816,10 @@ runs the code automatically.
 
 ---
 
-### Step 9.4.1 — Software for the Wireless Display receiver (optional)
+### Step 9.4 — Files for a wireless display (only if you have one)
 
 Skip this step if you are not using the ESP-NOW wireless display
-(§5 "Wireless Display — ESP-NOW Remote Mirror"). The main board you set
+(section 5.3). The main board you set
 up above is already fully functional.
 
 The receiver is a **second** board that runs entirely independently of
@@ -2012,7 +864,7 @@ display → CircuitPython versions on the two boards" for the details.
 
 ---
 
-#### Option W1 — Second ESP32-S3 Reverse TFT Feather #5691 (recommended)
+#### What the wireless display's drive looks like
 
 ```
 CIRCUITPY/    (on the W1 receiver)
@@ -2044,146 +896,30 @@ display-driver `.mpy` is needed.
 
 ---
 
-## 10. Configuration
+## 10. Settings for your choices
 
-All user-tunable settings live in **`config.py`** at the root of the
-CIRCUITPY drive (not in `code.py`). Open `config.py` from the CIRCUITPY
-drive in any plain-text editor (Notepad, Notepad++, …) — connecting Thonny
-is not needed for this and stops AeroMorse (§9.3) — one assignment per line, grouped into nine
-sub-sections (Input, Input mode, Strong sip/puff, Timing, Code repeat,
-Audio, Mouse, Repeat exclusions, Display / wireless). Each line has a
-short trailing hint; for **full per-setting explanations including when
-and how to tune**, see **[Appendix E — Configuration
-Reference](#appendix-e--configuration-reference)** at the end of this
-guide.
+All settings are in one file, `config.py`, on the device's drive. Open it
+in Notepad, change the value, save; the device restarts with the new value.
 
-> **Save the file → the Feather auto-reloads** with the new values.
-> Press **Ctrl+D** in the Shell panel any time to force a fresh restart
-> with full boot output (§9.3.5).
+**For the standard build you change nothing.** These are the only settings
+that follow from the three choices:
 
-### Key settings — quick reference
+| Choice | Setting | Value |
+|--------|---------|-------|
+| Switches | `USE_SENSOR` | `False` |
+| One switch, or two plus "accept" | `SWITCH_MODE` | `1` or `3` (normally `2`) |
+| Window on the computer | `PC_DISPLAY` | `True` |
+| Wireless display | `USE_WIRELESS_DISPLAY` | `True` |
+| | `ESPNOW_CHANNEL` | the same number on both boards |
+| Built-in screen not used | `USE_DISPLAY` | `False` |
+| Built-in screen upside down | `DISPLAY_ROTATION` | `0` or `180` |
+| Sound through the computer | `PC_SOUND` | `True` (with `PC_DISPLAY`) |
+| No speaker on the device | `USE_SPEAKER` | `False` (optional) |
 
-One row per setting with the value shipped in `config.py` and a
-one-line hint. Tables below follow the same order and grouping as the
-file. For the full "what does this do / when do I change it / how does
-it interact with other settings" explanation, jump to Appendix E.
-
-**Device name**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `DEVICE_NAME` | `"AeroMorse"` | Name the computer shows for this device (e.g. Windows *Bluetooth & devices*) instead of "Feather ESP32-S3 Reverse TFT" — e.g. `"AeroMorse Green"`. Up to 40 plain characters, in quotes. Applied by `boot.py` after an **unplug/replug**; if Windows still shows the old name, remove the device there and replug |
-
-**Input — sensor / switches / thresholds**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `USE_SENSOR` | `True` | `False` = AT switches on D5/D6 instead of LPS33HW sensor |
-| `THRESH_SIP` | `2` | hPa below baseline = dot (raise if false triggers) |
-| `THRESH_PUFF` | `2` | hPa above baseline = dash |
-| `DEBOUNCE_SAMPLES` | `3` | Consecutive agreeing readings to confirm a state change (one per loop pass, a few ms each) |
-| `BASELINE_DRIFT_S` | `30` | Auto-zero time constant (s) — baseline tracks ambient pressure drift while idle. `0` disables |
-| `REPEAT_SPLIT_PCT` | `0` | Split on a dip: a sip/puff that drops below this % of its peak and then climbs again counts as two. Fixes two quick sips/puffs running together (`p` → `r`, space → `w`). Try `60`. `0` = off |
-| `DIAG_LOG_S` | `0` | Diagnostics (v1.19+): every this many seconds one `DIAG ...` line of timing figures (loop speed, longest blind moment, screen / wireless / key-send time, sensor reading rate, shortest sip/puff and rest) goes to the USB serial log. The first / worst / last line are saved on `devicereset`, and automatically every 5 minutes while you type (so they survive an unplug); the next run prints them as `DIAG PREV ...` (and the run before that as `DIAG PREV2 ...`). For tracking down "types badly until restarted". `0` = off; try `10` |
-| `DOT_PIN` | `board.D5` | Switch mode only — GPIO for the dot switch |
-| `DASH_PIN` | `board.D6` | Switch mode only — GPIO for the dash switch |
-
-**Input mode — 1 / 2 / 3 switch**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `SWITCH_MODE` | `2` | `1` = single-switch timed, `2` = paddle, `3` = paddle + explicit Accept |
-| `ONE_SWITCH_INPUT` | `"dot"` | Mode 1 only — `"dot"` or `"dash"` |
-| `ONE_SWITCH_DOT_MS` | `200` | Mode 1 only — press ≤ this ms = dot, longer = dash |
-| `THIRD_SWITCH_GESTURE` | `"long_dash"` | Mode 3 only — `"long_dash"` or `"long_dot"` = Accept |
-
-**Strong sip / strong puff**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `STRONG_SIP_ACTION` | `"group 2"` | Action fired by a strong sip; `""` = disabled |
-| `STRONG_PUFF_ACTION` | `"group 1"` | Action fired by a strong puff; `""` = disabled |
-| `THRESH_SIP_STRONG` | `15` | Sensor mode — hPa for strong-sip detection |
-| `THRESH_PUFF_STRONG` | `15` | Sensor mode — hPa for strong-puff detection |
-| `STRONG_OFF_IN_GROUPS` | `(4,)` | Groups where strong sip/puff is off — a hard sip/puff there is just a normal dot/dash. Default Scanning (4), so hard presses can't knock you out of Switch Control. `()` = on everywhere |
-| `SWITCH_GROUP` | `9` | Group that acts as **two plain switches** (no Morse): sip holds `SWITCH_SIP_KEY`, puff holds `SWITCH_PUFF_KEY` for as long as you keep going. `0` = no Switch group. See `AEROMORSE_SWITCH_MODE_GUIDE.md` |
-| `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping in the Switch group (a Keycode name) |
-| `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing in the Switch group |
-| `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before the Switch group returns to `SWITCH_EXIT_GROUP` by itself. `0` = never |
-| `SWITCH_EXIT_PUFF_S` | `5.0` | Or hold one puff this many seconds to leave the Switch group |
-| `SWITCH_EXIT_GROUP` | `1` | Group you return to when leaving the Switch group (1 = Keyboard) |
-| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) For the last this-many seconds before the Switch group is left the screen counts down, e.g. `MOUSE IN 5` — both for the idle exit and while holding the long exit puff. Any sip/puff clears it. `0` = no countdown |
-
-**Timing**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `ACCEPT_DELAY` | `0.3` | Idle seconds before a pattern commits. Lower (`0.2`) = faster; sip-and-puff users often land `0.3`–`0.7` |
-| `MOUSE_ACCEPT_DELAY` | `0.15` | Same as `ACCEPT_DELAY` but **only in Group 2 (mouse)**, so clicks fire sooner while keyboard typing keeps the longer, safer `ACCEPT_DELAY`. Must stay above the gap *between the symbols of a pattern* or mouse patterns split. Lower = snappier clicks. Delete the line to disable (mouse then uses `ACCEPT_DELAY`). |
-| `LONG_PRESS` | `1.0` | Seconds to hold for cycle / Accept gesture |
-
-**Code repeat (Darci-style hold-to-repeat)**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `CODE_REPEAT` | `False` | `True` = Darci-style hold-to-repeat (mode 2 only) |
-| `DOT_REPEAT_MS` | `200` | ms per auto-repeated dot |
-| `DASH_REPEAT_MS` | `600` | ms per auto-repeated dash |
-| `CODE_REPEAT_MAX` | `8` | Cap on symbols per held stream |
-| `LONG_PRESS_CYCLES_GROUP` | `True` | `False` disables long-press group cycling |
-
-**Audio — speaker pitches (Hz) and blip durations (s)**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `USE_SPEAKER` | `True` | (v1.29+) `False` = the device's own speaker / buzzer stays silent; sound through the computer (`PC_SOUND`) is separate |
-| `AUDIO_PIN` | `board.A0` | GPIO the speaker is on |
-| `BEEP_DOT_FREQ` | `1200` | Hz — dot (sip) sidetone |
-| `BEEP_DASH_FREQ` | `800` | Hz — dash (puff) sidetone |
-| `CONFIRM_FREQ` | `1050` | Hz — short blip when an action fires |
-| `GROUP_FREQ` | `550` | Hz — short blip on group change |
-| `BEEP_CONFIRM_S` | `0.06` | Confirm-blip duration (s) |
-| `BEEP_GROUP_S` | `0.14` | Group-change blip duration (s) |
-
-**Mouse — Group 2 movement, speed, clicks**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `MOUSE_SPEED_NORMAL` | `2` | Default speed multiplier in Group 2 |
-| `MOUSE_SPEED_SLOW` | `1` | Speed after `mslow` |
-| `MOUSE_SPEED_FAST` | `3` | Speed after `mfast` |
-| `MOUSE_SPEED_FACTOR` | `2` | Overall scale on all mouse moves |
-| `MOUSE_REPEAT_DELAY` | `0.040` | Seconds between repeat ticks (40 ms) |
-| `MOUSE_CLICK_MOD_DELAY` | `0.030` | Seconds to settle an armed modifier before/after a click (Ctrl+click reliability) |
-| `MOUSE_CLICK_KEEPS_MODS` | `True` | `True` = modifier survives a click (Ctrl+click multi-select); `False` = one-shot |
-| `MOUSE_CLICK_HOLD` | `0.060` | Seconds the button is held per click — a zero-length click is ignored by Windows scrollbar tracks |
-| `MOUSE_CLICK_GAP` | `0.040` | Seconds between the two clicks of a double-click |
-
-**Shift + arrows**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `SHIFT_SELECT` | `True` | (v1.30+) `True` = after Shift, the arrow / Home / End / Page keys keep Shift on, so Shift then arrows highlights text; it lets go at the next other key. `False` = Shift lets go after one key |
-
-**Repeat exclusions**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `NO_REPEAT_KEYS` | `("PAGE_UP", "PAGE_DOWN")` | Keys (by `Keycode` name) that never auto-repeat. Add e.g. `"HOME"`, `"END"`. A combination joined with `+` (`"ALT+TAB"`, v1.20+) blocks exactly that combination. Arrows deliberately omitted |
-| `SECRETS_AUTOLOCK_MIN` | `0` | Only matters with a PIN-locked `macro_secrets.enc` (see README *PIN-locked secrets*). Minutes with no sip/puff before unlocked secrets lock again. `0` = stay unlocked until power-off or Macro `L` (`lock`). Secrets are always locked at power-up |
-
-**Display / wireless**
-
-| Setting | Shipped | Hint |
-|---------|---------|------|
-| `USE_DISPLAY` | `True` | `True` = this board has a built-in screen (the default #5691 Reverse TFT). Set `False` on a board with **no screen** (e.g. a screenless ESP-NOW sender) — the device still types over USB and still broadcasts to a wireless receiver; only the local screen is skipped. A missing screen is also auto-detected, so a screenless board won't crash even if this is left `True`. Also set `False` on a board that **has** a screen when you only watch the wireless display (v1.22+): the built-in screen is blanked and its backlight switched off, removing screen-drawing pauses of 60–100 ms that can swallow a quick sip or puff (the backlight comes back on if the program stops with an error) |
-| `DISPLAY_BRIGHTNESS` | `1.0` | Screen backlight `0.1` (dim) – `1.0` (full); applies on save; never below `0.1` |
-| `DISPLAY_ROTATION` | `0` | Screen orientation in degrees: `0` = USB port on the **left** side of the display, `180` = USB port on the **right** side. `90` / `270` turn the text sideways |
-| `USE_WIRELESS_DISPLAY` | `False` | `True` = ESP-NOW broadcast to a wireless receiver (adds ~80–100 mA). Leave `False` unless you have a receiver |
-| `ESPNOW_CHANNEL` | `1` | 2.4 GHz channel (1–13). Must match `ESPNOW_CHANNEL` in the display's `receiver_config.py` |
-| `KEYBOARD_LAYOUT` | `"US"` | The keyboard layout the **computer** is set to. Leave `"US"` unless symbols come out wrong (`@` and `"` swapped, `#` giving `£` …); then copy that layout's file into `/lib` and name it here, e.g. `"win_uk"` (v1.28+; Appendix I). A missing or faulty file falls back to US |
-| `PC_DISPLAY` | `False` | `True` = also report the display over the USB cable to the **AeroMorse Display** window on the computer (v1.26+; see §5). No extra hardware. Leave `False` unless you use that program |
-| `PC_SOUND` | `False` | `True` = the AeroMorse Display program also plays the beeps (dot / dash tone, action blip) through the **computer's** speakers (v1.27+; see §5) — audio feedback with no speaker on the device. Needs `PC_DISPLAY = True`, and *Sound* switched on in the program's menu |
+Every other setting — how hard a sip must be, how long a pause ends a
+letter, mouse speed, beep pitch and so on — has a sensible value already and
+is explained in **Appendix E**. Tune those once the device is working, one
+at a time.
 
 ### Input modes — what `SWITCH_MODE` does
 
@@ -2196,9 +932,6 @@ it interact with other settings" explanation, jump to Appendix E.
 For a side-by-side comparison of how AeroMorse, Darci USB, morAce, and
 Adap2U each implement 1/2/3-switch input, see
 `MORSE_DEVICES_COMPARISON.md`.
-
-Save the file to the CIRCUITPY drive. The Feather reloads automatically within
-a few seconds.
 
 ---
 
@@ -2496,7 +1229,7 @@ drive — without it you could no longer edit or update the device.
   deliberately blanks the screen and switches its backlight off. Also check
   `DISPLAY_BRIGHTNESS` is not set very low.
 - **Any other display:** it needs a `display_setup.py` file on the drive
-  (§5 "Using a separate display"; Appendix F for the 3.5" FeatherWing).
+  (Appendix F "Using a separate display"; Appendix F for the 3.5" FeatherWing).
   Without one, `code.py` looks only for a screen built into the board. If
   the file is there and the screen is still blank, the start-up log says why
   — look for a line starting `display_setup.py`.
@@ -2514,7 +1247,7 @@ drive — without it you could no longer edit or update the device.
 - Verify wiring: Audio → A0, VIN → 3V, GND → GND.
 - Confirm the #4046 cable is fully seated in the #3885 speaker's JST PH
   socket — this is the most common cause of silent speakers.
-- Open the serial console in Thonny (§9.3). If you see
+- Open the serial console in Thonny (Appendix N). If you see
   `WARNING: pwmio module not available`, you are running an unusual
   minimal CircuitPython build — `pwmio` is present in every standard
   build for every supported board. Re-flash with the standard `.uf2`
@@ -2690,7 +1423,7 @@ channel 1, common ones to try are 6 and 11):
 - Confirm `boot.py` is on the root of the CIRCUITPY drive.
 - Confirm `morse_map.py` is named **exactly** `morse_map.py` (not
   `morse_map_darci.py` or similar) — `code.py` imports it by literal
-  name. See §9.4.
+  name. See Step 9.3.
 
 ---
 
@@ -2759,19 +1492,98 @@ Save the file — the Feather reloads automatically.
 
 ---
 
-## Appendix D — Breadboard Wiring Walkthrough
+## Appendix D — Other switch and speaker wiring
 
-Detailed step-by-step instructions for **§4 Option B1 — Breadboard**.
+The main guide gives one way to connect switches without a different board
+(section 4.2, the jack with screw terminals) and one speaker (section 6.3,
+the STEMMA Speaker). This appendix holds the other ways. It names the
+options by letter: B1, B2 and B3 for switches, S1, S2 and S3 for speakers.
+**B3** is the screw-terminal jack of section 4.2 and **S1** is the STEMMA
+Speaker of section 6.3.
+
+**A note on the #2915 jack's labels.** The text below calls its screw
+terminals Tip, Ring and Sleeve. On the part they are marked for audio: **Left** is the tip, **Right** is the first
+ring, **GND** is the sleeve, and the unlabelled one is the second ring.
+
+> ⚠️ **Not tested by the project.** Unless a part of this appendix says
+> otherwise, nobody on the project has built what it describes. It is
+> written from the parts' documentation. The build the project uses and
+> tests every day is the standard build in section 2. If you build one
+> of these, please report how it went.
+
+### Switches on a breadboard (Option B1)
+
+A build using a half-size breadboard, a single TRRS jack (#1699), and three
+jumper wires. Lowest-cost path and reversible, but bulky and best suited to
+bench testing rather than long-term use.
+
+> ⚠️ **This option needs a Feather with header pins.** The Feather stands
+> *in* the breadboard on its two rows of pins, so "solderless" is true only
+> if those pins are already on the board. Most Feathers ship as a bare
+> board with a loose pin strip in the bag — the pins then have to be
+> soldered on first (about 28 joints), or the board bought "with headers".
+> A bare Feather cannot be used on a breadboard at all.
+>
+> **Not for the recommended #5691.** Its screen is on the underside, so once
+> it is pushed into a breadboard the screen faces down into the breadboard
+> and cannot be read. On a breadboard use the #5483 (screen faces up)
+> instead.
+>
+> **No header pins, or a #5691?** Use **Option B3** below — three wires,
+> and no breadboard.
+
+**Detailed step-by-step breadboard instructions are in
+[Appendix D — Breadboard Wiring Walkthrough](#appendix-d--other-switch-and-speaker-wiring)
+at the end of this guide.**
+
+For most builders Option B3 (#2915 Terminal Block) is simpler and tidier — try
+that first.
+
+#### Parts
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | Half-Size Breadboard | #64 | https://www.adafruit.com/product/64 |
+| 1 | Breadboard-Friendly 3.5 mm Stereo Jack | #1699 | https://www.adafruit.com/product/1699 |
+| 3 | Short male-to-male jumper wires | — | — |
+
+**Alternative — two jacks, no Y-splitter:**
+Instead of one jack + a Y-splitter, you can use **two #1699 jacks** — one per
+switch. Each switch plugs directly into its own dedicated jack. This is
+slightly simpler to wire and removes the Y-splitter from the parts list.
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | Half-Size Breadboard | #64 | https://www.adafruit.com/product/64 |
+| **2** | Breadboard-Friendly 3.5 mm Stereo Jack | #1699 | https://www.adafruit.com/product/1699 |
+| 4 | Short male-to-male jumper wires | — | — |
+
+Wiring with two jacks:
+
+| Jack | Leg | Feather pin |
+|------|-----|-------------|
+| Jack 1 (dot switch) | TIP | D5 |
+| Jack 1 (dot switch) | SLEEVE | GND |
+| Jack 2 (dash switch) | TIP | D6 |
+| Jack 2 (dash switch) | SLEEVE | GND |
+
+The RING leg on each jack is left unconnected. Both SLEEVE legs can share the
+same GND pin on the Feather, or use two separate GND holes (the Feather has
+several GND pins — any of them work).
+
+#### Step-by-step breadboard walkthrough
+
+Detailed step-by-step instructions for **Option B1 — Breadboard**, above.
 Skip this appendix if you chose Option B2 (TRRS breakout) or Option B3 (#2915
 Terminal Block).
 
 > ⚠️ **Before you start: your Feather must have header pins soldered on.**
 > It stands in the breadboard on those pins. If yours came as a bare board
-> (most do), the pins have to be soldered first — see §8 "Before you start"
+> (most do), the pins have to be soldered first — see Appendix M
 > — or choose Option B3, which needs no breadboard. The #5691 Reverse TFT is
 > also a poor fit here: on a breadboard its screen faces down.
 
-### Parts — exactly what to buy
+#### Parts — exactly what to buy
 
 | Qty | Item | URL | Notes |
 |-----|------|-----|-------|
@@ -2783,7 +1595,7 @@ Terminal Block).
 With header pins already on the Feather: no soldering iron, no solder, no
 stripped wires — all connections are push-in.
 
-### Understanding the breadboard
+#### Understanding the breadboard
 
 A breadboard is a plastic block full of small holes. Metal clips inside connect
 certain holes together so you can make circuits by pushing wires into holes
@@ -2812,7 +1624,7 @@ they are now electrically connected without any other wire needed.
 The center gap is a physical break — nothing crosses it automatically. That is
 where the Feather board will sit, bridging the two sides.
 
-### Step 1 — Place the Feather in the breadboard
+#### Step 1 — Place the Feather in the breadboard
 
 The Feather is a long narrow board with a row of pins along each long edge.
 Press it firmly into the breadboard so it sits across the center gap like a
@@ -2843,7 +1655,7 @@ once the board is inserted.
 > **Tip:** Photograph the underside before inserting so you can refer back to
 > the pin names while looking at the top.
 
-### Step 2 — Place the 3.5 mm stereo jack (#1699)
+#### Step 2 — Place the 3.5 mm stereo jack (#1699)
 
 The jack has 4 short metal legs underneath it. Press it into an empty area of
 the breadboard, several columns away from the Feather so there is room to work.
@@ -2866,7 +1678,7 @@ The three legs you will use are labelled on the jack's product page:
 Because each leg is in its own row, you have 4 open holes in that row to
 connect to.
 
-### Step 3 — Connect with jumper wires
+#### Step 3 — Connect with jumper wires
 
 The jumper wires from Adafruit #153 have a male pin on each end that pushes
 into a breadboard hole. You are going to connect three pairs of holes:
@@ -2899,7 +1711,7 @@ The exact column numbers do not matter — what matters is:
   of the same jumper wire**
 - No two wires accidentally share a hole
 
-### Step 4 — Connect your AT switches
+#### Step 4 — Connect your AT switches
 
 You need **one Y-splitter** (3.5 mm mono-to-stereo) to plug two standard AT
 switches into the single stereo jack:
@@ -2910,13 +1722,282 @@ switches into the single stereo jack:
 If you only have one switch, plug it directly into the jack — it will be your
 dot (.) switch.
 
+### Switches on a soldered jack board (Option B2)
+
+Solders three short wires to an Adafruit TRRS Jack Breakout board (T, R1, S
+— Ring 2 is unused). The other ends go to the Feather: **soldered to its
+pads** (3 more joints), or — only if the Feather has header pins — pushed
+onto the pins using wires with a female socket on that end.
+
+Parts needed:
+- Adafruit TRRS Jack Breakout #5764 https://www.adafruit.com/product/5764
+- 3 short wires ~8 cm (different colours help)
+- Soldering iron + solder
+
+| TRRS pad | Feather pin | Wire colour suggestion |
+|----------|-------------|----------------------|
+| T (Tip) | D5 | Red |
+| R1 (Ring 1) | D6 | Blue |
+| S (Sleeve) | GND | Black |
+| R2 | *(no wire — pad left bare)* | — |
+
+> **Both switch options work with the same `code.py`** — set `USE_SENSOR = False`
+> in the configuration section.
+
+**Steps:**
+
+1. Solder a short wire to each pad: T (red), R1 (blue), S (black). Leave R2
+   bare.
+2. Connect the other ends to the Feather — solder each to its pad, or, if
+   the Feather has header pins, use wires with a female socket end and push
+   them onto the pins:
+
+| Wire colour | Feather pin |
+|-------------|-------------|
+| Red (T) | D5 |
+| Blue (R1) | D6 |
+| Black (S) | GND |
+
+3. Plug AT switches directly into the TRRS jack:
+   - Dot switch: tip-to-sleeve connection = D5 goes low = dot
+   - Dash switch: ring1-to-sleeve connection = D6 goes low = dash
+
+### A piezo on a detachable plug (Option S2)
+
+A passive piezo wired via a **3.5 mm jack-and-plug pair**, so the piezo
+end can be unplugged and swapped. Quieter than Option S1, but every
+connection on the jack and the piezo is a screw terminal. **The only
+possible soldering is at the Feather:** with header pins, two jumper wires
+push on and nothing is soldered; with a bare Feather, two wires are
+soldered to the A0 and GND pads. Any speaker that
+already terminates in a 3.5 mm mono plug also plugs straight into the
+same #2915 jack with no adapter.
+
+> **Important:** Buy a *passive* piezo, not an *active* one. An active
+> buzzer has a built-in oscillator and will only click, not produce a
+> tone. The two piezos below are confirmed passive and work directly
+> from the Feather's A0 pin via PWM — no resistor, no capacitor, no
+> amplifier (a piezo is a high-impedance capacitive load).
+
+#### Parts
+
+| Qty | Item | Adafruit # | Price | Role |
+|-----|------|-----------|-------|------|
+| 1 | TRRS Jack Terminal Block | [#2915](https://www.adafruit.com/product/2915) | $2.50 | Jack on the Feather side (screw terminals) |
+| 1 | 3.5 mm Stereo Audio Plug Terminal Block | [#2790](https://www.adafruit.com/product/2790) | $2.50 | Plug on the piezo side (screw terminals) |
+| 1 | Small Enclosed Piezo with Leads | [#1740](https://www.adafruit.com/product/1740) | $0.95 | Compact piezo, good for tucking in an enclosure |
+| — | *or* Large Enclosed Piezo with Leads | [#1739](https://www.adafruit.com/product/1739) | $0.95 | Slightly larger housing, a little louder |
+| 2 | Female-to-female jumper wires (if Feather has headers) | [#266](https://www.adafruit.com/product/266) | — | Connect #2915 to Feather A0 / GND |
+
+Total: ~$6 if you already own jumpers.
+
+#### Wiring
+
+```
+   Piezo  ──+── red wire ──┐    #2790 plug    #2915 jack
+            ──── black ────┤  ┌───────────┐  ┌───────────┐
+                           ├──┤ Tip       ╞══╡ Tip       ├─── A0
+                           ├──┤ Sleeve    ╞══╡ Sleeve    ├─── GND
+                           └──┤ Ring  (—) │  │ Ring/R2(—)│
+                              └───────────┘  └───────────┘
+                              screw terminals  screw terminals
+```
+
+#### Connection table
+
+| Side | Terminal | Connects to | Notes |
+|---|---|---|---|
+| **#2790 plug** (piezo side) | Tip | Piezo "+" lead (red) | Polarity match |
+| | Sleeve | Piezo "−" lead (black) | |
+| | Ring | — | Leave empty |
+| **#2915 jack** (Feather side) | Tip | Feather **A0** | Audio signal |
+| | Sleeve | Feather **GND** | Audio return |
+| | Ring | — | Leave empty (mono plug) |
+| | Ring 2 | — | Leave empty |
+
+#### Why this works without signal conditioning
+
+The piezo is a capacitive, high-impedance load — direct PWM drive from
+A0 (square wave at 800–1200 Hz) makes the piezo flex audibly with no
+need for a series resistor, AC-coupling capacitor, or amplifier. Same
+electrical path as the bare-lead piezo of older Option S2 builds; the
+jack-and-plug pair just adds detachability.
+
+#### Already have a 3.5 mm-plug piezo or speaker?
+
+If your speaker already terminates in a 3.5 mm mono plug, skip the
+#2790 plug — the existing plug goes straight into the #2915 jack. You
+still need the jack itself wired to A0 / GND on the Feather.
+
+#### Common configurations — how many #2915 jacks you need
+
+| Build | #2915 jacks needed | What each one is wired for |
+|---|---|---|
+| **Sip-and-puff + on-board STEMMA Speaker (#3885)** | **0** | Sensor uses STEMMA QT; speaker uses JST PH (#4046 cable). No 3.5 mm jack involved. |
+| **Sip-and-puff + removable 3.5 mm-plug piezo (Option S2)** | **1** (Audio) | Tip → A0, Sleeve → GND |
+| **AT switches + on-board STEMMA Speaker (#3885)** | **1** (Switches) | Tip → D5, Ring → D6, Sleeve → GND |
+| **AT switches + removable 3.5 mm-plug piezo** | **2** (Switches + Audio) | Jack 1: Tip → D5, Ring → D6, Sleeve → GND  ·  Jack 2: Tip → A0, Sleeve → GND |
+| **AT switches + PAM8302 amp + speaker (Option S3)** | **1** (Switches) | Tip → D5, Ring → D6, Sleeve → GND. PAM8302 wires to A0/3V/GND directly. |
+
+#### Wiring guide for each role
+
+**Switches jack** (one #2915, mono or TRS-Y plugs in):
+
+| #2915 terminal | Feather pin | Plug type used | What it does |
+|---|---|---|---|
+| Tip | **D5** | mono switch *or* TRS Y-splitter ring 1 | Dot input |
+| Ring | **D6** | TRS Y-splitter ring 2 | Dash input |
+| Ring 2 | — | (leave empty) | — |
+| Sleeve | **GND** | mono switch sleeve / TRS sleeve | Ground / switch return |
+
+> A single mono switch plugged into the same jack gives **dot only**
+> (D5 alone). For both dot and dash, use a TRS Y-splitter (mono-to-
+> stereo) with one switch on each branch.
+
+**Audio jack** (one #2915, 3.5 mm-plug piezo plugs in):
+
+| #2915 terminal | Feather pin | Plug type used | What it does |
+|---|---|---|---|
+| Tip | **A0** | piezo's Tip lead | Audio (PWM signal) |
+| Ring | — | (leave empty) | — |
+| Ring 2 | — | (leave empty) | — |
+| Sleeve | **GND** | piezo's Sleeve lead | Audio return |
+
+> If your piezo doesn't already have a 3.5 mm plug, pair it with the
+> #2790 plug-side terminal block — that gives you a solderless chain from
+> the jack to the piezo (see the parts table at the top of Option S2). The
+> two wires to the Feather are solderless only if the Feather has header pins.
+
+#### Connecting either jack to the Feather
+
+Two short wires per jack from the screw terminals to the matching
+Feather pin (or pad, if your Feather has no headers). The Appendix D speaker
+assembly already covers the headers-vs-pads choice — same procedure
+for the switches jack.
+
+For builders running **both** jacks (the AT-switches + audio
+combination): wire each jack to its set of pins independently. The
+Tip terminal of the switches jack goes to D5 *only*. The Tip terminal
+of the audio jack goes to A0 *only*. No shared wires between the two
+jacks except GND, which both jacks return to.
+
+### A small speaker with a separate amplifier (Option S3)
+
+For louder output or a specific speaker size:
+
+- **Adafruit Mono 2.5 W Class D Amplifier PAM8302 #2130**
+  https://www.adafruit.com/product/2130
+- Any small 4 Ω or 8 Ω speaker (3 W or less)
+- Amplifier A+ → A0, A− → GND, VIN → 3V, GND → GND
+- Speaker connects to the amplifier output terminals
+
+> **This option involves soldering.** The amplifier board's own pin strip
+> and screw terminal are supplied loose, and its four wires to the Feather
+> are soldered to the pads unless the Feather has header pins. Choose
+> Option S1 or S2 for less soldering.
+
+### Connecting any of the speakers, with and without header pins
+
+All three speaker options end at the same three Feather signals: **A0**
+(audio), **3V** (power, only for S1 and S3), and **GND**. How those three
+signals are connected depends entirely on whether your Feather has header
+pins.
+
+#### If your Feather has header pins (or sits in a breadboard)
+
+**STEMMA Speaker #3885 + #4046 cable** — the #4046 cable ends in three
+tinned bare wires (black / white / red). The tinned tips are stiff enough
+to push directly into a breadboard, but for the most reliable contact,
+either (a) solder a short pin or male header onto each wire tip, or
+(b) crimp/solder each wire into a female jumper that slides onto the
+Feather's header pin. Match black → GND, white → A0, red → 3V.
+
+| #4046 cable wire | Feather pin |
+|-------------------|-------------|
+| Black (GND) | GND |
+| White (Audio / signal) | A0 |
+| Red (VIN) | 3V |
+
+**Option S2 piezo (#2915 + #2790 + #1740/#1739)** — the piezo's bare
+leads go into the #2790 plug's screw terminals (red/+ → Tip, black/− →
+Sleeve). The #2790 plug then plugs into the #2915 jack. On the Feather
+side, two short F-F jumper wires from the #2915 terminals to header pins:
+Tip terminal → **A0**, Sleeve terminal → **GND**. No resistor, no cap.
+
+**PAM8302 amplifier (#2130) + speaker** — same pin mapping as the STEMMA
+Speaker (A0, 3V, GND), but soldered to the amp's A+ / VIN / GND pads first.
+Speaker connects to the amp's two output terminals (polarity not critical).
+
+#### If your Feather has no header pins (bare PCB pads)
+
+The tinned ends of the #4046 cable have nothing to plug into on a header-
+less Feather. You have two practical paths — pick one. Both require a
+small soldering job **on the Feather**, but neither is harder than
+soldering header pins.
+
+**Path 1 — Solder the speaker wires directly to the Feather (recommended)**
+
+Cleanest, lowest profile, and the most permanent.
+
+1. Identify the **A0**, **3V**, and **GND** pads on the Feather (printed on
+   the underside).
+2. Plug the #4046 cable's JST PH socket end into the #3885 speaker. The
+   other end of #4046 already has three tinned bare wires — no cutting
+   needed. (For the Option S2 piezo build, strip two short wires for the
+   #2915 → Feather link; the piezo itself stays attached to the #2790
+   plug via screw terminals. For PAM8302, solder the wires to the amp's
+   A+ / VIN / GND pads first.)
+3. Trim each tinned wire to ~15 cm if longer than you need, and re-tin
+   the cut ends with a touch of solder.
+4. Tin each Feather pad with a touch of solder.
+5. Press each tinned wire onto its matching pad and reflow with the iron:
+   - Black (GND) → GND pad
+   - White / Audio → A0 pad
+   - Red (VIN) → 3V pad   *(#3885 and PAM8302 only — piezo skips this)*
+6. Tug each wire gently to confirm it is fixed.
+
+> A 30 W iron, 0.5 mm solder, and a steady hand are plenty. The pads are
+> larger and more forgiving than header-pin holes.
+
+**Path 2 — Solder header pins to the Feather first**
+
+Use this path if you also want headers for the AT switch jumper wires, or
+to make the speaker removable later.
+
+1. Solder header pins onto the Feather's A0, 3V, and GND positions only —
+   you don't need a full row of pins, just the three the speaker needs.
+2. Then follow the "header pins" instructions above:
+   - #3885 STEMMA Speaker — male pins plug into a breadboard, or use three
+     female-to-female jumpers from the speaker cable to the Feather pins.
+   - Option S2 piezo (#2915 + #2790 + piezo) — two F-F jumpers from the
+     #2915 jack's Tip and Sleeve screw terminals to the Feather's A0
+     and GND pins. The piezo itself attaches to #2790's screw terminals.
+   - PAM8302 — wire the amp board to A0 / 3V / GND via female jumpers.
+
+> A local makerspace, library maker lab, or electronics repair shop will
+> usually solder a few pins for free or a few dollars. See Appendix M for more on getting headers done if you don't own an iron.
+
+**Path 3 — Skip the speaker entirely**
+
+The speaker is optional. The OLED / TFT display already shows every dot,
+dash, group, and last action — many users do not miss the audio at all.
+Set up the rest of the device first; add the speaker later if you decide
+you want it.
+
+#### Quick reference — all paths, all options
+
+| Feather has headers? | #3885 + #4046 cable | Option S2 piezo (#2915 + #2790 + #1740/#1739) | PAM8302 + speaker |
+|---|---|---|---|
+| **Yes (breadboard or pins)** | Tin/cap 3 wire ends, push into breadboard rows for A0/3V/GND, or use F-F jumpers | 2 F-F jumpers from #2915 (Tip / Sleeve) → A0 / GND pins. Piezo wired to #2790 by screw terminals. **Zero soldering.** | Wire amp to A0/3V/GND via breadboard or F-F jumpers |
+| **No (bare pads)** | Solder #4046 tinned wires directly to A0/3V/GND pads | Solder 2 wires from #2915 (Tip / Sleeve) screw terminals to Feather A0 / GND pads. Piezo side still screw-terminal. | Solder amp board to A0/3V/GND pads |
+
 ---
 
 ## Appendix E — Configuration Reference
 
-Per-setting deep explanations for every entry in `config.py`. §10's
-Key Settings table is the quick-reference; this appendix is the
-"what does this actually do and how should I tune it" companion.
+Per-setting deep explanations for every entry in `config.py`. Section 10 lists only the
+settings that follow from your choice of input, display and audio. This
+appendix covers every setting: what it does and how to tune it.
 
 Settings are grouped here in the same order as in `config.py` itself.
 
@@ -3001,7 +2082,7 @@ as the stale baseline drifts further and further from current ambient.
 **`DOT_PIN`** / **`DASH_PIN`** (defaults `board.D5`, `board.D6`).
 GPIO pins for the AT-switch jacks. Only used when `USE_SENSOR = False`.
 Wired via 3.5 mm TRRS jack #1699 (B1/B2) or terminal block #2915 (B3) —
-see Build Guide §4 Option B and §8C.
+see section 4.2.
 
 ### Input mode — 1 / 2 / 3 switch
 
@@ -3264,7 +2345,7 @@ Feather sideways.
 
 **`USE_WIRELESS_DISPLAY`** (default `False`).
 `True` enables the WiFi radio at boot and broadcasts the display state
-via ESP-NOW for an Option W1 receiver to mirror. Default is
+via ESP-NOW for a wireless display to mirror. Default is
 `False` because most builds are a single board — **set it `True` only
 when you actually have a receiver paired.** Adds roughly 80–100 mA to
 the current draw while running. Has no effect on non-ESP32 boards — the
@@ -3290,15 +2371,14 @@ and what is and is not affected.
 **`PC_DISPLAY`** (default `False`, v1.26+).
 `True` makes the device also write its four display fields to the USB
 serial log, as one short line each time something changes, for the
-**AeroMorse Display** program on the computer (§5 "A window on the
-computer"). Nothing is sent as keystrokes, and each line takes about
+**AeroMorse Display** program on the computer (section 5.2). Nothing is sent as keystrokes, and each line takes about
 2 ms — far less than drawing the built-in screen. Leave it `False` if you
 do not use that program; the lines would only clutter the log.
 
 **`PC_SOUND`** (default `False`, v1.27+).
 `True` makes the device also report each beep the moment it starts and
 stops, so the **AeroMorse Display** program can play it through the
-computer's speakers (§5 "Sound through the computer's speakers"). It is the
+computer's speakers (section 6.2). It is the
 way to get audio feedback from a device that has no speaker fitted. It
 needs `PC_DISPLAY = True` (that is how the program finds the device), and
 *Sound* must be switched on in the program's right-click menu. Each report
@@ -3307,7 +2387,277 @@ under Audio.
 
 ---
 
-## Appendix F — Building with #5477 + 3.5" TFT FeatherWing #3651
+## Appendix F — Other displays
+
+The main guide covers three displays, all tested: the screen built into the
+#5691, the window on the computer, and the wireless display (section 5).
+This appendix holds every other screen. **Before buying one, consider the
+window on the computer** (section 5.2): it gives text of any size with no
+hardware at all.
+
+> ⚠️ **Not tested by the project.** Unless a part of this appendix says
+> otherwise, nobody on the project has built what it describes. It is
+> written from the parts' documentation. The build the project uses and
+> tests every day is the standard build in section 2. If you build one
+> of these, please report how it went.
+
+### Which displays are tested
+
+**Only the built-in screen works straight out of the box.** `code.py`
+drives the screen that is part of the board (`board.DISPLAY`) with no extra
+file. Every other display on this page is supported by CircuitPython's
+`displayio` system and *can* be used, by adding one small file — see "Using a
+separate display" below — but the project has not built or tested any of
+them.
+
+| Display | Status |
+|---|---|
+| Built-in screen on the **#5691** Reverse TFT Feather | ✅ **Tested** — the author's daily device. Works as shipped, no code change |
+| Built-in screen on the #5483 / #5300 TFT Feathers | Expected to work as shipped (same `board.DISPLAY`, same size) — not tested by the project |
+| 3.5" TFT FeatherWing #3651 on a #5477 | Needs a `display_setup.py` file; step-by-step in **Appendix F** — written from the parts' documentation, not from a tested build |
+| Other FeatherWings (#5872, #3315) | ⚠️ **Untested** — needs a `display_setup.py` file |
+| Standalone / breakout TFTs (#2050, #1743, #1770, #4311) | ⚠️ **Untested** — needs a `display_setup.py` file |
+| STEMMA QT OLEDs (#326, #938) | ⚠️ **Untested** with the current firmware — needs a `display_setup.py` file; text is small |
+| Wireless display (second board, ESP-NOW) | ✅ **Tested** — has its own ready-made `receiver.py`; see below |
+
+**If you want a display that simply works, choose the #5691** — and if you
+need a bigger or more distant screen, see "Want a bigger wireless display?"
+further down this section.
+
+### Using a separate display — `display_setup.py` (v1.26+)
+
+A display that is not built into the board is set up by **one small extra
+file on the CIRCUITPY drive, `display_setup.py`**. You never edit `code.py`
+for a display, and updating AeroMorse to a new version does not undo your
+display set-up.
+
+1. Copy **`display_setup.example.py`** from the repo to the CIRCUITPY drive
+   and rename the copy **`display_setup.py`**.
+2. Open it. It holds a ready-made block for each display family (3.5" and
+   2.4" FeatherWings, breakout TFTs, OLED). Keep the one
+   for your display and check the pin names against your wiring.
+3. Copy that display's driver library into `/lib` (named in the block, and in
+   the table at the end of this section).
+4. Save. The device restarts.
+
+What you get:
+
+- **The layout fits itself to the screen.** Text size, row positions and the
+  pressure bar are worked out from the screen's width and height — about
+  20 characters across and 4 rows — so a 480×320 screen gets text twice the
+  size of the built-in one, with nothing to adjust.
+- **A mistake cannot stop the device typing.** If the file has an error, a
+  library is missing or the display does not answer, AeroMorse falls back to
+  the built-in screen (if the board has one) or runs without a screen, and
+  prints the reason in its start-up log.
+- **The same file works on a wireless-display board** — `receiver.py` looks
+  for `display_setup.py` too.
+- The validator checks `display_setup.py` for typing mistakes when it finds
+  one in the folder.
+
+The file's one rule: it must contain `def setup():` and `setup()` must return
+the display. The blocks in the example have **not been run on real
+hardware** — they are written from each display's documentation — so treat
+them as a starting point, and please report what works.
+
+Boards with a built-in screen (#5691, #5483, #5300) must **not** have a
+`display_setup.py` — they need nothing.
+
+### Understanding the columns
+
+- **Form factor:** a FeatherWing plugs directly onto the Feather with no
+  wiring — **but only onto a Feather that has header pins soldered on**.
+  A breakout / standalone display needs 7 wires, soldered at the display end.
+- **Interface:** SPI displays have no I²C address conflicts with the sensor.
+- **Resolution:** Higher = more text/detail. The Morse buffer, group name, last
+  action, and status line all fit comfortably on 320×240 or larger.
+
+### FeatherWing displays (plug directly on Feather — easiest wiring, requires headers)
+
+> ⚠️ **These need a `display_setup.py` file, and none is tested.** The
+> #3651 has a step-by-step walkthrough in Appendix F (not from a tested
+> build). See "Using a separate display" at the top of this appendix.
+
+| Display | # | Size | Resolution | Interface | URL |
+|---------|---|------|-----------|-----------|-----|
+| 3.5" TFT Resistive Touch | [3651](https://www.adafruit.com/product/3651) | 3.5" | 480×320 colour | SPI | https://www.adafruit.com/product/3651 |
+| 3.5" TFT Capacitive Touch | [5872](https://www.adafruit.com/product/5872) | 3.5" | 480×320 colour | SPI | https://www.adafruit.com/product/5872 |
+| 2.4" TFT Resistive Touch | [3315](https://www.adafruit.com/product/3315) | 2.4" | 320×240 colour | SPI | https://www.adafruit.com/product/3315 |
+
+> **Header pins required on the Feather.** A FeatherWing has two rows of
+> female header sockets on its underside that slide down onto the male pins
+> on top of the Feather. If your Feather shipped as a bare PCB with empty
+> pin holes, those holes must be filled with soldered male headers before a
+> FeatherWing can be used — there is nothing for the wing to grip otherwise.
+> The right part is the pair of **male pin strips that normally come loose
+> in the bag with the Feather**; if yours are missing, any 0.1" break-away
+> male header works ([#392](https://www.adafruit.com/product/392)). (Not the
+> #2886 "Feather header kit" — those are *female* sockets.) Adafruit's own
+> pages for the #5477 and #5691 do not offer a pre-soldered version; some
+> resellers do — look for "headers soldered" in the listing. If you cannot or
+> would rather not solder, choose a STEMMA QT OLED (#326 / #938) or the
+> built-in TFT on #5691 instead — both are plug-and-play with no headers.
+
+> FeatherWings have a touchscreen controller that uses I²C. You will not use
+> touch input with AeroMorse — the display portion works via SPI independently
+> and will not conflict with the pressure sensor.
+
+**Recommended for table mounting: #3651** — largest FeatherWing, bright colour,
+plugs straight on (once headers are in place) with no additional wiring.
+
+### Standalone / breakout displays (7 wires required)
+
+> ⚠️ **Untested with AeroMorse — needs a `display_setup.py` file.** Nothing
+> in this table has been built and tried by the project; see "Which displays
+> are tested" and "Using a separate display" at the top of this appendix before buying
+> one.
+
+| Display | # | Size | Resolution | Driver | URL |
+|---------|---|------|-----------|--------|-----|
+| 3.5" TFT with Touch | [2050](https://www.adafruit.com/product/2050) | 3.5" | 480×320 colour | HX8357D | https://www.adafruit.com/product/2050 |
+| 3.2" TFT with Touch | [1743](https://www.adafruit.com/product/1743) | 3.2" | 320×240 colour | ILI9341 | https://www.adafruit.com/product/1743 |
+| 2.8" TFT with Touch | [1770](https://www.adafruit.com/product/1770) | 2.8" | 320×240 colour | ILI9341 | https://www.adafruit.com/product/1770 |
+| 2.0" IPS TFT | [4311](https://www.adafruit.com/product/4311) | 2.0" | 320×240 colour | ST7789 | https://www.adafruit.com/product/4311 |
+
+Standalone displays are useful when you want the display mounted separately from
+the Feather — for example, a display on an arm at eye level with the Feather
+tucked out of the way.
+
+### OLED displays (STEMMA QT plug-and-play, monochrome, no colour)
+
+| Display | # | Size | Resolution | Driver | URL |
+|---------|---|------|-----------|--------|-----|
+| 0.96" Monochrome OLED | [326](https://www.adafruit.com/product/326) | 0.96" | 128×64 | SSD1306 | https://www.adafruit.com/product/326 |
+| 1.3" Monochrome OLED | [938](https://www.adafruit.com/product/938) | **1.3"** | 128×64 | SSD1306 | https://www.adafruit.com/product/938 |
+
+Both connect via STEMMA QT — no soldering. Both use the same SSD1306 driver, the
+same library, and the same I²C address (0x3C), so the two are interchangeable:
+whatever works for one works for the other.
+
+**#326 (0.96")** is compact and easy to mount on a tube holder.
+**#938 (1.3")** is 35% larger with identical wiring and code — a better choice
+if you want a slightly bigger display without the complexity of a TFT.
+
+> **These need a `display_setup.py` file** (see "Using a separate display"
+> at the top of this appendix; the example file has an OLED block). The layout shrinks
+> itself to 128×64, which makes the text small — about 2 mm tall on the
+> 0.96" screen. (The very first AeroMorse code, "v2", was written for the
+> #326 OLED; it was retired in v1.14.) An OLED has **not been tested** with
+> the current firmware. If you just want it to work, use the #5691.
+
+### Parts for a separate display
+
+> **If you chose the #5691 Reverse TFT Feather, skip this section entirely —
+> the display is already part of that board.**
+
+> ⚠️ **Every display in this table needs a `display_setup.py` file, and none
+> has been tested by the project** (the #3651 has written instructions in
+> Appendix F). Read "Which displays are tested" above before ordering.
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | 3.5" TFT FeatherWing Resistive (largest; **Feather needs header pins**) | #3651 | https://www.adafruit.com/product/3651 |
+| — | *or* 3.5" TFT FeatherWing Capacitive (**Feather needs header pins**) | #5872 | https://www.adafruit.com/product/5872 |
+| — | *or* 2.4" TFT FeatherWing Resistive (**Feather needs header pins**) | #3315 | https://www.adafruit.com/product/3315 |
+| — | *or* 3.5" TFT Breakout (standalone, needs 7 soldered wires) | #2050 | https://www.adafruit.com/product/2050 |
+| — | *or* 2.8" TFT Breakout (standalone) | #1770 | https://www.adafruit.com/product/1770 |
+| — | *or* 1.3" OLED — STEMMA QT (larger OLED; plugs in, no header pins) | #938 | https://www.adafruit.com/product/938 |
+| — | *or* 0.96" OLED — STEMMA QT (compact; plugs in, no header pins) | #326 | https://www.adafruit.com/product/326 |
+
+**If you choose the OLED #326**, you also need:
+
+| Qty | Item | Adafruit # | URL |
+|-----|------|-----------|-----|
+| 1 | STEMMA QT 4-pin cable 400 mm | #5385 | https://www.adafruit.com/product/5385 |
+
+### Connecting a separate display
+
+> The #5691's built-in screen needs no connecting. The
+> displays below are **untested with AeroMorse** and also need a
+> `display_setup.py` file before they show anything (Appendix F "Using a separate
+> display").
+
+#### If you chose a FeatherWing display (#3651, #5872, or #3315)
+
+**The Feather must already have its header pins soldered on.** A bare
+Feather cannot be attached to a FeatherWing.
+
+1. Hold the FeatherWing with the display facing up.
+2. Line up the Feather's two rows of header pins with the two rows of
+   sockets on the back of the FeatherWing.
+3. Press firmly and evenly until the two boards sit flush. The pins should
+   go in all the way.
+
+That is all — no wires needed.
+
+#### If you chose the OLED #326
+
+1. Plug one end of the **100 mm STEMMA QT cable** into the STEMMA QT port on
+   the Feather. The connector is keyed and only fits one way — do not force it.
+2. Plug the other end into either STEMMA QT port on the **LPS33HW sensor**.
+3. Plug one end of the **400 mm STEMMA QT cable** into the remaining port on the
+   LPS33HW.
+4. Plug the other end into the STEMMA QT port on the **OLED** (#326).
+
+Chain: **Feather → 100 mm cable → LPS33HW → 400 mm cable → OLED**
+
+#### If you chose a standalone TFT breakout (#2050, #1770, etc.)
+
+You need 7 short wires, one for each row of the table. **This is a
+soldering job:** the wires are soldered at the display (breakouts arrive
+with their pin strip loose), and at the Feather they are soldered to the
+pads — or, if the Feather has header pins, pushed onto them with female
+jumper wires:
+
+| Display pin | Feather pin |
+|-------------|-------------|
+| SCK | SCK |
+| MOSI (or SI) | MOSI |
+| CS | D9 |
+| DC | D10 |
+| RST | D11 |
+| GND | GND |
+| VIN | 3V |
+
+> Pin labels vary slightly between breakout boards. Match by function name, not
+> physical position. Refer to the Adafruit product guide for your specific board.
+
+### Display driver library required per display chip
+
+| Chip | Library | Used by |
+|------|---------|---------|
+| Built-in (board.DISPLAY) | *(none — built in)* | #5691 Reverse TFT Feather — uses the repo root `code.py` |
+| SSD1306 | `adafruit_displayio_ssd1306` | #326 (0.96" OLED) and #938 (1.3" OLED) |
+| ILI9341 | `adafruit_ili9341` | #3315, #1770, #1743 |
+| HX8357D | `adafruit_hx8357` | #3651, #5872, #2050 |
+| ST7789 | `adafruit_st7789` | #4311 |
+
+> **Note:** Any display other than a built-in one needs a `display_setup.py`
+> file naming its driver (see "Using a separate display" at the top of this appendix).
+> Apart from the built-in screen, these combinations are **untested**.
+
+### A bigger wireless display
+
+The wireless display is the easy place to get a bigger screen: it is a
+separate board, so nothing you try there can affect typing. Since v1.26
+`receiver.py` sizes its text to whatever screen it finds. Your choices, from
+least to most effort:
+
+| Choice | Screen | What you need | Status |
+|---|---|---|---|
+| **The computer's own monitor** | any size | The "AeroMorse Display" program above and `PC_DISPLAY = True` — no hardware | ✅ Tested |
+| **A board with a larger built-in colour screen** | 2" and up | Any ESP32-S3 board whose screen CircuitPython drives by itself (`board.DISPLAY`) and whose circuitpython.org page lists the `espnow` module. Copy `receiver.py` as `code.py` exactly as for a second #5691 (Step 9.4) — no display file needed | ⚠️ Untested — should work, please report |
+| **A Feather plus a FeatherWing TFT** (e.g. #5477 + 3.5" #3651) | up to 3.5" | Header pins soldered on the Feather, the display's driver in `/lib`, and a `display_setup.py` (see "Using a separate display" above) next to `receiver.py` | ⚠️ Untested |
+
+Before buying a board for the second row, open its page on
+circuitpython.org and check two things under "Built-in modules available":
+`espnow` is listed, and the board description says the display is
+built in. An ESP32-S2 or ESP32-S3 chip is required for ESP-NOW.
+
+Text size follows the screen: 240×135 gives the size you see on the #5691,
+320×240 the same size with more room around it, 480×320 twice that size.
+
+### A 3.5" screen on a #5477, step by step
 
 A consolidated walkthrough for builders pairing the bare-Feather
 **ESP32-S3 Feather #5477** with the **3.5" TFT FeatherWing Resistive
@@ -3322,7 +2672,7 @@ enlarges itself to suit the bigger screen. Everything else (sensor,
 speaker, AT switches, ESP-NOW wireless display) is identical to the
 recommended build.
 
-### F.1 When this build is the right pick
+#### F.1 When this build is the right pick
 
 | Want | This combo |
 |---|---|
@@ -3337,7 +2687,7 @@ Pick this combo if you want the **biggest display** and don't mind a
 two-board stack or one code-edit step. Pick #5691 instead for the
 simplest single-board build.
 
-### F.2 Parts list
+#### F.2 Parts list
 
 The hardware-side parts list is the standard sensor / speaker / switch
 options from §7 with these display-path changes:
@@ -3352,12 +2702,12 @@ You do **not** need any extra wires, cables, or breakouts beyond the
 two boards above — the FeatherWing plugs directly onto the Feather's
 headers.
 
-### F.3 Header pins on the #5477 — required
+#### F.3 Header pins on the #5477 — required
 
 #5477 ships as a bare PCB with empty through-hole pads. The
 FeatherWing has female sockets on its underside that need male header
 pins on the Feather to grip. The "build without header pins" path
-documented in §3 does **not** work with FeatherWings — the wing's
+documented in Appendix M does **not** work with FeatherWings — the wing's
 holes can't grip flat pads, and gripping the through-holes from below
 is not mechanically reliable.
 
@@ -3370,10 +2720,9 @@ Three ways to get headers on:
 | Solder them yourself | Cost of an iron if you don't have one | ~30 minutes for a beginner |
 
 If you don't already own a soldering iron, a **pre-soldered board from a
-reseller** or the **makerspace** path are the practical options. See §8 "Before
-you start" for makerspace pointers.
+reseller** or the **makerspace** path are the practical options. See Appendix M for makerspace pointers.
 
-### F.4 Hardware assembly
+#### F.4 Hardware assembly
 
 Once headers are on the #5477:
 
@@ -3387,23 +2736,23 @@ Once headers are on the #5477:
    STEMMA QT port sits on the side edge of the Feather PCB. The
    FeatherWing's PCB is **above** the STEMMA QT port, so you can plug
    a STEMMA QT cable from the side without removing the wing. Run the
-   cable to the LPS33HW #4414 as in §8B.
+   cable to the LPS33HW #4414 as in section 2.
 
 3. **Connect the speaker.** A0 / 3V / GND are passed through to the
    FeatherWing's top-side pin headers. The STEMMA Speaker #3885 + #4046
    cable plugs onto those header pins exactly the same way it would on
-   a bare Feather. See §8D.
+   a bare Feather. See Appendix D.
 
 4. **Connect AT switches** (switch-mode builds). D5 and D6 are also
-   passed through. Wire as in §8C.
+   passed through. Wire as in section 4.2.
 
 USB-C, the Reset button, and the user button on the Feather all remain
 accessible. The FeatherWing has cutouts and pin pass-throughs in the
 standard FeatherWing layout.
 
-### F.5 Software setup
+#### F.5 Software setup
 
-#### Libraries on /lib
+##### Libraries on /lib
 
 The standard /lib set from §9.2 *plus* the HX8357D driver:
 
@@ -3418,13 +2767,13 @@ The standard /lib set from §9.2 *plus* the HX8357D driver:
 └── adafruit_hx8357.mpy                 (THIS COMBO — for the #3651 driver)
 ```
 
-#### Project files
+##### Project files
 
 The same `boot.py`, `code.py`, `config.py`, and `morse_map.py` as the
 standard build, **plus one more file: `display_setup.py`**. No file is
 edited by hand.
 
-#### Add `display_setup.py`
+##### Add `display_setup.py`
 
 The #5477 has no built-in display, so `code.py` on its own finds no screen
 and runs without one (it still types). To use the #3651:
@@ -3451,7 +2800,7 @@ FeatherWing convention — those are the pins the #3651's CS and DC
 traces wire to on the FeatherWing PCB. `DISPLAY_ROTATION` and
 `DISPLAY_BRIGHTNESS` in `config.py` are applied afterwards as usual.
 
-#### The layout sizes itself
+##### The layout sizes itself
 
 Nothing needs retuning. `code.py` works out the text size from the screen:
 on this 480×320 panel the four rows are drawn at **twice** the size used on
@@ -3463,7 +2812,7 @@ centred on the screen, with a 16 px pressure bar along the bottom edge.
 > update. If you made those edits to an older `code.py`, simply install the
 > current `code.py` unchanged and add `display_setup.py`.
 
-### F.6 Configuration
+#### F.6 Configuration
 
 Once the display is up, configuration is identical to any other build:
 edit `config.py` per §10 (and Appendix E for the deep notes). Set
@@ -3471,7 +2820,7 @@ edit `config.py` per §10 (and Appendix E for the deep notes). Set
 would on a #5691. The display layout edits above don't interact with
 any of those settings.
 
-### F.7 Verifying it works
+#### F.7 Verifying it works
 
 A healthy first boot on this build should show:
 
@@ -3493,7 +2842,7 @@ Display: from display_setup.py (480 x 320)
 …and the 3.5" TFT should display the standard four-row layout with the
 pressure bar at the bottom, at the larger scale.
 
-If the display stays blank, read the start-up log (§9.3 — mind the warning
+If the display stays blank, read the start-up log (Appendix N — mind the warning
 there about Thonny). A line beginning `display_setup.py` names the problem:
 
 - `display_setup.py could not load (no module named 'adafruit_hx8357')` —
@@ -3527,7 +2876,7 @@ three hotkeys, and the supplied `morse_map.py` already has a code for each:
 
 | Hotkey | What it does | Morse code | Group |
 |--------|--------------|-----------|-------|
-| Ctrl+Alt+D | **AeroMorse Display** window (§5 of the Build Guide) on / off | `.-.-.-` | 0 — works from every group |
+| Ctrl+Alt+D | **AeroMorse Display** window (section 5.2) on / off | `.-.-.-` | 0 — works from every group |
 | Ctrl+Alt+H | **AeroMorse Help** — your cheat sheet with a tab per group — on / off | `..-..-` | 0 — works from every group |
 | Ctrl+Alt+Home | Mouse pointer to the middle of the screen | `.-.` | 2 — Mouse |
 
@@ -3693,7 +3042,7 @@ How it is laid out:
 | Feature | What it does |
 |---|---|
 | Two parts: a base and a snap-on lid, about **96 × 37 × 23 mm** | Small enough to mount on a tube holder, tray or arm |
-| Window in the lid | The #5691's screen and its three buttons show through. This is the "panel mount" use the Reverse TFT Feather is made for (§3) |
+| Window in the lid | The #5691's screen and its three buttons show through. This is the "panel mount" use the Reverse TFT Feather is made for (Appendix L) |
 | Feather on four nylon stand-offs | Held clear of the base, screen facing the lid |
 | Inner wall with two screw holes | The sensor board is screwed to it, port pointing at the end of the box |
 | Slot in one end | The USB-C cable comes out here |
@@ -3728,7 +3077,7 @@ updated when files can be shared.
 
 <img src="images/remote-display-case.jpg" alt="Small black two-part case around a Reverse TFT Feather used as the wireless display, with openings for the screen and four buttons, next to a ruler" width="430">
 
-*The wireless display (Option W1) in its case — about 52 × 23 mm.*
+*The wireless display in its case — about 52 × 23 mm.*
 
 The author's wireless display — a second #5691 — is in a small two-part
 printed case: a tray underneath and a bezel on top with openings for the
@@ -4009,6 +3358,8 @@ read the number you want from it and use it in `_cc()` as above.
 (`0x30`) put the computer to sleep or switch it off. If you add one, give it
 a long code that cannot be entered by accident.
 
+---
+
 ## Appendix K — Solderless build: Cytron Maker Feather AIoT S3 with two switches
 
 A complete two-switch AeroMorse with **no soldering at all**: a Cytron Maker
@@ -4040,7 +3391,7 @@ Display** window on the computer (§5).
 
 | Qty | Item | Notes |
 |---|---|---|
-| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** — [cytron.io](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath. Cytron ships from Malaysia: to the USA, allow for DHL shipping and a separate customs bill on top of the price shown — see "Cost to the USA" in §3 |
+| 1 | **Cytron Maker Feather AIoT S3, with pre-soldered headers** — [cytron.io](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | Order the pre-soldered version. Its headers are *stacking* headers: sockets on top, long pins underneath. Cytron ships from Malaysia: to the USA, allow for DHL shipping and a separate customs bill on top of the price shown — see "Cost to the USA" in Appendix L |
 | 1 | Half-size breadboard (400 tie points) | Only a stand for the board. No wire goes into the breadboard in this build |
 | 2 | 3.5 mm stereo jack board with a 5-pin header (pins numbered 1–5). Sold as "3.5mm TRS Audio Jack PCB Adapter to 5Pin Header" or "3.5mm Stereo Audio Socket Adapter Boards (with pre-soldered headers)" — the ones used here: [amazon.com/dp/B0G7GSQDRR](https://www.amazon.com/dp/B0G7GSQDRR/) | One per switch. Buy the kind with the header pins **already soldered on**. The board is marked "3.5mm Audio Jacks" and measures 25 × 16 mm |
 | 4 | Male-to-female jumper wires | Two colours help: one colour for ground, one for signal |
@@ -4091,7 +3442,7 @@ The dot and dash pins are named differently on the silkscreen than in
    `adafruit_bitmap_font`, `adafruit_bus_device`, `adafruit_register`,
    `adafruit_lps35hw.mpy` and `neopixel.mpy`.
 3. **AeroMorse files.** Copy `boot.py`, `code.py`, `morse_map.py` and
-   `config.py` as in §9.4.
+   `config.py` as in Step 9.3.
 **Step 4 — unplug the USB cable and plug it back in** so `boot.py` takes
 effect.
 
@@ -4204,7 +3555,7 @@ more than a second changes group (Appendix A).
 
 | What happens | Cause | Fix |
 |---|---|---|
-| Nothing at all, and the serial log (§9.3) shows `No pull up found on SDA or SCL` | `code.py` is older than v1.29 | Download the current files from the repo (§9.4) |
+| Nothing at all, and the serial log (Appendix N) shows `No pull up found on SDA or SCL` | `code.py` is older than v1.29 | Download the current files from the repo (Step 9.3) |
 | One switch works, the other does nothing | That jack's signal wire is one socket off, or its ground wire is not in `A2` (dot) / `A4` (dash) | Count the sockets again from the USB end, or change `DOT_PIN` / `DASH_PIN` to the socket the wire is really in |
 | Neither switch does anything | The ground lines are missing from `config.py`, so `A2` and `A4` are not acting as grounds | Add the lines from §K.5 |
 | A beep or a letter repeats non-stop the moment a switch is plugged in | The signal wire is on the jack's ring pin, which a mono plug connects to ground | Move that wire from pin 5 to pin 2 (or the other way round) |
@@ -4243,3 +3594,518 @@ If you build this, please report how it goes.
 
 *AeroMorse is open-source. Project files at:*
 *https://github.com/jlubin2001/AeroMorse*
+
+---
+
+## Appendix L — Other boards
+
+The standard build uses the Adafruit ESP32-S3 Reverse TFT Feather, #5691.
+The Cytron Maker Feather AIoT S3 is the other board the project has built
+on (Appendix K). This appendix lists the rest: boards that should work,
+boards that cannot, and why.
+
+> ⚠️ **Not tested by the project.** Unless a part of this appendix says
+> otherwise, nobody on the project has built what it describes. It is
+> written from the parts' documentation. The build the project uses and
+> tests every day is the standard build in section 2. If you build one
+> of these, please report how it went.
+
+### Why not every Feather works
+
+AeroMorse uses **USB HID** — the USB standard that lets keyboards and mice talk
+to computers. Only Feather boards with **native USB** support this. Classic
+ESP32 boards (including Adafruit #5900 Feather ESP32 V2) use a separate USB-to-
+serial chip that cannot emulate a keyboard. Those boards will not work.
+
+### Bluetooth — not supported
+
+AeroMorse sends **USB HID only**; it does not work as a Bluetooth keyboard.
+The chip can do Bluetooth, but a Bluetooth keyboard on these boards was tested
+in September 2026 (CircuitPython 10.3.1) and did not stay connected. For a
+phone or tablet, use a **USB-C cable** — AeroMorse works as a wired keyboard
+and mouse. The test record is in
+[BLE_STATUS.md](https://github.com/jlubin2001/AeroMorse/blob/main/BLE_STATUS.md).
+
+### Boards that work
+
+| Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
+|-------|-----------|---------|-------|------|-------|
+| ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
+| ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (Appendix F). |
+| ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip |
+
+### A non-Adafruit board that works — and needs no soldering
+
+| Board | Where to buy | USB HID | PSRAM | WiFi | Notes |
+|-------|--------------|---------|-------|------|-------|
+| Cytron Maker Feather AIoT S3, with pre-soldered headers | [Cytron](https://www.cytron.io/p-maker-feather-aiot-s3-presoldered-headers) | ✅ | ✅ **8MB** | ✅ | No built-in display. Buzzer built in. **Sold with its headers already fitted**, so a switch build needs no soldering — every wire pushes in. Tested as a **two-switch** device; not tested with the pressure sensor. Full build in [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches). |
+
+What you get, and what to know before ordering:
+
+- **Processor and memory:** an ESP32-S3-WROOM-1-N8R8 module — 8 MB flash and
+  8 MB PSRAM, more than the 4 MB / 2 MB of the Adafruit Feathers above.
+- **Headers:** Cytron sells it two ways. Order the version **with pre-soldered
+  headers**; the "Basic" version has none. The headers are sockets on top with
+  long pins underneath, so the board stands in a breadboard and jumper wires
+  push into the sockets.
+- **Sound:** a piezo buzzer on the board (GPIO12), with a mute switch on the
+  **underside** of the board. A STEMMA Speaker #3885 can be added for louder
+  sound.
+- **Maker Ports:** three small sockets compatible with Qwiic and STEMMA QT
+  (and Grove with a conversion cable). Two lie flat and are powered from
+  "VPeripheral", which the software can switch on and off; one stands upright
+  and always has 3.3 V.
+- **Wireless display:** works — the ESP-NOW broadcast (§5) was tested from
+  this board.
+- **CircuitPython:** 10.3.1, from
+  [circuitpython.org/board/cytron_maker_feather_aiot_s3](https://circuitpython.org/board/cytron_maker_feather_aiot_s3/).
+- **Cost to the USA:** Cytron ships from Malaysia by DHL. The checkout shows
+  the shipping charge, and asks you to accept that any import duty is yours
+  to pay — but it does not say how much that will be. The duty, with DHL's
+  own fee for handling it, is billed separately by DHL after the parcel
+  ships. On the author's order (September 2026, $33 of parts) shipping was
+  about as much as the parts, and the DHL customs bill was about as much
+  again — roughly three times the price of the parts in all. Allow for that
+  when comparing prices.
+- **Settings:** it needs a few board-specific lines in `config.py` — all in
+  [Appendix K](#appendix-k--solderless-build-cytron-maker-feather-aiot-s3-with-two-switches).
+
+### Metro form factor boards
+
+Metro boards use the Arduino Uno footprint (68×53 mm) — larger than a Feather.
+They work for AeroMorse but with one key difference: **FeatherWing displays
+will not plug directly onto them.** Use a standalone TFT breakout (SPI wires)
+or the STEMMA QT OLED instead. The pressure sensor plugs straight in via
+STEMMA QT with no wiring change.
+
+| Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
+|-------|-----------|---------|-------|------|-------|
+| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
+
+> The Metro ESP32-S3 #5500 has the most memory in this guide (16 MB flash,
+> 8 MB PSRAM). Choose the Metro for the extra memory or the larger form
+> factor.
+
+### Boards that do NOT work for USB HID
+
+| Board | Reason |
+|-------|--------|
+| Feather ESP32 V2 #5400 | No native USB — uses CP2102N serial chip |
+| Feather ESP32 Huzzah #3405 | No native USB |
+| Feather ESP8266 #2821 | No native USB |
+
+### Recommended board: Adafruit ESP32-S3 Reverse TFT Feather #5691
+
+**Why this one:**
+
+- **Display already built in** — the 240×135 colour TFT is soldered to the
+  board, facing down for panel mounting; no separate display to buy or wire
+- Has **PSRAM** (2 MB extra RAM) — handles all display and sensor work without
+  running out of memory
+- Has a **STEMMA QT** port — the LPS33HW pressure sensor plugs straight in with
+  no soldering
+- **WiFi + ESP-NOW** built in — supports the wireless remote display option
+  (section 5.3) without any extra hardware on the main board
+- USB HID works out of the box — appears as keyboard and mouse to any computer
+- CircuitPython support is excellent and actively maintained
+- Available from Adafruit:
+  https://www.adafruit.com/product/5691
+
+> **Watch out — #5691 is not breadboard-friendly once you solder headers.**
+> The TFT is on the back of the board, so once header pins are soldered and
+> the Feather is pressed into a breadboard, the screen ends up facing the
+> breadboard and is unreadable. #5691 is designed for **panel-mount enclosures**
+> (a cutout in a case with the screen showing through), not for prototyping
+> on a solderless breadboard. If you plan to develop on a breadboard before
+> moving to an enclosure, use **#5483** (built-in TFT facing up — screen
+> still visible when the Feather is on a breadboard) or **#5477** with an
+> external display.
+
+---
+
+**If you want a built-in TFT and plan to use a breadboard (or no enclosure):**
+
+The **ESP32-S3 TFT Feather #5483** is electrically identical to #5691, but
+its TFT faces the same side as the components, so the screen still faces up
+when the board stands in a breadboard. **A breadboard needs header pins on
+the Feather** — they come loose in the bag and have to be soldered on
+first (see "Building with no header pins" below). Without a breadboard the
+#5483 needs no pins at all, exactly like the #5691. Everything else —
+PSRAM, STEMMA QT, ESP-NOW, USB HID — is the same.
+https://www.adafruit.com/product/5483
+
+---
+
+**If you want a bare Feather (no built-in display) for the cleanest breadboard
+or for maximum display flexibility:**
+
+The **ESP32-S3 Feather #5477** is the same chip without a soldered-on TFT,
+so — **once header pins are soldered on** — it sits flat in a breadboard.
+Like most Feathers it arrives as a bare board with the pin strips loose in
+the bag. Pair it with one of:
+
+- **STEMMA QT OLED #326 (0.96") or #938 (1.3")** — plug-and-play via the
+  STEMMA QT chain (the same chain that carries the sensor). Needs a
+  `display_setup.py` file on the drive (v1.26+, example provided — see Appendix F).
+  Monochrome 128×64, small text. Untested.
+- **FeatherWing TFT (#3651, #5872, or #3315)** — no wiring, but **the
+  Feather must have header pins soldered on**: the wing has sockets that
+  the Feather's pins push into, and a bare Feather has nothing to push in.
+  Also needs a `display_setup.py` file (Appendix F).
+  Larger, colour, much more screen area than the OLED; the text grows to
+  fit by itself. For the full **#5477 + #3651** combo see **Appendix F**
+  at the end of this guide. Untested.
+
+https://www.adafruit.com/product/5477
+
+---
+
+**If you want the most memory (Metro form factor):**
+
+The **Metro ESP32-S3 #5500** has the most memory in this guide (8 MB PSRAM,
+16 MB flash). Like the Feathers above, it supports USB HID.
+
+The #5500 has no built-in display — connect the STEMMA QT OLED or a standalone
+TFT breakout. The ESP-NOW wireless display (section 5.3) works on it identically
+to the Feather boards.
+https://www.adafruit.com/product/5500
+
+---
+
+**A note on PSRAM:**
+
+PSRAM is extra RAM soldered alongside the main chip. The ESP32-S3 chip
+itself has 512 KB of built-in RAM; a colour TFT display needs a
+*framebuffer* (a block of RAM holding every pixel) that can easily
+exceed that. Every Feather and Metro board still listed above has at
+least **2 MB of PSRAM** (the #5500 Metro has 8 MB), so the framebuffer
+lives in PSRAM and the built-in 512 KB stays free for code. Any
+supported display size — 128×64 OLED through 480×320 FeatherWing —
+fits comfortably.
+
+---
+
+**Quick decision guide:**
+
+| I want… | Choose |
+|---------|--------|
+| Simplest build, colour TFT included, USB only | #5691 Reverse TFT Feather |
+| Same but screen faces up | #5483 TFT Feather |
+| To use it with a phone or tablet | Any board here, over a **USB-C cable** — Bluetooth is not supported (see above) |
+| Most memory (8 MB PSRAM) | #5500 Metro ESP32-S3 |
+
+### Boards with a screen built in
+
+| Board | # | Display size | Resolution | Screen orientation | URL |
+|-------|---|-------------|-----------|-------------------|-----|
+| ESP32-S3 TFT Feather | [5483](https://www.adafruit.com/product/5483) | 1.14" | 240×135 colour | Faces up — same side as components | https://www.adafruit.com/product/5483 |
+| ESP32-S3 Reverse TFT Feather | [5691](https://www.adafruit.com/product/5691) | 1.14" | 240×135 colour | Faces down — opposite side to components | https://www.adafruit.com/product/5691 |
+| ESP32-S2 TFT Feather | [5300](https://www.adafruit.com/product/5300) | 1.14" | 240×135 colour | Faces up — same side as components | https://www.adafruit.com/product/5300 |
+
+All three have the display soldered onto the board and accessed via
+`board.DISPLAY` — no wiring, no extra purchase, no library to add.
+
+**Which orientation to choose:**
+- **#5483 (standard)** — screen faces the same direction as the USB port and
+  pins. Best for handheld use or when you want to see the display while working
+  with the board.
+- **#5691 (reverse)** — screen faces the opposite side. Designed for mounting
+  behind a panel with a cutout so only the screen shows through. Useful if you
+  want to build AeroMorse into an enclosure.
+- **#5300 (ESP32-S2)** — same orientation as #5483 but older chip. Only choose
+  it if #5483 and #5691 are both unavailable.
+
+All three are functionally identical for AeroMorse.
+
+> **Code file:** #5483, #5691, and #5300 all use the **repo root**
+> `code.py` (which drives the built-in TFT via `board.DISPLAY`).
+
+### The pressure sensor on a board with no STEMMA QT socket
+
+**If your board has no STEMMA QT port** (e.g. the Feather nRF52840 Express),
+wire the sensor to the board's I²C pins instead. Which cable depends on the
+Feather:
+
+- **Feather with header pins, not in a breadboard:** a STEMMA QT cable with
+  **female sockets** ([#4397](https://www.adafruit.com/product/4397)) — the
+  sockets push onto the pins.
+- **Feather standing in a breadboard:** a STEMMA QT cable with **male pins**
+  ([#4209](https://www.adafruit.com/product/4209)) — the pins push into the
+  breadboard rows beside the Feather.
+- **Bare Feather, no header pins:** cut one end off a STEMMA QT cable and
+  solder its four wires to the pads.
+
+
+| LPS33HW (STEMMA QT wire) | Feather pin |
+|--------------------------|-------------|
+| Red — power | **3V** |
+| Black — ground | **GND** |
+| Blue — SDA (data) | **SDA** |
+| Yellow — SCL (clock) | **SCL** |
+
+No config change is needed. From firmware **v1.4**, `code.py` uses
+`board.STEMMA_I2C()` when the board has a STEMMA QT port and otherwise falls
+back to `board.I2C()` on the SDA/SCL pins — the serial console prints a note
+when it does. (Earlier firmware crashed at startup on such boards.)
+
+---
+
+## Appendix M — Header pins
+
+Feather boards arrive bare, with two strips of pins loose in the bag. The
+standard build and the three choices in the main guide need none of them
+soldered on. They matter for some of the hardware in Appendices D, F and
+L, and this appendix says which.
+
+> **Header pins.** Most Feathers arrive as a bare board with two male pin
+> strips loose in the bag — nothing is soldered. Whether you need them
+> soldered on depends on what you choose below:
+>
+> | You choose | Header pins on the Feather |
+> |---|---|
+> | #5691 + sip-and-puff sensor (STEMMA QT cable) | **Not needed** — nothing is soldered at all |
+> | AT switches on the #2915 terminal block, speaker S1 / S2 | Not needed, but then 2–3 wires are soldered to the Feather's pads. With pins, jumper wires push on instead |
+> | A FeatherWing display | **Required** |
+> | A breadboard (switch Option B1) | **Required** |
+
+### Building with no header pins — what works
+
+Many Feather boards ship as bare PCBs with no header pins soldered. If you
+don't want to solder headers (and your supplier didn't pre-install them),
+some build paths still work via STEMMA QT plug-and-play, some require
+soldering a few wires directly to the Feather's PCB pads, and some
+fundamentally need headers.
+
+| Component / option | Works without headers? | What's needed |
+|---|---|---|
+| **#5691 built-in TFT display** | ✅ Plug-and-play | Display soldered to board — nothing to wire |
+| **STEMMA QT OLED (#326, #938)** | ✅ Plug-and-play | STEMMA QT cable, no Feather wiring |
+| **STEMMA QT sensor (#4414 LPS33HW)** | ✅ Plug-and-play | STEMMA QT cable |
+| **FeatherWing displays (#3651, #5872, #3315)** | ❌ Not possible | The wing's holes can't grip bare pads — headers required |
+| **Standalone TFT breakouts (#2050, #1770…)** | ⚠️ Solder 5–7 wires | Solder display wires directly to Feather pads |
+| **AT switches — Option B1 breadboard** | ❌ Not possible | Feather must sit *in* the breadboard via headers |
+| **AT switches — Option B2 TRRS breakout** | ⚠️ Solder 3 wires | Solder breakout output wires to D5/D6/GND pads |
+| **AT switches — Option B3 #2915 Terminal Block** | ⚠️ Solder 3 wires | Solder terminal-block wires to D5/D6/GND pads |
+| **Speaker — #3885 STEMMA Speaker** | ⚠️ Solder 3 wires | Cut JST PH plug off, solder to A0/3V/GND pads |
+| **Speaker — Option S2 piezo (#2915 + #2790 + #1740/#1739)** | ⚠️ Solder 2 wires only if no headers | If Feather has headers: 2 F-F jumpers from #2915 → A0/GND (zero soldering). If no headers: solder 2 wires from #2915 → A0/GND pads. Piezo side is screw-terminal either way. |
+| **Speaker — PAM8302 amp (#2130)** | ⚠️ Solder 3 wires | Solder amp board to A0/3V/GND pads |
+
+**STEMMA QT does not solve every problem.** STEMMA QT carries I²C, 3 V, and
+GND only — that is enough for sensors and I²C displays (OLEDs), but **not
+for audio** (analog signal must come from A0) or **arbitrary switches**
+(digital inputs need GPIO pins).
+
+> An I²C GPIO expander board (AW9523 #4886, MCP23017 #5346, PCF8575 #5611)
+> *could* host AT switches via STEMMA QT, but you still need to wire jacks
+> to the expander's GPIO pads — and `code.py` would need a new library and
+> rewritten input routines. **More work, no benefit** vs. soldering three
+> wires directly to D5/D6/GND on the Feather.
+
+**Recommended fully-header-less build:**
+
+- Feather: **#5691** (built-in TFT — no wiring)
+- Sensor: **#4414 LPS33HW** via STEMMA QT (or skip if using AT switches)
+- AT switches: **#2915 Terminal Block** + 3 wires soldered to D5/D6/GND pads
+- Speaker: 3 wires soldered to A0/3V/GND pads (or skip — display alone is fine)
+
+Total soldering for the full build: **3–6 wires to Feather pads** (skip the
+sensor row if you use switches, skip both if you don't want a speaker).
+Each pad is ~1.5 mm — much easier to solder than the pin holes for headers.
+
+> **No soldering at all?** Skip the speaker and use the **#5691 + sensor
+> only** combination. The OLED/TFT shows every dot and dash visually. Cost:
+> a #5691 + #4414 + STEMMA QT cable, about $38 (electronics only — no enclosure,
+> see Appendix H), zero solder joints. Add a
+> third-party 3.5 mm Y-splitter and your existing AT switches won't work
+> in this config — sensor mode is the no-solder path.
+
+### Getting header pins soldered on
+
+**Do you need header pins on the Feather?** Only for some builds. The
+recommended build — #5691 with the sip-and-puff sensor on a STEMMA QT cable
+— needs **no header pins and no soldering**. Header pins are *required*
+for a FeatherWing display or a breadboard, and they turn the 2–3 soldered
+wires of the switch jack and the speaker into push-on jumper wires. If your
+build needs them and your board came bare (most do), the pins must be
+soldered on before you start; many local makerspaces or electronics shops
+will do this for free if you ask.
+
+**If your Feather already has header pins soldered:** No special tools needed —
+the pins press straight into the breadboard.
+
+**If your Feather has no header pins (bare holes):** You have two options:
+
+| Option | What to do | Cost |
+|--------|-----------|------|
+| **Get headers soldered** | Take the Feather and the included loose header strip to a local makerspace, library maker lab, or electronics repair shop — most will solder headers for free or a few dollars. This is the most reliable long-term solution. | Free–$5 |
+| **Order with headers pre-installed** | Some resellers sell Feather boards with the headers already soldered — look for "headers soldered" in the listing. Adafruit's own pages for the #5691 and #5477 do not offer this. | Varies |
+
+> **Why not test hook clips?** Test hook clips (EZ-hook / Goupchn style)
+> need something cylindrical to hook around — a wire lead, header pin, or
+> IC leg. They cannot reliably grip a flat through-hole pad: there is
+> nothing protruding for the hook to bite, and the hook is too large to
+> engage inside the 0.7–1.0 mm through-hole. They will slide off with the
+> lightest tug. Use one of the two options above instead.
+
+---
+
+## Appendix N — Seeing the device's error messages (Thonny)
+
+**You do not need this appendix for a normal install.** Come here when
+something does not work and Troubleshooting (section 12) asks what the
+device says at start-up.
+
+Before copying the AeroMorse project files in Step 9.3, install **Thonny** —
+a free, beginner-friendly code editor that doubles as a serial console.
+The serial console is how the Feather reports errors when it tries to
+load `code.py`, the libraries, or `morse_map.py`. **Without watching the
+console, a problem in Step 9.3 looks like "nothing happens" instead of a
+specific error message you can act on.**
+
+> ⚠️ **Connecting Thonny STOPS AeroMorse.** When Thonny connects to the
+> Feather it interrupts whatever program is running, so `code.py` stops and
+> the device **no longer types or moves the mouse** until it is restarted.
+> During a first build that is harmless — you are using an ordinary keyboard
+> and mouse. But **if AeroMorse is how you operate this computer, connecting
+> Thonny to it locks you out**: the `>>>` prompt in the Shell means AeroMorse
+> is *stopped*, not ready.
+>
+> **To get it going again:** have a helper unplug the Feather's USB cable and
+> plug it back in (or click in Thonny's Shell and press Ctrl+D, which needs a
+> working keyboard or mouse). Nothing is lost or damaged.
+>
+> **If AeroMorse is your only access:**
+>
+> - Do not connect Thonny to it unless a helper, or a second keyboard / mouse
+>   you can use, is at hand.
+> - You do not need Thonny to change settings. `config.py` and `morse_map.py`
+>   can be edited straight on the CIRCUITPY drive with any text editor
+>   (Notepad, Notepad++, …); saving restarts the device by itself.
+> - To only *watch* what the device prints, **untick "Interrupt working
+>   program on connect"** in the same window (*Run → Configure interpreter…*,
+>   or *Tools → Options → Interpreter*) **before** you choose the port and
+>   click OK. Thonny then just listens: the Shell shows each code as you
+>   enter it, and AeroMorse keeps typing (confirmed on a device in daily
+>   use). Thonny remembers the setting. Even then, the Run button, Ctrl+C
+>   in the Shell, and *File → Open → CircuitPython device* all stop
+>   AeroMorse, and the Stop / Restart button interrupts it (see below).
+> - When the device restarts (`devicereset`, or a replug) Thonny's Shell
+>   prints **"Connection lost — Use Stop/Restart to reconnect"** and then
+>   shows nothing more. That message is only about Thonny: AeroMorse itself
+>   has restarted and is working normally. To make Thonny listen again,
+>   click **Stop / Restart**: on our test device this restarted the program
+>   on the Feather (Shell shows `soft reboot`, then the start-up lines — a
+>   few seconds of calibration, so do not sip or puff) and AeroMorse carried
+>   on working. Because that button does interrupt the program first, have a
+>   helper nearby the first time you try it on a device you depend on; if
+>   the Shell ends at `>>>` instead, AeroMorse is stopped and needs a replug.
+> - The same applies to any other serial program (PuTTY, `screen`, Mu):
+>   sending Ctrl+C to the device stops it.
+
+### N.1 Download and install Thonny
+
+1. Go to **https://thonny.org** and click the download button for your
+   operating system (Windows, macOS, or Linux).
+2. Run the installer. No special options are needed — accept defaults.
+3. Launch Thonny after installation completes.
+
+> Mu Editor was previously recommended by Adafruit but has announced
+> end-of-life in 2026. Thonny is the current recommended alternative.
+
+### N.2 Confirm the Feather is plugged in
+
+The Feather should still be connected from §9.1 / §9.2. The **CIRCUITPY**
+drive must be visible in File Explorer (Windows) or Finder (Mac). If it
+isn't, unplug and replug the USB-C cable.
+
+### N.3 Point Thonny at CircuitPython
+
+1. In Thonny, click **Run → Configure interpreter…**
+   (or click the interpreter name shown at the bottom-right of the
+   Thonny window).
+2. In the top dropdown, select **CircuitPython (generic)**.
+3. In the **Port** dropdown, select the port your Feather is on:
+   - **Windows:** a COM port, e.g. `COM3` or `COM7` — try each if unsure
+   - **macOS:** something like `/dev/cu.usbmodem14101`
+   - **Linux:** something like `/dev/ttyACM0`
+4. Click **OK**. **This stops any program running on the Feather** — on a
+   device that already has AeroMorse on it, typing and the mouse stop
+   working at this moment (see the warning at the top of this appendix).
+5. The bottom **Shell** panel should now show `>>>` — this is the REPL
+   prompt, confirming Thonny is talking to the Feather. While `>>>` is
+   showing, AeroMorse is not running; press Ctrl+D in the Shell (N.5) or
+   replug the USB cable to start it again.
+
+> **Can't find the right port?**
+> Windows: open Device Manager → Ports (COM & LPT) — the Feather appears
+> as "USB Serial Device" or "CircuitPython CDC Control".
+> Mac: open Terminal and type `ls /dev/cu.*` — look for `usbmodem`.
+
+### N.4 Leave the Shell panel visible
+
+The Shell panel at the bottom of the Thonny window will display
+everything `code.py` prints (errors, calibration messages, debug output).
+Keep this panel visible while you complete Step 9.3. If a file copy fails,
+or a library is missing, the Shell will print an exact error message
+naming the file and line number — much easier to act on than guessing.
+
+A healthy startup after Step 9.3 looks like this in the Shell:
+
+```
+Calibrating — do not sip or puff ...
+Baseline: 1013.241  sip<1008.241  puff>1018.241
+Calibration complete — ready for input.
+```
+
+If you see a red `Traceback (most recent call last):` line instead, the
+last line of the traceback names the problem (e.g.
+`ImportError: no module named 'adafruit_lps35hw'` — means that library
+file is missing from `/lib`; re-do §9.2). Note: in some Thonny versions
+tracebacks render in plain text rather than red.
+
+### N.5 Capturing a fresh boot trace (Ctrl+D)
+
+The Shell panel only shows messages that fire *while Thonny is
+listening*. The first time you connect, the device has usually already
+booted — the `Calibrating…` and `Baseline:` lines you want to see have
+already scrolled past. You don't need to physically replug the cable or
+hit a reset button to recapture them.
+
+**Click in the Shell panel, then press Ctrl+D.** That sends a CircuitPython
+"soft reset" — the device re-runs `boot.py` and `code.py` from scratch
+and prints everything to the Shell as it happens. Use it any time you:
+
+- want to see the boot output again,
+- have edited `code.py` and want a clean restart (saving normally
+  triggers an auto-reload, but Ctrl+D gives you a confirmed clean run),
+- need to capture a traceback for diagnosing a problem.
+
+**A healthy Ctrl+D in sensor mode looks like:**
+
+```
+soft reboot
+Auto-reload is on. ...
+code.py output:
+Calibrating — do not sip or puff ...
+Baseline: 1013.241  sip<1008.241  puff>1018.241
+Input mode: 2-switch  (1-sw input = dot, 3-sw accept = long_dash)
+Code repeat: off  long-press cycles group: True
+ESP-NOW: disabled by USE_WIRELESS_DISPLAY = False
+```
+
+> If `ESP-NOW: init failed (ESP-NOW error 0x3065)` shows up, that's a
+> known CircuitPython 9.0.3 bug — see §12 "Wireless display" for the
+> workaround.
+
+### Useful Thonny shortcuts
+
+| Action | Shortcut |
+|--------|---------|
+| Save file (and trigger Feather restart) | Ctrl+S / Cmd+S |
+| Stop running program / go to REPL — **AeroMorse stops typing** | Ctrl+C (in Shell) |
+| Restart program from REPL — AeroMorse works again | Ctrl+D (in Shell) |
+| Open file from CIRCUITPY drive | File → Open → CircuitPython device |
+
+> Further Thonny details (REPL examples, alternative editors like VS
+> Code) are in `TOOLS_AND_GUIDES.md`.

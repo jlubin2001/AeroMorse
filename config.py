@@ -7,9 +7,9 @@
 # open code.py.
 #
 # Each setting has a one-line hint here. For the full explanation (what it
-# does, what other values mean, when to change it) see the Key Settings
-# table in **Build Guide §10 Configuration** — every setting in this file
-# has a row in that table, with the same name.
+# does, what other values mean, when to change it) see **Build Guide
+# Appendix E — Configuration Reference** — every setting in this file is
+# explained there, under the same name.
 
 import board   # board.D5 / D6 / A0 referenced below
 

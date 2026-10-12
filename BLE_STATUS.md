@@ -3,7 +3,7 @@
 AeroMorse sends **USB HID only**. This page records why Bluetooth is not
 offered, and what was tested, so the question can be re-opened when
 CircuitPython's Bluetooth support on the ESP32-S3 improves. It used to be the
-"BLE HID note" in §3 of the Build Guide.
+"Bluetooth — not supported" in Appendix L of the Build Guide.
 
 **Short version:** on CircuitPython 10.3.1 a Bluetooth keyboard on the
 ESP32-S3 does not stay connected to an Android phone. For a phone or tablet,

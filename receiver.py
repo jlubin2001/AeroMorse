@@ -9,7 +9,7 @@
 #   Any other ESP32-S3 board with a screen CircuitPython drives by itself
 #   (board.DISPLAY) should also work: the layout scales to the screen (v1.26+).
 #   A separate display can be set up in an optional display_setup.py — see
-#   the Build Guide, "Display Options".
+#   the Build Guide, Appendix F "Other displays".
 #
 # Libraries required in /lib on this board
 #   adafruit_display_text/label.mpy
