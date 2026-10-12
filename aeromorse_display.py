@@ -268,6 +268,47 @@ def group_color(text):
     return "#FFFFFF"                      # e.g. the device name on the start-up screen
 
 
+MIN_W, MIN_H = 160, 90                    # the window is never smaller than this
+DEFAULT_GEOMETRY = "520x300"
+
+
+def _point_on_a_screen(x, y):
+    """True if the point is on a connected monitor. Windows is asked directly,
+    so a second monitor to the left of or above the main one (negative
+    coordinates) counts, and a monitor that has been unplugged does not."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32 = ctypes.windll.user32
+        user32.MonitorFromPoint.restype = ctypes.c_void_p
+        user32.MonitorFromPoint.argtypes = [wintypes.POINT, wintypes.DWORD]
+        return bool(user32.MonitorFromPoint(wintypes.POINT(int(x), int(y)), 0))   # 0 = none if off-screen
+    except Exception:
+        return None                       # not Windows / cannot tell
+
+
+def safe_geometry(saved, screen_w, screen_h, on_screen=_point_on_a_screen):
+    """The saved "WIDTHxHEIGHT+X+Y" made safe to open with: never smaller than
+    the minimum, and never where it cannot be seen. If the middle of the window
+    would be off every screen - it was last on a monitor that is no longer
+    connected, or the screen is smaller now - the size is kept and the window is
+    put back near the top-left of the main screen. Anything unreadable gives the
+    default size and lets Windows choose the place."""
+    import re
+    m = re.match(r"^(\d+)x(\d+)\+(-?\d+)\+(-?\d+)$", str(saved or ""))
+    if not m:
+        return DEFAULT_GEOMETRY
+    w, h, x, y = (int(v) for v in m.groups())
+    w = max(MIN_W, min(w, max(MIN_W, screen_w)))
+    h = max(MIN_H, min(h, max(MIN_H, screen_h)))
+    seen = on_screen(x + w // 2, y + h // 2)
+    if seen is None:                      # cannot ask: judge by the main screen alone
+        seen = 0 <= x + w // 2 < screen_w and 0 <= y + h // 2 < screen_h
+    if not seen:
+        x, y = 80, 80
+    return "%dx%d+%d+%d" % (w, h, x, y)
+
+
 class Reader(threading.Thread):
     """Listens to the device. Opens the port, reads lines, never writes."""
 
@@ -397,8 +438,8 @@ class Window:
         r = self.root = tk.Tk()
         r.title(APP)
         r.configure(bg=BG)
-        r.geometry(self.cfg.get("geometry") or "520x300")
-        r.minsize(160, 90)
+        r.geometry(safe_geometry(self.cfg.get("geometry"), r.winfo_screenwidth(), r.winfo_screenheight()))
+        r.minsize(MIN_W, MIN_H)
         self.font = tkfont.Font(family="Consolas", size=20, weight="bold")
         self.small = tkfont.Font(family="Segoe UI", size=9)
 

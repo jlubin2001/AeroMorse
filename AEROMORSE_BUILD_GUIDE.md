@@ -891,7 +891,8 @@ any size and place anywhere.
 2. On the computer, start **`AeroMorse Display.exe`** (from the repo). It
    finds the device by itself.
 
-- **Any size.** Drag the window's edge; the text grows to fill it.
+- **Any size, from 160 × 90 pixels up.** Drag the window's edge; the text
+  grows to fill it. It will not go smaller than 160 × 90.
   **Resizing only works while *Title bar* is ticked** — the plain panel has
   no edge to drag. To change its size: right-click, tick *Title bar*,
   resize, then untick it again. The size is kept.
@@ -903,6 +904,10 @@ any size and place anywhere.
 - **It only listens.** The program never sends anything to the device, so it
   cannot stop or disturb it — unlike Thonny (§9.3). The information travels
   over the USB cable the device is already plugged in with.
+- **It cannot get lost off the screen.** The window opens where you left it.
+  If that place is no longer on any screen — it was last on a second monitor
+  that has since been unplugged — it opens near the top-left of the main
+  screen instead, at the size you gave it.
 - **It reconnects by itself** after `devicereset`, a replug or a restart.
   It remembers which AeroMorse it showed and waits for that one, even if
   another is plugged in; *Switch to another AeroMorse* in the menu changes it.
