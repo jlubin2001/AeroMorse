@@ -78,7 +78,7 @@ def init_group():
 # macro_secrets.txt, and pull one in by its name:
 # g6[6][0b000000]=_secret('mykey')   # ......
 # Until the name is set, the code types a harmless placeholder instead. See
-# README "Storing passwords and secrets safely".
+# AEROMORSE_REFERENCE.md "Storing passwords and secrets safely".
 class Secret:
     """Marker for a private value. code.py looks up `key` when the pattern is
     used, so the value is never stored in (or shown from) this file."""

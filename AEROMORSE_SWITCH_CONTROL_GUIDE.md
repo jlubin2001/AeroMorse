@@ -46,10 +46,18 @@ pattern in Group 4. **Switch to Group 4 first** (a long sip/puff cycles
 groups; or jump straight there with the Group 0 pattern `.......-` or
 `----....`).
 
-> **Audio feedback matters.** The built-in beeper confirms every dot
-> and dash, so the user gets an immediate "did the device hear me?"
-> signal — important when the host has gone full-screen Switch
-> Control and the AeroMorse TFT is out of view.
+> **Feedback matters.** When the phone or tablet has gone full-screen
+> Switch Control, the user still needs to know the device heard each dot
+> and dash. The AeroMorse screen shows them; if that screen is out of
+> view, use a **wireless display** placed where it can be seen, or fit a
+> **speaker** for a beep on every dot and dash (Build Guide §5.3 and
+> §6.3). The standard build has no speaker. Sound through the computer
+> (§6.2) is a Windows program and does not apply on a phone or tablet.
+
+> **Hard sips and puffs are safe here.** Strong sip / strong puff, which
+> jumps to another group elsewhere, is switched off in Group 4 as supplied
+> (`STRONG_OFF_IN_GROUPS`), so a hard breath cannot knock the user out of
+> Switch Control. A **long** sip or puff still changes group.
 
 ---
 
@@ -295,18 +303,17 @@ assistant needs to interact with the screen normally.
 
 ## Tips
 
-- **Print the cheat sheet.** `aeromorse_cheatsheet.htm` (Group 4 page)
-  shows the Morse pattern, the F-key pill, and the iOS action label
+- **Print the cheat sheet.** The Group 4 page of `AeroMorse Cheat
+  Sheet.pdf` shows the Morse pattern, the key, and the iOS action label
   on the same row — exactly the information the user needs while
-  configuring Switch Control. The print button produces one page per
-  group.
-- **Group 0 jump pattern.** Configure a memorable 8-symbol pattern in
-  `morse_map.py` so the user can drop straight into Group 4 from any
-  other group, instead of cycling.
-- **Keep audio feedback on for setup.** Each beep confirms the
-  device heard the symbol — important when the iPad screen is taken
-  over by Switch Control prompts and the AeroMorse TFT is out of
-  sight.
+  configuring Switch Control.
+- **Group 0 jump patterns.** `.......-` and `----....` both go straight
+  to Group 4 from any group, with no cycling. They are in the supplied
+  `morse_map.py`.
+- **Keep the AeroMorse screen in view during setup.** It confirms each
+  symbol the device heard — important when the iPad screen is taken over
+  by Switch Control prompts. A wireless display or a fitted speaker does
+  the same job when the device itself is out of sight.
 - **One device, multiple OSes.** The same AeroMorse and the same
   `morse_map.py` work on iOS, Android, Samsung, ChromeOS, Windows,
   macOS, and Linux. Only the OS-side mapping changes.

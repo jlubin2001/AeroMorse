@@ -99,7 +99,7 @@ restarts with the new values.
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before it returns to `SWITCH_EXIT_GROUP` by itself. `0` = never (then use the long puff). |
 | `SWITCH_EXIT_PUFF_S` | `5.0` | Hold one puff this long to leave straight away. |
 | `SWITCH_EXIT_GROUP` | `1` | Where you go when leaving (1 = Keyboard). |
-| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) Seconds of on-screen countdown before it leaves, e.g. `MOUSE IN 5`. `0` = none. |
+| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) Seconds of on-screen countdown before it leaves, e.g. `KEYBOARD IN 5` — it names the group you are going to. `0` = none. |
 
 Key names are listed in the **Keycode Reference** (`KEYCODE_REFERENCE.md` /
 the PDF). For example, a game controlled with the arrow keys could use

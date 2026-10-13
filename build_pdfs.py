@@ -78,6 +78,9 @@ h2 { font-size: 16pt; border-bottom: 1px solid #ccd6e0; padding-bottom: 4px; mar
 h3 { font-size: 13pt; } h4 { font-size: 11.5pt; color: #33506e; }
 a { color: #1462b8; text-decoration: none; word-break: break-word; }
 code { font-family: Consolas,"Courier New",monospace; font-size: 0.9em; background: #eef1f4; padding: 0.08em 0.34em; border-radius: 3px; }
+/* A Morse pattern written in bold - **`.-.`** - is printed larger, heavier and
+   spaced out, so the dots and dashes can be told apart on paper. */
+code.morse { font-size: 1.35em; font-weight: 700; letter-spacing: 0.16em; color: #000; background: #e3e8ee; padding: 0 0.3em 0.05em 0.42em; }
 pre { background: #f4f6f8; border: 1px solid #d8dee4; border-radius: 5px; padding: 9px 12px; overflow-x: auto; page-break-inside: avoid; }
 pre code { background: none; padding: 0; font-size: 9pt; line-height: 1.4; }
 blockquote { border-left: 4px solid #f0b429; background: #fff9e9; margin: 0.8em 0; padding: 8px 14px; border-radius: 0 5px 5px 0; page-break-inside: avoid; }
@@ -138,6 +141,7 @@ def build_guide(name="AEROMORSE_BUILD_GUIDE", title="AeroMorse Build Guide", toc
     md = markdown.Markdown(extensions=["extra", "toc", "sane_lists"],
                            extension_configs={"toc": {"toc_depth": "2-6"}})   # not the title itself
     body = md.convert(_like_github(open(md_path, encoding="utf-8").read()))
+    body = re.sub("<strong><code>([-. ]+)</code></strong>", lambda m: '<code class="morse">%s</code>' % m.group(1), body)
     if toc:
         # The title and introduction come first; the detailed contents list then
         # takes the place of the guide's own short "Table of Contents" section.
@@ -211,10 +215,13 @@ def build_keycode():
 def build_usage():
     return build_guide("AEROMORSE_USAGE_GUIDE", "AeroMorse Usage Guide", toc=False)
 
+def build_reference():
+    return build_guide("AEROMORSE_REFERENCE", "AeroMorse Reference", toc=False)
+
 def build_switchmode():
     return build_guide("AEROMORSE_SWITCH_MODE_GUIDE", "AeroMorse Switch Mode Guide", toc=False)
 
-TARGETS = {"guide": build_guide, "usage": build_usage, "switchmode": build_switchmode,
+TARGETS = {"guide": build_guide, "usage": build_usage, "reference": build_reference, "switchmode": build_switchmode,
            "cheatsheet": build_cheatsheet, "keycode": build_keycode}
 
 def build_my_cheatsheet(folder):

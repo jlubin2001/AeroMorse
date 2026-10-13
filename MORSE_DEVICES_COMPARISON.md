@@ -24,12 +24,12 @@ Companion documents:
 | Connection | PC parallel + serial | USB | **USB + BLE** | **USB** only (Bluetooth tested, not usable yet — see [BLE_STATUS.md](BLE_STATUS.md)) |
 | Switch jacks | 3 × 3.5 mm mono (SW1/SW2/SW3) | 3 × 3.5 mm mono | 2 × 3.5 mm mono on x80 (plus a buzzer) | 2 × 3.5 mm mono *or* sip-and-puff sensor |
 | Sip-and-puff | Via external SP interface | Via external SP interface | Not built in | **Built in** (LPS33HW #4414) |
-| Speaker | Headset jack | Headset jack | On-board buzzer | Built-in speaker, distinct dot/dash pitches |
-| Visual display | Indicator LEDs | Indicator LEDs | None on x80 | **OLED or built-in TFT** (full text feedback) + optional wireless TFT |
-| Customization | `.CNF` files via DOS LOADER tool | `.CST` binary via CodeMaker (Windows-only) | Python text files (`user/config.py`, `morse_code.py`) | Python text files (`morse_map.py`, `code.py`) |
+| Speaker | Headset jack | Headset jack | On-board buzzer | Optional — through the computer's speakers, or a speaker fitted to the device; distinct dot/dash pitches |
+| Visual display | Indicator LEDs | Indicator LEDs | None on x80 | **Built-in colour screen** (full text feedback) + optional window on the computer + optional wireless display |
+| Customization | `.CNF` files via DOS LOADER tool | `.CST` binary via CodeMaker (Windows-only) | Python text files (`user/config.py`, `morse_code.py`) | Python text files (`morse_map.py`, `config.py`) |
 | Source | Closed, EOL | Closed, EOL | **Open source** (GitHub) | **Open source** (GitHub) |
 | Host OS | DOS, early Windows | Windows 98 – 7 (32-bit) | **Anything that accepts USB HID or BLE HID** | **Anything that accepts USB HID** |
-| Cost | Discontinued; secondary market only | Discontinued; ~$1000+ when new | x80 board + ItsyBitsy ≈ $30–40 | ~$50–100 in parts |
+| Cost | Discontinued; secondary market only | Discontinued; ~$1000+ when new | x80 board + ItsyBitsy ≈ $30–40 | About $42 in parts for the standard build |
 
 ---
 
@@ -41,8 +41,8 @@ differently and on different hardware.
 | Mode | **Adap2U** | **Darci USB** | **morAce** | **AeroMorse** |
 |---|---|---|---|---|
 | **1-switch** (timed) | ✓ Time Code system: Short / Medium / Long / Xlong pulse lengths, settable thresholds. Loaded with `LOADER -F TCODES.CNF`. | ✓ One switch; firmware times dot vs. dash internally. | ✓ **Default mode**. Holding the switch for ≥ `dot_length` (default 200 ms) = dot; ≥ 3× = dash. | ✓ `SWITCH_MODE = 1`. `ONE_SWITCH_INPUT` picks which physical input (sip / D5 or puff / D6) is the sole switch. Press ≤ `ONE_SWITCH_DOT_MS` (default 200 ms) = dot, longer = dash. Long-press cycles group forward. |
-| **2-switch** (dot + dash) | ✓ `LOADER -F MORSE2.CNF`. Switch on SW1 = dit, SW2 = dah. Pause for settable timeout = end of letter. | ✓ Switch 1 = dot, switch 2 = dash. Pause = end of letter. | ✓ Configurable in `user/config.py` (`two_button_mode = 1`). | ✓ **Default** (`SWITCH_MODE = 2`) — D5 = dot, D6 = dash, or sip = dot / puff = dash. Pause `ACCEPT_DELAY` = end of letter. |
-| **3-switch** (dot + dash + accept) | ✓ `LOADER -F MORSE3.CNF`. SW1 = dit, SW2 = dah, SW3 = explicit Accept (no timing pause needed). | ✓ Three-switch mode. Switch 3 explicitly commits the letter. | ✓ `three_button_mode = 1` in `user/config.py`. | ✓ `SWITCH_MODE = 3`. Long-press of `THIRD_SWITCH_GESTURE` (default `"long_dash"` = long puff / long-D6) = explicit Accept. The other long-gesture cycles group forward. |
+| **2-switch** (dot + dash) | ✓ `LOADER -F MORSE2.CNF`. Switch on SW1 = dot, SW2 = dash. Pause for settable timeout = end of letter. | ✓ Switch 1 = dot, switch 2 = dash. Pause = end of letter. | ✓ Configurable in `user/config.py` (`two_button_mode = 1`). | ✓ **Default** (`SWITCH_MODE = 2`) — D5 = dot, D6 = dash, or sip = dot / puff = dash. Pause `ACCEPT_DELAY` = end of letter. |
+| **3-switch** (dot + dash + accept) | ✓ `LOADER -F MORSE3.CNF`. SW1 = dot, SW2 = dash, SW3 = explicit Accept (no timing pause needed). | ✓ Three-switch mode. Switch 3 explicitly commits the letter. | ✓ `three_button_mode = 1` in `user/config.py`. | ✓ `SWITCH_MODE = 3`. Long-press of `THIRD_SWITCH_GESTURE` (default `"long_dash"` = long puff / long-D6) = explicit Accept. The other long-gesture cycles group forward. |
 
 **Why 1-switch matters:** Users with very limited motor control may only
 be able to operate one switch reliably (a single sip-and-puff straw, a
@@ -102,7 +102,7 @@ A relatively unique AeroMorse feature.
 | | **Adap2U** | **Darci USB** | **morAce** | **AeroMorse** |
 |---|---|---|---|---|
 | Remote display | — | — | — | ✓ **ESP-NOW wireless mirror** — second ESP32 board shows live state up to ~30 m away |
-| Audio feedback | Mono headset | Mono headset | On-board buzzer | Speaker with distinct dot / dash pitches; group-change tones |
+| Audio feedback | Mono headset | Mono headset | On-board buzzer | Optional speaker, or the computer's speakers, with distinct dot / dash pitches and group-change tones |
 
 Useful when the input device (sip-and-puff sensor) must be mounted out of
 the user's line of sight — e.g., behind the headrest — but the user still
@@ -131,7 +131,7 @@ needs to see the Morse buffer and current group.
 - An on-device display showing the Morse buffer live
 - Optional wireless secondary display
 - Open source, modern hardware, active development
-- Low cost (~$50–100 in parts)
+- Low cost (about $42 in parts for the standard build)
 
 ### Pick **morAce** if you want…
 

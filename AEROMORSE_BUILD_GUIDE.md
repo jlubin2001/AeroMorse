@@ -185,6 +185,13 @@ A small pressure sensor detects the change in pressure when you sip or puff
 on a tube. No hand or head movement is needed. The parts and the four steps
 are in section 2.
 
+**It is not hard breathing.** The tube is closed at the sensor, so no air
+flows through it: a sip or a puff is a slight change of pressure made with
+the mouth, not a breath. The sensor responds to about 2 hPa, the pull it
+takes to raise a drink 2 cm up a straw. Jim is dependent on a ventilator to
+breathe and works his AeroMorse all day. The Reference
+(`AEROMORSE_REFERENCE.md`), under "How Input Works", says more.
+
 **Tube.** The Adafruit silicone tubing (#3659, 2.5 mm inside) fits the
 sensor's port snugly and is the easiest choice. Aquarium airline tubing and
 medical sip-and-puff tubing (3/16" inside) also work; if the fit is loose,
@@ -1088,12 +1095,12 @@ edits at once makes it impossible to tell which one helped.
 > editions of this guide that told you to change them were wrong. An old
 > `config.py` that still has those lines keeps working; they are ignored.
 
-**Repeated elements collapse — `--` reads as `-`, `..` reads as `.`**
+**Repeated symbols collapse — `--` reads as `-`, `..` reads as `.`**
 
 A distinct fault with a distinct fix. The signature: the wrong
 character is always the intended one with a **run of identical
-elements shortened by one**, never a wrong element type and never a
-dropped isolated element. Examples from the default map:
+symbols shortened by one**, never the wrong symbol and never a
+dropped isolated symbol. Examples from the default map:
 
 | Intended | Pattern | Received | Pattern | Collapse |
 |---|---|---|---|---|
@@ -1102,8 +1109,8 @@ dropped isolated element. Examples from the default map:
 | `LEFT_SHIFT` | `- - . . . -` | `+` | `- . . . -` | 2 dashes → 1 |
 
 **Cause.** To register two dots in a row the firmware must see
-`IDLE → DIT → IDLE → DIT`. Pressure has to fall back inside the idle
-band *between* the elements and stay there long enough for
+*rest → dot → rest → dot*. Pressure has to fall back inside the resting
+band *between* the two dots and stay there long enough for
 `DEBOUNCE_SAMPLES` to confirm it. Three things eat that brief dip:
 
 - **your own breath**: in a quick double sip or double puff the
@@ -1113,17 +1120,17 @@ band *between* the elements and stay there long enough for
   redraws the built-in screen (tens of milliseconds whenever the text
   changes) the dip can come and go unseen. Measured on the author's
   device before v1.22 these pauses were 60–130 ms on every sip and
-  puff, and they were the main cause of merged and dropped elements;
+  puff, and they were the main cause of merged and dropped symbols;
 - `DEBOUNCE_SAMPLES`, which needs that many consecutive agreeing
   readings (one per loop pass, a few ms each) before it will believe
   the IDLE.
 
-Type faster and your inter-element gaps shrink, so the pair merges
-into one longer element.
+Type faster and your gaps between symbols shrink, so the pair merges
+into one longer symbol.
 
 This is why the fault often **appears right after you lower
 `ACCEPT_DELAY`** — nothing is wrong with the new value, you simply
-started keying faster and crossed the point where adjacent elements
+started keying faster and crossed the point where adjacent symbols
 can no longer be told apart.
 
 **Fix, in order:**
@@ -1135,7 +1142,7 @@ can no longer be told apart.
    your other settings already suit you. `0` switches it off.
 1. `USE_DISPLAY = False` — **if you watch a wireless display and not
    the built-in screen.** Removes the screen-redraw pauses, so the dip
-   between elements is seen. (v1.25 also made the pressure bar far
+   between symbols is seen. (v1.25 also made the pressure bar far
    cheaper to draw for those who keep the screen on.)
 2. `DEBOUNCE_SAMPLES = 3` → `2` — fewer samples needed to confirm the
    brief IDLE.
@@ -1147,10 +1154,10 @@ can no longer be told apart.
 > **Raising the thresholds is a trap for sip-and-puff users.** In
 > theory it should help: the thresholds set the *width of the idle
 > band*, so a wider band means pressure re-enters idle sooner on the
-> way back from each element, separating a repeated pair more
+> way back from each symbol, separating a repeated pair more
 > cleanly. In practice it backfires unless you have a lot of headroom,
-> because the same change also makes every element take **longer to
-> cross the threshold on the way up**, and marginal elements stop
+> because the same change also makes every symbol take **longer to
+> cross the threshold on the way up**, and marginal symbols stop
 > registering at all. Breath pressure is modest and slow-changing
 > compared with a switch closure, so most sip-and-puff users have
 > little headroom to spend — the onset penalty outweighs the gap
@@ -2043,7 +2050,7 @@ value every ~13 ms), so `DEBOUNCE_SAMPLES = 3` means a change must
 hold for roughly 10–15 ms before it takes effect. Filters out brief pressure wobble that would
 otherwise turn a single dot into dot-dot.
 - The big win: with debounce, you can use **low** `THRESH_*` values
-  (2 or even 1) and still get rock-solid element detection. That gives
+  (2 or even 1) and still get rock-solid detection of every dot and dash. That gives
   you fast response (no need to press hard) AND wobble immunity.
 - Set to `1` to disable. Switch mode reads digital pins which are
   already clean, so this value is ignored when `USE_SENSOR = False`.
@@ -2069,9 +2076,9 @@ as the stale baseline drifts further and further from current ambient.
   (`1 / (BASELINE_DRIFT_S × 75)`), and the loop runs 3–4 times faster
   than 75 passes a second, so with the default `30` a step change in
   ambient is in practice ~95 % corrected in roughly 20–30 s, not 90.
-- While in **DIT** or **DAH** the baseline is **frozen** — a held sip
-  or puff cannot be absorbed into the baseline, so a sustained
-  element still detects normally.
+- During a sip or puff the baseline is **frozen** — a held sip
+  or puff cannot be absorbed into the baseline, so a long one
+  still detects normally.
 - Set to `0` to disable auto-zero entirely (return to the original
   fixed-baseline behaviour). Useful if your environment has perfectly
   stable atmospheric pressure (rare) or for debugging.
@@ -2122,7 +2129,7 @@ is emitted for that press.
 
 **Detection in switch mode**: switches have no intensity, so the
 equivalent gesture is a **long-press** of the corresponding switch —
-DIT-side input fires `STRONG_SIP_ACTION`, DAH-side input fires
+the dot switch fires `STRONG_SIP_ACTION`, the dash switch fires
 `STRONG_PUFF_ACTION`. The long-press is detected at the existing
 `LONG_PRESS` duration. Setting either action **overrides** the
 `LONG_PRESS_CYCLES_GROUP` cycle-on-long-press behaviour for that
@@ -2144,7 +2151,7 @@ normal sip can't accidentally trigger a strong gesture.
 ### Timing
 
 **`ACCEPT_DELAY`** (default `0.3`).
-Idle pause (seconds) after the last element before the pattern
+Idle pause (seconds) after the last symbol before the pattern
 commits.
 - Patterns committing before you finish? Raise to `0.5` or `0.7`.
 - Patterns feeling sluggish? Lower toward `0.2` or `0.15`.
@@ -2155,14 +2162,14 @@ commits.
 
 **`LONG_PRESS`** (default `1.0`).
 Hold time (seconds) for the long-gesture (cycle / Accept / strong).
-Raise (e.g. `1.5`) if accidentally triggering on slow elements; lower
+Raise (e.g. `1.5`) if accidentally triggering on slow symbols; lower
 (e.g. `0.7`) if a deliberate long-press feels too slow.
 
 ### Code repeat (Darci-style hold-to-repeat)
 
 **`CODE_REPEAT`** (default `False`).
-When `True`, holding DIT or DAH emits a stream of symbols at the
-configured repeat interval — one symbol on press, then one every
+When `True`, holding a sip or a puff (or the dot or dash switch) emits a
+stream of dots or dashes at the configured repeat interval — one symbol on press, then one every
 `DOT_REPEAT_MS` / `DASH_REPEAT_MS` while held. Release ends the
 stream. `ACCEPT_DELAY` of idle still commits the accumulated pattern.
 This is the Darci USB "code repeat" behaviour. Honoured only in
@@ -2178,8 +2185,8 @@ Cap on symbols per held stream. Prevents buffer overflow if a hold
 goes on too long.
 
 **`LONG_PRESS_CYCLES_GROUP`** (default `True`).
-Independent of `CODE_REPEAT`. `True` = holding DIT/DAH for ≥
-`LONG_PRESS` cycles groups (DIT = back, DAH = forward). `False` =
+Independent of `CODE_REPEAT`. `True` = holding a sip or puff for ≥
+`LONG_PRESS` cycles groups (sip = back, puff = forward). `False` =
 long-press does nothing; switch groups via g0 Morse patterns instead.
 **Recommended `False` alongside `CODE_REPEAT = True`** so a sustained
 symbol stream doesn't accidentally trigger a group cycle.
@@ -3271,92 +3278,10 @@ line beginning `KEYBOARD_LAYOUT:`). When it works the log says
 
 ## Appendix J — More media, browser and app-launcher keys
 
-Group 5 (Media) comes with volume, play / pause, track, brightness and four
-app launchers. Those are **Consumer Control** keys — the same kind of key as
-the extra buttons on a multimedia keyboard. The USB standard defines a few
-hundred more, and **AeroMorse can already send any of them**; they just are
-not assigned to a code out of the box.
-
-### J.1 How to add one
-
-In `morse_map.py`, in any group, use `_cc()` with a name of your choosing and
-the key's number:
-
-```python
-g2[6][0b101011] = _cc('AC_BACK', 0x224)      # -.-.--  browser Back
-```
-
-- The **number** is what matters (`0x224` is "Back" in the USB standard).
-- The **name** is only tried first, for newer key libraries that know it;
-  if it is unknown the number is used. Any name works.
-- No extra file or library is needed.
-
-Pick a free code for it (`morse_map_report.txt` lists them), then validate
-and copy as for any change to the map (Usage Guide §3).
-
-### J.2 Keys worth knowing
-
-| What it does | Line to use | On screen |
-|---|---|---|
-| Browser: back | `_cc('AC_BACK', 0x224)` | BROWSER BACK |
-| Browser: forward | `_cc('AC_FORWARD', 0x225)` | BROWSER FWD |
-| Browser: reload the page | `_cc('AC_REFRESH', 0x227)` | BROWSER REFRESH |
-| Browser: stop loading | `_cc('AC_STOP', 0x226)` | BROWSER STOP |
-| Browser: home page | `_cc('AC_HOME', 0x223)` | BROWSER HOME |
-| Browser: favourites / bookmarks | `_cc('AC_BOOKMARKS', 0x22A)` | BOOKMARKS |
-| Search | `_cc('AC_SEARCH', 0x221)` | SEARCH |
-| Calculator | `_cc('AL_CALCULATOR', 0x192)` | CALCULATOR |
-| File explorer ("This PC") | `_cc('AL_LOCAL_MACHINE_BROWSER', 0x194)` | FILE EXPLORER |
-| Web browser | `_cc('AL_INTERNET_BROWSER', 0x196)` | WEB BROWSER |
-| Mail | `_cc('AL_EMAIL_READER', 0x18A)` | MAIL |
-| Media player | `_cc('AL_CONSUMER_CONTROL_CONFIGURATION', 0x183)` | MEDIA PLAYER |
-| Calendar | `_cc('AL_CALENDAR', 0x18E)` | CALENDAR |
-| Copy / Cut / Paste | `_cc('AC_COPY', 0x21B)` / `0x21C` / `0x21D` | COPY / CUT / PASTE |
-| Undo | `_cc('AC_UNDO', 0x21A)` | UNDO |
-| New / Open / Save / Print | `_cc('AC_NEW', 0x201)` / `0x202` / `0x207` / `0x208` | NEW / OPEN / SAVE / PRINT |
-| Find | `_cc('AC_FIND', 0x21F)` | FIND |
-| Zoom in / out | `_cc('AC_ZOOM_IN', 0x22D)` / `0x22E` — **does nothing on Windows**; use `Keycode.CONTROL, Keycode.EQUALS` and `Keycode.CONTROL, Keycode.MINUS` instead | ZOOM IN / ZOOM OUT |
-
-Media keys already in Group 5 can be reused in other groups by their plain
-names, for example `CC(ConsumerControlCode.MUTE)` or
-`CC(ConsumerControlCode.VOLUME_INCREMENT)`.
-
-A key that is not in the table shows on the screen as `CC` and its number.
-
-**The full list** — about 225 named keys — is in the community file
-[consumer_control_extended.py](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts/blob/main/libraries/helpers/consumer_control_extended.py)
-(Neradoc, MIT licence). You do not need to copy that file to the device;
-read the number you want from it and use it in `_cc()` as above.
-
-### J.3 What to expect
-
-> **Whether a key does anything is up to the computer, not AeroMorse.** The
-> device sends the key correctly either way; the operating system and the
-> program in front decide whether to act on it.
->
-> - **Windows** acts on the browser keys, Search, and the launchers for
->   Calculator, File Explorer, Mail and Media player in most programs.
->   Copy / Paste / Save / Print and the like are honoured by some programs
->   (Microsoft Office, for one) and ignored by many others — for those, a
->   normal key combination such as `Keycode.CONTROL, Keycode.C` is the
->   dependable choice.
-> - **macOS, Linux, phones and tablets** support fewer, mainly the media
->   keys.
-> - **Tried by the project:** the Group 5 media keys and the Calculator
->   launcher work on Windows. **Zoom in / Zoom out were tried on Windows and
->   did nothing** — to zoom the page use Ctrl with plus or minus
->   (`Keycode.CONTROL, Keycode.EQUALS` / `Keycode.CONTROL, Keycode.MINUS`), or
->   for the Windows Magnifier the Windows key with plus or minus
->   (`Keycode.GUI, Keycode.KEYPAD_PLUS` / `Keycode.GUI, Keycode.KEYPAD_MINUS`).
->   The rest of the table is from the USB standard and has not been tried key
->   by key.
->
-> If a key does nothing, nothing is wrong with the device — that computer
-> simply does not use it.
-
-**Leave these alone unless you mean it:** `SLEEP` (`0x32`) and `POWER`
-(`0x30`) put the computer to sleep or switch it off. If you add one, give it
-a long code that cannot be entered by accident.
+This appendix has moved. The table of extra media, browser and app-launcher
+keys, how to add one to a group, and what to expect from each on Windows and
+other systems are now in the **Reference** (`AEROMORSE_REFERENCE.md`), in the
+section "More media, browser and app-launcher keys".
 
 ---
 

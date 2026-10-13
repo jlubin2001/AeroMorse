@@ -155,7 +155,7 @@ KEYPAD_ENTER      KEYPAD_EQUALS    KEYPAD_BACKSLASH
 
 Volume, play / pause, browser Back, Calculator and the like are a different
 kind of key ("Consumer Control"). They are written with `CC(...)` or
-`_cc('NAME', number)`, not `Keycode.`. See the **Build Guide, Appendix J**
+`_cc('NAME', number)`, not `Keycode.`. See the **Reference** (`AEROMORSE_REFERENCE.md`), "More media, browser and app-launcher keys",
 for the list and how to add one.
 
 ## Gotchas that trip people up

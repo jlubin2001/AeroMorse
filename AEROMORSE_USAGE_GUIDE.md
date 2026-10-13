@@ -217,7 +217,8 @@ lists:
   `morse_map.py`, and how to type shifted symbols.
 - **Build Guide** (PDF) — the standard build and its choices, software
   install, every `config.py` setting (Appendix E) and troubleshooting (§12).
-- **README** — group-by-group pattern tables and the full secrets guide.
+- **Reference** (`AEROMORSE_REFERENCE.md`) — group-by-group pattern tables,
+  how the mouse, repeat and modifiers work, and the full secrets guide.
 - **Switch Mode Guide** — Group 9, where a sip holds Enter and a puff holds
   Space like two plain switches (switch games such as
   [Benny's Hub](https://narbehouse.github.io/bennyshub/index.html)).
@@ -259,7 +260,7 @@ Each restart reconnects the device's `CIRCUITPY` drive, so Windows AutoPlay,
 your antivirus and cloud-backup tools such as Google Drive may each show a
 pop-up near the clock. They are harmless and can be ignored, or switched off
 in each program — see **Troubleshooting → Pop-ups on the computer when the
-device starts or restarts** in the README / Build Guide for the steps.
+device starts or restarts** in the Build Guide, section 12, for the steps.
 
 ## 4. Changing `config.py`
 
@@ -307,8 +308,8 @@ project's author — for two reasons:
   when it works there does it go on the daily one. Every AeroMorse release
   is tested this way before it is published.
 
-A second device costs about as much as the first (roughly $30 for the
-recommended board, sensor and cable — an enclosure is extra; Build Guide
+A second device costs about as much as the first (roughly $42 for the
+standard board, sensor, cable and tube — an enclosure is extra; Build Guide
 Appendix H). It does not need its own speaker or
 wireless display.
 

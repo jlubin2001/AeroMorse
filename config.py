@@ -121,8 +121,8 @@ LONG_PRESS        = 1.0        # seconds to hold for cycle / Accept gesture
 
 
 # ── CODE REPEAT (Darci-style hold-to-repeat) ──────────────────────────────
-# When CODE_REPEAT = True, holding DIT or DAH emits one symbol per repeat
-# interval. SWITCH_MODE = 2 only.
+# When CODE_REPEAT = True, holding a sip or puff (or the dot or dash switch)
+# emits one dot or dash per repeat interval. SWITCH_MODE = 2 only.
 
 CODE_REPEAT             = False    # True = Darci-style hold-to-repeat
 DOT_REPEAT_MS           = 200      # ms per auto-repeated dot

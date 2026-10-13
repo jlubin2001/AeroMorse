@@ -1,8 +1,9 @@
 # AeroMorse — Recommended Tools & Learning Guides
 
 This document lists every tool and reference you may need to build and
-configure AeroMorse. Nothing here is compulsory for every build — read the
-notes to understand which items apply to your chosen configuration.
+configure AeroMorse. **The standard build needs none of them**: it has no
+soldering, and its software is installed by copying files to a drive (Build
+Guide §2 and §9). Read the notes to see which items apply to your build.
 
 ---
 
@@ -23,14 +24,17 @@ All software tools listed here are **free**.
 
 ---
 
-### Thonny — Code Editor & Serial Console ⭐ Recommended
+### Thonny — Code Editor & Serial Console (optional)
 
 **Download:** https://thonny.org
 **Platforms:** Windows, macOS, Linux
 **Adafruit Thonny guide:** https://learn.adafruit.com/welcome-to-circuitpython/thonny-ide
 
-Thonny is the recommended editor for CircuitPython beginners. In one window it
-gives you:
+Thonny is a beginner-friendly CircuitPython editor. **You do not need it to
+install or change AeroMorse** — `config.py` and `morse_map.py` are edited
+with any text editor, following the Usage Guide. Its use here is to see the
+device's error messages when something does not work (Build Guide,
+Appendix N). In one window it gives you:
 
 - A code editor for `code.py` and `morse_map.py`
 - A file manager for the CIRCUITPY drive (drag, rename, delete files)
@@ -98,7 +102,7 @@ gives you:
    or in File Explorer / Finder.
 
 > If CIRCUITPY does not appear, CircuitPython may not be installed yet —
-> see the Software Installation section of the Build Guide.
+> see the Build Guide, §9 "Software".
 
 ---
 
@@ -149,7 +153,8 @@ while it runs. After saving `code.py` and the Feather restarts, you will see:
 
 ```
 Calibrating — do not sip or puff ...
-Baseline: 1013.241  sip<1008.241  puff>1018.241
+Baseline: 1013.241  sip<1011.241  puff>1015.241
+Calibration complete — ready for input.
 ```
 
 This confirms the code is running. If you see an error instead, the Shell
@@ -158,9 +163,9 @@ troubleshooting.
 
 **Useful serial output during use:**
 ```
-. - .    "r"          ← pattern committed, letter r typed
--> Mouse             ← group changed to Mouse
-? . -                ← pattern not found in current group
+. - .   "r"            ← pattern accepted, letter r typed
+GROUP -> 2 (Mouse)     ← group changed to Mouse
+. - . - .   ?          ← pattern not found in the current group
 ```
 
 ---
@@ -232,13 +237,17 @@ Download the bundle that matches your CircuitPython version number (shown in
 
 ## 2. Soldering Tools
 
-**Required only if:**
-- You are building the soldered TRRS breakout option (Option B2), **or**
-- Your Feather board arrived without header pins pre-soldered
+**The standard build needs no soldering.** Soldering is required only for:
 
-The breadboard option (Option B1) needs no soldering **only if the Feather
-already has header pins**. The #2915 terminal block (Build Guide §4.2) needs at most
-three solder joints, and none if the Feather has header pins.
+- switches on the standard #5691 board — three wires to its pads
+  (Build Guide §4.2, Way 2);
+- a speaker on the #5691 — three wires to its pads (§6.3);
+- the other hardware in the Build Guide's appendices: a soldered jack
+  board, a separate display wired by hand, or header pins on the Feather
+  (Appendices D, F and M).
+
+The Cytron board build (Build Guide Appendix K) has switches and sound with
+no soldering at all.
 
 > **New to soldering?** Read Adafruit's free beginner guide before you start:
 > https://learn.adafruit.com/adafruit-guide-excellent-soldering
@@ -364,8 +373,9 @@ stationery store.
 
 ## 4. Wiring Supplies
 
-Needed only if connecting a **standalone breakout display** (not a FeatherWing)
-or building the **soldered TRRS option**.
+Needed only for the hardware in the Build Guide's appendices — a breadboard
+build, a soldered jack board, or a separate display wired by hand — and for
+the three wires of a switch jack or speaker on the standard board.
 
 ---
 
@@ -530,16 +540,17 @@ M  --       Z  --..
 
 ### AeroMorse-specific Morse map
 
-The complete code table for all groups (keyboard, mouse, macros) is in
-`morse_map.py` in the project folder, and documented in `README.md`.
+The complete code table for every group is in `morse_map.py` in the project
+folder. The printed `AeroMorse Cheat Sheet.pdf` and the `AeroMorse Help.html`
+window show it as dots and dashes.
 
 Key patterns to learn first:
 
 | Pattern | Action | Note |
 |---------|--------|------|
 | `...-. ` (pause) | Switch to Mouse group | From Keyboard group |
-| Long sip (≥ 1 s) | Cycle groups backward | 1 → 3 → 2 → 1 |
-| Long puff (≥ 1 s) | Cycle groups forward | 1 → 2 → 3 → 1 |
+| Long sip (≥ 1 s) | Cycle groups backward | 1 → 8 → 7 → … → 2 → 1 (Group 9, Switch, is skipped) |
+| Long puff (≥ 1 s) | Cycle groups forward | 1 → 2 → 3 → … → 8 → 1 |
 | `........` (8 dots) | Jump to Keyboard group | Works in any group |
 | `--------` (8 dashes) | Jump to Mouse group | Works in any group |
 | `....----` | Jump to Macro group | Works in any group |

@@ -17,17 +17,17 @@ For a broader comparison that also covers Adap2U and morAce, see
 
 | | **Darci USB** | **AeroMorse** |
 |---|---|---|
-| Form factor | Dedicated enclosed box | Adafruit Feather board + breadboard (or off-the-shelf enclosure) |
+| Form factor | Dedicated enclosed box | Two small Adafruit boards joined by one cable; an enclosure is up to you (3D-printed designs in Build Guide Appendix H) |
 | Output | USB HID | USB HID |
 | Switch jacks | 3 × 3.5 mm mono | 2 × 3.5 mm (or sip-and-puff sensor) |
 | Sip and puff | No (use external interface) | **Yes — built in** (#4414 pressure sensor) |
 | Switch input modes | 1 / 2 / 3 switches (hardware) | **1 / 2 / 3 switch modes** (`SWITCH_MODE = 1/2/3`) — 3rd switch implemented as a long-press gesture on the existing 2 inputs |
 | Hold-to-repeat (code repeat) | ✓ Built in | ✓ `CODE_REPEAT = True` — opt-in, independent dot / dash repeat intervals |
-| Audio feedback | Headset jack, single tone | Built-in speaker, distinct dot/dash pitches (square wave via `pwmio`) |
-| Visual feedback | Indicator LEDs (sticky-key status) | **OLED display** + optional wireless TFT for caregiver |
+| Audio feedback | Headset jack, single tone | Optional, with distinct dot / dash pitches: through the computer's speakers (no hardware), or a speaker fitted to the device. The standard build has no speaker |
+| Visual feedback | Indicator LEDs (sticky-key status) | **Colour screen built into the board**, showing the group, the dots and dashes as they are entered, the last action and armed modifiers — plus an optional window on the computer and an optional wireless display |
 | Customization | CodeMaker program (Windows only, `.CST` files) | Plain-text `morse_map.py` — any editor on any OS |
 | Host OS | Windows 98 → Windows 7 (32-bit) | **Windows / macOS / Linux / ChromeOS / iPad** — anything that takes USB HID |
-| Cost | ~$1000+ commercial device | ~$50–$100 in parts |
+| Cost | ~$1000+ commercial device | About $42 in parts for the standard build (October 2026), plus a USB cable and an enclosure |
 | Source | Closed, EOL/hard to source | **Open source, ongoing** |
 | Mouse control | Uses Windows' built-in Mouse Keys | Native USB HID mouse — no OS config required |
 
@@ -212,7 +212,7 @@ No special number mode — numbers use standard 5-symbol Morse in g1.
 | Command confirmation beep | Yes | Yes (`CONFIRM_FREQ`) |
 | Group/Mode change tone | (per LED) | Distinct low tone (`GROUP_FREQ`) |
 | Volume | Not adjustable | Not adjustable directly — set by speaker choice (#3885 has a built-in 1 W amp; piezo options are quieter) |
-| On-board speaker | None — headset out only | #3885 STEMMA Speaker (Build Guide §6.3), or a piezo or PAM8302 amp + speaker (Appendix D) (S3) |
+| On-board speaker | None — headset out only | #3885 STEMMA Speaker (Build Guide §6.3), or a piezo or PAM8302 amp + speaker (Appendix D) |
 | External speaker out | Headset jack | Add a 3.5 mm jack (#2915 TRRS Terminal Block) wired to A0/GND — any speaker that already terminates in a 3.5 mm mono plug plugs straight in (see Build Guide Appendix D, Option S2) |
 | Sound with no speaker fitted | — | **Through the computer's speakers** (v1.27+): set `PC_DISPLAY = True` and `PC_SOUND = True`, run the *AeroMorse Display* program and switch *Sound* on in its right-click menu. Sine tones, three volume levels. See Build Guide §6.2 |
 | Sticky-key indicator | LED on box | Text on the screen (`Shift`, `Ctrl`, etc.) |
@@ -257,7 +257,7 @@ config flag (default `False`). When enabled in `SWITCH_MODE = 2`:
 | | Darci | AeroMorse (with `CODE_REPEAT = True`) |
 |---|---|---|
 | 1-switch repeat | `--` (rr) command | Inherent — `SWITCH_MODE = 1` duration already classifies dot vs. dash; longer hold yields a longer single press. (`CODE_REPEAT` is not honoured in `SWITCH_MODE = 1`.) |
-| 2-switch repeat | Hold last switch after final dot/dash | `CODE_REPEAT = True` — hold DIT for a dot-stream, DAH for a dash-stream. Release ends the stream; the next press starts a new one. |
+| 2-switch repeat | Hold last switch after final dot/dash | `CODE_REPEAT = True` — hold a sip (or the dot switch) for a stream of dots, a puff (or the dash switch) for a stream of dashes. Release ends the stream; the next press starts a new one. |
 | Repeat rate — dots | One Setup value | `DOT_REPEAT_MS` (default 200 ms) |
 | Repeat rate — dashes | Same Setup value | `DASH_REPEAT_MS` (default 600 ms) — **separately adjustable** from dot rate, unlike Darci |
 | Repeat cap | Setup limits | `CODE_REPEAT_MAX` (default 8) — prevents buffer overflow if a hold lasts longer than intended |
@@ -291,9 +291,9 @@ emits dashes at ~1.7 per second; group switches happen only when an
 ### AeroMorse
 | Port | Use |
 |---|---|
-| 2 × 3.5 mm jacks (#1699 or #2915 each) | Dot switch (D5) / Dash switch (D6) |
-| STEMMA QT chain | Pressure sensor (#4414), OLED (#326) |
-| 3-pin speaker connector | On-board speaker out (A0 + 3V + GND) — #3885 STEMMA Speaker |
+| Switch jack(s), if you use switches | Dot switch (D5) / Dash switch (D6) — one jack each on the Cytron board build, or one #2915 jack with a stereo to dual mono cable on the standard board (Build Guide §4.2) |
+| STEMMA QT socket | Pressure sensor (#4414) |
+| Optional speaker (A0 + 3V + GND) | #3885 STEMMA Speaker (Build Guide §6.3) |
 | Optional 3.5 mm audio jack (#2915) | External speaker out (A0 + GND) — accepts any 3.5 mm-plug piezo or small speaker. See Build Guide Appendix D, Option S2. |
 | USB-C | To computer |
 
@@ -336,7 +336,7 @@ For a Darci user moving to AeroMorse, in order:
   enable `CODE_REPEAT = True`
 - ✅ You want Darci's code-based group switching — enable
   `LONG_PRESS_CYCLES_GROUP = False`
-- ✅ Cost is a factor (~$50–100 in parts vs ~$1000+ when Darci was current)
+- ✅ Cost is a factor (about $42 in parts for the standard build vs ~$1000+ when Darci was current)
 
 ## When Darci may still be the right choice
 
@@ -373,8 +373,7 @@ an issue on GitHub.
 
 ---
 
-*Document version: 2.2  •  Updated for AeroMorse 1/2/3-switch modes,*
-*CODE_REPEAT hold-to-repeat, LONG_PRESS_CYCLES_GROUP, pwmio audio, and*
-*the restructured Option S2 (#2915 jack + #2790 plug + passive piezo —*
-*solderless and removable; also accepts any 3.5 mm-plug speaker).*
+*Document version: 2.3  •  Updated for AeroMorse v1.30 and the restructured*
+*Build Guide: the standard build (built-in colour screen, no speaker),*
+*sound through the computer, and current parts cost.*
 *Project: https://github.com/jlubin2001/AeroMorse*

@@ -58,7 +58,7 @@ def init_group():
 # secret just types its placeholder. For many users morse_map.py is their only
 # means of computer access, so it must never be brickable by the secrets file.
 # Defined here at the top so _secret() is available to every group below. See
-# README "Storing passwords and secrets safely".
+# AEROMORSE_REFERENCE.md "Storing passwords and secrets safely".
 class Secret:
     """Marker for a private value. code.py looks up `key` when the pattern is
     used, so the value is never stored in (or shown from) this file."""
