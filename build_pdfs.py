@@ -218,10 +218,13 @@ def build_usage():
 def build_reference():
     return build_guide("AEROMORSE_REFERENCE", "AeroMorse Reference", toc=False)
 
+def build_caregiver():
+    return build_guide("CAREGIVER_SETUP_GUIDE", "AeroMorse Caregiver Guide", toc=False)
+
 def build_switchmode():
     return build_guide("AEROMORSE_SWITCH_MODE_GUIDE", "AeroMorse Switch Mode Guide", toc=False)
 
-TARGETS = {"guide": build_guide, "usage": build_usage, "reference": build_reference, "switchmode": build_switchmode,
+TARGETS = {"guide": build_guide, "usage": build_usage, "reference": build_reference, "caregiver": build_caregiver, "switchmode": build_switchmode,
            "cheatsheet": build_cheatsheet, "keycode": build_keycode}
 
 def build_my_cheatsheet(folder):

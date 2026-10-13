@@ -28,7 +28,7 @@ his own daily device. It was inspired by
 | I want to… | Read |
 |------------|------|
 | **Build one** | [Build Guide](AEROMORSE_BUILD_GUIDE.md) ([PDF](AEROMORSE_BUILD_GUIDE.pdf)) — one standard build and three choices, then software, first test and troubleshooting |
-| **Help someone build one**, as a non-technical caregiver | [Caregiver Setup Guide](CAREGIVER_SETUP_GUIDE.md) |
+| **Help someone use one day to day**, as a caregiver | [Caregiver Guide](CAREGIVER_SETUP_GUIDE.md) ([PDF](CAREGIVER_SETUP_GUIDE.pdf)) — plugging it in, the tube, and getting it going again if it stops |
 | **Change the codes, settings or passwords safely** once it works | [Usage Guide](AEROMORSE_USAGE_GUIDE.md) ([PDF](AEROMORSE_USAGE_GUIDE.pdf)) — the work folder, the helper tools, and a one-page checklist |
 | **Look up a code** | `AeroMorse Cheat Sheet.pdf` to print, or the `AeroMorse Help.html` window |
 | **Understand the groups, the mouse, macros and secrets** | [Reference](AEROMORSE_REFERENCE.md) ([PDF](AEROMORSE_REFERENCE.pdf)) |

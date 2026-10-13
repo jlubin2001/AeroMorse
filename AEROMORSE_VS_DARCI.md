@@ -309,8 +309,9 @@ emits dashes at ~1.7 per second; group switches happen only when an
 
 For a Darci user moving to AeroMorse, in order:
 
-1. **Build or obtain the hardware** — see `AEROMORSE_BUILD_GUIDE.md` or have a
-   technical person follow `CAREGIVER_SETUP_GUIDE.md`.
+1. **Build or obtain the hardware** — see `AEROMORSE_BUILD_GUIDE.md`. The
+   standard build needs no soldering. `CAREGIVER_SETUP_GUIDE.md` is for the
+   person who helps day to day: plugging it in, the tube, and restarting it.
 2. **Decide on input style** — keep existing 2-switch setup, or try sip-and-puff.
 3. **Decide on code set:**
    - To keep Darci muscle memory → install `morse_map_darci.py` (rename to `morse_map.py` on the CIRCUITPY drive).
