@@ -12,7 +12,7 @@ quadriplegic who has used Morse code for computer access since 1989. It is
 his own daily device. It was inspired by
 [AirTalker](https://github.com/ATMakersOrg/AirTalker).
 
-![The author's AeroMorse in its enclosure](images/enclosure-closed.jpg)
+![The author's AeroMorse with the enclosure open: the board with its screen on the left, the pressure sensor and air tube on the right](images/enclosure-open.jpg)
 
 - **About $42 in parts** for the standard build (Adafruit prices, October
   2026), plus a USB cable and an enclosure.
