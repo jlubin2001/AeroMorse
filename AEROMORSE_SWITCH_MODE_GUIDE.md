@@ -41,7 +41,9 @@ need a key **held down**, which Morse groups can't do.
 Things that do **not** change group in Switch mode, on purpose:
 
 - **Hard (strong) sips and puffs** — games often need them.
-- **Long sips and puffs** — games often need long holds.
+- **Long sips and puffs** — games often need long holds. (The one exception
+  is a puff held for the full `SWITCH_EXIT_PUFF_S`, 5 seconds as supplied,
+  which leaves Switch mode. A sip can be held as long as you like.)
 - **Quick repeated sips or puffs.**
 
 The first sip or puff after AeroMorse starts only closes the start-up
@@ -86,6 +88,36 @@ can use just the puff (Space) for those.
 
 ---
 
+## How it compares with a two-switch adapter
+
+NARBE also publish **Benny's Trinkey**, a small USB adapter that turns two
+plugged-in switches into Space and Enter
+([code on GitHub](https://github.com/narbefoundation/Benny-s-Trinkey)).
+Switch mode does the same job — each key goes down when the press starts and
+comes up when it ends — with these differences:
+
+| | Benny's Trinkey | AeroMorse Switch mode |
+|---|---|---|
+| Which input is which | Switch 1 = Space, switch 2 = Enter | Sip = Enter, puff = Space (change with `SWITCH_SIP_KEY` / `SWITCH_PUFF_KEY`) |
+| Both keys held together | Yes | **No** — one at a time |
+| Longest hold | No limit | Enter (sip): no limit. Space (puff): up to `SWITCH_EXIT_PUFF_S`, 5 seconds as supplied |
+| Leaves by itself | Never — it is always Space and Enter | After `SWITCH_IDLE_EXIT_S` (20 seconds) with no sip or puff |
+| Shows what is held | Light on the adapter | `HOLD SPACEBAR` / `HOLD RETURN` on the display |
+
+What that means in practice:
+
+- **A game that needs Space and Enter held at the same time will not work.**
+  You cannot sip and puff together. On a two-switch build, if both switches
+  are pressed the dot switch (Enter) is the one that counts.
+- **Going straight from a sip to a puff** (or back) lets go of the first key
+  and then presses the other.
+- **A game that needs Space held longer than 5 seconds** will drop you out of
+  Switch mode part-way through. Raise `SWITCH_EXIT_PUFF_S`, for example to
+  `10`. The 20-second idle exit still gets you out. Or swap the two keys so
+  the long hold is on the sip, which has no limit.
+
+---
+
 ## Settings (`config.py`)
 
 All in the **SWITCH GROUP** section of `config.py`. Save and the device
@@ -97,9 +129,9 @@ restarts with the new values.
 | `SWITCH_SIP_KEY` | `"ENTER"` | Key held while sipping. Any Keycode name, e.g. `"LEFT_ARROW"`. |
 | `SWITCH_PUFF_KEY` | `"SPACE"` | Key held while puffing, e.g. `"RIGHT_ARROW"`. |
 | `SWITCH_IDLE_EXIT_S` | `20` | Seconds with no sip/puff before it returns to `SWITCH_EXIT_GROUP` by itself. `0` = never (then use the long puff). |
-| `SWITCH_EXIT_PUFF_S` | `5.0` | Hold one puff this long to leave straight away. |
+| `SWITCH_EXIT_PUFF_S` | `5.0` | Hold one puff this long to leave straight away. This is also the longest the puff key can be held, so raise it (e.g. `10`) for games with long Space holds. Lowest allowed: `2`. |
 | `SWITCH_EXIT_GROUP` | `1` | Where you go when leaving (1 = Keyboard). |
-| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) Seconds of on-screen countdown before it leaves, e.g. `KEYBOARD IN 5` — it names the group you are going to. `0` = none. |
+| `SWITCH_COUNTDOWN_S` | `10` | (v1.21+) Seconds of on-screen countdown before it leaves, e.g. `KEYBOARD IN 5` — it names the group you are going to. It runs before the idle exit, and during a long puff from 1 second into the hold. `0` = none. |
 
 Key names are listed in the **Keycode Reference** (`KEYCODE_REFERENCE.md` /
 the PDF). For example, a game controlled with the arrow keys could use
@@ -129,6 +161,8 @@ copy `config.py` to the device.
 | Problem | Why | Fix |
 |---|---|---|
 | It leaves Switch mode while I'm playing | A pause longer than `SWITCH_IDLE_EXIT_S`, or a 5-second puff | Raise `SWITCH_IDLE_EXIT_S` / `SWITCH_EXIT_PUFF_S` |
+| Space lets go during a long hold | The puff reached `SWITCH_EXIT_PUFF_S` and left Switch mode | Raise `SWITCH_EXIT_PUFF_S` (e.g. `10`) |
+| The game wants Space and Enter together | Switch mode holds one key at a time | Not possible with sip-and-puff; choose a game setting that uses one key at a time |
 | I need the mouse between games | Switch mode has no Morse, so there is no code to press | Set `SWITCH_EXIT_GROUP = 2` so leaving lands in Mouse, and add a short Group 2 code for `"group 9"` in `morse_map.py` to come back. The countdown (`SWITCH_COUNTDOWN_S`) shows when it is about to leave |
 | It won't leave Switch mode | You keep sipping/puffing within 20 s | Stop for 20 s, or hold one puff for 5 s |
 | Nothing happens in the game | The game window isn't in front, or wants other keys | Click the game once; or change `SWITCH_SIP_KEY` / `SWITCH_PUFF_KEY` |
