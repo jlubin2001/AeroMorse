@@ -138,7 +138,8 @@ his own daily device. It was inspired by
 
 - The standard build is two small Adafruit boards and one cable, with no
   soldering.
-- A no-solder switch build on the Cytron Maker Feather AIoT S3.
+- A no-solder switch build on the Cytron Maker Feather AIoT S3 with Headers
+  adds AT switches and a speaker.
 - Other boards, displays, switch wiring and speakers are documented in the
   Build Guide's appendices, marked as not tested.
 
