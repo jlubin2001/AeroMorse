@@ -35,3 +35,6 @@ macro_secrets.enc
 # PyInstaller build artifacts
 build/
 *.spec
+
+# Release downloads made by make_release_zip.py
+dist/

@@ -33,17 +33,21 @@ a `Backups` folder inside it.
 
 ### What goes in it
 
+Everything marked *the download* comes in one zip from the
+[latest release](https://github.com/jlubin2001/AeroMorse/releases/latest) (under *Assets*). Unzip it and that folder can be your
+work folder; then copy your own device files into it.
+
 | Put in the work folder | From | Why |
 |---|---|---|
 | `boot.py`, `code.py`, `config.py`, `morse_map.py` | **your device** (the CIRCUITPY drive) | The copies you edit. Take them from the device, not the repo, so your own settings and patterns are what you edit. |
 | `macro_secrets.enc` *(or `macro_secrets.txt`)* | your device, if you already have one | Your passwords (see [AeroMorse Secrets](#aeromorse-secrets)). |
-| `macro_secrets.example.txt` | the repo | Template for your **first** secrets file — see [First time](#first-time-creating-your-secrets). |
-| `aeromorse_validator.exe` + `Check my AeroMorse files.bat` | the [AeroMorse repo](https://github.com/jlubin2001/AeroMorse) | Safety check before copying to the device. |
-| `AeroMorse Secrets.exe` + `Edit my AeroMorse secrets.bat` | the repo | Edit and PIN-lock your passwords. |
-| `Back up my AeroMorse.bat` | the repo | One-click dated backup of the device. |
-| `morse_map_analyzer.exe` | the repo | Finds duplicate and free patterns. |
-| `aeromorse_cheatsheet.htm` | the repo | Interactive cheat sheet of *your* map. |
-| `AeroMorse Cheat Sheet.pdf`, `AeroMorse — Keycode Reference.pdf`, `AEROMORSE_BUILD_GUIDE.pdf`, this guide | the repo | Reference to read or print. |
+| `macro_secrets.example.txt` | the download | Template for your **first** secrets file — see [First time](#first-time-creating-your-secrets). |
+| `aeromorse_validator.exe` + `Check my AeroMorse files.bat` | the download | Safety check before copying to the device. |
+| `AeroMorse Secrets.exe` + `Edit my AeroMorse secrets.bat` | the download | Edit and PIN-lock your passwords. |
+| `Back up my AeroMorse.bat` | the download | One-click dated backup of the device. |
+| `morse_map_analyzer.exe` | the download | Finds duplicate and free patterns. |
+| `aeromorse_cheatsheet.htm` | the download | Interactive cheat sheet of *your* map. |
+| `AeroMorse Cheat Sheet.pdf`, `AeroMorse — Keycode Reference.pdf`, `AEROMORSE_BUILD_GUIDE.pdf`, this guide | the download | Reference to read or print. |
 
 When finished it looks like this:
 

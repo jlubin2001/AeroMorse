@@ -12,7 +12,7 @@ quadriplegic who has used Morse code for computer access since 1989. It is
 his own daily device. It was inspired by
 [AirTalker](https://github.com/ATMakersOrg/AirTalker).
 
-![The author's AeroMorse with the enclosure open: the board with its screen on the left, the pressure sensor and air tube on the right](images/enclosure-open.jpg)
+![The author's AeroMorse with the enclosure open: the board with its screen on the left, the pressure sensor and air tube on the right](docs/images/enclosure-open.jpg)
 
 - **About $42 in parts** for the standard build (Adafruit prices, October
   2026), plus a USB cable and an enclosure.
@@ -27,18 +27,19 @@ his own daily device. It was inspired by
 
 | I want to… | Read |
 |------------|------|
-| **Build one** | [Build Guide](AEROMORSE_BUILD_GUIDE.md) ([PDF](AEROMORSE_BUILD_GUIDE.pdf)) — one standard build and three choices, then software, first test and troubleshooting |
-| **Help someone use one day to day**, as a caregiver | [Caregiver Guide](CAREGIVER_SETUP_GUIDE.md) ([PDF](CAREGIVER_SETUP_GUIDE.pdf)) — plugging it in, the tube, and getting it going again if it stops |
-| **Change the codes, settings or passwords safely** once it works | [Usage Guide](AEROMORSE_USAGE_GUIDE.md) ([PDF](AEROMORSE_USAGE_GUIDE.pdf)) — the work folder, the helper tools, and a one-page checklist |
+| **Download everything** | The [latest release](https://github.com/jlubin2001/AeroMorse/releases/latest) — one zip (under *Assets*) with the device files, the Windows programs and tools, and the PDF guides in one folder |
+| **Build one** | [Build Guide](docs/AEROMORSE_BUILD_GUIDE.md) ([PDF](docs/AEROMORSE_BUILD_GUIDE.pdf)) — one standard build and three choices, then software, first test and troubleshooting |
+| **Help someone use one day to day**, as a caregiver | [Caregiver Guide](docs/CAREGIVER_SETUP_GUIDE.md) ([PDF](docs/CAREGIVER_SETUP_GUIDE.pdf)) — plugging it in, the tube, and getting it going again if it stops |
+| **Change the codes, settings or passwords safely** once it works | [Usage Guide](docs/AEROMORSE_USAGE_GUIDE.md) ([PDF](docs/AEROMORSE_USAGE_GUIDE.pdf)) — the work folder, the helper tools, and a one-page checklist |
 | **Look up a code** | `AeroMorse Cheat Sheet.pdf` to print, or the `AeroMorse Help.html` window |
-| **Understand the groups, the mouse, macros and secrets** | [Reference](AEROMORSE_REFERENCE.md) ([PDF](AEROMORSE_REFERENCE.pdf)) |
-| **Move from a Darci USB** | [AeroMorse vs Darci](AEROMORSE_VS_DARCI.md), and "Replacing a Darci USB?" below |
-| **Play switch games**, or use an app that needs a key held | [Switch Mode Guide](AEROMORSE_SWITCH_MODE_GUIDE.md) ([PDF](AEROMORSE_SWITCH_MODE_GUIDE.pdf)) |
-| **Use Switch Control on a phone or tablet** | [Switch Control Guide](AEROMORSE_SWITCH_CONTROL_GUIDE.md) |
-| **Compare it with other Morse devices** | [Morse Devices Comparison](MORSE_DEVICES_COMPARISON.md) |
-| **Know which key names I can use** in the map | [Keycode Reference](KEYCODE_REFERENCE.md) ([PDF](AeroMorse%20—%20Keycode%20Reference.pdf)) |
-| **Set up the developer tools** (Thonny, the CircuitPython installer) | [Tools and Guides](TOOLS_AND_GUIDES.md) |
-| **Use it over Bluetooth** | Not supported — see [BLE_STATUS.md](BLE_STATUS.md). Use a USB-C cable |
+| **Understand the groups, the mouse, macros and secrets** | [Reference](docs/AEROMORSE_REFERENCE.md) ([PDF](docs/AEROMORSE_REFERENCE.pdf)) |
+| **Move from a Darci USB** | [AeroMorse vs Darci](docs/AEROMORSE_VS_DARCI.md), and "Replacing a Darci USB?" below |
+| **Play switch games**, or use an app that needs a key held | [Switch Mode Guide](docs/AEROMORSE_SWITCH_MODE_GUIDE.md) ([PDF](docs/AEROMORSE_SWITCH_MODE_GUIDE.pdf)) |
+| **Use Switch Control on a phone or tablet** | [Switch Control Guide](docs/AEROMORSE_SWITCH_CONTROL_GUIDE.md) |
+| **Compare it with other Morse devices** | [Morse Devices Comparison](docs/MORSE_DEVICES_COMPARISON.md) |
+| **Know which key names I can use** in the map | [Keycode Reference](docs/KEYCODE_REFERENCE.md) ([PDF](docs/AeroMorse%20—%20Keycode%20Reference.pdf)) |
+| **Set up the developer tools** (Thonny, the CircuitPython installer) | [Tools and Guides](docs/TOOLS_AND_GUIDES.md) |
+| **Use it over Bluetooth** | Not supported — see [BLE_STATUS.md](docs/BLE_STATUS.md). Use a USB-C cable |
 
 > **Sibling project — [MorseKey](https://github.com/jlubin2001/MorseKey):** the
 > same Morse engine on an Adafruit TRRS Trinkey, thumb-drive sized, for one
@@ -193,7 +194,7 @@ two — a spare, and a safe place to try changes.
 
 ## Install the software
 
-The [Build Guide](AEROMORSE_BUILD_GUIDE.md), section 9, has the full
+The [Build Guide](docs/AEROMORSE_BUILD_GUIDE.md), section 9, has the full
 walk-through. The short version:
 
 ### 1. Install CircuitPython on the Feather
@@ -244,9 +245,9 @@ walk-through. The short version:
 
 ### 3. Copy the AeroMorse software
 
-Download the four AeroMorse files from the repo — **green `< > Code` button →
-Download ZIP**, then unzip. Copy these from the ZIP's **root** to the **root**
-of CIRCUITPY:
+Download **`AeroMorse-v1.30.zip`** (the number is the version) from the
+[latest release](https://github.com/jlubin2001/AeroMorse/releases/latest) — it is under *Assets* — and unzip it. Copy these four
+files from that folder to the **root** of CIRCUITPY:
 
 ```
 boot.py   code.py   config.py   morse_map.py
@@ -296,7 +297,7 @@ one from anywhere.
 - **Every code**: print `AeroMorse Cheat Sheet.pdf`, or open
   `AeroMorse Help.html` — a window with a tab for each group.
 - **How the groups, the mouse, repeat, sticky modifiers and drag work**: the
-  [Reference](AEROMORSE_REFERENCE.md).
+  [Reference](docs/AEROMORSE_REFERENCE.md).
 
 ### On the computer (Windows)
 
@@ -317,7 +318,7 @@ AutoHotkey program. Set-up is in the Usage Guide, section 7.
 
 - **Codes** are in `morse_map.py`, one line per code. **Settings** are in
   `config.py`. Both are plain text files on the device's own drive.
-- **Follow the [Usage Guide](AEROMORSE_USAGE_GUIDE.md).** It sets up a work
+- **Follow the [Usage Guide](docs/AEROMORSE_USAGE_GUIDE.md).** It sets up a work
   folder and gives a safe order for any change: back up, edit a copy, run
   the validator, copy to the device only after it says PASS. This matters
   most when the device is your only computer access — a small typing
@@ -325,7 +326,7 @@ AutoHotkey program. Set-up is in the Usage Guide, section 7.
 - **Every setting** is explained in the Build Guide, Appendix E.
 - **Passwords** do not go in `morse_map.py`. They go in a separate file that
   can be locked with a PIN you enter in Morse — see the
-  [Reference](AEROMORSE_REFERENCE.md#storing-passwords-and-secrets-safely).
+  [Reference](docs/AEROMORSE_REFERENCE.md#storing-passwords-and-secrets-safely).
 
 ---
 
@@ -351,7 +352,7 @@ If you are a current Darci user or know someone who is, AeroMorse provides:
 - ✅ **Optional wireless remote display** — see the user's screen from
   across the room (no equivalent on Darci).
 
-Read **[`AEROMORSE_VS_DARCI.md`](AEROMORSE_VS_DARCI.md)** for a full
+Read **[`AEROMORSE_VS_DARCI.md`](docs/AEROMORSE_VS_DARCI.md)** for a full
 feature-by-feature comparison, an honest list of where Darci may still suit
 you better (three separate physical switch jacks, a ruggedized commercial
 enclosure with a warranty, a smoother sine-wave tone), and a migration
@@ -374,7 +375,7 @@ transcribed verbatim from the Darci USB Owner's Manual (P/N 3001508).
 | `config.py` | **All user-tunable settings** — sensor thresholds, switch mode, code repeat, audio pitches, timing, etc. Edit this file instead of `code.py`. |
 | `morse_map.py` | All Morse code assignments for every group — edit to remap keys |
 | `morse_map_darci.py` | Drop-in alternative code map for **Darci USB users** — rename to `morse_map.py` on CIRCUITPY to use Darci's exact code set |
-| `macro_secrets.example.txt` | Template for your **private** secret macros (passwords, personal details), with a line for every key the standard `morse_map.py` uses. Copy it to `macro_secrets.txt` in your work folder, fill in `key=value` lines, then encrypt it with AeroMorse Secrets — step by step in the [Usage Guide](AEROMORSE_USAGE_GUIDE.md). |
+| `macro_secrets.example.txt` | Template for your **private** secret macros (passwords, personal details), with a line for every key the standard `morse_map.py` uses. Copy it to `macro_secrets.txt` in your work folder, fill in `key=value` lines, then encrypt it with AeroMorse Secrets — step by step in the [Usage Guide](docs/AEROMORSE_USAGE_GUIDE.md). |
 | `macro_secrets.txt` | **Your real passwords / secrets — never share, never committed** (git-ignored). Plain `key=value` lines. Created by you from the `.example` template. If absent or a line is bad, that secret macro just types a placeholder. |
 | `macro_secrets.enc` | **Optional, recommended instead of `macro_secrets.txt`** — the same secrets **encrypted**, unlocked with a PIN typed in Morse. Made with `AeroMorse Secrets.exe` (git-ignored). See [PIN-locked secrets](#pin-locked-secrets-macro_secretsenc). |
 | `receiver.py` | Wireless display mirror firmware, for a second #5691 colour TFT (Build Guide §5.3). 240×135 colour display with full live preview. Copy as `code.py` to the receiver board. |
@@ -405,13 +406,19 @@ transcribed verbatim from the Darci USB Owner's Manual (P/N 3001508).
 | `morse_map_report.txt` | Latest output from `morse_map_analyzer.py` |
 | `KEYCODE_REFERENCE.md` / `keycode_reference.htm` / `AeroMorse — Keycode Reference.pdf` | Reference of every valid `Keycode.NAME` for `morse_map.py` (letters, number keys, navigation, punctuation, F-keys, keypad, modifiers), plus how to produce shifted symbols (`:` `{` `}` …). The `.pdf` is the ready-to-print 2-page sheet; the `.htm` is the same styled for the browser; the `.md` opens in the Markdown viewer. Extracted from the `adafruit_hid` 9.x library on the devices. |
 
+### Guides
+
+The guides and their PDFs are in the [`docs`](docs) folder, with the photos
+in `docs/images`. The release zip has the PDFs.
+
 ### For developers
 
 | File | Purpose |
 |------|---------|
+| `make_release_zip.py` | **Builds the release download**, `dist/AeroMorse-v<version>.zip`: one folder with the device files, the Windows programs and tools, the help pages, the PDF guides and a `START HERE.txt`, laid out like a work folder. The version comes from `code.py`. Attach the zip to a GitHub release. |
 | `build_pdfs.py` / `Build PDFs.bat` | **Regenerate the three printable PDFs** (`AEROMORSE_BUILD_GUIDE.pdf`, `AeroMorse Cheat Sheet.pdf`, `AeroMorse — Keycode Reference.pdf`) from their sources. Double-click `Build PDFs.bat` after editing the Build Guide, cheat sheet, `morse_map.py`, or the Keycode reference. Rebuilds all three; add `guide`, `cheatsheet`, or `keycode` to rebuild just one. **Personal cheat sheet:** `python build_pdfs.py --folder <your work folder>` prints `AeroMorse Cheat Sheet.pdf` from *your* `morse_map.py` into that folder (a one-click `Build my cheat sheet.bat` in the edit folder does this). Needs Microsoft Edge and Python. |
 | `test_pressure.py` | Diagnostic script — copy to CIRCUITPY; press Ctrl-C to reach the `>>>` REPL prompt (do **not** reset — that re-runs `code.py`), then `import test_pressure`. To run again: `exec(open('test_pressure.py').read())` (`importlib` is not available in CircuitPython). Prints a live pressure-delta bar chart for 30 s and suggests `THRESH_SIP` / `THRESH_PUFF` values for `config.py`. |
-| `test_ble.py` | **Bluetooth keyboard test** (CircuitPython 10.x, needs `adafruit_ble/` in `lib/`). Results so far: [BLE_STATUS.md](BLE_STATUS.md) — not usable yet. Copy to CIRCUITPY, stop `code.py` (Ctrl-C, then Enter for `>>>`), and run `import test_ble`. It advertises as "AeroMorse Blue"; pair from the phone's Bluetooth settings and it types a few test lines, printing whether it connected, paired, and stayed connected. Doesn't touch `code.py`. **On ESP32-S3 + CircuitPython 10.3.1 a BLE keyboard does not stay connected yet** — see Build Guide Appendix L. |
+| `test_ble.py` | **Bluetooth keyboard test** (CircuitPython 10.x, needs `adafruit_ble/` in `lib/`). Results so far: [BLE_STATUS.md](docs/BLE_STATUS.md) — not usable yet. Copy to CIRCUITPY, stop `code.py` (Ctrl-C, then Enter for `>>>`), and run `import test_ble`. It advertises as "AeroMorse Blue"; pair from the phone's Bluetooth settings and it types a few test lines, printing whether it connected, paired, and stayed connected. Doesn't touch `code.py`. **On ESP32-S3 + CircuitPython 10.3.1 a BLE keyboard does not stay connected yet** — see Build Guide Appendix L. |
 
 ---
 

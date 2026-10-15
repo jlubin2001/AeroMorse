@@ -778,10 +778,16 @@ latest, correct files.
 
 **To download (no Git account or software needed):**
 
-1. Open **https://github.com/jlubin2001/AeroMorse** in a browser.
-2. Click the green **`< > Code`** button, then **Download ZIP**.
-3. Unzip the downloaded file. Everything you copy in the steps below
-   comes from the **root** of that unzipped folder.
+1. Open **https://github.com/jlubin2001/AeroMorse/releases/latest** in a browser.
+2. Under **Assets**, click **`AeroMorse-v1.30.zip`** (the number is the
+   version).
+3. Unzip it. Everything you copy in the steps below comes from that
+   folder. It also holds the Windows programs, the one-click tools and the
+   PDF guides; keep it as your work folder (Usage Guide, section 1).
+
+(The repo's green **`< > Code`** button → **Download ZIP** also works. The
+device files are in the root of that download, and the guides are in its
+`docs` folder.)
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
@@ -807,7 +813,7 @@ latest, correct files.
 240×135 colour TFT of the #5691 Reverse TFT, #5483 and #5300 with no extra
 file, and a separate display through an optional `display_setup.py` (see Appendix F).
 
-Copy these four files from the **repo root** to the root of the
+Copy these four files from the unzipped folder to the root of the
 CIRCUITPY drive (not inside any subfolder):
 
 ```
@@ -3585,7 +3591,7 @@ The chip can do Bluetooth, but a Bluetooth keyboard on these boards was tested
 in September 2026 (CircuitPython 10.3.1) and did not stay connected. For a
 phone or tablet, use a **USB-C cable** — AeroMorse works as a wired keyboard
 and mouse. The test record is in
-[BLE_STATUS.md](https://github.com/jlubin2001/AeroMorse/blob/main/BLE_STATUS.md).
+[BLE_STATUS.md](https://github.com/jlubin2001/AeroMorse/blob/main/docs/BLE_STATUS.md).
 
 ### Boards that work
 

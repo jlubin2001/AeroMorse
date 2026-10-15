@@ -17,6 +17,9 @@ Nothing here is loaded on the device — these are PC-side documents.
 import os, re, sys, subprocess, time, functools, http.server, socketserver, threading
 
 REPO = os.path.dirname(os.path.abspath(__file__))
+# The guides and their PDFs live in docs/ in the repo; in a flat folder (a
+# work folder or the release download) they sit next to this file.
+DOCS = os.path.join(REPO, "docs") if os.path.isdir(os.path.join(REPO, "docs")) else REPO
 EDGE_CANDIDATES = [
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
     r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
@@ -136,8 +139,8 @@ def build_guide(name="AEROMORSE_BUILD_GUIDE", title="AeroMorse Build Guide", toc
         print("  installing 'markdown' (one-time)...")
         subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "markdown"])
         import markdown
-    md_path = os.path.join(REPO, name + ".md")
-    out = os.path.join(REPO, name + ".pdf")
+    md_path = os.path.join(DOCS, name + ".md")
+    out = os.path.join(DOCS, name + ".pdf")
     md = markdown.Markdown(extensions=["extra", "toc", "sane_lists"],
                            extension_configs={"toc": {"toc_depth": "2-6"}})   # not the title itself
     body = md.convert(_like_github(open(md_path, encoding="utf-8").read()))
@@ -159,7 +162,7 @@ def build_guide(name="AEROMORSE_BUILD_GUIDE", title="AeroMorse Build Guide", toc
     html = ("<!DOCTYPE html><html><head><meta charset='utf-8'><title>%s</title>"
             "<style>%s</style></head><body>%s</body></html>"
             % (title, _CSS, body))
-    tmp = os.path.join(REPO, "_%s.tmp.html" % name)
+    tmp = os.path.join(DOCS, "_%s.tmp.html" % name)     # beside the .md, so images/ is found
     open(tmp, "w", encoding="utf-8").write(html)
     ok = _print_to_pdf("file:///%s" % tmp.replace("\\", "/"), out)
     try: os.remove(tmp)
@@ -208,7 +211,7 @@ def build_help():
 # ── 3. Keycode reference: self-contained htm, render straight from file:// ───
 def build_keycode():
     htm = os.path.join(REPO, "keycode_reference.htm")
-    out = os.path.join(REPO, "AeroMorse \u2014 Keycode Reference.pdf")
+    out = os.path.join(DOCS, "AeroMorse \u2014 Keycode Reference.pdf")
     ok = _print_to_pdf("file:///%s" % htm.replace("\\", "/"), out)
     return out, ok
 
