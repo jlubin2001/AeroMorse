@@ -231,6 +231,40 @@ lists:
 
 ---
 
+### On a Mac or a Linux computer
+
+The `.exe` programs and the one-click `.bat` files are for Windows. On a Mac
+or Linux the same tools run with Python 3, from the work folder. They look
+for your files beside them, just as on Windows.
+
+| Instead of | Type, in the work folder |
+|---|---|
+| Check my AeroMorse files | `python3 aeromorse_validator.py` |
+| Edit my AeroMorse secrets | `python3 aeromorse_secrets.py` |
+| Fix my map comments | `python3 morse_map_comments.py` |
+| Morse map analyzer | `python3 morse_map_analyzer.py` |
+| AeroMorse Display | `python3 aeromorse_display.py` (Build Guide §5.4) |
+| Back up my AeroMorse | Copy everything on the CIRCUITPY drive into a new dated folder inside `Backups` |
+
+What to install once:
+
+- **Python 3.** On a Mac, the installer from
+  [python.org](https://www.python.org/downloads/macos/). Linux already has it.
+- **For AeroMorse Secrets:** `pip3 install cryptography`, and on Linux the
+  window toolkit too, e.g. `sudo apt install python3-tk` (the python.org Mac
+  installer includes it).
+- **For AeroMorse Display:** see Build Guide §5.4.
+
+*Copy to device* in AeroMorse Secrets finds the device at
+`/Volumes/CIRCUITPY` on a Mac and `/media/<you>/CIRCUITPY` on Linux.
+
+Tested so far: under Linux the validator, the analyzer and the comment
+fixer were run on a copy of the files, and the encryption and the drive
+search of AeroMorse Secrets were checked. Nothing has been tried on a Mac,
+and the Secrets window has not been opened on Linux yet.
+
+---
+
 ## 3. The recommended order for any change
 
 This is the order used when updating the AeroMorse devices this project was

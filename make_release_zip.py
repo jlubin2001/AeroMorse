@@ -23,10 +23,10 @@ DEVICE = ["code.py", "boot.py", "config.py", "morse_map.py", "morse_map_darci.py
           "macro_secrets.example.txt", "display_setup.example.py", "test_pressure.py",
           "receiver.py", "receiver_config.py"]
 COMPUTER = ["AeroMorse Display.exe", "aeromorse_display.py",
-            "AeroMorse Secrets.exe", "Edit my AeroMorse secrets.bat",
+            "AeroMorse Secrets.exe", "aeromorse_secrets.py", "Edit my AeroMorse secrets.bat",
             "aeromorse_validator.exe", "aeromorse_validator.py", "Check my AeroMorse files.bat",
-            "morse_map_comments.exe", "Fix my map comments.bat",
-            "morse_map_analyzer.exe", "Back up my AeroMorse.bat",
+            "morse_map_comments.exe", "morse_map_comments.py", "Fix my map comments.bat",
+            "morse_map_analyzer.exe", "morse_map_analyzer.py", "Back up my AeroMorse.bat",
             "AeroMorse.ahk", "AeroMorse Help.html", "aeromorse_cheatsheet.htm",
             "AeroMorse Cheat Sheet.pdf", "LICENSE"]
 GUIDES = ["AEROMORSE_BUILD_GUIDE.pdf", "AEROMORSE_USAGE_GUIDE.pdf", "AEROMORSE_REFERENCE.pdf",
@@ -62,8 +62,9 @@ On the computer (Windows)
   Fix my map comments.bat        makes the comments in morse_map.py match the codes
   morse_map_analyzer.exe         finds duplicate and free codes
   AeroMorse.ahk                  hotkeys for the window, help and the pointer (AutoHotkey)
-  Mac or Linux: run aeromorse_display.py and aeromorse_validator.py with
-  Python 3 (Build Guide section 5.4).
+  Mac or Linux: the .py files run the same tools with Python 3, e.g.
+      python3 aeromorse_validator.py
+  (Usage Guide section 2, "On a Mac or a Linux computer").
 
 Guides
   AEROMORSE_BUILD_GUIDE.pdf       build it, install it, troubleshooting

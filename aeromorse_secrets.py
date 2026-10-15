@@ -18,6 +18,8 @@ Format (must match code.py):
     ciphertext = AES-256-CTR(key, nonce) of the UTF-8  key=value  text
 
 Needs:  pip install cryptography   (the .exe already includes it)
+macOS / Linux:  python3 aeromorse_secrets.py  (needs tkinter too; on Linux
+                e.g.  sudo apt install python3-tk)
 """
 import hashlib
 import os
@@ -106,10 +108,29 @@ def keys_used_in_map(folder):
     return set(re.findall(r"_secret\(\s*['\"]([^'\"]+)['\"]", code))
 
 
-def circuitpy_drives():
-    """Drive roots whose volume label is CIRCUITPY (Windows)."""
+def _tag(root):
+    """The device's name from its label file, e.g. AeroMorse-Green.txt -> AeroMorse-Green."""
+    tag = [f[:-4] for f in os.listdir(root) if f.startswith("AeroMorse-") and f.endswith(".txt")]
+    return tag[0] if tag else ""
+
+
+def circuitpy_drives(bases=None):
+    """CircuitPython drives that are plugged in, as (root, name) pairs.
+    Windows: drive letters whose volume label is CIRCUITPY. macOS: /Volumes/CIRCUITPY
+    (a second one is "CIRCUITPY 1"). Linux: where the desktop mounts it,
+    /media/<you>/CIRCUITPY or /run/media/<you>/CIRCUITPY."""
     out = []
     if os.name != "nt":
+        import getpass
+        import glob
+        user = getpass.getuser()
+        if bases is None:
+            bases = ["/Volumes", "/media/" + user, "/run/media/" + user, "/media"]
+        for base in bases:
+            for root in sorted(glob.glob(os.path.join(base, "CIRCUITPY*"))):
+                if os.path.exists(os.path.join(root, "boot_out.txt")) and \
+                        all(os.path.realpath(root) != os.path.realpath(r) for r, _ in out):
+                    out.append((root, _tag(root)))
         return out
     import ctypes
     import string
@@ -120,8 +141,7 @@ def circuitpy_drives():
             continue
         if ctypes.windll.kernel32.GetVolumeInformationW(root, buf, 261, None, None, None, None, 0):
             if buf.value.upper() == "CIRCUITPY":
-                tag = [f[:-4] for f in os.listdir(root) if f.startswith("AeroMorse-") and f.endswith(".txt")]
-                out.append((root, tag[0] if tag else ""))
+                out.append((root, _tag(root)))
     return out
 
 
