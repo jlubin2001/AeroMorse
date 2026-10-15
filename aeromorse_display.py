@@ -18,9 +18,17 @@
 # cannot stop or disturb it. While it is running, no other program (Thonny, a
 # serial terminal) can open the same device's port — close this window first.
 #
-# Run:   AeroMorse Display.exe            (finds the device by itself)
-#        aeromorse_display.py --port COM8 (use one port only)
+# Run:   AeroMorse Display.exe            (Windows; finds the device by itself)
+#        python3 aeromorse_display.py     (Windows, macOS or Linux, from source)
+#        aeromorse_display.py --port COM8 (use one port only; on macOS e.g.
+#                                          /dev/cu.usbmodem1101, on Linux /dev/ttyACM0)
 #        aeromorse_display.py --demo      (made-up data, no device needed)
+#
+# macOS and Linux: needs Python 3 with tkinter, and pyserial. Sound needs the
+# sounddevice package as well (pip install pyserial sounddevice). On Linux your
+# user must be allowed to open the port: sudo usermod -aG dialout $USER, then
+# log out and back in. Right-click the window for the menu (on a Mac, also
+# Control-click or a two-finger click).
 #
 # The window can be resized only while its title bar is showing (menu: Title
 # bar); the plain panel can be moved by dragging it but has no edge to drag.
@@ -70,7 +78,12 @@ PROBE_S = 3.5                             # how long to listen to one port when 
 
 
 def _settings_path():
-    base = os.environ.get("APPDATA") or os.path.expanduser("~")
+    if sys.platform == "win32":
+        base = os.environ.get("APPDATA") or os.path.expanduser("~")
+    elif sys.platform == "darwin":
+        base = os.path.expanduser("~/Library/Application Support")
+    else:
+        base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
     return os.path.join(base, "AeroMorse", "display.json")
 
 def load_settings():
@@ -100,7 +113,7 @@ def parse(line):
         return None
     return tuple(p.strip() for p in parts)
 
-class Sound:
+class WinSound:
     """The device's beeps on the computer's speakers (Windows).
 
     Each tone is a tiny ready-made clip — a whole number of waves, about a
@@ -261,6 +274,149 @@ class Sound:
         return t.sample if t.wType == 2 else -1
 
 
+class PaSound:
+    """The device's beeps on the computer's speakers (macOS and Linux).
+
+    Uses the sounddevice package (PortAudio). One output stream is kept open;
+    while a dot or dash is held it plays a ready-made clip of whole waves over
+    and over, a blip plays once, and "tone off" goes silent from the next block
+    of sound - a few thousandths of a second. The stream plays silence the rest
+    of the time. Nothing is calculated while a tone plays, only copied, so it
+    does not crackle when the computer is busy. Without sounddevice installed
+    the Sound menu does nothing (the window says so)."""
+
+    LEVELS = {"off": 0.0, "quiet": 0.10, "medium": 0.30, "loud": 0.85}
+    RATE = 44100
+    BLOCK = 256                           # frames per block: about 6 ms
+
+    def __init__(self):
+        self.level = "off"
+        self.ok = False
+        self.missing = False              # True = sounddevice is not installed
+        self.writes = 0                   # tones / blips started (for testing)
+        self._stream = None
+        self._clips = {}                  # (kind, freq, ms, level) -> bytes
+        self._lock = threading.Lock()
+        self._th = None
+        self._clip = b""                  # what is sounding now ...
+        self._pos = 0                     # ... how far into it (bytes) ...
+        self._loop = False                # ... and whether it repeats
+
+    def prime(self):
+        """Open the sound device now, so the first beep is not late."""
+        if self.level != "off" and self._th is None:
+            self._th = threading.Thread(target=self._open, daemon=True)
+            self._th.start()
+
+    def _open(self):
+        try:
+            import sounddevice
+        except Exception:
+            self.missing = True
+            return
+        try:
+            s = sounddevice.RawOutputStream(samplerate=self.RATE, channels=1, dtype="int16",
+                                            blocksize=self.BLOCK, latency="low",
+                                            callback=self._fill)
+            s.start()
+        except Exception:
+            return
+        self._stream = s
+        self.ok = True
+
+    def _fill(self, out, frames, _time, _status):
+        """Called by PortAudio for every block of sound: copy the next piece of the clip."""
+        need = frames * 2
+        with self._lock:
+            clip, pos, loop = self._clip, self._pos, self._loop
+            if not clip:
+                out[:] = bytes(need)
+                return
+            if loop:
+                chunk = b""
+                while len(chunk) < need:
+                    take = clip[pos:pos + need - len(chunk)]
+                    chunk += take
+                    pos = (pos + len(take)) % len(clip)
+            else:
+                chunk = clip[pos:pos + need]
+                pos += len(chunk)
+                if pos >= len(clip):
+                    self._clip = b""
+                chunk += bytes(need - len(chunk))
+            self._pos = pos
+        out[:] = chunk
+
+    def _make(self, kind, freq, ms):
+        import math
+        import struct
+        amp = 32767 * self.LEVELS.get(self.level, 0.0)
+        freq = max(100, min(4000, freq))
+        if kind == "loop":
+            waves = max(1, int(round(freq * 0.010)))          # about 10 ms ...
+            n = int(round(waves * self.RATE / float(freq)))   # ... and exactly a whole number of waves
+            w = 2 * math.pi * waves / n
+            fade = 0
+        else:
+            n = max(1, int(self.RATE * ms / 1000.0))
+            w = 2 * math.pi * freq / self.RATE
+            fade = min(int(self.RATE * 0.004), n // 2)        # 4 ms in and out
+        vals = []
+        for i in range(n):
+            g = min(1.0, i / float(fade), (n - 1 - i) / float(fade)) if fade else 1.0
+            vals.append(int(amp * g * math.sin(w * i)))
+        return struct.pack("<%dh" % n, *vals)
+
+    def _get(self, kind, freq, ms):
+        key = (kind, freq, ms, self.level)
+        if key not in self._clips:
+            self._clips[key] = self._make(kind, freq, ms)
+        return self._clips[key]
+
+    def handle(self, parts):
+        """parts = the fields after '~AS': ['1', freq] / ['0'] / ['2', freq, ms]."""
+        if self.level == "off" or not parts:
+            return
+        if not self.ok:
+            self.prime()
+            return                                           # still opening: skip this one beep
+        try:
+            if parts[0] == "0":
+                with self._lock:
+                    self._clip = b""
+                return
+            if parts[0] == "1":
+                clip, loop = self._get("loop", int(parts[1]), 0), True
+            elif parts[0] == "2":
+                clip, loop = self._get("blip", int(parts[1]), max(20, int(parts[2]))), False
+            else:
+                return
+            with self._lock:                                 # a new tone cuts the last one short
+                self._clip, self._pos, self._loop = clip, 0, loop
+            self.writes += 1
+        except (ValueError, IndexError):
+            pass
+        except Exception:
+            pass
+
+    def quiet(self):
+        """Silence everything at once (device unplugged, sound switched off, closing)."""
+        with self._lock:
+            self._clip = b""
+
+
+Sound = WinSound if sys.platform == "win32" else PaSound
+
+
+def _font_family(root, choices):
+    """The first of these font families this computer has."""
+    have = set(tkfont.families(root))
+    for name in choices:
+        if name in have:
+            return name
+    return choices[-1]
+
+
 def group_color(text):
     for name, col in GROUP_COLORS.items():
         if name in text:
@@ -322,6 +478,7 @@ class Reader(threading.Thread):
         self.stop = False
         self.rescan = False               # set by the menu to choose again
         self.avoid_serial = None          # the device to try LAST when switching
+        self.no_permission = None         # Linux: a port we are not allowed to open
 
     def _candidates(self):
         ports = [p for p in list_ports.comports() if _maybe_aeromorse(p)]
@@ -339,7 +496,9 @@ class Reader(threading.Thread):
         """Read one port. With probe=True give up after PROBE_S without a status line."""
         try:
             s = serial.Serial(device, 115200, timeout=0.05)
-        except Exception:
+        except Exception as e:
+            if sys.platform.startswith("linux") and getattr(e, "errno", None) == 13:
+                self.no_permission = device
             return False
         got = False
         t0 = time.time()
@@ -392,6 +551,7 @@ class Reader(threading.Thread):
                 time.sleep(1.5)
                 continue
             found = False
+            self.no_permission = None
             for device, sn in cands:
                 if self.stop or self.rescan:
                     break
@@ -400,7 +560,11 @@ class Reader(threading.Thread):
                     found = True
                     break
             if not found and not self.stop and not self.rescan:
-                self.out.put(("state", "Set PC_DISPLAY = True in config.py"))
+                if self.no_permission:
+                    self.out.put(("state", "Not allowed to open %s - add yourself to the dialout group"
+                                  % self.no_permission))
+                else:
+                    self.out.put(("state", "Set PC_DISPLAY = True in config.py"))
                 time.sleep(1.0)
 
 
@@ -440,8 +604,10 @@ class Window:
         r.configure(bg=BG)
         r.geometry(safe_geometry(self.cfg.get("geometry"), r.winfo_screenwidth(), r.winfo_screenheight()))
         r.minsize(MIN_W, MIN_H)
-        self.font = tkfont.Font(family="Consolas", size=20, weight="bold")
-        self.small = tkfont.Font(family="Segoe UI", size=9)
+        mono = _font_family(r, ("Consolas", "Menlo", "DejaVu Sans Mono", "Liberation Mono", "Courier"))
+        text = _font_family(r, ("Segoe UI", "Helvetica Neue", "DejaVu Sans", "Helvetica"))
+        self.font = tkfont.Font(family=mono, size=20, weight="bold")
+        self.small = tkfont.Font(family=text, size=9)
 
         self.rows = tk.Frame(r, bg=BG)
         self.rows.place(relx=0.5, rely=0.5, anchor="center")
@@ -488,6 +654,9 @@ class Window:
         # the menu was opened a second time the moment the first one closed,
         # which looked like "the menu stays open".
         r.bind("<Button-3>", self.popup)
+        if sys.platform == "darwin":                 # a Mac's right button is Button-2
+            r.bind("<Button-2>", self.popup)
+            r.bind("<Control-Button-1>", self.popup)
         r.bind("<ButtonPress-1>", self.drag_start)
         r.bind("<B1-Motion>", self.drag_move)
         r.bind("<Configure>", self.on_resize)
@@ -647,6 +816,8 @@ class Window:
             self.l_state.configure(text=self.state)
         else:
             self.l_state.configure(text="")
+        if getattr(self.sound, "missing", False) and self.sound.level != "off":
+            self.l_state.configure(text="Sound needs the sounddevice package: pip install sounddevice")
         self.root.after(40, self.tick)
 
     def close(self):

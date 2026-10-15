@@ -169,6 +169,20 @@ in the USB cable. Then install the software (below).
 | **Display** | built-in screen (standard) · a window on the computer, any size · a wireless display on a second board |
 | **Audio feedback** | none (standard) · through the computer's speakers · a speaker on the device |
 
+**Sound volume.** There is no volume setting in `config.py`; it depends on
+how the sound is played:
+
+- **Through the computer** (`PC_SOUND = True`): right-click the AeroMorse
+  Display window and choose **Sound → Off / Quiet / Medium / Loud**. It also
+  follows the computer's own volume.
+- **A speaker on the device:** the firmware drives it at one fixed level, so
+  the loudness depends on the part. A built-in buzzer or a small piezo can't
+  be adjusted. The STEMMA Speaker (#3885) is louder and has a small
+  **Volume** screw on its board.
+
+`config.py` sets only the pitches and how long the blips last; those apply
+to both.
+
 An enclosure and a strain relief for the tube are not included above; the
 Build Guide's Appendix H covers them.
 
@@ -371,7 +385,7 @@ transcribed verbatim from the Darci USB Owner's Manual (P/N 3001508).
 
 | File | Purpose |
 |------|---------|
-| `aeromorse_display.py` / `AeroMorse Display.exe` | **The AeroMorse screen in a window on the computer** (v1.26+) — any size, always-on-top or see-through, no extra hardware. Set `PC_DISPLAY = True` in `config.py`, then start the program; it finds the device, only listens (never sends anything to it) and reconnects by itself. See Build Guide §5.2. Build Guide **Appendix G** (also Usage Guide §7) shows how to open and close it with one Morse code, using the free AutoHotkey program (where to get it, a sample script, starting it with Windows). **It can also play the device's beeps through the computer's speakers** (`PC_SOUND = True`, v1.27+), for a device with no speaker fitted |
+| `aeromorse_display.py` / `AeroMorse Display.exe` | **The AeroMorse screen in a window on the computer** (v1.26+) — any size, always-on-top or see-through, no extra hardware. Set `PC_DISPLAY = True` in `config.py`, then start the program; it finds the device, only listens (never sends anything to it) and reconnects by itself. See Build Guide §5.2. Build Guide **Appendix G** (also Usage Guide §7) shows how to open and close it with one Morse code, using the free AutoHotkey program (where to get it, a sample script, starting it with Windows). **It can also play the device's beeps through the computer's speakers** (`PC_SOUND = True`, v1.27+), for a device with no speaker fitted. The `.exe` is for Windows; on a Mac or Linux computer run `aeromorse_display.py` with Python (not tested yet; Build Guide §5.4) |
 | `AeroMorse Help.html` | **The cheat sheet as a help window** — legend at the top and one tab per group, so there is no scrolling through pages; click a tab, press a group's number, or use the arrow keys. A single file with the map inside it, built by `build_pdfs.py` alongside the cheat sheet PDF (the copy in the repo is for the supplied map; build your own from your map with `--folder`). Opened and closed with one Morse code through `AeroMorse.ahk` (next row). |
 | `AeroMorse.ahk` | **Ready-made AutoHotkey script (Windows)** for the three things a keyboard device cannot do by itself, each with a Morse code already in the supplied map: **Ctrl+Alt+D** AeroMorse Display window on / off (`.-.-.-`, Group 0), **Ctrl+Alt+H** AeroMorse Help window on / off (`..-..-`, Group 0), **Ctrl+Alt+Home** mouse pointer to the middle of the screen (`.-.`, Mouse group). Keep it in your work folder next to `AeroMorse Display.exe` and `AeroMorse Help.html` — it finds them there, nothing to edit. Needs AutoHotkey v2; set-up in Usage Guide §7 / Build Guide Appendix G. |
 | `aeromorse_cheatsheet.htm` | Interactive browser-based cheat sheet — open in any browser, no install needed. Shows every pattern for the active group as animated dots and dashes; click any row to hear the timing. |

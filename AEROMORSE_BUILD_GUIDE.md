@@ -155,7 +155,7 @@ works. The first row of each table is the standard build.
 | Choice | Extra parts | Soldering | Tested |
 |--------|-------------|-----------|--------|
 | **Built-in screen** (standard) | none | none | ✅ |
-| **A window on the computer** — any size | none (Windows program) | none | ✅ Jim's daily set-up |
+| **A window on the computer** — any size | none (a program on the computer) | none | ✅ Windows, Jim's daily set-up · ⚠️ Mac and Linux not tested |
 | **A wireless display** — a second small screen placed where you can see it | a second #5691 | none | ✅ Jim's daily set-up |
 
 **Audio feedback — hearing each dot and dash**
@@ -163,7 +163,7 @@ works. The first row of each table is the standard build.
 | Choice | Extra parts | Soldering | Tested |
 |--------|-------------|-----------|--------|
 | **None** (standard) — the screen shows everything | none | none | ✅ |
-| **Through the computer's speakers** | none (Windows program) | none | ✅ |
+| **Through the computer's speakers** | none (the same program) | none | ✅ Windows · ⚠️ Mac and Linux not tested |
 | **A speaker on the device** | STEMMA Speaker and its cable | 3 joints on a #5691; none on the Cytron board | ✅ on the Cytron board · ⚠️ not tested on a #5691 |
 
 The choices do not depend on each other. For example, Jim's own set-up is
@@ -310,7 +310,7 @@ puts it on the right.
 
 ### 5.2 A window on the computer
 
-**AeroMorse Display** is a small Windows program that shows the same four
+**AeroMorse Display** is a small program that shows the same four
 things in a window on the computer's own monitor. You can make it any size,
 put it anywhere, keep it on top of other programs and make it see-through.
 It needs no extra hardware — the information travels down the USB cable the
@@ -322,7 +322,9 @@ This is the easy way to get **big text**.
 2. On the computer, start `AeroMorse Display.exe`. It finds the device by
    itself.
 
-Limits: Windows only, and it shows the AeroMorse plugged into that computer.
+On Windows it is a ready-made program. On a Mac or Linux computer it runs
+from Python instead (section 5.4); that has not been tested yet. It shows
+the AeroMorse plugged into that computer.
 
 Section 5.4 has the details: the window's menu, resizing it, and opening it
 with a Morse code.
@@ -384,13 +386,47 @@ any size and place anywhere.
 - It works alongside the built-in screen and the wireless display, or
   instead of them (`USE_DISPLAY = False`).
 
-Limits: it shows the AeroMorse plugged into *this* computer, on Windows. It
-has no pressure bar. And while it is running, no other program (Thonny, a
+Limits: it shows the AeroMorse plugged into *this* computer. It has no
+pressure bar. And while it is running, no other program (Thonny, a
 serial terminal) can open that device's port — close the window first.
 
 Running from source instead: `python aeromorse_display.py` (needs
 `pyserial`). `--port COM8` listens to one port only; `--demo` shows made-up
 data with no device.
+
+#### On a Mac or a Linux computer (not tested yet)
+
+The same `aeromorse_display.py` runs on macOS and Linux. There is no
+ready-made program for them, so it runs from Python. The Windows parts were
+replaced with ones that work there, and the Linux parts were checked without
+a window, but nobody has yet used it with a device on a Mac or a Linux
+computer.
+
+1. **Python 3 with tkinter.**
+   - Mac: install Python from [python.org](https://www.python.org/downloads/macos/);
+     it includes tkinter. (With Homebrew's Python, also `brew install python-tk`.)
+   - Linux: Python is already there; add tkinter, e.g. on Ubuntu or Debian
+     `sudo apt install python3-tk`.
+2. **The two Python packages:** `pip3 install pyserial sounddevice`
+   (`sounddevice` is only needed for the beeps).
+3. **Linux only — permission to open the port.** Run
+   `sudo usermod -aG dialout $USER`, then log out and back in. Until then the
+   window says *Not allowed to open /dev/ttyACM0*.
+4. **Start it:** `python3 aeromorse_display.py`, from the folder it is in. It
+   finds the device by itself. To name the port yourself:
+   `--port /dev/cu.usbmodem1101` (Mac) or `--port /dev/ttyACM0` (Linux).
+
+Differences from Windows:
+
+- **Right-click** works as usual. On a Mac a two-finger click or
+  Control-click opens the menu too.
+- **Settings are kept** in `~/Library/Application Support/AeroMorse` (Mac)
+  or `~/.config/AeroMorse` (Linux).
+- **See-through** needs a desktop that supports it. Most Linux desktops do;
+  on some the window simply stays solid.
+- **Opening it with a Morse code** (Appendix G) uses AutoHotkey, which is
+  Windows only. On a Mac or Linux, a keyboard shortcut set up in the
+  system's own settings can run the command in step 4.
 
 #### Sound through the computer's speakers
 
