@@ -782,7 +782,7 @@ latest, correct files.
 **To download (no Git account or software needed):**
 
 1. Open **https://github.com/jlubin2001/AeroMorse/releases/latest** in a browser.
-2. Under **Assets**, click **`AeroMorse-v1.30.zip`** (the number is the
+2. Under **Assets**, click **`AeroMorse-v1.31.zip`** (the number is the
    version).
 3. Unzip it. Everything you copy in the steps below comes from that
    folder. It also holds the Windows programs, the one-click tools and the
@@ -794,7 +794,7 @@ device files are in the root of that download, and the guides are in its
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.30 (released 2026-10-11)`. Open the file
+> `AeroMorse code.py — version 1.31 (released 2026-10-16)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -996,7 +996,7 @@ Adap2U each implement 1/2/3-switch input, see
 2. Wait 3–5 seconds. The display shows the **start-up screen**:
 
     - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
-    - the AeroMorse version, e.g. `v1.30`
+    - the AeroMorse version, e.g. `v1.31`
     - the CircuitPython version, e.g. `CP 9.2.9`
 
 3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
@@ -2269,7 +2269,12 @@ Seconds — duration of the confirm and group-change blips.
 ### Mouse (Group 2 movement speeds)
 
 Effective pixels per step = `raw direction × MOUSE_SPEED_* ×
-MOUSE_SPEED_FACTOR`.
+MOUSE_SPEED_FACTOR`, and then Windows multiplies that by its own pointer
+speed (Settings → Bluetooth & devices → Mouse → *Mouse pointer speed*). The
+defaults are set for Windows' **default pointer speed** (the slider in the
+middle). On a PC where the pointer speed is turned up to the fastest, the
+same settings move about 3.5 times as far — use `MOUSE_SPEED_FACTOR = 2`
+there.
 
 **`MOUSE_SPEED_NORMAL`** (default `2`) — default speed when group 2
 is entered.
@@ -2280,8 +2285,17 @@ command.
 **`MOUSE_SPEED_FAST`** (default `3`) — toggled via the `mfast`
 command if you map it.
 
-**`MOUSE_SPEED_FACTOR`** (default `2`) — overall scale (matches the
-AirTalker feel that AeroMorse was originally tuned to).
+**`MOUSE_SPEED_FACTOR`** (default `7`) — overall scale. `7` on a PC at
+Windows' default pointer speed feels the same as `2` on a PC with the
+pointer speed at the fastest, which is how AeroMorse was tuned (and before
+v1.31 the default was `2`). With *Enhance pointer precision* on — Windows'
+default — the pointer also speeds up for fast moves and slows down for slow
+ones, so the feel is close rather than exact.
+
+**`MOUSE_SCROLL_FACTOR`** (default `2`, v1.31+) — scale for the scroll
+codes. Windows' pointer speed does not change scrolling, so it has its own
+setting. Without it in `config.py`, scrolling uses `MOUSE_SPEED_FACTOR`, as
+before v1.31.
 
 **`MOUSE_REPEAT_DELAY`** (default `0.040`).
 Seconds between repeat ticks when mouse-repeat is active (40 ms =

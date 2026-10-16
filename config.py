@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.30 (released 2026-10-11)
+# AeroMorse config.py — version 1.31 (released 2026-10-16)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -148,11 +148,16 @@ BEEP_GROUP_S      = 0.14       # group-change blip duration
 
 # ── MOUSE — group-2 movement speeds and repeat tick ───────────────────────
 # Effective pixels per step = raw direction × SPEED × MOUSE_SPEED_FACTOR
+# (then Windows' own pointer-speed setting multiplies that again).
+# Scrolling = scroll direction × SPEED × MOUSE_SCROLL_FACTOR.
 
 MOUSE_SPEED_NORMAL = 2         # default speed in group 2
 MOUSE_SPEED_SLOW   = 1         # toggled via `mslow`
 MOUSE_SPEED_FAST   = 3         # toggled via `mfast`
-MOUSE_SPEED_FACTOR = 2         # overall scale
+MOUSE_SPEED_FACTOR = 7         # overall scale, set for Windows' DEFAULT pointer speed
+                               # (Settings > Mouse > Mouse pointer speed in the middle).
+                               # If you set Windows' pointer speed to the fastest, use 2.
+MOUSE_SCROLL_FACTOR = 2        # scroll scale (Windows' pointer speed does not affect it) (v1.31+)
 MOUSE_REPEAT_DELAY = 0.040     # seconds between repeat ticks
 
 MOUSE_CLICK_MOD_DELAY = 0.030  # s to settle a modifier before/after a click

@@ -1,4 +1,4 @@
-# AeroMorse morse_map_darci.py — version 1.30 (released 2026-10-11)
+# AeroMorse morse_map_darci.py — version 1.31 (released 2026-10-16)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 # Darci-USB code set. To use it, copy it to the CIRCUITPY drive as morse_map.py.
 """

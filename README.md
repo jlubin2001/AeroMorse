@@ -245,7 +245,7 @@ walk-through. The short version:
 
 ### 3. Copy the AeroMorse software
 
-Download **`AeroMorse-v1.30.zip`** (the number is the version) from the
+Download **`AeroMorse-v1.31.zip`** (the number is the version) from the
 [latest release](https://github.com/jlubin2001/AeroMorse/releases/latest) — it is under *Assets* — and unzip it. Copy these four
 files from that folder to the **root** of CIRCUITPY:
 
@@ -264,7 +264,7 @@ On power-up the device calibrates for one second (hold the tube still — do not
 sip or puff), then the TFT display shows the **start screen**:
 
 - the device's name (`DEVICE_NAME` in `config.py`, e.g. **AeroMorse Green**),
-- the AeroMorse version (e.g. **v1.30**),
+- the AeroMorse version (e.g. **v1.31**),
 - the CircuitPython version (e.g. **CP 9.2.9**).
 
 The device is now ready. Your **first** sip, puff or switch press only closes

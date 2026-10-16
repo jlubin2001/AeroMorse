@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.30   (released 2026-10-11)
+#  AeroMorse code.py   —   version 1.31   (released 2026-10-16)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -635,6 +635,15 @@ _NAV_KEYS = frozenset({
 _SHIFT_KEYS = frozenset({Keycode.LEFT_SHIFT, Keycode.RIGHT_SHIFT})
 _nav_hold = False
 
+# Scroll codes have their own scale (config.py MOUSE_SCROLL_FACTOR, v1.31+):
+# Windows' pointer-speed setting multiplies pointer moves but not the wheel, so
+# MOUSE_SPEED_FACTOR can be raised for a default-speed PC without making
+# scrolling faster. An older config.py without it: scroll as before.
+try:
+    _SCROLL_FACTOR = MOUSE_SCROLL_FACTOR
+except NameError:
+    _SCROLL_FACTOR = MOUSE_SPEED_FACTOR
+
 # Mouse state
 _mouse_speed    = MOUSE_SPEED_NORMAL
 _drag_active    = False
@@ -882,7 +891,7 @@ def _exec_command(cmd):
         # Scale raw direction values by current speed and factor
         dx = int(parts[1]) * _mouse_speed * MOUSE_SPEED_FACTOR
         dy = int(parts[2]) * _mouse_speed * MOUSE_SPEED_FACTOR
-        sc = int(parts[3]) * _mouse_speed * MOUSE_SPEED_FACTOR
+        sc = int(parts[3]) * _mouse_speed * _SCROLL_FACTOR
         if dx or dy:
             mouse.move(dx, dy)
         if sc:
