@@ -370,8 +370,7 @@ any size and place anywhere.
   resize, then untick it again. The size is kept.
 - **Right-click the window** for the menu: *Always on top*, *See-through*
   (so it can sit over other programs), *Title bar* (untick for a plain panel
-  you move by dragging it), *Sound* (see below), *Switch to another
-  AeroMorse*, *Close*. Your
+  you move by dragging it), *Sound* (see below), *Show device*, *Close*. Your
   choices and the window's place are remembered.
 - **It only listens.** The program never sends anything to the device, so it
   cannot stop or disturb it — unlike Thonny (Appendix N). The information travels
@@ -382,7 +381,11 @@ any size and place anywhere.
   screen instead, at the size you gave it.
 - **It reconnects by itself** after `devicereset`, a replug or a restart.
   It remembers which AeroMorse it showed and waits for that one, even if
-  another is plugged in; *Switch to another AeroMorse* in the menu changes it.
+  another is plugged in.
+- **More than one AeroMorse plugged in?** *Show device* in the menu lists
+  each one by name — the `DEVICE_NAME` in its `config.py`, e.g. *AeroMorse
+  Green (COM8)* — with a dot at the one shown. Pick another to show it
+  instead. A device that is not plugged in is listed but greyed out.
 - It works alongside the built-in screen and the wireless display, or
   instead of them (`USE_DISPLAY = False`).
 
@@ -3529,7 +3532,7 @@ more than a second changes group (Appendix A).
 | Typing works but there is no sound (buzzer) | The buzzer's mute slide switch is off. It is on the **underside** of the board, hidden while the board sits in a breadboard | Unplug the USB cable, lift the board out, slide the switch the other way, and press the board back into the same holes. Sound through the computer also works: `PC_SOUND = True` and the AeroMorse Display program (§5) |
 | Typing works but there is no sound (STEMMA Speaker) | `AUDIO_PIN` is still `board.BUZZER`, the white wire is not in `A0`, the red wire is not in `3V3`, or the Volume screw is turned right down | Check each in turn |
 | The AeroMorse Display window does not find this board | An `AeroMorse Display.exe` from before v1.29 only looks for Adafruit boards | Download the current one from the repo. Or start the old one with the port named: `"AeroMorse Display.exe" --port COM16` (use the board's own COM number, from Device Manager) |
-| The AeroMorse Display window shows your other AeroMorse instead | It remembers the device it showed last | Right-click the window → **Switch to another AeroMorse** |
+| The AeroMorse Display window shows your other AeroMorse instead | It remembers the device it showed last | Right-click the window → **Show device** → pick it by name |
 | The computer shows the old board name | Windows remembers it | Remove the device in Bluetooth & devices and replug |
 
 ### K.8 Adding the pressure sensor later (not tested)

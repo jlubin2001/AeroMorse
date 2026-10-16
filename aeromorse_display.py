@@ -34,7 +34,7 @@
 # bar); the plain panel can be moved by dragging it but has no edge to drag.
 #
 # Right-click the window for the menu (always on top, see-through, title bar,
-# switch device, close). Needs Python 3 with pyserial when run from source.
+# sound, show device - every AeroMorse plugged in, by name - close). Needs Python 3 with pyserial when run from source.
 
 import json
 import os
@@ -69,6 +69,72 @@ def _maybe_aeromorse(p):
     if p.vid == ADAFRUIT_VID:
         return True
     return p.vid == ESPRESSIF_VID and (p.pid or 0) >= 0x8000
+
+
+def _circuitpy_roots():
+    """The CIRCUITPY drives plugged in. Windows: removable drives labelled
+    CIRCUITPY (an empty card reader is skipped without any "insert a disk"
+    message). macOS / Linux: where the desktop mounts them."""
+    if os.name != "nt":
+        import getpass
+        import glob
+        user = getpass.getuser()
+        roots = []
+        for base in ("/Volumes", "/media/" + user, "/run/media/" + user, "/media"):
+            roots += sorted(glob.glob(os.path.join(base, "CIRCUITPY*")))
+        return roots
+    roots = []
+    try:
+        import ctypes
+        k = ctypes.windll.kernel32
+        old = ctypes.c_uint()
+        k.SetThreadErrorMode(0x0001 | 0x8000, ctypes.byref(old))   # no "insert a disk" boxes
+        try:
+            mask = k.GetLogicalDrives()
+            buf = ctypes.create_unicode_buffer(261)
+            for i in range(26):
+                if not mask & (1 << i):
+                    continue
+                root = chr(65 + i) + ":\\"
+                if k.GetDriveTypeW(root) != 2:              # 2 = removable
+                    continue
+                if k.GetVolumeInformationW(root, buf, 261, None, None, None, None, 0) \
+                        and buf.value.upper() == "CIRCUITPY":
+                    roots.append(root)
+        finally:
+            k.SetThreadErrorMode(old.value, None)
+    except Exception:
+        pass
+    return roots
+
+
+def device_names():
+    """{USB serial number: name} for the AeroMorse drives plugged in. The serial
+    number is the board's UID in boot_out.txt; the name is DEVICE_NAME in that
+    drive's config.py, else its AeroMorse-<name>.txt label file."""
+    import re
+    names = {}
+    for root in _circuitpy_roots():
+        try:
+            with open(os.path.join(root, "boot_out.txt"), encoding="utf-8", errors="replace") as f:
+                m = re.search(r"UID:([0-9A-Fa-f]+)", f.read())
+            if not m:
+                continue
+            name = ""
+            try:
+                with open(os.path.join(root, "config.py"), encoding="utf-8", errors="replace") as f:
+                    n = re.search(r'^DEVICE_NAME\s*=\s*["\']([^"\']+)["\']', f.read(), re.M)
+                    name = n.group(1).strip() if n else ""
+            except OSError:
+                pass
+            if not name:
+                tag = [x[:-4] for x in os.listdir(root) if x.startswith("AeroMorse-") and x.endswith(".txt")]
+                name = tag[0].replace("-", " ") if tag else ""
+            if name:
+                names[m.group(1).upper()] = name
+        except OSError:
+            continue
+    return names
 BG = "#000020"
 GROUP_COLORS = {"BASE": "#606060", "KEYBOARD": "#0080FF", "MOUSE": "#00C040", "MACRO": "#FF8000",
                 "SCANNING": "#FF00FF", "MEDIA": "#FFFF00", "GROUP 6": "#00FFFF", "GROUP 7": "#FF0080",
@@ -488,7 +554,8 @@ class Reader(threading.Thread):
             # The device chosen before, and ONLY that one. While it is away (a
             # restart takes a few seconds) wait for it rather than showing
             # another AeroMorse that happens to be plugged in.
-            return [(p.device, p.serial_number) for p in ports if p.serial_number == self.want_serial]
+            want = self.want_serial.upper()
+            return [(p.device, p.serial_number) for p in ports if (p.serial_number or "").upper() == want]
         ports.sort(key=lambda p: p.serial_number == self.avoid_serial)   # "switch": others first
         return [(p.device, p.serial_number) for p in ports]
 
@@ -645,7 +712,9 @@ class Window:
             snd.add_radiobutton(label=text, value=name, variable=self.v_sound, command=self.apply_sound)
         m.add_cascade(label="Sound (needs PC_SOUND = True)", menu=snd)
         m.add_separator()
-        m.add_command(label="Switch to another AeroMorse", command=self.choose_again)
+        self.v_dev = tk.StringVar(value=self.cfg.get("serial", ""))
+        self.dev_menu = tk.Menu(m, tearoff=0, postcommand=self.fill_devices)
+        m.add_cascade(label="Show device", menu=self.dev_menu)
         m.add_separator()
         m.add_command(label="Close", command=self.close)
 
@@ -759,13 +828,44 @@ class Window:
             self.root.geometry("+%d+%d" % (ev.x_root - dx, ev.y_root - dy))
 
     # ── data ──────────────────────────────────────────────────────────────────
-    def choose_again(self):
-        old = self.cfg.pop("serial", None)
+    def fill_devices(self):
+        """The "Show device" list, made fresh each time it opens: every AeroMorse
+        plugged in, by name, with a dot at the one shown."""
+        dm = self.dev_menu
+        dm.delete(0, "end")
+        ports = [p for p in list_ports.comports() if _maybe_aeromorse(p)] if list_ports else []
+        names = dict(self.cfg.get("names") or {})   # names seen before, for one that is unplugged
+        found = device_names()
+        if any(names.get(k) != v for k, v in found.items()):
+            names.update(found)
+            self.cfg["names"] = names
+            save_settings(self.cfg)
+        seen = set()
+        rows = []
+        for p in ports:
+            sn = (p.serial_number or "").upper()
+            if sn and sn not in seen:
+                seen.add(sn)
+                rows.append((names.get(sn, "AeroMorse"), p.device, sn))
+        for name, device, sn in sorted(rows):
+            dm.add_radiobutton(label="%s  (%s)" % (name, device), value=sn, variable=self.v_dev,
+                               command=lambda sn=sn: self.choose_device(sn))
+        want = (self.cfg.get("serial") or "").upper()
+        if want and want not in seen:
+            dm.add_radiobutton(label="%s  (not plugged in)" % names.get(want, "The last one shown"),
+                               value=want, variable=self.v_dev, state="disabled")
+        if not seen:
+            dm.add_command(label="No AeroMorse plugged in", state="disabled")
+        self.v_dev.set(want)
+
+    def choose_device(self, sn):
+        self.cfg["serial"] = sn
         save_settings(self.cfg)
+        self.v_dev.set(sn)
         if isinstance(self.reader, Reader):
-            self.reader.avoid_serial = old       # try the other device(s) first
-            self.reader.want_serial = None
-            self.reader.fixed_port = None        # started with --port: "switch" lets go of that port too
+            self.reader.want_serial = sn
+            self.reader.avoid_serial = None
+            self.reader.fixed_port = None        # started with --port: choosing lets go of that port too
             self.reader.rescan = True
         self.last_data = 0.0
 
@@ -794,6 +894,7 @@ class Window:
                         # only the menu's "Switch" changes it.
                         self.cfg["serial"] = val[1]
                         save_settings(self.cfg)
+                        self.v_dev.set(val[1].upper())
                         if isinstance(self.reader, Reader):
                             self.reader.want_serial = val[1]
                 elif kind == "state":
