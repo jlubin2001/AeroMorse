@@ -175,6 +175,9 @@ group:
 | **`.-.-.-`** | Ctrl+Alt+D | AeroMorse Display window on / off |
 | **`..-..-`** | Ctrl+Alt+H | AeroMorse Help window on / off |
 
+The restart code `devicereset` (**`-.-..-.`**) is in Group 0 as well, so the
+device can be restarted from any group (see *Other Controls* under Group 2).
+
 ### Group 1 — Keyboard
 
 The default group after power-on.  Provides letters, numbers, punctuation,
@@ -268,6 +271,7 @@ function keys, navigation keys, and modifier keys.
 | Backspace | **`--`** | |
 | Space | **`..--`** | |
 | Tab | **`---..-.`** | `of` |
+| Shift+Tab (back one field) | **`---.-.`** | `sr` |
 
 #### Modifier Keys (Sticky)
 
@@ -330,7 +334,7 @@ Mouse speed is controlled by three modes:
 |------|-----------------|-----------------|
 | Normal | ×2 | Default; also what you return to when `mslow` or `mfast` is sent a second time |
 | Slow | ×1 | `mslow`, pattern **`--..`** (send again for Normal) |
-| Fast | ×3 | `mfast`, pattern **`--.-`** (send again for Normal) |
+| Fast | ×3 | `mfast`, pattern **`..-.`** (send again for Normal) |
 
 The effective pixels moved per step = **raw direction value × speed × 2**.
 
@@ -430,11 +434,11 @@ g2[3][0b110] = "mdrag right"       # --.     toggle right-button drag
 | Action | Pattern | Effect |
 |--------|---------|--------|
 | `mslow` | **`--..`** | Toggle slow-step mouse speed (slow ↔ normal) |
-| `mfast` | **`--.-`** | Toggle fast mouse speed (fast ↔ normal) |
-| Find pointer | **`..-.`** | Taps Ctrl by itself. If Windows' *Show location of pointer when I press the CTRL key* is on (Control Panel → Mouse → Pointer Options), circles are drawn round the pointer. Does nothing if that option is off |
-| Centre pointer | **`.-.`** | Sends Ctrl+Alt+Home, which a small AutoHotkey script turns into "put the pointer in the middle of the screen". Does nothing unless `AeroMorse.ahk` is running — see Build Guide Appendix G |
+| `mfast` | **`..-.`** | Toggle fast mouse speed (fast ↔ normal) |
+| Find pointer | **`---.-`** | Taps Ctrl by itself. If Windows' *Show location of pointer when I press the CTRL key* is on (Control Panel → Mouse → Pointer Options), circles are drawn round the pointer. Does nothing if that option is off |
+| Centre pointer | **`-..--`** | Sends Ctrl+Alt+Home, which a small AutoHotkey script turns into "put the pointer in the middle of the screen". Does nothing unless `AeroMorse.ahk` is running — see Build Guide Appendix G |
 | `version` | **`...-`** | Show the start-up screen again — device name, AeroMorse version, CircuitPython version — until the next sip/puff |
-| `devicereset` | **`-.-..-.`** | Restart the device (same as unplug/replug). Switches to Group 1 and asks **CONFIRM RESET Y/N?** — type `y` (**`-.--`**) to restart; anything else, or 30 s with no input, cancels and returns to Mouse. Nothing is typed to the computer while it asks |
+| `devicereset` | **`-.-..-.`** | Restart the device (same as unplug/replug). It is in Group 0, so it works from any group. Switches to Group 1 and asks **CONFIRM RESET Y/N?** — type `y` (**`-.--`**) to restart; anything else, or 30 s with no input, cancels and returns to the group you were in. Nothing is typed to the computer while it asks |
 
 The three speeds themselves are set in `config.py` (`MOUSE_SPEED_NORMAL`,
 `MOUSE_SPEED_SLOW`, `MOUSE_SPEED_FAST`).
@@ -449,7 +453,9 @@ patterns as Group 1:
 | Up / Down / Left / Right Arrow | same as Group 1 |
 | Keypad 0–9 | — (see morse_map.py) |
 | Keypad Enter | **`.-.-`** |
-| Keypad +  −  ×  ÷  .| same patterns as their Group 1 text equivalents |
+| Keypad ÷  . | same patterns as their Group 1 text equivalents |
+| Zoom in (Ctrl and +) | **`-...-`** |
+| Zoom out (Ctrl and −) | **`.---.`** |
 | Application (context menu) | **`----..`** |
 
 #### Page Scroll
@@ -474,6 +480,8 @@ effort for moving through a long document.
 | **`---..-.`** | Tab | Tab |
 | **`--....`** | Escape | Escape |
 | **`--.....`** | F5 | Refresh |
+| **`-.--..`** | Delete | Delete (same code as in the Keyboard group) |
+| **`-.-.-.`** | Calculator key | Opens the Calculator |
 
 #### Modifier Keys (Right-side, Sticky)
 

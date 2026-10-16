@@ -307,7 +307,7 @@ Three optional extras need no hardware:
 |---|---|---|
 | **AeroMorse Display** | the device's screen in a window on the computer, any size; can also play the beeps through the computer's speakers | `.-.-.-` on / off |
 | **AeroMorse Help** | the cheat sheet in a window, one tab per group | `..-..-` on / off |
-| **Centre pointer** | puts the mouse pointer in the middle of the screen | `.-.` in the Mouse group |
+| **Centre pointer** | puts the mouse pointer in the middle of the screen | `-..--` in the Mouse group |
 
 The codes work through the supplied `AeroMorse.ahk` script and the free
 AutoHotkey program. Set-up is in the Usage Guide, section 7.

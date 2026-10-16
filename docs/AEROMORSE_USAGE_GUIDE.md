@@ -407,7 +407,7 @@ three hotkeys, and the supplied `morse_map.py` already has a code for each:
 |--------|--------------|-----------|-------|
 | Ctrl+Alt+D | **AeroMorse Display** window (Build Guide §5.2) on / off | `.-.-.-` | 0 — works from every group |
 | Ctrl+Alt+H | **AeroMorse Help** — your cheat sheet with a tab per group — on / off | `..-..-` | 0 — works from every group |
-| Ctrl+Alt+Home | Mouse pointer to the middle of the screen | `.-.` | 2 — Mouse |
+| Ctrl+Alt+Home | Mouse pointer to the middle of the screen | `-..--` | 2 — Mouse |
 
 Setting it up takes three small steps, once. AutoHotkey is Windows-only.
 Until the script is running the three codes do nothing useful — they send
@@ -492,7 +492,7 @@ ones. A code in **Group 0** works from every group.
 ```python
 g0[6][0b010101] = Keycode.CONTROL, Keycode.ALT, Keycode.D      # .-.-.-  AeroMorse Display on / off
 g0[6][0b001001] = Keycode.CONTROL, Keycode.ALT, Keycode.H      # ..-..-  AeroMorse Help on / off
-g2[3][0b010]    = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.     centre pointer
+g2[5][0b10011]  = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # -..--   centre pointer
 ```
 
 Changing the map is an ordinary edit: back up, edit the work copy, run the

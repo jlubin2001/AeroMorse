@@ -112,6 +112,7 @@ g0[8][0b00111111] = "group 8"   # ..------  → Group 8 (placeholder)
 g0[8][0b01111111] = "group 9"   # .-------  → Group 9 — Switch (sip/puff hold keys, no Morse)
 g0[8][0b11111111] = "group 2"   # --------  → Mouse/Shortcuts
 g0[8][0b11110000] = "group 4"   # ----....  → Scanning / Switch Control (second shortcut)
+g0[7][0b1010010] = "devicereset"   # -.-..-.  restart the device from any group (asks "CONFIRM RESET Y/N?", type y)
 
 # ── Hotkeys for AeroMorse.ahk (AutoHotkey, Windows) ──────────────────────────
 # These send a key combination that the AeroMorse.ahk script on the computer
@@ -250,6 +251,7 @@ g1[5][0b10100]=Keycode.INSERT        # -.-..    (ku)
 g1[2][0b11]=Keycode.BACKSPACE        # --     (freed from M)
 g1[4][0b0011]=Keycode.SPACE          # ..--
 g1[7][0b1110010]=Keycode.TAB         # ---..-.  (sf)
+g1[6][0b111010]=Keycode.SHIFT,Keycode.TAB   # ---.-.  Shift+Tab, back one field  (sr)
 g1[5][0b00100] = "repeat"            # ..-..    repeat
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
@@ -316,20 +318,17 @@ g2[5][0b10000] = "mmove 1 0 0"     # -....   numpad 6  →  large
 g2[1][0b0] = "repeat"              # .       numpad 5  repeat last action
 g2[5][0b00100] = "repeat"         # ..-..   alternate repeat
 g2[4][0b1100] = "mslow"            # --..    toggle slow-step mode
-g2[4][0b1101] = "mfast"            # --.-    toggle fast mode
+g2[4][0b0010] = "mfast"            # ..-.    toggle fast mode
 g2[2][0b01] = "mclick left 1"      # .-      left click
 g2[3][0b011] = "mclick right 1"    # .--     right click
 g2[3][0b001] = "mclick left 2"     # ..-     double-click left
 g2[4][0b0011] = "mclick right 2"   # ..--    double-click right
 g2[2][0b10] = "mdrag left"         # -.      toggle left-button drag
-g2[7][0b1010010] = "devicereset"   # -.-..-. restart the device (asks "CONFIRM RESET Y/N?", type y)
 g2[4][0b0001] = "version"          # ...-    show start-up screen (name, version, CircuitPython)
 
 # ── Keypad & Arrow Keys ───────────────────────────────────────────────────────
-g2[5][0b10001]=Keycode.KEYPAD_PLUS         # -...-
-g2[5][0b01110]=Keycode.KEYPAD_MINUS        # .---.
-g2[5][0b11101]=Keycode.EQUALS              # ---.-  (KEYPAD_EQUALS does nothing on Windows)
-g2[5][0b10011]=Keycode.KEYPAD_ASTERISK     # -..--
+g2[5][0b10001]=Keycode.CONTROL, Keycode.EQUALS  # -...-    zoom in  (Ctrl and +)
+g2[5][0b01110]=Keycode.CONTROL, Keycode.MINUS   # .---.    zoom out (Ctrl and -)
 g2[6][0b011111]=Keycode.KEYPAD_PERIOD      # .-----
 g2[6][0b000011]=Keycode.KEYPAD_FORWARD_SLASH  # ....--
 g2[6][0b111100]=Keycode.APPLICATION        # ----..  context-menu key
@@ -355,16 +354,18 @@ g2[5][0b11111]=Keycode.ALT, Keycode.TAB    # -----   switch windows (Alt+Tab)
 g2[7][0b1110010]=Keycode.TAB               # ---..-.  Tab                    (sf)
 g2[6][0b110000]=Keycode.ESCAPE             # --....   Escape                 (gs)
 g2[7][0b1100000]=Keycode.F5                # --.....  refresh / F5           (--5)
+g2[6][0b101100]=Keycode.DELETE             # -.--..   Delete (same code as in the Keyboard group)  (kd)
+g2[6][0b101010]=_cc('AL_CALCULATOR', 0x192)   # -.-.-.  open the Calculator
 
 # ── Pointer helpers ───────────────────────────────────────────────────────────
 # Find pointer: taps Ctrl by itself. With the Windows option "Show location of
 # pointer when I press the CTRL key" on (Mouse settings > Pointer Options),
 # Windows draws circles round the pointer. Does nothing if that option is off.
-g2[4][0b0010] = (Keycode.CONTROL,)         # ..-.    find pointer (tap Ctrl)
+g2[5][0b11101] = (Keycode.CONTROL,)        # ---.-   find pointer (tap Ctrl)
 # Centre pointer: sends Ctrl+Alt+Home, which a small AutoHotkey script on the
 # computer turns into "put the pointer in the middle of the screen" (Build
 # Guide Appendix G) - the supplied AeroMorse.ahk. Does nothing unless it is running.
-g2[3][0b010] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # .-.   centre pointer
+g2[5][0b10011] = Keycode.CONTROL, Keycode.ALT, Keycode.HOME   # -..--  centre pointer
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
 g2[4][0b1010]=Keycode.RIGHT_CONTROL        # -.-.
@@ -391,6 +392,8 @@ groups[2] = g2
 # shared morse_map.py leaks nothing. U = unlock, L = lock (PIN file only).
 
 g3 = init_group()
+
+g3[5][0b00010]    = "group 1"   # ...-. → Switch to Keyboard
 
 # ── ADD A NEW SECRET — copy the line below, remove the leading '# ', then: ─────
 #   1. change the code in [ ] to a free one (morse_map_report.txt lists them)
@@ -584,7 +587,7 @@ g5[3][0b101] = CC(ConsumerControlCode.EJECT)                 # -.-
 # These take the codes of the letters b / f / l
 # (-.-. was already free here, since g1 uses it for LEFT_CONTROL).
 # _cc() is defined at the top of this file, so launchers work in ANY group,
-# e.g. in Group 2:  g2[6][0b101010] = _cc('AL_CALCULATOR', 0x192)   # -.-.-.
+# e.g. the Calculator in Group 2:  g2[6][0b101010] = _cc('AL_CALCULATOR', 0x192)
 
 g5[4][0b1010] = _cc('AL_CALCULATOR',            0x192)   # -.-.  C  calculator
 g5[4][0b0010] = _cc('AL_LOCAL_MACHINE_BROWSER', 0x194)   # ..-.  F  file explorer
