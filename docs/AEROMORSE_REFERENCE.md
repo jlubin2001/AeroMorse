@@ -23,9 +23,9 @@ window show your own codes; these tables do not.
 1. [How Input Works](#how-input-works)
 2. [TFT Display](#tft-display) — what the screen shows
 3. [Groups](#groups) — every group and its codes
-4. [REPL Output](#repl-output) — the device's log
-5. [Customising the Code Tables](#customising-the-code-tables) — macros, passwords and secrets
-6. [More media, browser and app-launcher keys](#more-media-browser-and-app-launcher-keys) — keys beyond Group 5, and how to add one
+4. [Customising the Code Tables](#customising-the-code-tables) — macros, passwords and secrets
+5. [More media, browser and app-launcher keys](#more-media-browser-and-app-launcher-keys) — keys beyond Group 5, and how to add one
+6. [The device's log (for troubleshooting)](#the-devices-log-for-troubleshooting) — what the device heard, code by code
 
 ---
 
@@ -220,24 +220,24 @@ function keys, navigation keys, and modifier keys.
 
 #### Punctuation
 
-| Character | Pattern | Character | Pattern |
-|-----------|---------|-----------|---------|
-| `+` | **`-...-`** | `!` | **`.-....`** |
-| `-` | **`.---.`** | `@` | **`---..-`** |
-| `=` | **`---.-`** | `#` | **`..---.`** |
-| `*` | **`-..--`** | `$` | **`..----`** |
-| `.` | **`.-----`** | `%` | **`...-.-`** |
-| `,` | **`-.....`** | `^` | **`-...--`** |
-| `:` | **`.----.`** | `&` | **`.---..`** |
-| `;` | **`-....-`** | `?` | **`-.----`** |
-| `)` | **`...---`** | `/` | **`....--`** |
-| `(` | **`---...`** | `\` | **`----..`** |
-| `]` | **`-..---`** | `\|` | **`....-. `** |
-| `[` | **`.--...`** | `_` | **`----.-`** |
-| `}` | **`--..-`** | `"` | **`...--.`** |
-| `{` | **`..--.`** | `'` | **`..-...`** |
-| `<` | **`--..--`** | `` ` `` | **`--.---`** |
-| `>` | **`..--..`** | `~` | **`---.--`** |
+| Character | Name | Pattern | Character | Name | Pattern |
+|-----------|------|---------|-----------|------|---------|
+| `+` | plus | **`-...-`** | `!` | exclamation mark | **`.-....`** |
+| `-` | minus / hyphen | **`.---.`** | `@` | at sign | **`---..-`** |
+| `=` | equals | **`---.-`** | `#` | hash / number sign | **`..---.`** |
+| `*` | asterisk | **`-..--`** | `$` | dollar sign | **`..----`** |
+| `.` | period | **`.-----`** | `%` | percent | **`...-.-`** |
+| `,` | comma | **`-.....`** | `^` | caret | **`-...--`** |
+| `:` | colon | **`.----.`** | `&` | ampersand | **`.---..`** |
+| `;` | semicolon | **`-....-`** | `?` | question mark | **`-.----`** |
+| `)` | close parenthesis | **`...---`** | `/` | forward slash | **`....--`** |
+| `(` | open parenthesis | **`---...`** | `\` | backslash | **`----..`** |
+| `]` | close square bracket | **`-..---`** | <code>&#124;</code> | vertical bar / pipe | **`....-.`** |
+| `[` | open square bracket | **`.--...`** | `_` | underscore | **`----.-`** |
+| `}` | close curly brace | **`--..-`** | `"` | double quote | **`...--.`** |
+| `{` | open curly brace | **`..--.`** | `'` | single quote / apostrophe | **`..-...`** |
+| `<` | less than | **`--..--`** | `` ` `` | backtick / grave accent | **`--.---`** |
+| `>` | greater than | **`..--..`** | `~` | tilde | **`---.--`** |
 
 #### Function Keys
 
@@ -254,24 +254,27 @@ function keys, navigation keys, and modifier keys.
 
 #### Navigation & Editing Keys
 
+The **Code** column is a memory aid: each pattern is those letters sent
+together as one code — **AU** is A `.-` + U `..-` = `.-..-`, *Arrow Up*.
+
 | Key | Pattern | Code |
 |-----|---------|------|
-| Up Arrow | **`.-..-`** | `au` |
-| Down Arrow | **`.--..`** | `ad` |
-| Left Arrow | **`.-.-..`** | `al` |
-| Right Arrow | **`.-.-.`** | `ar` |
-| Home | **`.......`** (7 dots) | |
-| End | **`...-...`** | |
-| Page Up | **`.....-`** | `su` |
-| Page Down | **`...-..`** | `sd` |
+| Arrow Up | **`.-..-`** | **AU** |
+| Arrow Down | **`.--..`** | **AD** |
+| Arrow Left | **`.-.-..`** | **AL** |
+| Arrow Right | **`.-.-.`** | **AR** |
+| Home | **`.......`** (7 dots) | **SH** |
+| End | **`...-...`** | **SB** |
+| Page Up | **`.....-`** | **SU** |
+| Page Down | **`...-..`** | **SD** |
 | Enter | **`.-.-`** | |
-| Escape | **`--....`** | |
-| Delete | **`-.--..`** | `kd` |
-| Insert | **`-.-..`** | `ki` |
+| Escape | **`--....`** | **GS** |
+| Delete | **`-.--..`** | **KD** |
+| Insert | **`-.-..`** | **KI** |
 | Backspace | **`--`** | |
 | Space | **`..--`** | |
-| Tab | **`---..-.`** | `of` |
-| Shift+Tab (back one field) | **`---.-.`** | `sr` |
+| Tab (forward tab) | **`---..-.`** | **OF** |
+| Shift+Tab (reverse tab) | **`---.-.`** | **OR** |
 
 #### Modifier Keys (Sticky)
 
@@ -304,14 +307,25 @@ where Shift let go after a single key.
 
 | Action | Pattern |
 |--------|---------|
-| Switch to Group 2 (Mouse) | **`...-. `** |
+| Switch to Group 2 (Mouse) | **`...-.`** |
 
 ### Group 2 — Mouse & Shortcuts
 
-Mouse movements follow the **numeric keypad layout**: the nine directions
-(up-left through down-right) map to the same positions as numpad 7–9, 4–6, 1–3.
-Each cardinal direction has a short pattern (2–3 symbols) and a large-step
-pattern (5 symbols).
+<img src="images/mouse-keypad.svg" alt="A number keypad. Each key shows its number, the direction the pointer moves and the Morse code for that number: 7 up-left --..., 8 up ---.., 9 up-right ----., 4 left ....-, 6 right -...., 1 down-left .----, 2 down ..---, 3 down-right ...--. The middle key, 5, is repeat, a single dot. The up, down, left and right keys also show their short codes: --, ---, .. and ..." width="270" align="right" style="float: right; margin: 0 0 10px 18px;">
+
+Mouse movements follow the **numeric keypad layout**: directions map to the
+same positions as numpad 7–9, 4–6, 1–3. Each cardinal direction has a short
+pattern (2–3 symbols) and a large-step pattern (5 symbols). The same patterns
+used for typing in the keyboard group are reused here for cursor movement,
+clicks, and shortcuts.
+
+**An easy way to remember them:** picture a number keypad. The large-step
+code for each direction is simply the Morse code for the number on that key —
+`8` (`---..`) is up, `2` (`..---`) is down, `4` (`....-`) is left, `6`
+(`-....`) is right, and the corner numbers `7`, `9`, `1` and `3` are the
+diagonals. If you know the numbers in Morse, you already know the mouse.
+
+<div style="clear: both"></div>
 
 #### Mouse Movement
 
@@ -333,10 +347,15 @@ Mouse speed is controlled by three modes:
 | Mode | Speed multiplier | How to activate |
 |------|-----------------|-----------------|
 | Normal | ×2 | Default; also what you return to when `mslow` or `mfast` is sent a second time |
-| Slow | ×1 | `mslow`, pattern **`--..`** (send again for Normal) |
-| Fast | ×3 | `mfast`, pattern **`..-.`** (send again for Normal) |
+| Slow | ×1 | `mslow`, pattern **`--..`** — the letter **Z**: think *zoom in* for fine moves (send again for Normal) |
+| Fast | ×3 | `mfast`, pattern **`..-.`** — the letter **F**, for *fast* (send again for Normal) |
 
-The effective pixels moved per step = **raw direction value × speed × 2**.
+The distance moved per step = **raw direction value × speed ×
+`MOUSE_SPEED_FACTOR`** (7 by default since v1.31, set for Windows' default
+pointer speed: 10 on the 1–20 *Mouse pointer speed* slider in Windows 11
+Settings → Bluetooth & devices → Mouse, the middle — see the Build Guide,
+Appendix E). Scrolling uses
+`MOUSE_SCROLL_FACTOR` (2) instead.
 
 #### Mouse Buttons
 
@@ -431,14 +450,17 @@ g2[3][0b110] = "mdrag right"       # --.     toggle right-button drag
 
 #### Other Controls
 
-| Action | Pattern | Effect |
-|--------|---------|--------|
-| `mslow` | **`--..`** | Toggle slow-step mouse speed (slow ↔ normal) |
-| `mfast` | **`..-.`** | Toggle fast mouse speed (fast ↔ normal) |
-| Find pointer | **`---.-`** | Taps Ctrl by itself. If Windows' *Show location of pointer when I press the CTRL key* is on (Control Panel → Mouse → Pointer Options), circles are drawn round the pointer. Does nothing if that option is off |
-| Centre pointer | **`-..--`** | Sends Ctrl+Alt+Home, which a small AutoHotkey script turns into "put the pointer in the middle of the screen". Does nothing unless `AeroMorse.ahk` is running — see Build Guide Appendix G |
-| `version` | **`...-`** | Show the start-up screen again — device name, AeroMorse version, CircuitPython version — until the next sip/puff |
-| `devicereset` | **`-.-..-.`** | Restart the device (same as unplug/replug). It is in Group 0, so it works from any group. Switches to Group 1 and asks **CONFIRM RESET Y/N?** — type `y` (**`-.--`**) to restart; anything else, or 30 s with no input, cancels and returns to the group you were in. Nothing is typed to the computer while it asks |
+Each code is the same as a letter or symbol in the Keyboard group (the
+restart is three letters run together), which makes it easier to remember:
+
+| Action | Pattern | Remember it as | Effect |
+|--------|---------|----------------|--------|
+| `mslow` | **`--..`** | **Z** (zoom in) | Toggle slow-step mouse speed (slow ↔ normal) |
+| `mfast` | **`..-.`** | **F** (fast) | Toggle fast mouse speed (fast ↔ normal) |
+| Find pointer | **`---.-`** | **`=`** | Taps Ctrl by itself. If Windows' *Show location of pointer when I press the CTRL key* is on (Control Panel → Mouse → Pointer Options), circles are drawn round the pointer. Does nothing if that option is off |
+| Centre pointer | **`-..--`** | **`*`** | Sends Ctrl+Alt+Home, which a small AutoHotkey script turns into "put the pointer in the middle of the screen". Does nothing unless `AeroMorse.ahk` is running — see Build Guide Appendix G |
+| `version` | **`...-`** | **V** (version) | Show the start-up screen again — device name, AeroMorse version, CircuitPython version — until the next sip/puff |
+| `devicereset` | **`-.-..-.`** | **KIN** — K `-.-`, I `..`, N `-.` sent as one code | Restart the device (same as unplug/replug). It is in Group 0, so it works from any group. Switches to Group 1 and asks **CONFIRM RESET Y/N?** — type `y` (**`-.--`**) to restart; anything else, or 30 s with no input, cancels and returns to the group you were in. Nothing is typed to the computer while it asks |
 
 The three speeds themselves are set in `config.py` (`MOUSE_SPEED_NORMAL`,
 `MOUSE_SPEED_SLOW`, `MOUSE_SPEED_FAST`).
@@ -450,7 +472,7 @@ patterns as Group 1:
 
 | Key | Pattern |
 |-----|---------|
-| Up / Down / Left / Right Arrow | same as Group 1 |
+| Arrow Up / Down / Left / Right | same as Group 1 |
 | Keypad 0–9 | — (see morse_map.py) |
 | Keypad Enter | **`.-.-`** |
 | Keypad ÷  . | same patterns as their Group 1 text equivalents |
@@ -476,7 +498,7 @@ effort for moving through a long document.
 |----------|---------|--------|
 | **`.....`** | Win + Tab | Task View |
 | **`-----`** | Alt + Tab | Switch windows |
-| **`--..--`** | Ctrl + Alt + Left Arrow | Release mouse capture from VM |
+| **`--..--`** | Ctrl + Alt + Arrow Left | Release mouse capture from VM |
 | **`---..-.`** | Tab | Tab |
 | **`--....`** | Escape | Escape |
 | **`--.....`** | F5 | Refresh |
@@ -638,52 +660,41 @@ remaining letters and numbers the same way. Reach each group with its Group 0 ju
 
 ---
 
-## REPL Output
-
-Every action that fires is printed to the serial console (REPL) in the format:
-
-```
-<pattern>  <action>
-```
-
-Examples:
-```
-. - . .   "b"
-. - .     KEY 82
-- -       KEY 42
-- - . .   mmove 0 -1 0
-. - .     ?
-GROUP -> 2 (Mouse)
-```
-
-`?` means the pattern was not found in any code table.  Connect a terminal
-(Mu editor, Thonny, PuTTY, or `screen`) at 115200 baud to see this output.
-**Careful:** Thonny interrupts the running program when it connects, and
-Ctrl+C in any terminal does the same — AeroMorse then stops typing until it
-is restarted (replug the USB cable). If AeroMorse is your only way to use the
-computer, read the warning in Build Guide Appendix N first.
-
----
-
 ## Customising the Code Tables
 
-All key assignments live in `morse_map.py`.  The file uses a simple dictionary
-structure:
+All key assignments live in `morse_map.py`. Each code is one line:
 
 ```python
-g1[<length>][<binary_pattern>] = <action>
+g1[3][0b101] = 'k'    # -.-   the letter K
 ```
 
-- **length** — number of symbols (1–8)
-- **binary\_pattern** — bits representing the pattern, MSB first; `0` = dot,
-  `1` = dash
-- **action** — one of:
-  - A string like `'a'` or `'hello world'` — typed as keystrokes
-  - A `Keycode` constant — pressed and released as a hardware key
-  - A tuple of `Keycode` constants — all pressed simultaneously (combo)
-  - A command string — `group N`, `mmove dx dy scroll`, `mclick left N`,
-    `mdrag left`, `repeat`, `mslow`, `mfast`, `unlock`, `lock`, `version`,
-    `devicereset` (`mreset` was removed in v1.12 — use `devicereset`)
+Read it in four parts:
+
+| Part | In the example | What it means |
+|---|---|---|
+| **Group** | `g1` | Which group the code belongs to: `g1` is Group 1 (Keyboard), `g2` Group 2 (Mouse), `g3` Group 3 (Macros), and so on up to `g9`. `g0` is Group 0 — codes there work in **every** group |
+| **Length** | `[3]` | How many dots and dashes the code has (1–8) |
+| **Pattern** | `[0b101]` | The code itself, written as 1s and 0s: **`1` = dash, `0` = dot**, read left to right in the order you send them. `101` is dash, dot, dash: `-.-`. The `0b` in front is the same on every line — it only tells Python that 1s and 0s follow. It has nothing to do with the letter B |
+| **Action** | `'k'` | What the code does — see the list below |
+
+The part after `#` is a note for people; the device ignores it.
+
+#### The kinds of action, with an example of each
+
+| Action | Example | What it does |
+|---|---|---|
+| **Text** in quotes | `g1[3][0b101] = 'k'` | Types it — one character, or a whole phrase such as `g3[3][0b010] = 'John Smith'` |
+| **A key** | `g1[4][0b0101] = Keycode.ENTER` | Presses and lets go of that key (here Enter, `.-.-`) |
+| **A modifier key** | `g1[4][0b1010] = Keycode.LEFT_CONTROL` | Sticky: holds Ctrl for the next key only (`-.-.`) |
+| **Keys together** | `g2[5][0b11111] = Keycode.ALT, Keycode.TAB` | Presses them all at once and lets go (here Alt+Tab, `-----`) |
+| **A command** | `g2[2][0b01] = "mclick left 1"` | Does an AeroMorse action (here a left click, `.-`). The commands: `group N`, `mmove dx dy scroll`, `mclick left N` / `mclick right N`, `mdrag left`, `repeat`, `mslow`, `mfast`, `version`, `devicereset`, `unlock`, `lock` |
+| **Change group** | `g1[5][0b00010] = "group 2"` | A command too: goes to Group 2 (Mouse) (`...-.`) |
+| **Mouse move** | `g2[2][0b11] = "mmove 0 -1 0"` | A command too. The three numbers are across, down and scroll: `0 -1 0` moves the pointer up one step (`--`) |
+| **A media key** | `g5[1][0b0] = CC(ConsumerControlCode.PLAY_PAUSE)` | Play / pause (`.`) — see [More media, browser and app-launcher keys](#more-media-browser-and-app-launcher-keys) |
+| **An app key** | `g2[6][0b101010] = _cc('AL_CALCULATOR', 0x192)` | Opens the Calculator (`-.-.-.`) |
+| **A secret** | `g3[4][0b0110] = _secret('password1')` | Types a password kept in your secrets file, never in `morse_map.py` (`.--.`) — see *Storing passwords and secrets safely* below |
+
+(`mreset` was removed in v1.12 — use `devicereset`.)
 
 **Which key names can I use?** Every valid `Keycode` name — letters, number
 keys, navigation, punctuation, function keys, the keypad and the modifiers —
@@ -692,15 +703,15 @@ while you edit: [PDF](AeroMorse%20—%20Keycode%20Reference.pdf) ·
 [Markdown](KEYCODE_REFERENCE.md). It also shows how to type shifted symbols
 such as `:` and `{`, which have no key name of their own.
 
-Media, browser and app-launcher keys are a different kind of key, written
-with `CC(...)` or `_cc(...)`; see
-[More media, browser and app-launcher keys](#more-media-browser-and-app-launcher-keys).
-
 ### Adding a Macro (Group 3 example)
 
 ```python
-g3[3][0b010] = 'John Smith'   # .-.  (R pattern)
+g3[3][0b010] = 'John Smith'   # .-.  (the R pattern)
 ```
+
+In Group 3 each code uses the same pattern as a letter in Group 1, so R
+(`.-.`) types *John Smith* here. Change the text between the quotes to your
+own phrase.
 
 ### Storing passwords and secrets safely
 
@@ -941,3 +952,47 @@ read the number you want from it and use it in `_cc()` as above.
 **Leave these alone unless you mean it:** `SLEEP` (`0x32`) and `POWER`
 (`0x30`) put the computer to sleep or switch it off. If you add one, give it
 a long code that cannot be entered by accident.
+
+---
+
+## The device's log (for troubleshooting)
+
+Every code the device hears is written to a log over the USB cable, together
+with what it did. It is useful when a code does something unexpected: the log
+shows exactly which dots and dashes the device heard.
+
+**Most people never need it.** The AeroMorse Display window (Build Guide
+§5.2) already shows the last code and what it did, and it is safe to leave
+open. The log is for builders tracking down a problem.
+
+Each line is the pattern, then what it did:
+
+```
+. - . .  L
+. - . -  ENTER
+- -  BACKSPACE
+. . . - .  GROUP 2
+GROUP -> 2 (Mouse)
+- -  MMOVE UP
+- . - . - . -  ?
+```
+
+- A letter, number or key name (`L`, `ENTER`) is what was typed or pressed;
+  a macro shows its text in quotes; `MMOVE UP` and the like are mouse moves.
+  The same pattern can mean different things in different groups — `- -`
+  is Backspace in the Keyboard group and *up* in the Mouse group.
+- **`?` means the device heard a pattern that is not in any group.** That is
+  usually a code that was cut short or ran into the next one — the log shows
+  which dots and dashes it heard instead.
+- `GROUP ->` shows a change of group.
+- Lines starting with `~AM` are what the AeroMorse Display window reads; they
+  can be ignored.
+
+**To see it,** connect a serial terminal (Mu editor, PuTTY, or Thonny) to the
+device's COM port at 115200 baud. Close the AeroMorse Display window first —
+only one program can use the port at a time.
+
+> ⚠️ **Careful:** Thonny stops the running program when it connects, and
+> Ctrl+C in any terminal does the same — AeroMorse then stops typing until it
+> is restarted (replug the USB cable). If AeroMorse is your only way to use
+> the computer, read the warning in Build Guide Appendix N first.

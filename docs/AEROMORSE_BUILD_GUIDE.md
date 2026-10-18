@@ -2271,8 +2271,10 @@ Seconds — duration of the confirm and group-change blips.
 Effective pixels per step = `raw direction × MOUSE_SPEED_* ×
 MOUSE_SPEED_FACTOR`, and then Windows multiplies that by its own pointer
 speed (Settings → Bluetooth & devices → Mouse → *Mouse pointer speed*). The
-defaults are set for Windows' **default pointer speed** (the slider in the
-middle). On a PC where the pointer speed is turned up to the fastest, the
+defaults are set for Windows' **default pointer speed**: **10** on Windows
+11's 1–20 slider, the middle. (The older Control Panel slider, *Mouse
+Properties → Pointer Options*, has 11 steps; there the default is the 6th.)
+On a PC where the pointer speed is turned up to the fastest, the
 same settings move about 3.5 times as far — use `MOUSE_SPEED_FACTOR = 2`
 there.
 
@@ -3353,6 +3355,11 @@ sensor; the beeps come from the board's own buzzer — or from a STEMMA Speaker
 (#3885) if you want them louder — and the display is the **AeroMorse
 Display** window on the computer (§5).
 
+> **Buying in the USA?** The Adafruit Metro ESP32-S3 #5500 also comes with its
+> headers fitted, and the same switches-and-speaker build should work on it
+> without the Cytron's shipping and customs costs. It has not been built yet
+> — see "A solderless switch build on the Metro ESP32-S3" in Appendix L.
+
 > **Tested:** built and checked on 2026-10-10 with CircuitPython 10.3.1 and
 > AeroMorse v1.28 plus the changes that became v1.29. Both switches type, and
 > sound was checked both ways: the
@@ -3586,7 +3593,8 @@ If you build this, please report how it goes.
 The standard build uses the Adafruit ESP32-S3 Reverse TFT Feather, #5691.
 The Cytron Maker Feather AIoT S3 is the other board the project has built
 on (Appendix K). This appendix lists the rest: boards that should work,
-boards that cannot, and why.
+boards that cannot, and why — including a no-soldering switch build on the
+Adafruit Metro ESP32-S3.
 
 > ⚠️ **Not tested by the project.** Unless a part of this appendix says
 > otherwise, nobody on the project has built what it describes. It is
@@ -3665,11 +3673,152 @@ STEMMA QT with no wiring change.
 
 | Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|-------|------|-------|
-| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor |
+| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor. **Comes with its female headers already soldered**, so a switch-and-speaker build needs no soldering — see below |
 
 > The Metro ESP32-S3 #5500 has the most memory in this guide (16 MB flash,
 > 8 MB PSRAM). Choose the Metro for the extra memory or the larger form
 > factor.
+
+### A solderless switch build on the Metro ESP32-S3 (not tested)
+
+The same no-soldering idea as the Cytron build in Appendix K, on an Adafruit
+board sold and shipped from the USA: two switches — AT switches or push
+buttons — and an optional speaker, every wire pushed into the
+Metro's own sockets or clamped under a screw. No screen and no pressure
+sensor; the display is the AeroMorse Display window on the computer (§5).
+
+> ⚠️ **Not built yet.** This section is written from the Metro's
+> documentation and from the tested Cytron build. The Metro uses the same
+> ESP32-S3 chip and CircuitPython 10.3.1, and nothing in AeroMorse needs a
+> pin it lacks, but nobody on the project has tried it. If you build it,
+> please report how it went.
+
+**How it differs from the Cytron build**
+
+| | Cytron (Appendix K) | Metro ESP32-S3 #5500 |
+|---|---|---|
+| Headers | Stacking headers, ordered pre-soldered | Female sockets, **soldered at the factory** |
+| Ground sockets | Only one — two spare pins stand in as grounds | **Three** (two on the power header, one beside `D13`) — no extra lines in `config.py` |
+| Sound | Buzzer on the board, or a STEMMA Speaker | **No buzzer** — add a STEMMA Speaker (recommended), or use sound through the computer (`PC_SOUND`, §6.2) |
+| Pins for the switches | `A3` and `A1` | `D5` and `D6` — the `config.py` defaults |
+| Size | Feather (51 × 23 mm) | Arduino Uno (68 × 53 mm) |
+| Where to buy | Cytron, Malaysia (shipping and customs on top) | Adafruit, USA |
+
+**Parts — every Metro build**
+
+| Qty | Item | Notes |
+|---|---|---|
+| 1 | Adafruit Metro ESP32-S3 [#5500](https://www.adafruit.com/product/5500) | Headers already fitted |
+| 1 | USB-C **data** cable | A charge-only cable will not work |
+| 1 | *Optional:* mounting plate [#275](https://www.adafruit.com/product/275) | Holds the Metro (and a half breadboard) on rubber feet |
+
+**Parts — the two switches: pick one option**
+
+| Option | Parts | Good for |
+|---|---|---|
+| **M1 — AT switches, jack boards with pins** | 2 × 3.5 mm stereo jack board with a 5-pin header, pins already soldered on (the same boards as §K.2); 4 × **male-to-female** jumper wires; 2 AT switches with 3.5 mm mono plugs | A user's own AT switches. Everything pushes in, no tools |
+| **M2 — AT switches, screw-terminal jacks** | 2 × TRRS jack terminal block [#2915](https://www.adafruit.com/product/2915); **male-to-male** jumper wires [#1957](https://www.adafruit.com/product/1957) (4 needed); a small flat screwdriver; 2 AT switches with 3.5 mm mono plugs | A user's own AT switches, all parts from Adafruit. The #2915 has only screw terminals, so each wire needs a pin at **both** ends: one clamped under a screw, one pushed into the Metro |
+| **M3 — push buttons** | STEMMA wired push-button pack [#4431](https://www.adafruit.com/product/4431) (five buttons, each with its own cable; two are used) | Trying AeroMorse, or someone who presses buttons by hand. No jacks and no extra wires: each button's cable pushes straight into the Metro |
+
+**Parts — sound: pick one option**
+
+(A piezo on a plug — Option S2 in Appendix D — is left out here on purpose:
+on this board the speaker is louder, has a volume control, costs about the
+same, unplugs at its own cable, and needs no jack, wires or screwdriver.)
+
+| Option | Parts | Notes |
+|---|---|---|
+| **STEMMA Speaker — recommended** | Speaker [#3885](https://www.adafruit.com/product/3885) + JST PH 3-pin to male header cable [#3893](https://www.adafruit.com/product/3893) (**sold separately** — the speaker does not include it) | A real speaker with its own small amplifier, so AeroMorse's beeps come through clearly, and a **volume screw**. Its three pins push straight into the Metro — no jack, no tools. The same speaker was tested on the Cytron build |
+| **None on the device** | — | Beeps through the computer instead: `PC_SOUND = True` and the AeroMorse Display window (§6.2) |
+
+The Metro's three `GND` sockets are exactly enough: one for each switch and
+one for the sound.
+
+**Software**
+
+1. **CircuitPython 10.3.1** from
+   [circuitpython.org/board/adafruit_metro_esp32s3](https://circuitpython.org/board/adafruit_metro_esp32s3/).
+   Double-press the Metro's **RESET** button; a drive whose name ends in
+   `BOOT` appears. Copy the `.uf2` onto it. The board restarts and a
+   `CIRCUITPY` drive appears. The Metro has 16 MB of flash, so the
+   bootloader change that 4 MB boards need for CircuitPython 10 does not
+   apply to it.
+2. **Libraries and AeroMorse files** — the same as §K.4 steps 2 and 3. Then
+   unplug the USB cable and plug it back in so `boot.py` takes effect.
+
+**`config.py` settings** — the pins are already the defaults, so only these
+change, whichever options you chose:
+
+```python
+DEVICE_NAME          = "AeroMorse Metro"    # any name you like
+USE_SENSOR           = False                # two switches, no pressure sensor
+USE_DISPLAY          = False                # no screen
+USE_WIRELESS_DISPLAY = False                # unless you have a wireless display
+PC_DISPLAY           = True                 # show the display on the computer
+```
+
+`DOT_PIN = board.D5`, `DASH_PIN = board.D6` and `AUDIO_PIN = board.A0` stay
+as they are. With no sound on the device, set `PC_SOUND = True` for beeps
+through the computer, or `USE_SPEAKER = False` for no sound at all.
+
+**Wiring** — ⚠️ **unplug the USB cable first.** Whatever the option, the dot
+switch's signal goes to `D5`, the dash switch's to `D6`, the sound's signal
+to `A0`, and each part's ground to its own `GND` socket.
+
+*Option M1 — jack boards with pins.* On these boards **pin 1 is the sleeve
+(ground)** and **pin 5 is the tip (signal)**; pins 2, 3 and 4 stay empty.
+Each wire's socket end pushes onto a jack-board pin, its pin end into the
+Metro:
+
+| Jack board | Jack pin | Metro socket |
+|---|---|---|
+| A — **dot** switch | 1 | `GND` |
+| A — **dot** switch | 5 | `D5` |
+| B — **dash** switch | 1 | `GND` |
+| B — **dash** switch | 5 | `D6` |
+
+*Option M2 — #2915 screw-terminal jacks.* The terminals are printed
+`GND`, (blank), `Right`, `Left`. **`Left` is the tip** — the switch signal —
+and `GND` is the sleeve. Loosen the screw, push one end of a male-to-male
+wire in, and tighten it until the wire does not pull out:
+
+| #2915 jack | Terminal | Metro socket |
+|---|---|---|
+| A — **dot** switch | `Left` | `D5` |
+| A — **dot** switch | `GND` | `GND` |
+| B — **dash** switch | `Left` | `D6` |
+| B — **dash** switch | `GND` | `GND` |
+
+`Right` and the blank terminal stay empty.
+
+*Option M3 — STEMMA push buttons.* Each button's cable ends in three pins:
+
+| Button wire | Dot button | Dash button |
+|---|---|---|
+| White (signal) | `D5` | `D6` |
+| Black (ground) | `GND` | `GND` |
+| Red (power) | **not connected** — tape it over | **not connected** — tape it over |
+
+The red wire is not needed: AeroMorse turns on the Metro's own pull-up for
+the switch pins, and a press connects the white wire to ground. Leaving it
+out also keeps the Metro's only `3.3` socket free for a speaker. **Never put
+a red wire in `VHI` or `VIN`** — those carry 5 V, more than the Metro's
+pins can take.
+
+*STEMMA Speaker (recommended):* click the #3893 cable's white plug into the
+speaker board, then push its three pins into the Metro:
+
+| Speaker cable wire | Metro socket |
+|---|---|
+| Black (ground) | the remaining `GND` |
+| Red (power) | `3.3` (3.3 V) — not `VHI` or `VIN` |
+| White (signal) | `A0` |
+
+Set the loudness with the small **Volume** screw on the speaker board — turn
+it gently with a small screwdriver.
+
+Then test as in §K.7: a short press of the dot switch types `e`, of the dash
+switch `t`.
 
 ### Boards that do NOT work for USB HID
 

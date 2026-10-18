@@ -127,7 +127,9 @@ groups[0] = g0
 # Begin Group 1
 # KEYBOARD (Letters, Numbers, Punctuation)
 ############################################
-# Bit encoding: 0 = dot (sip / sw-1), 1 = dash (puff / sw-2), MSB = first symbol.
+# How a code is written: the 1s and 0s after 0b, read left to right in the order
+# you send them. 0 = dot (sip / switch 1), 1 = dash (puff / switch 2).
+# Example: g1[4][0b1000] is -... (one dash, three dots), the letter B.
 #
 # Two letters deliberately use non-standard patterns to free up
 # high-frequency control keys on their original ITU Morse codes:
@@ -247,11 +249,11 @@ g1[6][0b000100]=Keycode.PAGE_DOWN    # ...-..   (sd)
 g1[4][0b0101]=Keycode.ENTER          # .-.-
 g1[6][0b110000]=Keycode.ESCAPE       # --....   (gs)
 g1[6][0b101100]=Keycode.DELETE       # -.--..   (kd)
-g1[5][0b10100]=Keycode.INSERT        # -.-..    (ku)
+g1[5][0b10100]=Keycode.INSERT        # -.-..    (ki)
 g1[2][0b11]=Keycode.BACKSPACE        # --     (freed from M)
 g1[4][0b0011]=Keycode.SPACE          # ..--
-g1[7][0b1110010]=Keycode.TAB         # ---..-.  (sf)
-g1[6][0b111010]=Keycode.SHIFT,Keycode.TAB   # ---.-.  Shift+Tab, back one field  (sr)
+g1[7][0b1110010]=Keycode.TAB         # ---..-.  (of)
+g1[6][0b111010]=Keycode.SHIFT,Keycode.TAB   # ---.-.  Shift+Tab, reverse tab  (or)
 g1[5][0b00100] = "repeat"            # ..-..    repeat
 
 # ── Modifier keys ─────────────────────────────────────────────────────────────
@@ -351,7 +353,7 @@ g2[7][0b0000000]=Keycode.HOME              # .......  Home (same code as in the 
 g2[6][0b110011]=Keycode.RIGHT_CONTROL, Keycode.RIGHT_ALT, Keycode.LEFT_ARROW  # --..--  free mouse from VM
 g2[5][0b00000]=Keycode.GUI, Keycode.TAB    # .....   task view (Win+Tab)
 g2[5][0b11111]=Keycode.ALT, Keycode.TAB    # -----   switch windows (Alt+Tab)
-g2[7][0b1110010]=Keycode.TAB               # ---..-.  Tab                    (sf)
+g2[7][0b1110010]=Keycode.TAB               # ---..-.  Tab                    (of)
 g2[6][0b110000]=Keycode.ESCAPE             # --....   Escape                 (gs)
 g2[7][0b1100000]=Keycode.F5                # --.....  refresh / F5           (--5)
 g2[6][0b101100]=Keycode.DELETE             # -.--..   Delete (same code as in the Keyboard group)  (kd)

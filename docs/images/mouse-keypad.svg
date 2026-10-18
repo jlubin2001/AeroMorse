@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 500" width="460" height="500" role="img" aria-labelledby="t d">
+  <title id="t">Mouse moves on a number keypad</title>
+  <desc id="d">A 3 by 3 number keypad. Each key shows its number, the direction the pointer moves, and the Morse code for that number, which is the large-step code for that direction. 7 up-left, 8 up, 9 up-right, 4 left, 6 right, 1 down-left, 2 down, 3 down-right. The up, down, left and right keys show their short code above it. The middle key, 5, is the repeat code, a single dot.</desc>
+  <style>
+    .bg   { fill: #ffffff; stroke: #ccd6e0; stroke-width: 2; }
+    .key  { fill: #f2f6fa; stroke: #4a6378; stroke-width: 2; }
+    .mid  { fill: #fff6e0; stroke: #b07a10; stroke-width: 2; }
+    .num  { font: bold 24px Segoe UI, Helvetica, Arial, sans-serif; fill: #1f3a52; }
+    .arr  { font: 46px Segoe UI Symbol, Segoe UI, Arial, sans-serif; fill: #0060c0; }
+    .code { font: bold 21px Consolas, Menlo, monospace; fill: #000000; letter-spacing: 2px; }
+    .shrt { font: 14px Segoe UI, Helvetica, Arial, sans-serif; fill: #556677; }
+    .sc   { font: bold 15px Consolas, Menlo, monospace; fill: #556677; letter-spacing: 2px; }
+    .cap  { font: 15px Segoe UI, Helvetica, Arial, sans-serif; fill: #333333; }
+  </style>
+  <rect class="bg" x="1" y="1" width="458" height="498" rx="10"/>
+  <rect class="key" x="25" y="25" width="128" height="128" rx="12"/>
+  <text class="num" x="37" y="52">7</text>
+  <text class="arr" x="89" y="101" text-anchor="middle">↖</text>
+  <text class="code" x="89" y="141" text-anchor="middle">--...</text>
+  <rect class="key" x="166" y="25" width="128" height="128" rx="12"/>
+  <text class="num" x="178" y="52">8</text>
+  <text class="arr" x="230" y="91" text-anchor="middle">↑</text>
+  <text class="shrt" x="230" y="117" text-anchor="middle">short <tspan class="sc">--</tspan></text>
+  <text class="code" x="230" y="141" text-anchor="middle">---..</text>
+  <rect class="key" x="307" y="25" width="128" height="128" rx="12"/>
+  <text class="num" x="319" y="52">9</text>
+  <text class="arr" x="371" y="101" text-anchor="middle">↗</text>
+  <text class="code" x="371" y="141" text-anchor="middle">----.</text>
+  <rect class="key" x="25" y="166" width="128" height="128" rx="12"/>
+  <text class="num" x="37" y="193">4</text>
+  <text class="arr" x="89" y="232" text-anchor="middle">←</text>
+  <text class="shrt" x="89" y="258" text-anchor="middle">short <tspan class="sc">..</tspan></text>
+  <text class="code" x="89" y="282" text-anchor="middle">....-</text>
+  <rect class="mid" x="166" y="166" width="128" height="128" rx="12"/>
+  <text class="num" x="178" y="193">5</text>
+  <text class="shrt" x="230" y="236" text-anchor="middle">repeat</text>
+  <text class="code" x="230" y="282" text-anchor="middle">.</text>
+  <rect class="key" x="307" y="166" width="128" height="128" rx="12"/>
+  <text class="num" x="319" y="193">6</text>
+  <text class="arr" x="371" y="232" text-anchor="middle">→</text>
+  <text class="shrt" x="371" y="258" text-anchor="middle">short <tspan class="sc">...</tspan></text>
+  <text class="code" x="371" y="282" text-anchor="middle">-....</text>
+  <rect class="key" x="25" y="307" width="128" height="128" rx="12"/>
+  <text class="num" x="37" y="334">1</text>
+  <text class="arr" x="89" y="383" text-anchor="middle">↙</text>
+  <text class="code" x="89" y="423" text-anchor="middle">.----</text>
+  <rect class="key" x="166" y="307" width="128" height="128" rx="12"/>
+  <text class="num" x="178" y="334">2</text>
+  <text class="arr" x="230" y="373" text-anchor="middle">↓</text>
+  <text class="shrt" x="230" y="399" text-anchor="middle">short <tspan class="sc">---</tspan></text>
+  <text class="code" x="230" y="423" text-anchor="middle">..---</text>
+  <rect class="key" x="307" y="307" width="128" height="128" rx="12"/>
+  <text class="num" x="319" y="334">3</text>
+  <text class="arr" x="371" y="383" text-anchor="middle">↘</text>
+  <text class="code" x="371" y="423" text-anchor="middle">...--</text>
+
+  <text class="cap" x="230" y="470" text-anchor="middle">Each key's code is the Morse code for its number.</text>
+</svg>
