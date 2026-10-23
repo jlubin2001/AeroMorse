@@ -527,7 +527,7 @@ _KNOWN_CONFIG = set((
 ).split())
 # Newer settings code.py copes without (it uses its built-in default), so an
 # older config.py that lacks them is NOT warned about.
-_OPTIONAL_CONFIG = set("PC_DISPLAY PC_SOUND KEYBOARD_LAYOUT USE_SPEAKER SHIFT_SELECT "
+_OPTIONAL_CONFIG = set("PC_DISPLAY PC_SOUND PC_HANDOVER KEYBOARD_LAYOUT USE_SPEAKER SHIFT_SELECT "
                        "MOUSE_SCROLL_FACTOR".split())
 
 def _install_board_stub():

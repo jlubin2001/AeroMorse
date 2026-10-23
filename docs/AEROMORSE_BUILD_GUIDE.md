@@ -2453,6 +2453,18 @@ needs `PC_DISPLAY = True` (that is how the program finds the device), and
 takes about 1 ms. The pitches come from the `BEEP_*` / `*_FREQ` settings
 under Audio.
 
+**`PC_HANDOVER`** (default `False`, v1.32+).
+`True` lets a program on the computer — **SwitchMorse Windows** — take over
+the Morse decoding. While that program is running and asking for it, the
+device types and clicks **nothing** itself: it only reports each sip and puff
+starting and ending on the USB serial log, and the display shows
+**PC MODE**. The program asks by sending a short line of plain text about
+twice a second (never Ctrl+C, so it cannot stop the device). If those lines
+stop for 2 seconds — the program is closed or crashes, or the computer goes
+to sleep — the device goes straight back to typing by itself. While it runs,
+the AeroMorse Display program cannot be open at the same time (only one
+program can use the device's port).
+
 ---
 
 ## Appendix F — Other displays

@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.31 (released 2026-10-16)
+# AeroMorse config.py — version 1.32 (released 2026-10-23)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -229,3 +229,8 @@ PC_SOUND             = False   # True = the same program also plays the beeps (a
                               # dash, a blip when an action fires) through the COMPUTER's speakers —
                               # for a device with no speaker. Needs PC_DISPLAY = True, and "Sound"
                               # switched on in the program's right-click menu.
+PC_HANDOVER          = False   # True = a program on the computer (SwitchMorse Windows) may take over
+                              # the Morse decoding: while it runs, this device only reports each sip
+                              # and puff and types nothing itself. When the program closes, crashes
+                              # or the computer sleeps, the device types again by itself within 2 s.
+                              # The display shows "PC MODE" while the computer decodes.

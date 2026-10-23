@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.31   (released 2026-10-16)
+#  AeroMorse code.py   —   version 1.32   (released 2026-10-23)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -404,6 +404,29 @@ try:
 except NameError:
     _PC_SOUND = False
 _pc_tone = False                 # a "tone on" has been reported and not yet ended
+
+# PC hand-over (config.py PC_HANDOVER, v1.32+): a program on the computer
+# ("SwitchMorse Windows") can take over the Morse decoding. While it keeps
+# asking, the device stops typing and clicking and only reports each sip and
+# puff on the USB serial log:
+#     ~HO<tab>0  /  ~HO<tab>1     once a second: hand-over available / active
+#     ~HP<tab>D  d  A  a          sip starts, sip ends, puff starts, puff ends
+# The program asks by writing the line "~SMW" about twice a second - plain
+# text, never Ctrl+C, so it cannot stop the device the way Thonny can. When
+# those lines stop for _HO_TIMEOUT seconds (the program closed or crashed, the
+# computer went to sleep) the device goes back to typing by itself.
+try:
+    _HANDOVER = bool(PC_HANDOVER)
+except NameError:
+    _HANDOVER = False            # older config.py without the setting
+_HO_TIMEOUT = 2.0
+_ho_active  = False              # True while the computer is decoding
+_ho_until   = 0.0                # hand-over lasts until this monotonic time
+_ho_said    = 0.0                # when the last ~HO line was printed
+_ho_buf     = ""                 # serial input not yet matched
+if _HANDOVER:
+    import sys
+    import supervisor
 
 
 def _tone_on(freq):
@@ -1866,6 +1889,9 @@ def _update_display(pressure=0.0):
     if _show_splash:
         group_str  = _SPLASH_NAME
         action_str = _SPLASH_VERSION or " "
+    if _ho_active:                       # PC hand-over: the computer decodes
+        group_str = "[ PC MODE ]"
+        buf_str   = " "
 
     # Build the status line by concatenating whatever is active. Previously
     # this was an if/elif chain, which meant DRAG stayed invisible whenever
@@ -2107,6 +2133,48 @@ if _DIAG_S:
 _last_display = 0.0
 _DISPLAY_RATE = 0.1     # cap display refresh at 10 Hz
 
+
+def _ho_poll(now):
+    """PC hand-over (PC_HANDOVER): read the program's "~SMW" lines and switch
+    the hand-over on or off. Either way it starts clean: nothing held down, no
+    half-entered code, no repeat or drag still running."""
+    global _ho_active, _ho_until, _ho_said, _ho_buf, _last_action, _show_splash
+    global _pending_char, _num_shifts, _drag_active, _sw_key
+    try:
+        n = supervisor.runtime.serial_bytes_available
+        if n:
+            _ho_buf = (_ho_buf + sys.stdin.read(n))[-40:]
+            if "~SMW" in _ho_buf:
+                _ho_until = now + _HO_TIMEOUT
+                _ho_buf   = ""
+    except Exception:
+        pass
+    want = now < _ho_until
+    if want != _ho_active:
+        _ho_active = want
+        _stop_mouse_repeat()
+        del _click_q[:]
+        try:
+            kbd.release_all()
+            mouse.release_all()
+        except Exception:
+            pass
+        _sw_key       = None
+        _drag_active  = False
+        _armed_mods.clear()
+        _pending_char = 0
+        _num_shifts   = 0
+        _show_splash  = False
+        _beep_stop()
+        _last_action  = "PC MODE" if want else "BACK ON DEVICE"
+        print("HANDOVER on - the computer decodes" if want else
+              "HANDOVER off - typing on the device again")
+        _ho_said = 0.0
+    if now - _ho_said >= 1.0:
+        _ho_said = now
+        print("~HO\t1" if _ho_active else "~HO\t0")
+
+
 while True:
     now = time.monotonic()
 
@@ -2215,6 +2283,23 @@ while True:
             new_state = IDLE
         elif (not _ONE_SWITCH_USES_DIT) and new_state == DIT:
             new_state = IDLE
+
+    # ── PC hand-over (config.py PC_HANDOVER): report sips / puffs, type nothing ─
+    if _HANDOVER:
+        _ho_poll(now)
+        if _ho_active:
+            if new_state != _last_state:
+                if _last_state != IDLE:
+                    print("~HP\td" if _last_state == DIT else "~HP\ta")
+                if new_state != IDLE:
+                    print("~HP\tD" if new_state == DIT else "~HP\tA")
+                    _press_start = now
+                _last_trans_at = now
+                _last_state    = new_state
+            if now - _last_display >= _DISPLAY_RATE:
+                _update_display(_display_pressure)
+                _last_display = now
+            continue
 
     # ── Strong sip / strong puff detection ──────────────────────────────────
     # Track peak |pressure - baseline| during a held press. When it crosses
