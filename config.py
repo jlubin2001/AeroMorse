@@ -1,6 +1,6 @@
 # AeroMorse — User Configuration
 #
-# AeroMorse config.py — version 1.32 (released 2026-10-23)
+# AeroMorse config.py — version 1.33 (released 2026-10-28)
 # Official source (always get the latest here): https://github.com/jlubin2001/AeroMorse
 #
 # Edit a value, save, and the Feather auto-reloads. You should not need to
@@ -48,6 +48,15 @@ BASELINE_DRIFT_S  = 30        # auto-zero: follows slow ambient pressure drift w
 # below REPEAT_SPLIT_PCT % of its peak and then climbs again by 1 hPa is
 # counted as two. Try 60. 0 = off.
 REPEAT_SPLIT_PCT  = 0         # 0 = off; 60 = split when it dips below 60 % of its peak
+
+# Settle time — for an extra dash after a sip (C ---. comes out as = ---.-, or
+# 8 ---.. as ---.-.). When a sip ends, the pressure can bounce above normal for
+# a moment and count as a puff. For SETTLE_MS after a sip or puff ends, the
+# opposite one is ignored; a real puff lasts far longer and still counts.
+# Try 80; raise to 100–120 if it still happens. 0 = off. (v1.33+)
+SETTLE_MS         = 0
+TRACE_MS          = 0         # diagnostic: print the pressure for this many ms after each
+                              # sip ends ("TRACE" lines in the device's log). 0 = off.
 
 # Diagnostics — for tracking down "it types badly until I restart it". Every
 # DIAG_LOG_S seconds one "DIAG ..." line of timing figures goes to the USB
@@ -163,6 +172,8 @@ MOUSE_REPEAT_DELAY = 0.040     # seconds between repeat ticks
 MOUSE_CLICK_MOD_DELAY = 0.030  # s to settle a modifier before/after a click
 MOUSE_CLICK_KEEPS_MODS = True  # True = armed mods survive a click (Ctrl+click
                                # multi-select); False = one-shot, cleared after
+RIGHT_CLICK_CLEARS_MODS = True # True = a right-click goes out plain and turns the
+                               # armed Ctrl/Shift off (pick files, right-click, copy)
 MOUSE_CLICK_HOLD = 0.060       # s to hold the button down per click. 0 = instant
                                # press/release, which Windows scrollbar tracks &
                                # some controls ignore; ~60 ms registers reliably

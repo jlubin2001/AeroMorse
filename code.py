@@ -1,7 +1,7 @@
 # AeroMorse — Sip-and-puff / two-switch Morse HID device
 #
 # ════════════════════════════════════════════════════════════════════════════
-#  AeroMorse code.py   —   version 1.32   (released 2026-10-23)
+#  AeroMorse code.py   —   version 1.33   (released 2026-10-28)
 #
 #  OFFICIAL SOURCE — always download the latest, correct files from:
 #      https://github.com/jlubin2001/AeroMorse
@@ -223,6 +223,36 @@ _SPLIT_MAX_S = 0.5      # only the first half second of a press can split, so a
 _sp_peak = 0.0          # highest pressure of the current press (toward its side)
 _sp_low  = None         # lowest pressure since it dipped; None = not dipped yet
 
+# Settle time (config.py SETTLE_MS, v1.33+, sensor mode): when a sip ends the
+# pressure can bounce above normal for a moment (and a puff can dip below), and
+# a bounce that crosses the other threshold was counted as an extra dash (C
+# ---. came out as = ---.-). For SETTLE_MS after a sip or puff ends, the
+# opposite one is ignored. A real sip/puff lasts far longer, so it still counts
+# - only its first few ms go unseen. 0 or missing = off.
+try:
+    _SETTLE_S = max(0.0, float(SETTLE_MS)) / 1000.0
+except NameError:
+    _SETTLE_S = 0.0
+except Exception as _e:
+    print("SETTLE_MS not understood (%s) - settle time is off" % _e)
+    _SETTLE_S = 0.0
+_st_prev  = None        # the sensor's state on the last pass (IDLE / DIT / DAH)
+_st_kind  = None        # the press that last ended (DIT or DAH); None = none yet
+_st_until = 0.0         # its opposite is ignored until this time
+# (None, not 0: DIT is 0, so 0 can't mean "nothing yet".)
+
+# Pressure trace (config.py TRACE_MS, diagnostic, sensor mode): for TRACE_MS
+# after each sip ends, note the pressure on every pass and print it as one
+# "TRACE" line - ms since the sip ended : hPa from normal, * where a puff was
+# accepted. For measuring the bounce that SETTLE_MS is there to hide. 0 = off.
+try:
+    _TRACE_S = max(0.0, float(TRACE_MS)) / 1000.0
+except Exception:
+    _TRACE_S = 0.0
+_tr_prev = None
+_tr_t0   = None
+_tr      = []
+
 # Diagnostics (config.py DIAG_LOG_S; see "Diagnostics" above the main loop).
 try:
     _DIAG_S = float(DIAG_LOG_S)
@@ -235,9 +265,9 @@ except Exception:
 #  0 loops   1 longest gap   2 gaps>20ms   3 gaps>40ms   4 screen max
 #  5 wireless max   6 action max   7 new sensor readings   8 lowest pressure
 #  9 highest pressure   10 presses   11 shortest press   12 shortest rest
-#  13 swing fixes   14 splits
+#  13 swing fixes   14 splits   15 bounces ignored (settle time)
 def _dg_fresh():
-    return [0, 0.0, 0, 0, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 0, 9.0, 9.0, 0, 0]
+    return [0, 0.0, 0, 0, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 0, 9.0, 9.0, 0, 0, 0]
 
 _dg = _dg_fresh()
 
@@ -651,6 +681,12 @@ try:
     _SHIFT_SELECT = bool(SHIFT_SELECT)
 except NameError:
     _SHIFT_SELECT = True
+# v1.33+: a right-click goes out without the armed Ctrl/Shift/Alt/Win and turns
+# them off (config.py RIGHT_CLICK_CLEARS_MODS). An older config.py: on.
+try:
+    _RCLICK_CLEARS = bool(RIGHT_CLICK_CLEARS_MODS)
+except NameError:
+    _RCLICK_CLEARS = True
 _NAV_KEYS = frozenset({
     Keycode.LEFT_ARROW, Keycode.RIGHT_ARROW, Keycode.UP_ARROW, Keycode.DOWN_ARROW,
     Keycode.HOME, Keycode.END, Keycode.PAGE_UP, Keycode.PAGE_DOWN,
@@ -902,7 +938,7 @@ def _exec_command(cmd):
     mslow / mfast / unlock / lock / version / devicereset
     """
     global active_group, _mouse_speed, _drag_active, _drag_btn
-    global _last_mouse_vec, _last_repeatable, _mouse_repeating, _armed_mods
+    global _last_mouse_vec, _last_repeatable, _mouse_repeating, _armed_mods, _nav_hold
     parts = cmd.split()
     verb  = parts[0]
 
@@ -955,6 +991,13 @@ def _exec_command(cmd):
             wait = MOUSE_CLICK_GAP                          # drop first, then click
             if btn == _drag_btn:
                 count -= 1
+        if btn == Mouse.RIGHT_BUTTON and _RCLICK_CLEARS and count > 0:
+            # v1.33+. Ctrl/Shift is armed to pick several files, then a
+            # right-click opens the menu to copy or move them: that right-click
+            # goes out plain (Shift+right-click would open Windows' longer menu)
+            # and lets go of the armed keys, so they needn't be turned off by hand.
+            _armed_mods.clear()
+            _nav_hold = False
         if count < 1:
             pass                                            # the release was the whole click
         elif _armed_mods:
@@ -1280,6 +1323,22 @@ if _Secret is not None:
         print("Secrets: could not list the groups that use them (%s)" % _e)
         _SECRET_GROUPS = set(range(10))      # fall back to showing it everywhere
 _SECRETS_EVERYWHERE = 0 in _SECRET_GROUPS
+
+# v1.33+. Groups that move the mouse (any "mmove" code). SLOW / FAST only changes
+# how far those move, so the screen shows it only there - not in Group 1, where
+# it did nothing. The speed itself is kept for when you go back.
+_MOUSE_GROUPS = set()
+try:
+    for _g, _grp in groups.items():
+        for _pats in _grp.values():
+            if any(isinstance(_a, str) and _a.startswith("mmove") for _a in _pats.values()):
+                _MOUSE_GROUPS.add(_g)
+                break
+except Exception as _e:
+    print("Could not list the mouse groups (%s)" % _e)
+    _MOUSE_GROUPS = set(range(10))
+if 0 in _MOUSE_GROUPS:
+    _MOUSE_GROUPS = set(range(10))
 
 if _Secret is not None:
     try:
@@ -1900,7 +1959,9 @@ def _update_display(pressure=0.0):
     mods_text = " ".join(_MOD_NAMES.get(m, "?") for m in sorted(_armed_mods))
     if mods_text:
         _pieces.append(mods_text)
-    if _mouse_speed == MOUSE_SPEED_SLOW:
+    if active_group not in _MOUSE_GROUPS:
+        pass                              # speed only matters in the mouse groups
+    elif _mouse_speed == MOUSE_SPEED_SLOW:
         _pieces.append("SLOW")
     elif _mouse_speed == MOUSE_SPEED_FAST:
         _pieces.append("FAST")
@@ -2038,12 +2099,12 @@ def _dg_line(now):
         usb = -1
     return ("up=%d rr=%s loops=%d/s gap=%dms g20=%d g40=%d scr=%dms esp=%dms act=%dms "
             "smp=%d/s p=%.1f..%.1f base=%.2f n=%d press>=%dms rest>=%dms swing=%d split=%d "
-            "mem=%d ctrl1=0x%02x usb=%d grp=%d" % (
+            "settle=%d mem=%d ctrl1=0x%02x usb=%d grp=%d" % (
                 now, _DG_RR, _dg[0] / span, _dg[1] * 1000, _dg[2], _dg[3], _dg[4] * 1000,
                 _dg[5] * 1000, _dg[6] * 1000, _dg[7] / span, _dg[8], _dg[9],
                 _baseline if USE_SENSOR else 0.0, _dg[10],
                 (_dg[11] if _dg[11] < 9 else 0) * 1000, (_dg[12] if _dg[12] < 9 else 0) * 1000,
-                _dg[13], _dg[14], gc.mem_free(),
+                _dg[13], _dg[14], _dg[15], gc.mem_free(),
                 _dg_ctrl1() if USE_SENSOR else 0, usb, active_group))
 
 def _diag_report(now, quiet=False):
@@ -2271,6 +2332,31 @@ while True:
                 elif _sp_a >= _sp_low + _SPLIT_RISE:
                     new_state = IDLE
                     _dg[14] += 1
+
+        # Settle time (SETTLE_MS): just after a sip ends, ignore a puff (and
+        # just after a puff ends, a sip) - that is the pressure bouncing back.
+        if _SETTLE_S:
+            if _st_prev is not None and _st_prev != IDLE and new_state != _st_prev:
+                _st_kind  = _st_prev
+                _st_until = now + _SETTLE_S
+            if (new_state != IDLE and _st_kind is not None and new_state != _st_kind
+                    and now < _st_until):
+                new_state = IDLE
+                _dg[15] += 1
+            _st_prev = new_state
+
+        # Pressure trace (TRACE_MS): what the pressure does after a sip ends.
+        if _TRACE_S:
+            if _tr_prev == DIT and new_state != DIT and _tr_t0 is None:
+                _tr_t0 = now
+                _tr = []
+            if _tr_t0 is not None:
+                _tr.append("%d:%.1f%s" % ((now - _tr_t0) * 1000, _display_pressure,
+                                          "*" if new_state == DAH else ""))
+                if now - _tr_t0 >= _TRACE_S:
+                    print("TRACE puff>%.2f settle=%dms: %s" % (THRESH_PUFF, _SETTLE_S * 1000, " ".join(_tr)))
+                    _tr_t0 = None
+            _tr_prev = new_state
     else:
         dot_dn  = not _dot_btn.value    # active-low with pull-up
         dash_dn = not _dash_btn.value

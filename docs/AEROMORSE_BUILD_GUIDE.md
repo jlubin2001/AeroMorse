@@ -1227,6 +1227,26 @@ per character, which is a good trade for users who are fast enough
 that the inter-character pause dominates their typing time. This is
 also the closest match to Darci USB's end-of-character behaviour.
 
+**An extra dash right after a sip (`C` comes out as `=`, `9` as `_`)**
+
+The opposite fault: a symbol is *added*. `C` (`---.`) becomes `=`
+(`---.-`) and `8` (`---..`) becomes `---.-.` — a puff appears straight
+after the last sip. When a sip ends, the pressure can bounce above normal
+for a moment, and that bounce is read as a puff.
+
+*(v1.33+)* Set `SETTLE_MS` in `config.py`. For that many milliseconds
+after a sip or puff ends, the opposite kind is ignored. On the author's
+test device every bounce was over within 30 ms, while a real puff right
+after a sip lasted 70 ms or more, so `SETTLE_MS = 50` stopped the extra
+dashes without losing real ones. Start at 50–80; raise it if it still
+happens, lower it if a quick puff after a sip goes missing. `0` (the
+default) switches it off.
+
+To see the bounce for yourself, set `TRACE_MS = 400`. After each sip ends
+the device then prints `TRACE` lines to its USB log: milliseconds since
+the sip ended, the pressure, and `*` where a puff was accepted. Read it
+with a serial monitor that only listens. Set it back to `0` when done.
+
 ---
 
 ### On the computer
@@ -1525,7 +1545,9 @@ Android, where function keys act as switch actions.
 ```
 
 Status line shows: **Ctrl / Shift / Alt / GUI** (sticky modifier armed),
-**SLOW / FAST / DRAG / RPT** (mouse state).
+**SLOW / FAST / DRAG / RPT** (mouse state). SLOW and FAST show only in
+groups that move the mouse (v1.33+); the speed is kept, so it is still
+set when you come back to Group 2.
 
 ---
 
@@ -2326,7 +2348,15 @@ Controls whether an armed modifier survives a mouse click.
 > **Selecting several files in Windows File Explorer.** In Group 2,
 > arm **Right Ctrl** (`-.-.`), then send **left click** (`.-`) once
 > per file — the modifier stays armed between clicks. When the
-> selection is complete, enter `-.-.` again to release Ctrl.
+> selection is complete, enter `-.-.` again to release Ctrl — or just
+> **right-click** one of the chosen files to copy or move them: the
+> right-click lets go of Ctrl for you (see the next setting).
+>
+> **`RIGHT_CLICK_CLEARS_MODS`** (default `True`, v1.33+). A right-click is
+> sent without the armed Ctrl / Shift / Alt / Win and turns them off, so
+> after picking files with Ctrl or Shift you can go straight to the
+> right-click menu. (Shift+right-click would open Windows' longer menu
+> instead.) `False` = a right-click uses the armed keys like a left-click.
 >
 > Explorer also has a **mouse-only** alternative that needs no
 > modifier at all: turn on **View › Show › Item check boxes** (Windows
