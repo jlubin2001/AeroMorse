@@ -782,7 +782,7 @@ latest, correct files.
 **To download (no Git account or software needed):**
 
 1. Open **https://github.com/jlubin2001/AeroMorse/releases/latest** in a browser.
-2. Under **Assets**, click **`AeroMorse-v1.32.zip`** (the number is the
+2. Under **Assets**, click **`AeroMorse-v1.33.zip`** (the number is the
    version).
 3. Unzip it. Everything you copy in the steps below comes from that
    folder. It also holds the Windows programs, the one-click tools and the
@@ -794,7 +794,7 @@ device files are in the root of that download, and the guides are in its
 
 > **Which version do I have?** Every AeroMorse `.py` file has a version
 > and release date in its header comment near the top — e.g.
-> `AeroMorse code.py — version 1.32 (released 2026-10-23)`. Open the file
+> `AeroMorse code.py — version 1.33 (released 2026-10-28)`. Open the file
 > in Thonny (or any text editor) to check. If a file you found somewhere
 > else has no such header, or an older date than the repo, replace it
 > with the repo copy. Keep `code.py`, `boot.py`, `morse_map.py` and
@@ -996,7 +996,7 @@ Adap2U each implement 1/2/3-switch input, see
 2. Wait 3–5 seconds. The display shows the **start-up screen**:
 
     - the device name (`AeroMorse`, or your own `DEVICE_NAME`)
-    - the AeroMorse version, e.g. `v1.32`
+    - the AeroMorse version, e.g. `v1.33`
     - the CircuitPython version, e.g. `CP 9.2.9`
 
 3. Open a plain-text editor on your computer (Notepad, TextEdit) and click
