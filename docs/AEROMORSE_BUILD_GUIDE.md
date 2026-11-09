@@ -3398,9 +3398,10 @@ sensor; the beeps come from the board's own buzzer — or from a STEMMA Speaker
 Display** window on the computer (§5).
 
 > **Buying in the USA?** The Adafruit Metro ESP32-S3 #5500 also comes with its
-> headers fitted, and the same switches-and-speaker build should work on it
-> without the Cytron's shipping and customs costs. It has not been built yet
-> — see "A solderless switch build on the Metro ESP32-S3" in Appendix L.
+> headers fitted, and the same switches-and-speaker build works on it
+> without the Cytron's shipping and customs costs. It has been built and
+> tested with two switches and with the pressure sensor — see "A solderless
+> switch build on the Metro ESP32-S3" in Appendix L.
 
 > **Tested:** built and checked on 2026-10-10 with CircuitPython 10.3.1 and
 > AeroMorse v1.28 plus the changes that became v1.29. Both switches type, and
@@ -3715,13 +3716,13 @@ STEMMA QT with no wiring change.
 
 | Board | Adafruit # | USB HID | PSRAM | WiFi | Notes |
 |-------|-----------|---------|-------|------|-------|
-| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor. **Comes with its female headers already soldered**, so a switch-and-speaker build needs no soldering — see below |
+| Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | ✅ | ✅ **8MB** | ✅ | **Most memory** (16 MB flash + 8 MB PSRAM); built-in LiPoly charging + battery monitor. **Comes with its female headers already soldered**, so a switch-and-speaker build needs no soldering — see below. **Tested** with two switches and with the pressure sensor |
 
 > The Metro ESP32-S3 #5500 has the most memory in this guide (16 MB flash,
 > 8 MB PSRAM). Choose the Metro for the extra memory or the larger form
 > factor.
 
-### A solderless switch build on the Metro ESP32-S3 (not tested)
+### A solderless switch build on the Metro ESP32-S3
 
 The same no-soldering idea as the Cytron build in Appendix K, on an Adafruit
 board sold and shipped from the USA: two switches — AT switches or push
@@ -3729,11 +3730,11 @@ buttons — and an optional speaker, every wire pushed into the
 Metro's own sockets or clamped under a screw. No screen and no pressure
 sensor; the display is the AeroMorse Display window on the computer (§5).
 
-> ⚠️ **Not built yet.** This section is written from the Metro's
-> documentation and from the tested Cytron build. The Metro uses the same
-> ESP32-S3 chip and CircuitPython 10.3.1, and nothing in AeroMorse needs a
-> pin it lacks, but nobody on the project has tried it. If you build it,
-> please report how it went.
+> **Tested:** built and checked on 2026-11-09 with CircuitPython 10.3.1 and
+> AeroMorse v1.33 — two AT switches through 3.5 mm jacks on `D5` and `D6`,
+> and then the pressure sensor instead (see "Using the pressure sensor on
+> the Metro" below). The push-button and speaker options are written from
+> the Metro's documentation and the tested Cytron build.
 
 **How it differs from the Cytron build**
 
@@ -3861,6 +3862,21 @@ it gently with a small screwdriver.
 
 Then test as in §K.7: a short press of the dot switch types `e`, of the dash
 switch `t`.
+
+#### Using the pressure sensor on the Metro (tested)
+
+The Metro also works as a sip-and-puff device, still with no soldering. It
+has a **STEMMA QT** port, the same small 4-pin plug as the LPS33HW pressure
+sensor board.
+
+1. Unplug the USB cable.
+2. Connect the sensor to the Metro's STEMMA QT port with a STEMMA QT / Qwiic
+   cable that has the small plug **on both ends**. Short is best: 10–20 cm
+   (4–8 in). The plug only fits one way.
+3. In `config.py`, set `USE_SENSOR = True`. The switch pins are then not used.
+4. Plug the USB cable back in.
+
+Everything else — sound, the AeroMorse Display window — stays as above.
 
 ### Boards that do NOT work for USB HID
 
