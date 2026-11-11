@@ -3777,6 +3777,11 @@ sensor; the display is the AeroMorse Display window on the computer (§5).
 > push-button option is written from the Metro's documentation and the
 > tested Cytron build.
 
+> **A step-by-step guide for this build** — with photos, a wiring drawing,
+> a wiring checklist and the tube joiner — is in
+> [AeroMorse_Metro_no_breadboard_guide.pdf](AeroMorse_Metro_no_breadboard_guide.pdf).
+> It is written for someone who has never built electronics before.
+
 **The exact parts of the tested build** — no breadboard; every wire goes
 straight from a jack board or the speaker into the Metro:
 

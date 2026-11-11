@@ -30,6 +30,7 @@ his own daily device. It was inspired by
 |------------|------|
 | **Download everything** | The [latest release](https://github.com/jlubin2001/AeroMorse/releases/latest) — one zip (under *Assets*) with the device files, the Windows programs and tools, and the PDF guides in one folder |
 | **Build one** | [Build Guide](docs/AEROMORSE_BUILD_GUIDE.md) ([PDF](docs/AEROMORSE_BUILD_GUIDE.pdf)) — one standard build and three choices, then software, first test and troubleshooting |
+| **Build one on a Metro ESP32-S3**, step by step for a first-time builder | [Metro build guide](docs/AeroMorse_Metro_no_breadboard_guide.pdf) (PDF) — sip-and-puff, two switch jacks, speaker and arcade-button test switches, no breadboard and no soldering; tested |
 | **Help someone use one day to day**, as a caregiver | [Caregiver Guide](docs/CAREGIVER_SETUP_GUIDE.md) ([PDF](docs/CAREGIVER_SETUP_GUIDE.pdf)) — plugging it in, the tube, and getting it going again if it stops |
 | **Change the codes, settings or passwords safely** once it works | [Usage Guide](docs/AEROMORSE_USAGE_GUIDE.md) ([PDF](docs/AEROMORSE_USAGE_GUIDE.pdf)) — the work folder, the helper tools, and a one-page checklist |
 | **Look up a code** | `AeroMorse Cheat Sheet.pdf` to print, or the `AeroMorse Help.html` window |
