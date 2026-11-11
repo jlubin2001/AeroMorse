@@ -3235,7 +3235,7 @@ updated when files can be shared.
 
 ### H.2 A case for the wireless display
 
-<img src="images/remote-display-case.jpg" alt="Small black two-part case around a Reverse TFT Feather used as the wireless display, with openings for the screen and four buttons, next to a ruler" width="430">
+<img src="images/remote-display-case.jpg" alt="Small black two-part case around a Reverse TFT Feather used as the wireless display, with openings for the screen and four buttons; the screen shows [ MOUSE ] and RPT MMOVE UP-LEFT" width="430">
 
 *The wireless display in its case — about 52 × 23 mm.*
 
