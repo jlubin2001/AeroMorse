@@ -15,7 +15,8 @@ his own daily device. It was inspired by
 ![The author's AeroMorse with the enclosure open: the board with its screen on the left, the pressure sensor and air tube on the right](docs/images/enclosure-open.jpg)
 
 - **About $42 in parts** for the standard build (Adafruit prices, October
-  2026), plus a USB cable and an enclosure.
+  2026), plus a USB cable and an enclosure. About $34 with no screen on the
+  board, using the window on the computer instead (Build Guide §2.1, tested).
 - **No soldering** for the standard build: two small boards, one cable
   between them, and a tube.
 - **Every code can be changed** in one file. Darci USB users can keep the

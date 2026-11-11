@@ -16,6 +16,7 @@ standard build suits you, sections 2, 9 and 11 are all you need.
 
 1. [What AeroMorse does](#1-what-aeromorse-does)
 2. [The standard build](#2-the-standard-build)
+   - [2.1 A cheaper build with no screen on the board (tested)](#21-a-cheaper-build-with-no-screen-on-the-board-tested)
 3. [Three choices: input, display, audio feedback](#3-three-choices-input-display-audio-feedback)
 4. [Choice 1 — Input](#4-choice-1--input)
 5. [Choice 2 — Display](#5-choice-2--display)
@@ -131,6 +132,45 @@ Two things to plan for before daily use, neither needed for a first test:
   and every tug pulls on the sensor. Appendix H shows how to anchor it.
 - **An enclosure.** Appendix H describes the one Jim uses and others.
 
+### 2.1 A cheaper build with no screen on the board (tested)
+
+The same sip-and-puff device for less money, also with **no soldering**. The
+board has no screen; what the device is doing shows in the **AeroMorse
+Display** window on the computer instead (§5).
+
+| Part | Adafruit # | Price |
+|------|-----------|-------|
+| ESP32-S3 Feather, 4 MB flash / 2 MB PSRAM — the board, no screen | [#5477](https://www.adafruit.com/product/5477) | $17.50 |
+| LPS33HW pressure sensor | [#4414](https://www.adafruit.com/product/4414) | $12.50 |
+| STEMMA QT cable, 50 mm — joins the two boards | [#4399](https://www.adafruit.com/product/4399) | $0.95 |
+| Silicone tubing, 1 m | [#3659](https://www.adafruit.com/product/3659) | $3.50 |
+| USB-C cable that carries **data** | any | — |
+| **Total** | | **$34.45** |
+
+> ⚠️ **Pick the right version of the #5477.** Its Adafruit page lists more
+> than one version of this Feather. Choose the one with **4 MB flash and
+> 2 MB PSRAM**; AeroMorse needs the PSRAM.
+
+Put it together exactly as above: cable from the Feather's STEMMA QT socket
+to the sensor, tube on the sensor's port, USB-C to the computer. The
+Feather's loose header pins are not needed — leave them in the bag.
+
+In section 9, also change these lines in `config.py`:
+
+```python
+DEVICE_NAME = "AeroMorse"   # any name you like
+USE_DISPLAY = False         # this board has no screen
+PC_DISPLAY  = True          # show the display in the window on the computer
+```
+
+Then run the **AeroMorse Display** program on the computer (§5). Sound can
+come through the computer too: `PC_SOUND = True` (§6.2).
+
+> **Tested:** built and checked on 2026-11-09 with CircuitPython 10.3.1 and
+> AeroMorse v1.33. The test board arrived with an older bootloader that
+> would not take CircuitPython 10; if that happens to you, see "If
+> CircuitPython 10 will not install" in Appendix L.
+
 **If this is the build you want, you can skip sections 3 to 6.** They are
 for people who need something different.
 
@@ -164,7 +204,7 @@ works. The first row of each table is the standard build.
 |--------|-------------|-----------|--------|
 | **None** (standard) — the screen shows everything | none | none | ✅ |
 | **Through the computer's speakers** | none (the same program) | none | ✅ Windows · ⚠️ Mac and Linux not tested |
-| **A speaker on the device** | STEMMA Speaker and its cable | 3 joints on a #5691; none on the Cytron board | ✅ on the Cytron board · ⚠️ not tested on a #5691 |
+| **A speaker on the device** | STEMMA Speaker and its cable | 3 joints on a #5691; none on the Cytron board | ✅ on the Cytron board and the Metro · ⚠️ not tested on a #5691 |
 
 The choices do not depend on each other. For example, Jim's own set-up is
 sip-and-puff, a wireless display **and** the window on the computer, with
@@ -3667,7 +3707,7 @@ and mouse. The test record is in
 |-------|-----------|---------|-------|------|-------|
 | ESP32-S3 Reverse TFT Feather | [#5691](https://www.adafruit.com/product/5691) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces down (panel mount). **Recommended for panel-mount enclosures — see below.** Not great on a breadboard once headers are soldered (TFT ends up pressed against the breadboard). |
 | ESP32-S3 TFT Feather | [#5483](https://www.adafruit.com/product/5483) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — screen faces up. **Best built-in-TFT option if you plan to use a breadboard with headers.** |
-| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (Appendix F). |
+| ESP32-S3 Feather 4MB/2MB PSRAM | [#5477](https://www.adafruit.com/product/5477) | ✅ | ✅ 2MB | ✅ | No built-in display — pair with a STEMMA QT OLED (#326 / #938) or a FeatherWing TFT (Appendix F), or use the AeroMorse Display window on the computer. **Tested** with the pressure sensor (see below). |
 | ESP32-S2 TFT Feather | [#5300](https://www.adafruit.com/product/5300) | ✅ | ✅ 2MB | ✅ | Built-in 1.14" TFT — older S2 chip |
 
 ### A non-Adafruit board that works — and needs no soldering
@@ -3732,9 +3772,40 @@ sensor; the display is the AeroMorse Display window on the computer (§5).
 
 > **Tested:** built and checked on 2026-11-09 with CircuitPython 10.3.1 and
 > AeroMorse v1.33 — two AT switches through 3.5 mm jacks on `D5` and `D6`,
-> and then the pressure sensor instead (see "Using the pressure sensor on
-> the Metro" below). The push-button and speaker options are written from
-> the Metro's documentation and the tested Cytron build.
+> the STEMMA Speaker on `A0`, and then the pressure sensor instead of the
+> switches (see "Using the pressure sensor on the Metro" below). The
+> push-button option is written from the Metro's documentation and the
+> tested Cytron build.
+
+**The exact parts of the tested build** — no breadboard; every wire goes
+straight from a jack board or the speaker into the Metro:
+
+| Qty | Part | Link | Notes |
+|---|---|---|---|
+| 1 | Metro ESP32-S3 | [#5500](https://www.adafruit.com/product/5500) | Sockets fitted at the factory |
+| 1 | LPS33HW pressure sensor | [#4414](https://www.adafruit.com/product/4414) | For sip-and-puff |
+| 1 | STEMMA QT cable, 50 mm | [#4399](https://www.adafruit.com/product/4399) | Sensor to the Metro's `QT I2C` socket |
+| 1 | STEMMA Speaker | [#3885](https://www.adafruit.com/product/3885) | Volume screw on the board |
+| 1 | Speaker cable, JST PH 3-pin to male pins | [#3893](https://www.adafruit.com/product/3893) | Sold separately from the speaker |
+| 2 | 3.5 mm jack board with **bent** pins (5-pack; choose "With bent needle") | [Amazon B0FG24PBJJ](https://www.amazon.com/gp/product/B0FG24PBJJ/) | Pin 1 = sleeve (ground), pin 5 = tip — confirmed on the tested boards |
+| 4 | Female-to-male "extension" jumper wires | — | Socket end onto a jack-board pin, pin end into the Metro; about 20 cm (8 in) reaches |
+| 1 | USB-C **data** cable | — | A charge-only cable will not work |
+
+Wiring of the tested build: jack A pin 5 → `D5` (dot), jack A pin 1 →
+`GND`; jack B pin 5 → `D6` (dash), jack B pin 1 → `GND`; speaker white →
+`A0`, red → `3.3`, black → `GND`; sensor → `QT I2C`. One `GND` socket each,
+and nothing in `VHI` or `VIN`. The speaker runs fine from the `3.3` socket.
+
+*Plug-in test switches (tested, optional).* Two 30 mm arcade buttons, each
+wired to a 3.5 mm **mono** plug adapter with screw terminals (marked `+` and
+`−`), make two test switches that plug into the jacks like a real AT
+switch. A caregiver can use them to check the box works, or to tell whether
+a fault is in the box or in the user's own switch. On each button, the
+cable's two spades go on the click switch's `C` (common) and `NO` (normally
+open) tabs; cut off the small white connector at the other end, strip about
+5 mm (¼ in) of each wire, and clamp one under each terminal screw — either
+way round. Check with a multimeter: tip to sleeve should beep only while
+the button is pressed.
 
 **How it differs from the Cytron build**
 
@@ -3759,7 +3830,7 @@ sensor; the display is the AeroMorse Display window on the computer (§5).
 
 | Option | Parts | Good for |
 |---|---|---|
-| **M1 — AT switches, jack boards with pins** | 2 × 3.5 mm stereo jack board with a 5-pin header, pins already soldered on (the same boards as §K.2); 4 × **male-to-female** jumper wires; 2 AT switches with 3.5 mm mono plugs | A user's own AT switches. Everything pushes in, no tools |
+| **M1 — AT switches, jack boards with pins** | 2 × 3.5 mm stereo jack board with a 5-pin header, pins already soldered on (the same boards as §K.2, or the bent-pin boards of the tested build above); 4 × **male-to-female** jumper wires; 2 AT switches with 3.5 mm mono plugs | A user's own AT switches. Everything pushes in, no tools. **Tested** |
 | **M2 — AT switches, screw-terminal jacks** | 2 × TRRS jack terminal block [#2915](https://www.adafruit.com/product/2915); **male-to-male** jumper wires [#1957](https://www.adafruit.com/product/1957) (4 needed); a small flat screwdriver; 2 AT switches with 3.5 mm mono plugs | A user's own AT switches, all parts from Adafruit. The #2915 has only screw terminals, so each wire needs a pin at **both** ends: one clamped under a screw, one pushed into the Metro |
 | **M3 — push buttons** | STEMMA wired push-button pack [#4431](https://www.adafruit.com/product/4431) (five buttons, each with its own cable; two are used) | Trying AeroMorse, or someone who presses buttons by hand. No jacks and no extra wires: each button's cable pushes straight into the Metro |
 
@@ -3771,7 +3842,7 @@ same, unplugs at its own cable, and needs no jack, wires or screwdriver.)
 
 | Option | Parts | Notes |
 |---|---|---|
-| **STEMMA Speaker — recommended** | Speaker [#3885](https://www.adafruit.com/product/3885) + JST PH 3-pin to male header cable [#3893](https://www.adafruit.com/product/3893) (**sold separately** — the speaker does not include it) | A real speaker with its own small amplifier, so AeroMorse's beeps come through clearly, and a **volume screw**. Its three pins push straight into the Metro — no jack, no tools. The same speaker was tested on the Cytron build |
+| **STEMMA Speaker — recommended** | Speaker [#3885](https://www.adafruit.com/product/3885) + JST PH 3-pin to male header cable [#3893](https://www.adafruit.com/product/3893) (**sold separately** — the speaker does not include it) | A real speaker with its own small amplifier, so AeroMorse's beeps come through clearly, and a **volume screw**. Its three pins push straight into the Metro — no jack, no tools. Tested on the Metro and on the Cytron build |
 | **None on the device** | — | Beeps through the computer instead: `PC_SOUND = True` and the AeroMorse Display window (§6.2) |
 
 The Metro's three `GND` sockets are exactly enough: one for each switch and
@@ -3871,8 +3942,9 @@ sensor board.
 
 1. Unplug the USB cable.
 2. Connect the sensor to the Metro's STEMMA QT port with a STEMMA QT / Qwiic
-   cable that has the small plug **on both ends**. Short is best: 10–20 cm
-   (4–8 in). The plug only fits one way.
+   cable that has the small plug **on both ends**. Short is best: the tested
+   build used the 50 mm [#4399](https://www.adafruit.com/product/4399);
+   up to about 20 cm (8 in) is fine. The plug only fits one way.
 3. In `config.py`, set `USE_SENSOR = True`. The switch pins are then not used.
 4. Plug the USB cable back in.
 
@@ -3947,6 +4019,28 @@ the bag. Pair it with one of:
   Larger, colour, much more screen area than the OLED; the text grows to
   fit by itself. For the full **#5477 + #3651** combo see **Appendix F**
   at the end of this guide. Untested.
+- **No screen on the device at all** — the display is the AeroMorse
+  Display window on the computer (§5). Nothing to solder: the sensor
+  plugs into the Feather's STEMMA QT port with a cable that has the small
+  plug on both ends.
+
+> **Tested:** a #5477 with the pressure sensor on its STEMMA QT port and
+> no screen on the device (the AeroMorse Display window instead) was built
+> and checked on 2026-11-09 with CircuitPython 10.3.1 and AeroMorse v1.33.
+> In `config.py` set `USE_DISPLAY = False` (no screen on the board) and
+> `PC_DISPLAY = True`, and give it a `DEVICE_NAME` of your choice.
+>
+> **If CircuitPython 10 will not install:** the test board arrived with an
+> older bootloader (TinyUF2 0.10.2). Copying the CircuitPython 10 `.uf2`
+> onto its `FTHRS3BOOT` drive did nothing — the drive simply came back.
+> The fix is to install the newer bootloader first: TinyUF2 0.35.0 for
+> `adafruit_feather_esp32s3`, from
+> [github.com/adafruit/tinyuf2/releases](https://github.com/adafruit/tinyuf2/releases),
+> written with esptool or Adafruit's
+> [WebSerial ESPTool](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/)
+> (`combined.bin` at address 0). This erases the board, so do it before
+> copying any AeroMorse files. Then copy the CircuitPython 10 `.uf2` as
+> usual.
 
 https://www.adafruit.com/product/5477
 
