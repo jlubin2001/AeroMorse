@@ -31,7 +31,7 @@ COMPUTER = ["AeroMorse Display.exe", "aeromorse_display.py",
             "AeroMorse Cheat Sheet.pdf", "LICENSE"]
 GUIDES = ["AEROMORSE_BUILD_GUIDE.pdf", "AEROMORSE_USAGE_GUIDE.pdf", "AEROMORSE_REFERENCE.pdf",
           "CAREGIVER_SETUP_GUIDE.pdf", "AEROMORSE_SWITCH_MODE_GUIDE.pdf",
-          "AeroMorse — Keycode Reference.pdf"]
+          "AeroMorse — Keycode Reference.pdf", "AeroMorse_Metro_no_breadboard_guide.pdf"]
 
 START_HERE = """AeroMorse v{v} - start here
 ==============================
@@ -72,6 +72,9 @@ Guides
   AEROMORSE_REFERENCE.pdf         groups, mouse, macros, secrets
   CAREGIVER_SETUP_GUIDE.pdf       day-to-day help
   AEROMORSE_SWITCH_MODE_GUIDE.pdf switch games
+  AeroMorse_Metro_no_breadboard_guide.pdf
+                                  step-by-step build on a Metro ESP32-S3,
+                                  no soldering, no breadboard
   AeroMorse Cheat Sheet.pdf       every code, to print
 
 Free and open source (MIT licence, see LICENSE).
