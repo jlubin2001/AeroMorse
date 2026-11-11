@@ -187,7 +187,7 @@ works. The first row of each table is the standard build.
 | Choice | Extra parts | Soldering | Tested |
 |--------|-------------|-----------|--------|
 | **Sip-and-puff** (standard) | none | none | ✅ Jim's daily device |
-| **Switches**, no soldering | a different board (Cytron) and two jacks | none | ✅ built and tested |
+| **Switches**, no soldering | a different board (Cytron or Metro ESP32-S3) and two jacks | none | ✅ built and tested on both |
 | **Switches** on the standard board | a jack with screw terminals, 3 wires, a splitter cable | 3 joints | ⚠️ not tested |
 
 **Display — how you see the code as you enter it**
@@ -268,6 +268,14 @@ One thing to know before ordering: Cytron ships from Malaysia, and to the
 USA the shipping and import charges came to about twice the price of the
 parts.
 
+**Or the Adafruit Metro ESP32-S3 (#5500), also tested.** It is sold in the
+USA with its sockets fitted, so the same two jacks push straight on with
+jumper wires, and the pressure sensor can be added on its STEMMA QT port.
+It has no buzzer; add a STEMMA Speaker or use the computer's speakers. The
+build is in **Appendix L**, "A solderless switch build on the Metro
+ESP32-S3", with a step-by-step version in
+[AeroMorse_Metro_no_breadboard_guide.pdf](AeroMorse_Metro_no_breadboard_guide.pdf).
+
 #### Way 2 — on the standard #5691, three soldered wires (not tested)
 
 > ⚠️ **Nobody on the project has built this.** It is written from the
@@ -314,7 +322,9 @@ AeroMorse does not read a third switch, so leave that out.
 > `SWITCH_MODE` is 2.** A mono plug's long sleeve touches the dash contact
 > as well as ground, so the device would see the dash switch held down all
 > the time. With `SWITCH_MODE = 1` only the dot contact is read and a
-> single switch is fine.
+> single switch is fine. This applies only to this one shared jack. The
+> Cytron and Metro builds give each switch its **own** jack with only the
+> tip and sleeve wired, so a mono plug is right there in either jack.
 
 **Setting for either way:** `USE_SENSOR = False` in `config.py`.
 
