@@ -3820,7 +3820,10 @@ cable's two spades go on the click switch's `C` (common) and `NO` (normally
 open) tabs; cut off the small white connector at the other end, strip about
 5 mm (¼ in) of each wire, and clamp one under each terminal screw — either
 way round. Check with a multimeter: tip to sleeve should beep only while
-the button is pressed.
+the button is pressed. A **stereo** plug adapter (three screws: ground,
+`R`, `L`) works too, also tested: one wire under `L` (tip), the other under
+ground (sleeve), `R` left empty. A wire under `R` makes the button do
+nothing, because `R` reaches jack pin 2, which is not connected.
 
 **How it differs from the Cytron build**
 
